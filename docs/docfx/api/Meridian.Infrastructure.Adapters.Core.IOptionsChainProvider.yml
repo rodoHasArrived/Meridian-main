@@ -1,0 +1,815 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  id: IOptionsChainProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities
+  - Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync(System.String,System.DateOnly,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync(System.String,System.DateOnly,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IOptionsChainProvider
+  nameWithType: IOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IOptionsChainProvider
+    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    startLine: 11
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Provider contract for retrieving options chain data.
+
+    Implementations supply option chain snapshots, contract discovery,
+
+    and available expirations for underlying symbols.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Options chain data provider contract")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      public interface IOptionsChainProvider : IProviderMetadata
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Options chain data provider contract")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      Public Interface IOptionsChainProvider Inherits IProviderMetadata
+  inheritedMembers:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Options chain data provider contract
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync(System.String,System.Threading.CancellationToken)
+  id: GetExpirationsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  langs:
+  - csharp
+  - vb
+  name: GetExpirationsAsync(string, CancellationToken)
+  nameWithType: IOptionsChainProvider.GetExpirationsAsync(string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExpirationsAsync
+    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    startLine: 21
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets available expiration dates for options on the given underlying symbol.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+      description: The underlying symbol (e.g., "AAPL", "SPX").
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.DateOnly}}
+      description: Ordered list of available expiration dates.
+    content.vb: Function GetExpirationsAsync(underlyingSymbol As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of DateOnly))
+  overload: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync*
+  nameWithType.vb: IOptionsChainProvider.GetExpirationsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetExpirationsAsync(String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync(System.String,System.DateOnly,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync(System.String,System.DateOnly,System.Threading.CancellationToken)
+  id: GetStrikesAsync(System.String,System.DateOnly,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  langs:
+  - csharp
+  - vb
+  name: GetStrikesAsync(string, DateOnly, CancellationToken)
+  nameWithType: IOptionsChainProvider.GetStrikesAsync(string, DateOnly, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync(string, System.DateOnly, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStrikesAsync
+    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    startLine: 32
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets available strike prices for a specific underlying and expiration.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<decimal>> GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+      description: The underlying symbol.
+    - id: expiration
+      type: System.DateOnly
+      description: The expiration date.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.Decimal}}
+      description: Ordered list of available strike prices.
+    content.vb: Function GetStrikesAsync(underlyingSymbol As String, expiration As DateOnly, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of Decimal))
+  overload: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync*
+  nameWithType.vb: IOptionsChainProvider.GetStrikesAsync(String, DateOnly, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync(String, System.DateOnly, System.Threading.CancellationToken)
+  name.vb: GetStrikesAsync(String, DateOnly, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync(System.String,System.DateOnly,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync(System.String,System.DateOnly,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  id: GetChainSnapshotAsync(System.String,System.DateOnly,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  langs:
+  - csharp
+  - vb
+  name: GetChainSnapshotAsync(string, DateOnly, int?, CancellationToken)
+  nameWithType: IOptionsChainProvider.GetChainSnapshotAsync(string, DateOnly, int?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync(string, System.DateOnly, int?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetChainSnapshotAsync
+    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    startLine: 48
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a full option chain snapshot for an underlying symbol and expiration.
+  example: []
+  syntax:
+    content: Task<OptionChainSnapshot?> GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+      description: The underlying symbol.
+    - id: expiration
+      type: System.DateOnly
+      description: The expiration date.
+    - id: strikeRange
+      type: System.Nullable{System.Int32}
+      description: >-
+        Optional number of strikes above and below ATM to include.
+
+        If null, returns all available strikes.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+      description: Option chain snapshot with calls and puts.
+    content.vb: Function GetChainSnapshotAsync(underlyingSymbol As String, expiration As DateOnly, strikeRange As Integer? = Nothing, ct As CancellationToken = Nothing) As Task(Of OptionChainSnapshot)
+  overload: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync*
+  nameWithType.vb: IOptionsChainProvider.GetChainSnapshotAsync(String, DateOnly, Integer?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync(String, System.DateOnly, Integer?, System.Threading.CancellationToken)
+  name.vb: GetChainSnapshotAsync(String, DateOnly, Integer?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Threading.CancellationToken)
+  id: GetOptionQuoteAsync(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  langs:
+  - csharp
+  - vb
+  name: GetOptionQuoteAsync(OptionContractSpec, CancellationToken)
+  nameWithType: IOptionsChainProvider.GetOptionQuoteAsync(OptionContractSpec, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync(Meridian.Contracts.Domain.Models.OptionContractSpec, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOptionQuoteAsync
+    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    startLine: 60
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a quote for a specific option contract.
+  example: []
+  syntax:
+    content: Task<OptionQuote?> GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default)
+    parameters:
+    - id: contract
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+      description: The option contract specification.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Domain.Models.OptionQuote}
+      description: Option quote, or null if unavailable.
+    content.vb: Function GetOptionQuoteAsync(contract As OptionContractSpec, ct As CancellationToken = Nothing) As Task(Of OptionQuote)
+  overload: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: IOptionsChainProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
+    startLine: 67
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets option chain capabilities for this provider.
+  example: []
+  syntax:
+    content: OptionsChainCapabilities Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.OptionsChainCapabilities
+    content.vb: ReadOnly Property Capabilities As OptionsChainCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderId
+  name: ProviderId
+  nameWithType: IProviderMetadata.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: IProviderMetadata.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDescription
+  name: ProviderDescription
+  nameWithType: IProviderMetadata.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderPriority
+  name: ProviderPriority
+  nameWithType: IProviderMetadata.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: IProviderMetadata.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_RequiresCredentials
+  name: RequiresCredentials
+  nameWithType: IProviderMetadata.RequiresCredentials
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: IProviderMetadata.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderNotes
+  name: ProviderNotes
+  nameWithType: IProviderMetadata.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderWarnings
+  name: ProviderWarnings
+  nameWithType: IProviderMetadata.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_SupportedDataTypes
+  name: SupportedDataTypes
+  nameWithType: IProviderMetadata.SupportedDataTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync
+  href: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.html#Meridian_Infrastructure_Adapters_Core_IOptionsChainProvider_GetExpirationsAsync_System_String_System_Threading_CancellationToken_
+  name: GetExpirationsAsync
+  nameWithType: IOptionsChainProvider.GetExpirationsAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetExpirationsAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.DateOnly}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.DateOnly}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<DateOnly>>
+  nameWithType: Task<IReadOnlyList<DateOnly>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.DateOnly>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of DateOnly))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of System.DateOnly))
+  name.vb: Task(Of IReadOnlyList(Of DateOnly))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync
+  href: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.html#Meridian_Infrastructure_Adapters_Core_IOptionsChainProvider_GetStrikesAsync_System_String_System_DateOnly_System_Threading_CancellationToken_
+  name: GetStrikesAsync
+  nameWithType: IOptionsChainProvider.GetStrikesAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetStrikesAsync
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.Decimal}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.Decimal}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<decimal>>
+  nameWithType: Task<IReadOnlyList<decimal>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<decimal>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of Decimal))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Decimal))
+  name.vb: Task(Of IReadOnlyList(Of Decimal))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync
+  href: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.html#Meridian_Infrastructure_Adapters_Core_IOptionsChainProvider_GetChainSnapshotAsync_System_String_System_DateOnly_System_Nullable_System_Int32__System_Threading_CancellationToken_
+  name: GetChainSnapshotAsync
+  nameWithType: IOptionsChainProvider.GetChainSnapshotAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetChainSnapshotAsync
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OptionChainSnapshot>
+  nameWithType: Task<OptionChainSnapshot>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Domain.Models.OptionChainSnapshot>
+  nameWithType.vb: Task(Of OptionChainSnapshot)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  name.vb: Task(Of OptionChainSnapshot)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    name: OptionChainSnapshot
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    name: OptionChainSnapshot
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync
+  href: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.html#Meridian_Infrastructure_Adapters_Core_IOptionsChainProvider_GetOptionQuoteAsync_Meridian_Contracts_Domain_Models_OptionContractSpec_System_Threading_CancellationToken_
+  name: GetOptionQuoteAsync
+  nameWithType: IOptionsChainProvider.GetOptionQuoteAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.GetOptionQuoteAsync
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+  commentId: T:Meridian.Contracts.Domain.Models.OptionContractSpec
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html
+  name: OptionContractSpec
+  nameWithType: OptionContractSpec
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Domain.Models.OptionQuote}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Domain.Models.OptionQuote}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OptionQuote>
+  nameWithType: Task<OptionQuote>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Domain.Models.OptionQuote>
+  nameWithType.vb: Task(Of OptionQuote)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Domain.Models.OptionQuote)
+  name.vb: Task(Of OptionQuote)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionQuote
+    name: OptionQuote
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionQuote
+    name: OptionQuote
+  - name: )
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities
+  href: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.html#Meridian_Infrastructure_Adapters_Core_IOptionsChainProvider_Capabilities
+  name: Capabilities
+  nameWithType: IOptionsChainProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.Capabilities
+- uid: Meridian.Infrastructure.Adapters.Core.OptionsChainCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.OptionsChainCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.OptionsChainCapabilities.html
+  name: OptionsChainCapabilities
+  nameWithType: OptionsChainCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.OptionsChainCapabilities

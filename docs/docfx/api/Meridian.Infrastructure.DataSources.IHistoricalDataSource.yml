@@ -1,0 +1,1242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  id: IHistoricalDataSource
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+  langs:
+  - csharp
+  - vb
+  name: IHistoricalDataSource
+  nameWithType: IHistoricalDataSource
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IHistoricalDataSource
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 9
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: >-
+    Interface for historical data sources providing bar data, dividends,
+
+    splits, and other historical market information.
+  example: []
+  syntax:
+    content: 'public interface IHistoricalDataSource : IDataSource, IAsyncDisposable'
+    content.vb: Public Interface IHistoricalDataSource Inherits IDataSource, IAsyncDisposable
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  inheritedMembers:
+  - Meridian.Infrastructure.DataSources.IDataSource.Id
+  - Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  - Meridian.Infrastructure.DataSources.IDataSource.Description
+  - Meridian.Infrastructure.DataSources.IDataSource.Type
+  - Meridian.Infrastructure.DataSources.IDataSource.Category
+  - Meridian.Infrastructure.DataSources.IDataSource.Priority
+  - Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  - Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  - Meridian.Infrastructure.DataSources.IDataSource.Health
+  - Meridian.Infrastructure.DataSources.IDataSource.Status
+  - Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  - Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  - Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDailyBarsAsync
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 20
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets historical daily OHLCV bars for a symbol.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: The symbol to fetch.
+    - id: from
+      type: System.Nullable{System.DateOnly}
+      description: Start date (inclusive). If null, uses earliest available.
+    - id: to
+      type: System.Nullable{System.DateOnly}
+      description: End date (inclusive). If null, uses latest available.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+      description: List of historical bars ordered by date.
+    content.vb: Function GetDailyBarsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of HistoricalBar))
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync*
+  nameWithType.vb: IHistoricalDataSource.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAdjustedDailyBarsAsync
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 29
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets historical daily bars with adjustment information.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+    content.vb: Function GetAdjustedDailyBarsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync*
+  nameWithType.vb: IHistoricalDataSource.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+  id: SupportsIntraday
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportsIntraday
+  nameWithType: IHistoricalDataSource.SupportsIntraday
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsIntraday
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 40
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether this source supports intraday bar data.
+  example: []
+  syntax:
+    content: bool SupportsIntraday { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property SupportsIntraday As Boolean
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday*
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+  id: SupportedBarIntervals
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportedBarIntervals
+  nameWithType: IHistoricalDataSource.SupportedBarIntervals
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedBarIntervals
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 45
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supported bar intervals (e.g., "1Min", "5Min", "15Min", "1Hour").
+  example: []
+  syntax:
+    content: IReadOnlyList<string> SupportedBarIntervals { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: ReadOnly Property SupportedBarIntervals As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals*
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  id: GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(string, string, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetIntradayBarsAsync
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 56
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets historical intraday bars for a symbol.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<IntradayBar>> GetIntradayBarsAsync(string symbol, string interval, DateTimeOffset? from = null, DateTimeOffset? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: The symbol to fetch.
+    - id: interval
+      type: System.String
+      description: Bar interval (e.g., "1Min", "5Min").
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+      description: Start datetime (inclusive).
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+      description: End datetime (inclusive).
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+      description: List of intraday bars ordered by time.
+    content.vb: Function GetIntradayBarsAsync(symbol As String, interval As String, from As DateTimeOffset? = Nothing, [to] As DateTimeOffset? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of IntradayBar))
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync*
+  nameWithType.vb: IHistoricalDataSource.GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(String, String, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  name.vb: GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+  id: SupportsDividends
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportsDividends
+  nameWithType: IHistoricalDataSource.SupportsDividends
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsDividends
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 68
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether this source supports dividend data.
+  example: []
+  syntax:
+    content: bool SupportsDividends { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property SupportsDividends As Boolean
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends*
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+  id: SupportsSplits
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportsSplits
+  nameWithType: IHistoricalDataSource.SupportsSplits
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsSplits
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 73
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether this source supports split data.
+  example: []
+  syntax:
+    content: bool SupportsSplits { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property SupportsSplits As Boolean
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits*
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetDividendsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetDividendsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDividendsAsync
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 78
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets dividend history for a symbol.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<DividendInfo>> GetDividendsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DividendInfo}}
+    content.vb: Function GetDividendsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of DividendInfo))
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync*
+  nameWithType.vb: IHistoricalDataSource.GetDividendsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDividendsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetSplitsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetSplitsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSplitsAsync
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 87
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets stock split history for a symbol.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<SplitInfo>> GetSplitsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.SplitInfo}}
+    content.vb: Function GetSplitsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SplitInfo))
+  overload: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync*
+  nameWithType.vb: IHistoricalDataSource.GetSplitsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetSplitsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Id
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Id
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Id
+  name: Id
+  nameWithType: IDataSource.Id
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Id
+- uid: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_DisplayName
+  name: DisplayName
+  nameWithType: IDataSource.DisplayName
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Description
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Description
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Description
+  name: Description
+  nameWithType: IDataSource.Description
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Description
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Type
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Type
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Type
+  name: Type
+  nameWithType: IDataSource.Type
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Type
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Category
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Category
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Category
+  name: Category
+  nameWithType: IDataSource.Category
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Category
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Priority
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Priority
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Priority
+  name: Priority
+  nameWithType: IDataSource.Priority
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Priority
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Capabilities
+  name: Capabilities
+  nameWithType: IDataSource.Capabilities
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+- uid: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_CapabilityInfo
+  name: CapabilityInfo
+  nameWithType: IDataSource.CapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: IDataSource.SupportedMarkets
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedAssetClasses
+  name: SupportedAssetClasses
+  nameWithType: IDataSource.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Health
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Health
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Health
+  name: Health
+  nameWithType: IDataSource.Health
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Health
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Status
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Status
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Status
+  name: Status
+  nameWithType: IDataSource.Status
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Status
+- uid: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_RateLimitState
+  name: RateLimitState
+  nameWithType: IDataSource.RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+- uid: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_HealthChanges
+  name: HealthChanges
+  nameWithType: IDataSource.HealthChanges
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+- uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync(CancellationToken)
+  nameWithType: IDataSource.InitializeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync(CancellationToken)
+  nameWithType: IDataSource.ValidateCredentialsAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  name: TestConnectivityAsync(CancellationToken)
+  nameWithType: IDataSource.TestConnectivityAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IDataSource
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.IDataSource.html
+  name: IDataSource
+  nameWithType: IDataSource
+  fullName: Meridian.Infrastructure.DataSources.IDataSource
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDailyBarsAsync
+  nameWithType: IHistoricalDataSource.GetDailyBarsAsync
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<HistoricalBar>>
+  nameWithType: Task<IReadOnlyList<HistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAdjustedDailyBarsAsync
+  nameWithType: IHistoricalDataSource.GetAdjustedDailyBarsAsync
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  nameWithType: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.AdjustedHistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.AdjustedHistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_SupportsIntraday
+  name: SupportsIntraday
+  nameWithType: IHistoricalDataSource.SupportsIntraday
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_SupportedBarIntervals
+  name: SupportedBarIntervals
+  nameWithType: IHistoricalDataSource.SupportedBarIntervals
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_GetIntradayBarsAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  name: GetIntradayBarsAsync
+  nameWithType: IHistoricalDataSource.GetIntradayBarsAsync
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<IntradayBar>>
+  nameWithType: Task<IReadOnlyList<IntradayBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.IntradayBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.IntradayBar))
+  name.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_SupportsDividends
+  name: SupportsDividends
+  nameWithType: IHistoricalDataSource.SupportsDividends
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_SupportsSplits
+  name: SupportsSplits
+  nameWithType: IHistoricalDataSource.SupportsSplits
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_GetDividendsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDividendsAsync
+  nameWithType: IHistoricalDataSource.GetDividendsAsync
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DividendInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DividendInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<DividendInfo>>
+  nameWithType: Task<IReadOnlyList<DividendInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.DividendInfo>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of DividendInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.DividendInfo))
+  name.vb: Task(Of IReadOnlyList(Of DividendInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DividendInfo
+    name: DividendInfo
+    href: Meridian.Infrastructure.DataSources.DividendInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DividendInfo
+    name: DividendInfo
+    href: Meridian.Infrastructure.DataSources.DividendInfo.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html#Meridian_Infrastructure_DataSources_IHistoricalDataSource_GetSplitsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetSplitsAsync
+  nameWithType: IHistoricalDataSource.GetSplitsAsync
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.SplitInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.SplitInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SplitInfo>>
+  nameWithType: Task<IReadOnlyList<SplitInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.SplitInfo>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SplitInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.SplitInfo))
+  name.vb: Task(Of IReadOnlyList(Of SplitInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.SplitInfo
+    name: SplitInfo
+    href: Meridian.Infrastructure.DataSources.SplitInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.SplitInfo
+    name: SplitInfo
+    href: Meridian.Infrastructure.DataSources.SplitInfo.html
+  - name: )
+  - name: )

@@ -1,0 +1,946 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Storage.StrategyRunStore
+  commentId: T:Meridian.Strategies.Storage.StrategyRunStore
+  id: StrategyRunStore
+  parent: Meridian.Strategies.Storage
+  children:
+  - Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync(System.Threading.CancellationToken)
+  - Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunStore
+  nameWithType: StrategyRunStore
+  fullName: Meridian.Strategies.Storage.StrategyRunStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunStore
+    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: >-
+    In-memory run store used for development and testing.
+
+    A production implementation would persist entries to JSONL using
+
+    <code>AtomicFileWriter</code> following the same pattern as <code>JsonlStorageSink</code>.
+  example: []
+  syntax:
+    content: 'public sealed class StrategyRunStore : IStrategyRepository'
+    content.vb: Public NotInheritable Class StrategyRunStore Implements IStrategyRepository
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Strategies.Interfaces.IStrategyRepository
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  id: RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Storage.StrategyRunStore
+  langs:
+  - csharp
+  - vb
+  name: RecordRunAsync(StrategyRunEntry, CancellationToken)
+  nameWithType: StrategyRunStore.RecordRunAsync(StrategyRunEntry, CancellationToken)
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordRunAsync
+    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: Records a new or updated run entry.
+  example: []
+  syntax:
+    content: public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default)
+    parameters:
+    - id: entry
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordRunAsync(entry As StrategyRunEntry, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync*
+  implements:
+  - Meridian.Strategies.Interfaces.IStrategyRepository.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+- uid: Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync(System.String,System.Threading.CancellationToken)
+  id: GetRunsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Storage.StrategyRunStore
+  langs:
+  - csharp
+  - vb
+  name: GetRunsAsync(string, CancellationToken)
+  nameWithType: StrategyRunStore.GetRunsAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunsAsync
+    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: Retrieves all runs for <code class="paramref">strategyId</code> in ascending start order.
+  example: []
+  syntax:
+    content: public IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(string strategyId, CancellationToken ct = default)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Strategies.Models.StrategyRunEntry}
+    content.vb: Public Function GetRunsAsync(strategyId As String, ct As CancellationToken = Nothing) As IAsyncEnumerable(Of StrategyRunEntry)
+  overload: Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync*
+  implements:
+  - Meridian.Strategies.Interfaces.IStrategyRepository.GetRunsAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: StrategyRunStore.GetRunsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetRunsAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+  id: GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Storage.StrategyRunStore
+  langs:
+  - csharp
+  - vb
+  name: GetLatestRunAsync(string, CancellationToken)
+  nameWithType: StrategyRunStore.GetLatestRunAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestRunAsync
+    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: Returns the most recent run entry for <code class="paramref">strategyId</code>, or <code>null</code>.
+  example: []
+  syntax:
+    content: public Task<StrategyRunEntry?> GetLatestRunAsync(string strategyId, CancellationToken ct = default)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Strategies.Models.StrategyRunEntry}
+    content.vb: Public Function GetLatestRunAsync(strategyId As String, ct As CancellationToken = Nothing) As Task(Of StrategyRunEntry)
+  overload: Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync*
+  implements:
+  - Meridian.Strategies.Interfaces.IStrategyRepository.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: StrategyRunStore.GetLatestRunAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync(String, System.Threading.CancellationToken)
+  name.vb: GetLatestRunAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync(System.Threading.CancellationToken)
+  id: GetAllRunsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Storage.StrategyRunStore
+  langs:
+  - csharp
+  - vb
+  name: GetAllRunsAsync(CancellationToken)
+  nameWithType: StrategyRunStore.GetAllRunsAsync(CancellationToken)
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllRunsAsync
+    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Storage
+  summary: Returns all recorded strategy runs across all strategies.
+  example: []
+  syntax:
+    content: public IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Strategies.Models.StrategyRunEntry}
+    content.vb: Public Function GetAllRunsAsync(ct As CancellationToken = Nothing) As IAsyncEnumerable(Of StrategyRunEntry)
+  overload: Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync*
+  implements:
+  - Meridian.Strategies.Interfaces.IStrategyRepository.GetAllRunsAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Strategies.Storage
+  commentId: N:Meridian.Strategies.Storage
+  href: Meridian.html
+  name: Meridian.Strategies.Storage
+  nameWithType: Meridian.Strategies.Storage
+  fullName: Meridian.Strategies.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Storage
+    name: Storage
+    href: Meridian.Strategies.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Storage
+    name: Storage
+    href: Meridian.Strategies.Storage.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyRepository
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html
+  name: IStrategyRepository
+  nameWithType: IStrategyRepository
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync*
+  commentId: Overload:Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync
+  href: Meridian.Strategies.Storage.StrategyRunStore.html#Meridian_Strategies_Storage_StrategyRunStore_RecordRunAsync_Meridian_Strategies_Models_StrategyRunEntry_System_Threading_CancellationToken_
+  name: RecordRunAsync
+  nameWithType: StrategyRunStore.RecordRunAsync
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.RecordRunAsync
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyRepository.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyRepository
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_RecordRunAsync_Meridian_Strategies_Models_StrategyRunEntry_System_Threading_CancellationToken_
+  name: RecordRunAsync(StrategyRunEntry, CancellationToken)
+  nameWithType: IStrategyRepository.RecordRunAsync(StrategyRunEntry, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+    name: RecordRunAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_RecordRunAsync_Meridian_Strategies_Models_StrategyRunEntry_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.RecordRunAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+    name: RecordRunAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_RecordRunAsync_Meridian_Strategies_Models_StrategyRunEntry_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Strategies.Models.StrategyRunEntry
+  commentId: T:Meridian.Strategies.Models.StrategyRunEntry
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.StrategyRunEntry.html
+  name: StrategyRunEntry
+  nameWithType: StrategyRunEntry
+  fullName: Meridian.Strategies.Models.StrategyRunEntry
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync*
+  commentId: Overload:Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync
+  href: Meridian.Strategies.Storage.StrategyRunStore.html#Meridian_Strategies_Storage_StrategyRunStore_GetRunsAsync_System_String_System_Threading_CancellationToken_
+  name: GetRunsAsync
+  nameWithType: StrategyRunStore.GetRunsAsync
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.GetRunsAsync
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetRunsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyRepository.GetRunsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyRepository
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetRunsAsync_System_String_System_Threading_CancellationToken_
+  name: GetRunsAsync(string, CancellationToken)
+  nameWithType: IStrategyRepository.GetRunsAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository.GetRunsAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IStrategyRepository.GetRunsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Interfaces.IStrategyRepository.GetRunsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetRunsAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetRunsAsync(System.String,System.Threading.CancellationToken)
+    name: GetRunsAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetRunsAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetRunsAsync(System.String,System.Threading.CancellationToken)
+    name: GetRunsAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetRunsAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Strategies.Models.StrategyRunEntry}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Strategies.Models.StrategyRunEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<StrategyRunEntry>
+  nameWithType: IAsyncEnumerable<StrategyRunEntry>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Strategies.Models.StrategyRunEntry>
+  nameWithType.vb: IAsyncEnumerable(Of StrategyRunEntry)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Strategies.Models.StrategyRunEntry)
+  name.vb: IAsyncEnumerable(Of StrategyRunEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: )
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync*
+  commentId: Overload:Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync
+  href: Meridian.Strategies.Storage.StrategyRunStore.html#Meridian_Strategies_Storage_StrategyRunStore_GetLatestRunAsync_System_String_System_Threading_CancellationToken_
+  name: GetLatestRunAsync
+  nameWithType: StrategyRunStore.GetLatestRunAsync
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.GetLatestRunAsync
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyRepository.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyRepository
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetLatestRunAsync_System_String_System_Threading_CancellationToken_
+  name: GetLatestRunAsync(string, CancellationToken)
+  nameWithType: IStrategyRepository.GetLatestRunAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository.GetLatestRunAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IStrategyRepository.GetLatestRunAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Interfaces.IStrategyRepository.GetLatestRunAsync(String, System.Threading.CancellationToken)
+  name.vb: GetLatestRunAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+    name: GetLatestRunAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetLatestRunAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetLatestRunAsync(System.String,System.Threading.CancellationToken)
+    name: GetLatestRunAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetLatestRunAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Strategies.Models.StrategyRunEntry}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Strategies.Models.StrategyRunEntry}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StrategyRunEntry>
+  nameWithType: Task<StrategyRunEntry>
+  fullName: System.Threading.Tasks.Task<Meridian.Strategies.Models.StrategyRunEntry>
+  nameWithType.vb: Task(Of StrategyRunEntry)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Strategies.Models.StrategyRunEntry)
+  name.vb: Task(Of StrategyRunEntry)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync*
+  commentId: Overload:Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync
+  href: Meridian.Strategies.Storage.StrategyRunStore.html#Meridian_Strategies_Storage_StrategyRunStore_GetAllRunsAsync_System_Threading_CancellationToken_
+  name: GetAllRunsAsync
+  nameWithType: StrategyRunStore.GetAllRunsAsync
+  fullName: Meridian.Strategies.Storage.StrategyRunStore.GetAllRunsAsync
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetAllRunsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyRepository.GetAllRunsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyRepository
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetAllRunsAsync_System_Threading_CancellationToken_
+  name: GetAllRunsAsync(CancellationToken)
+  nameWithType: IStrategyRepository.GetAllRunsAsync(CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository.GetAllRunsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetAllRunsAsync(System.Threading.CancellationToken)
+    name: GetAllRunsAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetAllRunsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyRepository.GetAllRunsAsync(System.Threading.CancellationToken)
+    name: GetAllRunsAsync
+    href: Meridian.Strategies.Interfaces.IStrategyRepository.html#Meridian_Strategies_Interfaces_IStrategyRepository_GetAllRunsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )

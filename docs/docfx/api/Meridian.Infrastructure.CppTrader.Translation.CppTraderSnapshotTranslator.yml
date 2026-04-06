@@ -1,0 +1,454 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+  id: CppTraderSnapshotTranslator
+  parent: Meridian.Infrastructure.CppTrader.Translation
+  children:
+  - Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  langs:
+  - csharp
+  - vb
+  name: CppTraderSnapshotTranslator
+  nameWithType: CppTraderSnapshotTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderSnapshotTranslator
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: 'public sealed class CppTraderSnapshotTranslator : ICppTraderSnapshotTranslator'
+    content.vb: Public NotInheritable Class CppTraderSnapshotTranslator Implements ICppTraderSnapshotTranslator
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  id: Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  parent: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+  langs:
+  - csharp
+  - vb
+  name: Translate(BookSnapshotEvent)
+  nameWithType: CppTraderSnapshotTranslator.Translate(BookSnapshotEvent)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Translate
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  example: []
+  syntax:
+    content: public LOBSnapshot Translate(BookSnapshotEvent snapshotEvent)
+    parameters:
+    - id: snapshotEvent
+      type: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+    return:
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    content.vb: Public Function Translate(snapshotEvent As BookSnapshotEvent) As LOBSnapshot
+  overload: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+references:
+- uid: Meridian.Infrastructure.CppTrader.Translation
+  commentId: N:Meridian.Infrastructure.CppTrader.Translation
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Translation
+  nameWithType: Meridian.Infrastructure.CppTrader.Translation
+  fullName: Meridian.Infrastructure.CppTrader.Translation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  parent: Meridian.Infrastructure.CppTrader.Translation
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.html
+  name: ICppTraderSnapshotTranslator
+  nameWithType: ICppTraderSnapshotTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate
+  href: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.html#Meridian_Infrastructure_CppTrader_Translation_CppTraderSnapshotTranslator_Translate_Meridian_Infrastructure_CppTrader_Protocol_BookSnapshotEvent_
+  name: Translate
+  nameWithType: CppTraderSnapshotTranslator.Translate
+  fullName: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.Translate
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  parent: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderSnapshotTranslator_Translate_Meridian_Infrastructure_CppTrader_Protocol_BookSnapshotEvent_
+  name: Translate(BookSnapshotEvent)
+  nameWithType: ICppTraderSnapshotTranslator.Translate(BookSnapshotEvent)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+    name: Translate
+    href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderSnapshotTranslator_Translate_Meridian_Infrastructure_CppTrader_Protocol_BookSnapshotEvent_
+  - name: (
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+    name: BookSnapshotEvent
+    href: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+    name: Translate
+    href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderSnapshotTranslator_Translate_Meridian_Infrastructure_CppTrader_Protocol_BookSnapshotEvent_
+  - name: (
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+    name: BookSnapshotEvent
+    href: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent.html
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent.html
+  name: BookSnapshotEvent
+  nameWithType: BookSnapshotEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+- uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.LOBSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.LOBSnapshot.html
+  name: LOBSnapshot
+  nameWithType: LOBSnapshot
+  fullName: Meridian.Contracts.Domain.Models.LOBSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html

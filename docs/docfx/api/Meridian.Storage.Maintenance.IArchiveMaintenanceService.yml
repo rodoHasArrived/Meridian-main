@@ -1,0 +1,771 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  commentId: T:Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  id: IArchiveMaintenanceService
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync(System.String)
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync(Meridian.Storage.Maintenance.MaintenanceTaskType,Meridian.Storage.Maintenance.MaintenanceTaskOptions,System.String[],System.Threading.CancellationToken)
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionCompleted
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionFailed
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionStarted
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IArchiveMaintenanceService
+  nameWithType: IArchiveMaintenanceService
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IArchiveMaintenanceService
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Interface for archive maintenance service that orchestrates scheduled and on-demand maintenance operations.
+  example: []
+  syntax:
+    content: public interface IArchiveMaintenanceService
+    content.vb: Public Interface IArchiveMaintenanceService
+  derivedClasses:
+  - Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning
+  commentId: P:Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning
+  id: IsRunning
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: IsRunning
+  nameWithType: IArchiveMaintenanceService.IsRunning
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRunning
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Whether the maintenance service is currently running.
+  example: []
+  syntax:
+    content: bool IsRunning { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsRunning As Boolean
+  overload: Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning*
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions
+  commentId: P:Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions
+  id: QueuedExecutions
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: QueuedExecutions
+  nameWithType: IArchiveMaintenanceService.QueuedExecutions
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueuedExecutions
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Number of maintenance executions currently queued.
+  example: []
+  syntax:
+    content: int QueuedExecutions { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property QueuedExecutions As Integer
+  overload: Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions*
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution
+  commentId: P:Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution
+  id: CurrentExecution
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: CurrentExecution
+  nameWithType: IArchiveMaintenanceService.CurrentExecution
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentExecution
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Currently running execution (if any).
+  example: []
+  syntax:
+    content: MaintenanceExecution? CurrentExecution { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecution
+    content.vb: ReadOnly Property CurrentExecution As MaintenanceExecution
+  overload: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution*
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync(Meridian.Storage.Maintenance.MaintenanceTaskType,Meridian.Storage.Maintenance.MaintenanceTaskOptions,System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync(Meridian.Storage.Maintenance.MaintenanceTaskType,Meridian.Storage.Maintenance.MaintenanceTaskOptions,System.String[],System.Threading.CancellationToken)
+  id: ExecuteMaintenanceAsync(Meridian.Storage.Maintenance.MaintenanceTaskType,Meridian.Storage.Maintenance.MaintenanceTaskOptions,System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ExecuteMaintenanceAsync(MaintenanceTaskType, MaintenanceTaskOptions?, string[]?, CancellationToken)
+  nameWithType: IArchiveMaintenanceService.ExecuteMaintenanceAsync(MaintenanceTaskType, MaintenanceTaskOptions?, string[]?, CancellationToken)
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync(Meridian.Storage.Maintenance.MaintenanceTaskType, Meridian.Storage.Maintenance.MaintenanceTaskOptions?, string[]?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteMaintenanceAsync
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execute a maintenance task immediately.
+  example: []
+  syntax:
+    content: Task<MaintenanceExecution> ExecuteMaintenanceAsync(MaintenanceTaskType taskType, MaintenanceTaskOptions? options = null, string[]? targetPaths = null, CancellationToken ct = default)
+    parameters:
+    - id: taskType
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+      description: Type of maintenance to perform.
+    - id: options
+      type: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+      description: Options for the maintenance task.
+    - id: targetPaths
+      type: System.String[]
+      description: Specific paths to target (null = use defaults).
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Maintenance.MaintenanceExecution}
+      description: The execution record with results.
+    content.vb: Function ExecuteMaintenanceAsync(taskType As MaintenanceTaskType, options As MaintenanceTaskOptions = Nothing, targetPaths As String() = Nothing, ct As CancellationToken = Nothing) As Task(Of MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync*
+  nameWithType.vb: IArchiveMaintenanceService.ExecuteMaintenanceAsync(MaintenanceTaskType, MaintenanceTaskOptions, String(), CancellationToken)
+  fullName.vb: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync(Meridian.Storage.Maintenance.MaintenanceTaskType, Meridian.Storage.Maintenance.MaintenanceTaskOptions, String(), System.Threading.CancellationToken)
+  name.vb: ExecuteMaintenanceAsync(MaintenanceTaskType, MaintenanceTaskOptions, String(), CancellationToken)
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync(System.String,System.Threading.CancellationToken)
+  id: TriggerScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: TriggerScheduleAsync(string, CancellationToken)
+  nameWithType: IArchiveMaintenanceService.TriggerScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TriggerScheduleAsync
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Trigger a scheduled maintenance to run immediately.
+  example: []
+  syntax:
+    content: Task<MaintenanceExecution> TriggerScheduleAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+      description: ID of the schedule to trigger.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Maintenance.MaintenanceExecution}
+      description: The execution record.
+    content.vb: Function TriggerScheduleAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync*
+  nameWithType.vb: IArchiveMaintenanceService.TriggerScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: TriggerScheduleAsync(String, CancellationToken)
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync(System.String)
+  commentId: M:Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync(System.String)
+  id: CancelExecutionAsync(System.String)
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: CancelExecutionAsync(string)
+  nameWithType: IArchiveMaintenanceService.CancelExecutionAsync(string)
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelExecutionAsync
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Cancel a running or queued maintenance execution.
+  example: []
+  syntax:
+    content: Task<bool> CancelExecutionAsync(string executionId)
+    parameters:
+    - id: executionId
+      type: System.String
+      description: ID of the execution to cancel.
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: True if cancellation was successful.
+    content.vb: Function CancelExecutionAsync(executionId As String) As Task(Of Boolean)
+  overload: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync*
+  nameWithType.vb: IArchiveMaintenanceService.CancelExecutionAsync(String)
+  fullName.vb: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync(String)
+  name.vb: CancelExecutionAsync(String)
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus
+  commentId: M:Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus
+  id: GetStatus
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetStatus()
+  nameWithType: IArchiveMaintenanceService.GetStatus()
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatus
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get the current status of the maintenance service.
+  example: []
+  syntax:
+    content: MaintenanceServiceStatus GetStatus()
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceServiceStatus
+    content.vb: Function GetStatus() As MaintenanceServiceStatus
+  overload: Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus*
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionStarted
+  commentId: E:Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionStarted
+  id: ExecutionStarted
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ExecutionStarted
+  nameWithType: IArchiveMaintenanceService.ExecutionStarted
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionStarted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionStarted
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Event raised when a maintenance execution starts.
+  example: []
+  syntax:
+    content: event EventHandler<MaintenanceExecution>? ExecutionStarted
+    return:
+      type: System.EventHandler{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Event ExecutionStarted As EventHandler(Of MaintenanceExecution)
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionCompleted
+  commentId: E:Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionCompleted
+  id: ExecutionCompleted
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ExecutionCompleted
+  nameWithType: IArchiveMaintenanceService.ExecutionCompleted
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionCompleted
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Event raised when a maintenance execution completes.
+  example: []
+  syntax:
+    content: event EventHandler<MaintenanceExecution>? ExecutionCompleted
+    return:
+      type: System.EventHandler{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Event ExecutionCompleted As EventHandler(Of MaintenanceExecution)
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionFailed
+  commentId: E:Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionFailed
+  id: ExecutionFailed
+  parent: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ExecutionFailed
+  nameWithType: IArchiveMaintenanceService.ExecutionFailed
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecutionFailed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionFailed
+    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Event raised when a maintenance execution fails.
+  example: []
+  syntax:
+    content: event EventHandler<MaintenanceExecution>? ExecutionFailed
+    return:
+      type: System.EventHandler{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Event ExecutionFailed As EventHandler(Of MaintenanceExecution)
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning*
+  commentId: Overload:Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html#Meridian_Storage_Maintenance_IArchiveMaintenanceService_IsRunning
+  name: IsRunning
+  nameWithType: IArchiveMaintenanceService.IsRunning
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.IsRunning
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html#Meridian_Storage_Maintenance_IArchiveMaintenanceService_QueuedExecutions
+  name: QueuedExecutions
+  nameWithType: IArchiveMaintenanceService.QueuedExecutions
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.QueuedExecutions
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution*
+  commentId: Overload:Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html#Meridian_Storage_Maintenance_IArchiveMaintenanceService_CurrentExecution
+  name: CurrentExecution
+  nameWithType: IArchiveMaintenanceService.CurrentExecution
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CurrentExecution
+- uid: Meridian.Storage.Maintenance.MaintenanceExecution
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecution
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  name: MaintenanceExecution
+  nameWithType: MaintenanceExecution
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecution
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync*
+  commentId: Overload:Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html#Meridian_Storage_Maintenance_IArchiveMaintenanceService_ExecuteMaintenanceAsync_Meridian_Storage_Maintenance_MaintenanceTaskType_Meridian_Storage_Maintenance_MaintenanceTaskOptions_System_String___System_Threading_CancellationToken_
+  name: ExecuteMaintenanceAsync
+  nameWithType: IArchiveMaintenanceService.ExecuteMaintenanceAsync
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.ExecuteMaintenanceAsync
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskType
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceTaskType.html
+  name: MaintenanceTaskType
+  nameWithType: MaintenanceTaskType
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html
+  name: MaintenanceTaskOptions
+  nameWithType: MaintenanceTaskOptions
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Maintenance.MaintenanceExecution}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Maintenance.MaintenanceExecution}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MaintenanceExecution>
+  nameWithType: Task<MaintenanceExecution>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Maintenance.MaintenanceExecution>
+  nameWithType.vb: Task(Of MaintenanceExecution)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Maintenance.MaintenanceExecution)
+  name.vb: Task(Of MaintenanceExecution)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync*
+  commentId: Overload:Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html#Meridian_Storage_Maintenance_IArchiveMaintenanceService_TriggerScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: TriggerScheduleAsync
+  nameWithType: IArchiveMaintenanceService.TriggerScheduleAsync
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.TriggerScheduleAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync*
+  commentId: Overload:Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html#Meridian_Storage_Maintenance_IArchiveMaintenanceService_CancelExecutionAsync_System_String_
+  name: CancelExecutionAsync
+  nameWithType: IArchiveMaintenanceService.CancelExecutionAsync
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.CancelExecutionAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus*
+  commentId: Overload:Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html#Meridian_Storage_Maintenance_IArchiveMaintenanceService_GetStatus
+  name: GetStatus
+  nameWithType: IArchiveMaintenanceService.GetStatus
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService.GetStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceServiceStatus
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceServiceStatus
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceServiceStatus.html
+  name: MaintenanceServiceStatus
+  nameWithType: MaintenanceServiceStatus
+  fullName: Meridian.Storage.Maintenance.MaintenanceServiceStatus
+- uid: System.EventHandler{Meridian.Storage.Maintenance.MaintenanceExecution}
+  commentId: T:System.EventHandler{Meridian.Storage.Maintenance.MaintenanceExecution}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<MaintenanceExecution>
+  nameWithType: EventHandler<MaintenanceExecution>
+  fullName: System.EventHandler<Meridian.Storage.Maintenance.MaintenanceExecution>
+  nameWithType.vb: EventHandler(Of MaintenanceExecution)
+  fullName.vb: System.EventHandler(Of Meridian.Storage.Maintenance.MaintenanceExecution)
+  name.vb: EventHandler(Of MaintenanceExecution)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )

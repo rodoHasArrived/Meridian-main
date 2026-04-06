@@ -1,0 +1,646 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Coordination.LeaseRecord
+  commentId: T:Meridian.Application.Coordination.LeaseRecord
+  id: LeaseRecord
+  parent: Meridian.Application.Coordination
+  children:
+  - Meridian.Application.Coordination.LeaseRecord.#ctor(System.String,System.String,System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset)
+  - Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc
+  - Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc
+  - Meridian.Application.Coordination.LeaseRecord.InstanceId
+  - Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc
+  - Meridian.Application.Coordination.LeaseRecord.LeaseVersion
+  - Meridian.Application.Coordination.LeaseRecord.ResourceId
+  langs:
+  - csharp
+  - vb
+  name: LeaseRecord
+  nameWithType: LeaseRecord
+  fullName: Meridian.Application.Coordination.LeaseRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeaseRecord
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Durable lease record used for shared-storage resource ownership.
+  example: []
+  syntax:
+    content: 'public sealed record LeaseRecord : IEquatable<LeaseRecord>'
+    content.vb: Public NotInheritable Class LeaseRecord Implements IEquatable(Of LeaseRecord)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Coordination.LeaseRecord}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Coordination.LeaseRecord.#ctor(System.String,System.String,System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Coordination.LeaseRecord.#ctor(System.String,System.String,System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset)'
+  parent: Meridian.Application.Coordination.LeaseRecord
+  langs:
+  - csharp
+  - vb
+  name: LeaseRecord(string, string, long, DateTimeOffset, DateTimeOffset, DateTimeOffset)
+  nameWithType: LeaseRecord.LeaseRecord(string, string, long, DateTimeOffset, DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Application.Coordination.LeaseRecord.LeaseRecord(string, string, long, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Durable lease record used for shared-storage resource ownership.
+  example: []
+  syntax:
+    content: public LeaseRecord(string ResourceId, string InstanceId, long LeaseVersion, DateTimeOffset AcquiredAtUtc, DateTimeOffset ExpiresAtUtc, DateTimeOffset LastRenewedAtUtc)
+    parameters:
+    - id: ResourceId
+      type: System.String
+    - id: InstanceId
+      type: System.String
+    - id: LeaseVersion
+      type: System.Int64
+    - id: AcquiredAtUtc
+      type: System.DateTimeOffset
+    - id: ExpiresAtUtc
+      type: System.DateTimeOffset
+    - id: LastRenewedAtUtc
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(ResourceId As String, InstanceId As String, LeaseVersion As Long, AcquiredAtUtc As DateTimeOffset, ExpiresAtUtc As DateTimeOffset, LastRenewedAtUtc As DateTimeOffset)
+  overload: Meridian.Application.Coordination.LeaseRecord.#ctor*
+  nameWithType.vb: LeaseRecord.New(String, String, Long, DateTimeOffset, DateTimeOffset, DateTimeOffset)
+  fullName.vb: Meridian.Application.Coordination.LeaseRecord.New(String, String, Long, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset)
+  name.vb: New(String, String, Long, DateTimeOffset, DateTimeOffset, DateTimeOffset)
+- uid: Meridian.Application.Coordination.LeaseRecord.ResourceId
+  commentId: P:Meridian.Application.Coordination.LeaseRecord.ResourceId
+  id: ResourceId
+  parent: Meridian.Application.Coordination.LeaseRecord
+  langs:
+  - csharp
+  - vb
+  name: ResourceId
+  nameWithType: LeaseRecord.ResourceId
+  fullName: Meridian.Application.Coordination.LeaseRecord.ResourceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResourceId
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public string ResourceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ResourceId As String
+  overload: Meridian.Application.Coordination.LeaseRecord.ResourceId*
+- uid: Meridian.Application.Coordination.LeaseRecord.InstanceId
+  commentId: P:Meridian.Application.Coordination.LeaseRecord.InstanceId
+  id: InstanceId
+  parent: Meridian.Application.Coordination.LeaseRecord
+  langs:
+  - csharp
+  - vb
+  name: InstanceId
+  nameWithType: LeaseRecord.InstanceId
+  fullName: Meridian.Application.Coordination.LeaseRecord.InstanceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstanceId
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public string InstanceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property InstanceId As String
+  overload: Meridian.Application.Coordination.LeaseRecord.InstanceId*
+- uid: Meridian.Application.Coordination.LeaseRecord.LeaseVersion
+  commentId: P:Meridian.Application.Coordination.LeaseRecord.LeaseVersion
+  id: LeaseVersion
+  parent: Meridian.Application.Coordination.LeaseRecord
+  langs:
+  - csharp
+  - vb
+  name: LeaseVersion
+  nameWithType: LeaseRecord.LeaseVersion
+  fullName: Meridian.Application.Coordination.LeaseRecord.LeaseVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeaseVersion
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public long LeaseVersion { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property LeaseVersion As Long
+  overload: Meridian.Application.Coordination.LeaseRecord.LeaseVersion*
+- uid: Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc
+  commentId: P:Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc
+  id: AcquiredAtUtc
+  parent: Meridian.Application.Coordination.LeaseRecord
+  langs:
+  - csharp
+  - vb
+  name: AcquiredAtUtc
+  nameWithType: LeaseRecord.AcquiredAtUtc
+  fullName: Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AcquiredAtUtc
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public DateTimeOffset AcquiredAtUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AcquiredAtUtc As DateTimeOffset
+  overload: Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc*
+- uid: Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc
+  commentId: P:Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc
+  id: ExpiresAtUtc
+  parent: Meridian.Application.Coordination.LeaseRecord
+  langs:
+  - csharp
+  - vb
+  name: ExpiresAtUtc
+  nameWithType: LeaseRecord.ExpiresAtUtc
+  fullName: Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpiresAtUtc
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public DateTimeOffset ExpiresAtUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ExpiresAtUtc As DateTimeOffset
+  overload: Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc*
+- uid: Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc
+  commentId: P:Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc
+  id: LastRenewedAtUtc
+  parent: Meridian.Application.Coordination.LeaseRecord
+  langs:
+  - csharp
+  - vb
+  name: LastRenewedAtUtc
+  nameWithType: LeaseRecord.LastRenewedAtUtc
+  fullName: Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseRecord.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastRenewedAtUtc
+    path: ../../src/Meridian.Application/Coordination/LeaseRecord.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public DateTimeOffset LastRenewedAtUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastRenewedAtUtc As DateTimeOffset
+  overload: Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc*
+references:
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Coordination.LeaseRecord}
+  commentId: T:System.IEquatable{Meridian.Application.Coordination.LeaseRecord}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LeaseRecord>
+  nameWithType: IEquatable<LeaseRecord>
+  fullName: System.IEquatable<Meridian.Application.Coordination.LeaseRecord>
+  nameWithType.vb: IEquatable(Of LeaseRecord)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Coordination.LeaseRecord)
+  name.vb: IEquatable(Of LeaseRecord)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Coordination.LeaseRecord
+    name: LeaseRecord
+    href: Meridian.Application.Coordination.LeaseRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Coordination.LeaseRecord
+    name: LeaseRecord
+    href: Meridian.Application.Coordination.LeaseRecord.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Coordination.LeaseRecord.#ctor*
+  commentId: Overload:Meridian.Application.Coordination.LeaseRecord.#ctor
+  href: Meridian.Application.Coordination.LeaseRecord.html#Meridian_Application_Coordination_LeaseRecord__ctor_System_String_System_String_System_Int64_System_DateTimeOffset_System_DateTimeOffset_System_DateTimeOffset_
+  name: LeaseRecord
+  nameWithType: LeaseRecord.LeaseRecord
+  fullName: Meridian.Application.Coordination.LeaseRecord.LeaseRecord
+  nameWithType.vb: LeaseRecord.New
+  fullName.vb: Meridian.Application.Coordination.LeaseRecord.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Coordination.LeaseRecord.ResourceId*
+  commentId: Overload:Meridian.Application.Coordination.LeaseRecord.ResourceId
+  href: Meridian.Application.Coordination.LeaseRecord.html#Meridian_Application_Coordination_LeaseRecord_ResourceId
+  name: ResourceId
+  nameWithType: LeaseRecord.ResourceId
+  fullName: Meridian.Application.Coordination.LeaseRecord.ResourceId
+- uid: Meridian.Application.Coordination.LeaseRecord.InstanceId*
+  commentId: Overload:Meridian.Application.Coordination.LeaseRecord.InstanceId
+  href: Meridian.Application.Coordination.LeaseRecord.html#Meridian_Application_Coordination_LeaseRecord_InstanceId
+  name: InstanceId
+  nameWithType: LeaseRecord.InstanceId
+  fullName: Meridian.Application.Coordination.LeaseRecord.InstanceId
+- uid: Meridian.Application.Coordination.LeaseRecord.LeaseVersion*
+  commentId: Overload:Meridian.Application.Coordination.LeaseRecord.LeaseVersion
+  href: Meridian.Application.Coordination.LeaseRecord.html#Meridian_Application_Coordination_LeaseRecord_LeaseVersion
+  name: LeaseVersion
+  nameWithType: LeaseRecord.LeaseVersion
+  fullName: Meridian.Application.Coordination.LeaseRecord.LeaseVersion
+- uid: Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc*
+  commentId: Overload:Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc
+  href: Meridian.Application.Coordination.LeaseRecord.html#Meridian_Application_Coordination_LeaseRecord_AcquiredAtUtc
+  name: AcquiredAtUtc
+  nameWithType: LeaseRecord.AcquiredAtUtc
+  fullName: Meridian.Application.Coordination.LeaseRecord.AcquiredAtUtc
+- uid: Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc*
+  commentId: Overload:Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc
+  href: Meridian.Application.Coordination.LeaseRecord.html#Meridian_Application_Coordination_LeaseRecord_ExpiresAtUtc
+  name: ExpiresAtUtc
+  nameWithType: LeaseRecord.ExpiresAtUtc
+  fullName: Meridian.Application.Coordination.LeaseRecord.ExpiresAtUtc
+- uid: Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc*
+  commentId: Overload:Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc
+  href: Meridian.Application.Coordination.LeaseRecord.html#Meridian_Application_Coordination_LeaseRecord_LastRenewedAtUtc
+  name: LastRenewedAtUtc
+  nameWithType: LeaseRecord.LastRenewedAtUtc
+  fullName: Meridian.Application.Coordination.LeaseRecord.LastRenewedAtUtc

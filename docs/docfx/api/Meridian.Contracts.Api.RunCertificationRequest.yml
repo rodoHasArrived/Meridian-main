@@ -1,0 +1,437 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.RunCertificationRequest
+  commentId: T:Meridian.Contracts.Api.RunCertificationRequest
+  id: RunCertificationRequest
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.RunCertificationRequest.#ctor(System.String)
+  - Meridian.Contracts.Api.RunCertificationRequest.ConnectionId
+  langs:
+  - csharp
+  - vb
+  name: RunCertificationRequest
+  nameWithType: RunCertificationRequest
+  fullName: Meridian.Contracts.Api.RunCertificationRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunCertificationRequest
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to run certification for a connection.
+  example: []
+  syntax:
+    content: 'public sealed record RunCertificationRequest : IEquatable<RunCertificationRequest>'
+    content.vb: Public NotInheritable Class RunCertificationRequest Implements IEquatable(Of RunCertificationRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.RunCertificationRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.RunCertificationRequest.#ctor(System.String)
+  commentId: M:Meridian.Contracts.Api.RunCertificationRequest.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Contracts.Api.RunCertificationRequest
+  langs:
+  - csharp
+  - vb
+  name: RunCertificationRequest(string)
+  nameWithType: RunCertificationRequest.RunCertificationRequest(string)
+  fullName: Meridian.Contracts.Api.RunCertificationRequest.RunCertificationRequest(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to run certification for a connection.
+  example: []
+  syntax:
+    content: public RunCertificationRequest(string ConnectionId)
+    parameters:
+    - id: ConnectionId
+      type: System.String
+    content.vb: Public Sub New(ConnectionId As String)
+  overload: Meridian.Contracts.Api.RunCertificationRequest.#ctor*
+  nameWithType.vb: RunCertificationRequest.New(String)
+  fullName.vb: Meridian.Contracts.Api.RunCertificationRequest.New(String)
+  name.vb: New(String)
+- uid: Meridian.Contracts.Api.RunCertificationRequest.ConnectionId
+  commentId: P:Meridian.Contracts.Api.RunCertificationRequest.ConnectionId
+  id: ConnectionId
+  parent: Meridian.Contracts.Api.RunCertificationRequest
+  langs:
+  - csharp
+  - vb
+  name: ConnectionId
+  nameWithType: RunCertificationRequest.ConnectionId
+  fullName: Meridian.Contracts.Api.RunCertificationRequest.ConnectionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionId
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string ConnectionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConnectionId As String
+  overload: Meridian.Contracts.Api.RunCertificationRequest.ConnectionId*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.RunCertificationRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.RunCertificationRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RunCertificationRequest>
+  nameWithType: IEquatable<RunCertificationRequest>
+  fullName: System.IEquatable<Meridian.Contracts.Api.RunCertificationRequest>
+  nameWithType.vb: IEquatable(Of RunCertificationRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.RunCertificationRequest)
+  name.vb: IEquatable(Of RunCertificationRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.RunCertificationRequest
+    name: RunCertificationRequest
+    href: Meridian.Contracts.Api.RunCertificationRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.RunCertificationRequest
+    name: RunCertificationRequest
+    href: Meridian.Contracts.Api.RunCertificationRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.RunCertificationRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.RunCertificationRequest.#ctor
+  href: Meridian.Contracts.Api.RunCertificationRequest.html#Meridian_Contracts_Api_RunCertificationRequest__ctor_System_String_
+  name: RunCertificationRequest
+  nameWithType: RunCertificationRequest.RunCertificationRequest
+  fullName: Meridian.Contracts.Api.RunCertificationRequest.RunCertificationRequest
+  nameWithType.vb: RunCertificationRequest.New
+  fullName.vb: Meridian.Contracts.Api.RunCertificationRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.RunCertificationRequest.ConnectionId*
+  commentId: Overload:Meridian.Contracts.Api.RunCertificationRequest.ConnectionId
+  href: Meridian.Contracts.Api.RunCertificationRequest.html#Meridian_Contracts_Api_RunCertificationRequest_ConnectionId
+  name: ConnectionId
+  nameWithType: RunCertificationRequest.ConnectionId
+  fullName: Meridian.Contracts.Api.RunCertificationRequest.ConnectionId

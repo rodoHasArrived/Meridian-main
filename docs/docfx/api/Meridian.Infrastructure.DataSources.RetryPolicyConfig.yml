@@ -1,0 +1,564 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  commentId: T:Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  id: RetryPolicyConfig
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs
+  - Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs
+  - Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries
+  - Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions
+  - Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff
+  langs:
+  - csharp
+  - vb
+  name: RetryPolicyConfig
+  nameWithType: RetryPolicyConfig
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryPolicyConfig
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Retry policy configuration.
+  example: []
+  syntax:
+    content: 'public sealed record RetryPolicyConfig : IEquatable<RetryPolicyConfig>'
+    content.vb: Public NotInheritable Class RetryPolicyConfig Implements IEquatable(Of RetryPolicyConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.RetryPolicyConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries
+  commentId: P:Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries
+  id: MaxRetries
+  parent: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxRetries
+  nameWithType: RetryPolicyConfig.MaxRetries
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetries
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Maximum number of retries before failing.
+  example: []
+  syntax:
+    content: public int MaxRetries { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRetries As Integer
+  overload: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries*
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs
+  commentId: P:Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs
+  id: BaseDelayMs
+  parent: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  langs:
+  - csharp
+  - vb
+  name: BaseDelayMs
+  nameWithType: RetryPolicyConfig.BaseDelayMs
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseDelayMs
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Base delay between retries in milliseconds.
+  example: []
+  syntax:
+    content: public int BaseDelayMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BaseDelayMs As Integer
+  overload: Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs*
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs
+  commentId: P:Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs
+  id: MaxDelayMs
+  parent: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxDelayMs
+  nameWithType: RetryPolicyConfig.MaxDelayMs
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDelayMs
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Maximum delay between retries in milliseconds.
+  example: []
+  syntax:
+    content: public int MaxDelayMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxDelayMs As Integer
+  overload: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs*
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff
+  commentId: P:Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff
+  id: UseExponentialBackoff
+  parent: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  langs:
+  - csharp
+  - vb
+  name: UseExponentialBackoff
+  nameWithType: RetryPolicyConfig.UseExponentialBackoff
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseExponentialBackoff
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether to use exponential backoff.
+  example: []
+  syntax:
+    content: public bool UseExponentialBackoff { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property UseExponentialBackoff As Boolean
+  overload: Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff*
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions
+  commentId: M:Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions
+  id: ToOptions
+  parent: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  langs:
+  - csharp
+  - vb
+  name: ToOptions()
+  nameWithType: RetryPolicyConfig.ToOptions()
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToOptions
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Converts to internal options format.
+  example: []
+  syntax:
+    content: public RetryPolicyOptions ToOptions()
+    return:
+      type: Meridian.Infrastructure.DataSources.RetryPolicyOptions
+    content.vb: Public Function ToOptions() As RetryPolicyOptions
+  overload: Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.RetryPolicyConfig}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.RetryPolicyConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RetryPolicyConfig>
+  nameWithType: IEquatable<RetryPolicyConfig>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.RetryPolicyConfig>
+  nameWithType.vb: IEquatable(Of RetryPolicyConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.RetryPolicyConfig)
+  name.vb: IEquatable(Of RetryPolicyConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+    name: RetryPolicyConfig
+    href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+    name: RetryPolicyConfig
+    href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries
+  href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html#Meridian_Infrastructure_DataSources_RetryPolicyConfig_MaxRetries
+  name: MaxRetries
+  nameWithType: RetryPolicyConfig.MaxRetries
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxRetries
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs
+  href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html#Meridian_Infrastructure_DataSources_RetryPolicyConfig_BaseDelayMs
+  name: BaseDelayMs
+  nameWithType: RetryPolicyConfig.BaseDelayMs
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.BaseDelayMs
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs
+  href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html#Meridian_Infrastructure_DataSources_RetryPolicyConfig_MaxDelayMs
+  name: MaxDelayMs
+  nameWithType: RetryPolicyConfig.MaxDelayMs
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.MaxDelayMs
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff
+  href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html#Meridian_Infrastructure_DataSources_RetryPolicyConfig_UseExponentialBackoff
+  name: UseExponentialBackoff
+  nameWithType: RetryPolicyConfig.UseExponentialBackoff
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.UseExponentialBackoff
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions
+  href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html#Meridian_Infrastructure_DataSources_RetryPolicyConfig_ToOptions
+  name: ToOptions
+  nameWithType: RetryPolicyConfig.ToOptions
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig.ToOptions
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyOptions
+  commentId: T:Meridian.Infrastructure.DataSources.RetryPolicyOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RetryPolicyOptions.html
+  name: RetryPolicyOptions
+  nameWithType: RetryPolicyOptions
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyOptions

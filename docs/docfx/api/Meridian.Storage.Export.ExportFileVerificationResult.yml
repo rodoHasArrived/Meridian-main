@@ -1,0 +1,856 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.ExportFileVerificationResult
+  commentId: T:Meridian.Storage.Export.ExportFileVerificationResult
+  id: ExportFileVerificationResult
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual
+  - Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected
+  - Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid
+  - Meridian.Storage.Export.ExportFileVerificationResult.Issues
+  - Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual
+  - Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected
+  - Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid
+  - Meridian.Storage.Export.ExportFileVerificationResult.RelativePath
+  langs:
+  - csharp
+  - vb
+  name: ExportFileVerificationResult
+  nameWithType: ExportFileVerificationResult
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportFileVerificationResult
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Verification result for a single exported file.
+  example: []
+  syntax:
+    content: public sealed class ExportFileVerificationResult
+    content.vb: Public NotInheritable Class ExportFileVerificationResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RelativePath
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.RelativePath
+  id: RelativePath
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: RelativePath
+  nameWithType: ExportFileVerificationResult.RelativePath
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RelativePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RelativePath
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Relative path of the file within the export directory.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("relativePath")]
+
+      public string RelativePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("relativePath")>
+
+      Public Property RelativePath As String
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.RelativePath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: relativePath
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected
+  id: ChecksumExpected
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: ChecksumExpected
+  nameWithType: ExportFileVerificationResult.ChecksumExpected
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumExpected
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: SHA-256 checksum recorded in the manifest.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("checksumExpected")]
+
+      public string? ChecksumExpected { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("checksumExpected")>
+
+      Public Property ChecksumExpected As String
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: checksumExpected
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual
+  id: ChecksumActual
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: ChecksumActual
+  nameWithType: ExportFileVerificationResult.ChecksumActual
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumActual
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: SHA-256 checksum computed from the actual file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("checksumActual")]
+
+      public string? ChecksumActual { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("checksumActual")>
+
+      Public Property ChecksumActual As String
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: checksumActual
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid
+  id: ChecksumValid
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: ChecksumValid
+  nameWithType: ExportFileVerificationResult.ChecksumValid
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumValid
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether the checksums matched.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("checksumValid")]
+
+      public bool ChecksumValid { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("checksumValid")>
+
+      Public Property ChecksumValid As Boolean
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: checksumValid
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected
+  id: RecordCountExpected
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: RecordCountExpected
+  nameWithType: ExportFileVerificationResult.RecordCountExpected
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordCountExpected
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Record count recorded in the manifest.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("recordCountExpected")]
+
+      public long? RecordCountExpected { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: >-
+      <JsonPropertyName("recordCountExpected")>
+
+      Public Property RecordCountExpected As Long?
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: recordCountExpected
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual
+  id: RecordCountActual
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: RecordCountActual
+  nameWithType: ExportFileVerificationResult.RecordCountActual
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordCountActual
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Record count computed from the actual file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("recordCountActual")]
+
+      public long? RecordCountActual { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: >-
+      <JsonPropertyName("recordCountActual")>
+
+      Public Property RecordCountActual As Long?
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: recordCountActual
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid
+  id: RecordCountValid
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: RecordCountValid
+  nameWithType: ExportFileVerificationResult.RecordCountValid
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordCountValid
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether the record counts matched.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("recordCountValid")]
+
+      public bool RecordCountValid { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("recordCountValid")>
+
+      Public Property RecordCountValid As Boolean
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: recordCountValid
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.Issues
+  commentId: P:Meridian.Storage.Export.ExportFileVerificationResult.Issues
+  id: Issues
+  parent: Meridian.Storage.Export.ExportFileVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: ExportFileVerificationResult.Issues
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportVerificationReport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Issues found for this specific file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("issues")]
+
+      public List<string> Issues { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: >-
+      <JsonPropertyName("issues")>
+
+      Public ReadOnly Property Issues As List(Of String)
+  overload: Meridian.Storage.Export.ExportFileVerificationResult.Issues*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: issues
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RelativePath*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.RelativePath
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_RelativePath
+  name: RelativePath
+  nameWithType: ExportFileVerificationResult.RelativePath
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RelativePath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_ChecksumExpected
+  name: ChecksumExpected
+  nameWithType: ExportFileVerificationResult.ChecksumExpected
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumExpected
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_ChecksumActual
+  name: ChecksumActual
+  nameWithType: ExportFileVerificationResult.ChecksumActual
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumActual
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_ChecksumValid
+  name: ChecksumValid
+  nameWithType: ExportFileVerificationResult.ChecksumValid
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.ChecksumValid
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_RecordCountExpected
+  name: RecordCountExpected
+  nameWithType: ExportFileVerificationResult.RecordCountExpected
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountExpected
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_RecordCountActual
+  name: RecordCountActual
+  nameWithType: ExportFileVerificationResult.RecordCountActual
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountActual
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_RecordCountValid
+  name: RecordCountValid
+  nameWithType: ExportFileVerificationResult.RecordCountValid
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.RecordCountValid
+- uid: Meridian.Storage.Export.ExportFileVerificationResult.Issues*
+  commentId: Overload:Meridian.Storage.Export.ExportFileVerificationResult.Issues
+  href: Meridian.Storage.Export.ExportFileVerificationResult.html#Meridian_Storage_Export_ExportFileVerificationResult_Issues
+  name: Issues
+  nameWithType: ExportFileVerificationResult.Issues
+  fullName: Meridian.Storage.Export.ExportFileVerificationResult.Issues
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

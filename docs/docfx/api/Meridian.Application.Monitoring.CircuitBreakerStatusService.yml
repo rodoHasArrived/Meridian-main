@@ -1,0 +1,610 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService
+  commentId: T:Meridian.Application.Monitoring.CircuitBreakerStatusService
+  id: CircuitBreakerStatusService
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard
+  - Meridian.Application.Monitoring.CircuitBreakerStatusService.OnStateChanged
+  - Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition(System.String,Meridian.Application.Monitoring.CircuitBreakerState,System.String,System.Nullable{System.Int32},System.Nullable{System.TimeSpan})
+  - Meridian.Application.Monitoring.CircuitBreakerStatusService.Register(System.String)
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerStatusService
+  nameWithType: CircuitBreakerStatusService
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerStatusService
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Tracks circuit breaker state transitions and provides an observable dashboard
+
+    of all circuit breakers in the system. Allows operators to see which providers
+
+    are healthy (closed), degraded (half-open), or failing (open) at a glance.
+  example: []
+  syntax:
+    content: public sealed class CircuitBreakerStatusService
+    content.vb: Public NotInheritable Class CircuitBreakerStatusService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService.OnStateChanged
+  commentId: E:Meridian.Application.Monitoring.CircuitBreakerStatusService.OnStateChanged
+  id: OnStateChanged
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatusService
+  langs:
+  - csharp
+  - vb
+  name: OnStateChanged
+  nameWithType: CircuitBreakerStatusService.OnStateChanged
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService.OnStateChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnStateChanged
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when any circuit breaker changes state.
+  example: []
+  syntax:
+    content: public event Action<CircuitBreakerStateChange>? OnStateChanged
+    return:
+      type: System.Action{Meridian.Application.Monitoring.CircuitBreakerStateChange}
+    content.vb: Public Event OnStateChanged As Action(Of CircuitBreakerStateChange)
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition(System.String,Meridian.Application.Monitoring.CircuitBreakerState,System.String,System.Nullable{System.Int32},System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition(System.String,Meridian.Application.Monitoring.CircuitBreakerState,System.String,System.Nullable{System.Int32},System.Nullable{System.TimeSpan})
+  id: RecordStateTransition(System.String,Meridian.Application.Monitoring.CircuitBreakerState,System.String,System.Nullable{System.Int32},System.Nullable{System.TimeSpan})
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatusService
+  langs:
+  - csharp
+  - vb
+  name: RecordStateTransition(string, CircuitBreakerState, string?, int?, TimeSpan?)
+  nameWithType: CircuitBreakerStatusService.RecordStateTransition(string, CircuitBreakerState, string?, int?, TimeSpan?)
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition(string, Meridian.Application.Monitoring.CircuitBreakerState, string?, int?, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordStateTransition
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Registers or updates a circuit breaker's state.
+
+    Call this from resilience policy callbacks (OnOpened, OnClosed, OnHalfOpened).
+  example: []
+  syntax:
+    content: public void RecordStateTransition(string name, CircuitBreakerState newState, string? lastError = null, int? failureCount = null, TimeSpan? breakDuration = null)
+    parameters:
+    - id: name
+      type: System.String
+      description: Unique name identifying this circuit breaker.
+    - id: newState
+      type: Meridian.Application.Monitoring.CircuitBreakerState
+      description: The new state being transitioned to.
+    - id: lastError
+      type: System.String
+      description: Optional error message that caused the transition.
+    - id: failureCount
+      type: System.Nullable{System.Int32}
+      description: Optional number of failures that triggered the transition.
+    - id: breakDuration
+      type: System.Nullable{System.TimeSpan}
+      description: Optional break duration (stored for cooldown computation when state is Open).
+    content.vb: Public Sub RecordStateTransition(name As String, newState As CircuitBreakerState, lastError As String = Nothing, failureCount As Integer? = Nothing, breakDuration As TimeSpan? = Nothing)
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition*
+  nameWithType.vb: CircuitBreakerStatusService.RecordStateTransition(String, CircuitBreakerState, String, Integer?, TimeSpan?)
+  fullName.vb: Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition(String, Meridian.Application.Monitoring.CircuitBreakerState, String, Integer?, System.TimeSpan?)
+  name.vb: RecordStateTransition(String, CircuitBreakerState, String, Integer?, TimeSpan?)
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService.Register(System.String)
+  commentId: M:Meridian.Application.Monitoring.CircuitBreakerStatusService.Register(System.String)
+  id: Register(System.String)
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatusService
+  langs:
+  - csharp
+  - vb
+  name: Register(string)
+  nameWithType: CircuitBreakerStatusService.Register(string)
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService.Register(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Register
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Registers a circuit breaker so it appears in the dashboard even before it trips.
+  example: []
+  syntax:
+    content: public void Register(string name)
+    parameters:
+    - id: name
+      type: System.String
+    content.vb: Public Sub Register(name As String)
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatusService.Register*
+  nameWithType.vb: CircuitBreakerStatusService.Register(String)
+  fullName.vb: Meridian.Application.Monitoring.CircuitBreakerStatusService.Register(String)
+  name.vb: Register(String)
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard
+  commentId: M:Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard
+  id: GetDashboard
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatusService
+  langs:
+  - csharp
+  - vb
+  name: GetDashboard()
+  nameWithType: CircuitBreakerStatusService.GetDashboard()
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDashboard
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the current status of all registered circuit breakers.
+  example: []
+  syntax:
+    content: public CircuitBreakerDashboard GetDashboard()
+    return:
+      type: Meridian.Application.Monitoring.CircuitBreakerDashboard
+    content.vb: Public Function GetDashboard() As CircuitBreakerDashboard
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.CircuitBreakerStateChange}
+  commentId: T:System.Action{Meridian.Application.Monitoring.CircuitBreakerStateChange}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<CircuitBreakerStateChange>
+  nameWithType: Action<CircuitBreakerStateChange>
+  fullName: System.Action<Meridian.Application.Monitoring.CircuitBreakerStateChange>
+  nameWithType.vb: Action(Of CircuitBreakerStateChange)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.CircuitBreakerStateChange)
+  name.vb: Action(Of CircuitBreakerStateChange)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.CircuitBreakerStateChange
+    name: CircuitBreakerStateChange
+    href: Meridian.Application.Monitoring.CircuitBreakerStateChange.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.CircuitBreakerStateChange
+    name: CircuitBreakerStateChange
+    href: Meridian.Application.Monitoring.CircuitBreakerStateChange.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition
+  href: Meridian.Application.Monitoring.CircuitBreakerStatusService.html#Meridian_Application_Monitoring_CircuitBreakerStatusService_RecordStateTransition_System_String_Meridian_Application_Monitoring_CircuitBreakerState_System_String_System_Nullable_System_Int32__System_Nullable_System_TimeSpan__
+  name: RecordStateTransition
+  nameWithType: CircuitBreakerStatusService.RecordStateTransition
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService.RecordStateTransition
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.CircuitBreakerState
+  commentId: T:Meridian.Application.Monitoring.CircuitBreakerState
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.CircuitBreakerState.html
+  name: CircuitBreakerState
+  nameWithType: CircuitBreakerState
+  fullName: Meridian.Application.Monitoring.CircuitBreakerState
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService.Register*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatusService.Register
+  href: Meridian.Application.Monitoring.CircuitBreakerStatusService.html#Meridian_Application_Monitoring_CircuitBreakerStatusService_Register_System_String_
+  name: Register
+  nameWithType: CircuitBreakerStatusService.Register
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService.Register
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard
+  href: Meridian.Application.Monitoring.CircuitBreakerStatusService.html#Meridian_Application_Monitoring_CircuitBreakerStatusService_GetDashboard
+  name: GetDashboard
+  nameWithType: CircuitBreakerStatusService.GetDashboard
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatusService.GetDashboard
+- uid: Meridian.Application.Monitoring.CircuitBreakerDashboard
+  commentId: T:Meridian.Application.Monitoring.CircuitBreakerDashboard
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.CircuitBreakerDashboard.html
+  name: CircuitBreakerDashboard
+  nameWithType: CircuitBreakerDashboard
+  fullName: Meridian.Application.Monitoring.CircuitBreakerDashboard

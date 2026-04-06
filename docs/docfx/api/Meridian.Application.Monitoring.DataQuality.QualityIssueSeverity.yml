@@ -1,0 +1,221 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  id: QualityIssueSeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Critical
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Info
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Minor
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Moderate
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Significant
+  langs:
+  - csharp
+  - vb
+  name: QualityIssueSeverity
+  nameWithType: QualityIssueSeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityIssueSeverity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Quality analysis severity levels.
+  example: []
+  syntax:
+    content: 'public enum QualityIssueSeverity : byte'
+    content.vb: Public Enum QualityIssueSeverity As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Info
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Info
+  id: Info
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: QualityIssueSeverity.Info
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Informational - no action needed.
+  example: []
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Minor
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Minor
+  id: Minor
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Minor
+  nameWithType: QualityIssueSeverity.Minor
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Minor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Minor issue - may warrant investigation.
+  example: []
+  syntax:
+    content: Minor = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Moderate
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Moderate
+  id: Moderate
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Moderate
+  nameWithType: QualityIssueSeverity.Moderate
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Moderate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Moderate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Moderate issue - should be addressed.
+  example: []
+  syntax:
+    content: Moderate = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Significant
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Significant
+  id: Significant
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Significant
+  nameWithType: QualityIssueSeverity.Significant
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Significant
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Significant
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Significant issue - requires attention.
+  example: []
+  syntax:
+    content: Significant = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Critical
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: QualityIssueSeverity.Critical
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Critical issue - immediate action required.
+  example: []
+  syntax:
+    content: Critical = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity.html
+  name: QualityIssueSeverity
+  nameWithType: QualityIssueSeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueSeverity

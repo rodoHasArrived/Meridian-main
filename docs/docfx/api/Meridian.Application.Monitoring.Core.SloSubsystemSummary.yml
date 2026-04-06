@@ -1,0 +1,519 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  commentId: T:Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  id: SloSubsystemSummary
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions
+  - Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount
+  - Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem
+  langs:
+  - csharp
+  - vb
+  name: SloSubsystemSummary
+  nameWithType: SloSubsystemSummary
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SloSubsystemSummary
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: SLO summary for a subsystem.
+  example: []
+  syntax:
+    content: public sealed class SloSubsystemSummary
+    content.vb: Public NotInheritable Class SloSubsystemSummary
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem
+  commentId: P:Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem
+  id: Subsystem
+  parent: Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  langs:
+  - csharp
+  - vb
+  name: Subsystem
+  nameWithType: SloSubsystemSummary.Subsystem
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subsystem
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: public string Subsystem { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Subsystem As String
+  overload: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem*
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount
+  commentId: P:Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount
+  id: SloCount
+  parent: Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  langs:
+  - csharp
+  - vb
+  name: SloCount
+  nameWithType: SloSubsystemSummary.SloCount
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SloCount
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: public int SloCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SloCount As Integer
+  overload: Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount*
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions
+  commentId: P:Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions
+  id: Definitions
+  parent: Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  langs:
+  - csharp
+  - vb
+  name: Definitions
+  nameWithType: SloSubsystemSummary.Definitions
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Definitions
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: public List<SloDefinitionSummary> Definitions { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Application.Monitoring.Core.SloDefinitionSummary}
+    content.vb: Public Property Definitions As List(Of SloDefinitionSummary)
+  overload: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions*
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem
+  href: Meridian.Application.Monitoring.Core.SloSubsystemSummary.html#Meridian_Application_Monitoring_Core_SloSubsystemSummary_Subsystem
+  name: Subsystem
+  nameWithType: SloSubsystemSummary.Subsystem
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Subsystem
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount
+  href: Meridian.Application.Monitoring.Core.SloSubsystemSummary.html#Meridian_Application_Monitoring_Core_SloSubsystemSummary_SloCount
+  name: SloCount
+  nameWithType: SloSubsystemSummary.SloCount
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary.SloCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions
+  href: Meridian.Application.Monitoring.Core.SloSubsystemSummary.html#Meridian_Application_Monitoring_Core_SloSubsystemSummary_Definitions
+  name: Definitions
+  nameWithType: SloSubsystemSummary.Definitions
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary.Definitions
+- uid: System.Collections.Generic.List{Meridian.Application.Monitoring.Core.SloDefinitionSummary}
+  commentId: T:System.Collections.Generic.List{Meridian.Application.Monitoring.Core.SloDefinitionSummary}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<SloDefinitionSummary>
+  nameWithType: List<SloDefinitionSummary>
+  fullName: System.Collections.Generic.List<Meridian.Application.Monitoring.Core.SloDefinitionSummary>
+  nameWithType.vb: List(Of SloDefinitionSummary)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Application.Monitoring.Core.SloDefinitionSummary)
+  name.vb: List(Of SloDefinitionSummary)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.SloDefinitionSummary
+    name: SloDefinitionSummary
+    href: Meridian.Application.Monitoring.Core.SloDefinitionSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.SloDefinitionSummary
+    name: SloDefinitionSummary
+    href: Meridian.Application.Monitoring.Core.SloDefinitionSummary.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

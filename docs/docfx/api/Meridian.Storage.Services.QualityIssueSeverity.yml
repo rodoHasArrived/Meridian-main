@@ -1,0 +1,147 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.QualityIssueSeverity
+  commentId: T:Meridian.Storage.Services.QualityIssueSeverity
+  id: QualityIssueSeverity
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.QualityIssueSeverity.Error
+  - Meridian.Storage.Services.QualityIssueSeverity.Info
+  - Meridian.Storage.Services.QualityIssueSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: QualityIssueSeverity
+  nameWithType: QualityIssueSeverity
+  fullName: Meridian.Storage.Services.QualityIssueSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityIssueSeverity
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum QualityIssueSeverity : byte'
+    content.vb: Public Enum QualityIssueSeverity As Byte
+- uid: Meridian.Storage.Services.QualityIssueSeverity.Info
+  commentId: F:Meridian.Storage.Services.QualityIssueSeverity.Info
+  id: Info
+  parent: Meridian.Storage.Services.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: QualityIssueSeverity.Info
+  fullName: Meridian.Storage.Services.QualityIssueSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Storage.Services.QualityIssueSeverity
+- uid: Meridian.Storage.Services.QualityIssueSeverity.Warning
+  commentId: F:Meridian.Storage.Services.QualityIssueSeverity.Warning
+  id: Warning
+  parent: Meridian.Storage.Services.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: QualityIssueSeverity.Warning
+  fullName: Meridian.Storage.Services.QualityIssueSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Storage.Services.QualityIssueSeverity
+- uid: Meridian.Storage.Services.QualityIssueSeverity.Error
+  commentId: F:Meridian.Storage.Services.QualityIssueSeverity.Error
+  id: Error
+  parent: Meridian.Storage.Services.QualityIssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: QualityIssueSeverity.Error
+  fullName: Meridian.Storage.Services.QualityIssueSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Storage.Services.QualityIssueSeverity
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.QualityIssueSeverity
+  commentId: T:Meridian.Storage.Services.QualityIssueSeverity
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.QualityIssueSeverity.html
+  name: QualityIssueSeverity
+  nameWithType: QualityIssueSeverity
+  fullName: Meridian.Storage.Services.QualityIssueSeverity

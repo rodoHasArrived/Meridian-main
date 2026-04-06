@@ -1,0 +1,102 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  id: Meridian.Contracts.Domain.Events
+  children:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - Meridian.Contracts.Domain.Events.MarketEventDto
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  - Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventDto
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html
+  name: MarketEventDto
+  nameWithType: MarketEventDto
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload.HeartbeatPayload
+  nameWithType: MarketEventPayload.HeartbeatPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+    name: HeartbeatPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.html
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+    name: HeartbeatPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.html
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html

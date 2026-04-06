@@ -2,8 +2,7 @@
   href: README.md
 
 - name: API Reference
-  href: ~/api/
-  homepage: ~/api/index.md
+  href: ~/api/index.md
 
 - name: User Guide
   href: HELP.md

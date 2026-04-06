@@ -1,0 +1,152 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  id: Meridian.Core.Performance
+  children:
+  - Meridian.Core.Performance.ConnectionWarmUp
+  - Meridian.Core.Performance.ExponentialBackoffRetry
+  - Meridian.Core.Performance.HeartbeatMonitor
+  - Meridian.Core.Performance.HeartbeatResult
+  - Meridian.Core.Performance.HighResolutionTimestamp
+  - Meridian.Core.Performance.RawQuoteEvent
+  - Meridian.Core.Performance.RawTradeEvent
+  - Meridian.Core.Performance.SpscRingBuffer`1
+  - Meridian.Core.Performance.SymbolTable
+  - Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  - Meridian.Core.Performance.ThreadingUtilities
+  - Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  type: Namespace
+  assemblies:
+  - Meridian.Core
+references:
+- uid: Meridian.Core.Performance.ConnectionWarmUp
+  commentId: T:Meridian.Core.Performance.ConnectionWarmUp
+  href: Meridian.Core.Performance.ConnectionWarmUp.html
+  name: ConnectionWarmUp
+  nameWithType: ConnectionWarmUp
+  fullName: Meridian.Core.Performance.ConnectionWarmUp
+- uid: Meridian.Core.Performance.WarmUpStatistics
+  commentId: T:Meridian.Core.Performance.WarmUpStatistics
+  href: Meridian.Core.Performance.WarmUpStatistics.html
+  name: WarmUpStatistics
+  nameWithType: WarmUpStatistics
+  fullName: Meridian.Core.Performance.WarmUpStatistics
+- uid: Meridian.Core.Performance.ExponentialBackoffRetry
+  commentId: T:Meridian.Core.Performance.ExponentialBackoffRetry
+  href: Meridian.Core.Performance.ExponentialBackoffRetry.html
+  name: ExponentialBackoffRetry
+  nameWithType: ExponentialBackoffRetry
+  fullName: Meridian.Core.Performance.ExponentialBackoffRetry
+- uid: Meridian.Core.Performance.HeartbeatMonitor
+  commentId: T:Meridian.Core.Performance.HeartbeatMonitor
+  href: Meridian.Core.Performance.HeartbeatMonitor.html
+  name: HeartbeatMonitor
+  nameWithType: HeartbeatMonitor
+  fullName: Meridian.Core.Performance.HeartbeatMonitor
+- uid: Meridian.Core.Performance.HeartbeatResult
+  commentId: T:Meridian.Core.Performance.HeartbeatResult
+  href: Meridian.Core.Performance.HeartbeatResult.html
+  name: HeartbeatResult
+  nameWithType: HeartbeatResult
+  fullName: Meridian.Core.Performance.HeartbeatResult
+- uid: Meridian.Core.Performance.RawQuoteEvent
+  commentId: T:Meridian.Core.Performance.RawQuoteEvent
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.RawQuoteEvent.html
+  name: RawQuoteEvent
+  nameWithType: RawQuoteEvent
+  fullName: Meridian.Core.Performance.RawQuoteEvent
+- uid: Meridian.Core.Performance.RawTradeEvent
+  commentId: T:Meridian.Core.Performance.RawTradeEvent
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.RawTradeEvent.html
+  name: RawTradeEvent
+  nameWithType: RawTradeEvent
+  fullName: Meridian.Core.Performance.RawTradeEvent
+- uid: Meridian.Core.Performance.SpscRingBuffer`1
+  commentId: T:Meridian.Core.Performance.SpscRingBuffer`1
+  href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  name: SpscRingBuffer<T>
+  nameWithType: SpscRingBuffer<T>
+  fullName: Meridian.Core.Performance.SpscRingBuffer<T>
+  nameWithType.vb: SpscRingBuffer(Of T)
+  fullName.vb: Meridian.Core.Performance.SpscRingBuffer(Of T)
+  name.vb: SpscRingBuffer(Of T)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Core.Performance.SymbolTable
+  commentId: T:Meridian.Core.Performance.SymbolTable
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.SymbolTable.html
+  name: SymbolTable
+  nameWithType: SymbolTable
+  fullName: Meridian.Core.Performance.SymbolTable
+- uid: Meridian.Core.Performance.ThreadingUtilities
+  commentId: T:Meridian.Core.Performance.ThreadingUtilities
+  href: Meridian.Core.Performance.ThreadingUtilities.html
+  name: ThreadingUtilities
+  nameWithType: ThreadingUtilities
+  fullName: Meridian.Core.Performance.ThreadingUtilities
+- uid: Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  commentId: T:Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  href: Meridian.Core.Performance.ThreadLocalSequenceGenerator.html
+  name: ThreadLocalSequenceGenerator
+  nameWithType: ThreadLocalSequenceGenerator
+  fullName: Meridian.Core.Performance.ThreadLocalSequenceGenerator
+- uid: Meridian.Core.Performance.HighResolutionTimestamp
+  commentId: T:Meridian.Core.Performance.HighResolutionTimestamp
+  href: Meridian.Core.Performance.HighResolutionTimestamp.html
+  name: HighResolutionTimestamp
+  nameWithType: HighResolutionTimestamp
+  fullName: Meridian.Core.Performance.HighResolutionTimestamp
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html

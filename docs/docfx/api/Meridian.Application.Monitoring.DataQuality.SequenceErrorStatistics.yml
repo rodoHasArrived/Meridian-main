@@ -1,0 +1,857 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  id: SequenceErrorStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked
+  langs:
+  - csharp
+  - vb
+  name: SequenceErrorStatistics
+  nameWithType: SequenceErrorStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceErrorStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 527
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Sequence error statistics.
+  example: []
+  syntax:
+    content: 'public sealed record SequenceErrorStatistics : IEquatable<SequenceErrorStatistics>'
+    content.vb: Public NotInheritable Class SequenceErrorStatistics Implements IEquatable(Of SequenceErrorStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)
+  id: '#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: SequenceErrorStatistics(long, long, double, Dictionary<SequenceErrorType, long>, int, double, long, DateTimeOffset)
+  nameWithType: SequenceErrorStatistics.SequenceErrorStatistics(long, long, double, Dictionary<SequenceErrorType, long>, int, double, long, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SequenceErrorStatistics(long, long, double, System.Collections.Generic.Dictionary<Meridian.Application.Monitoring.DataQuality.SequenceErrorType, long>, int, double, long, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 527
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Sequence error statistics.
+  example: []
+  syntax:
+    content: public SequenceErrorStatistics(long TotalEventsChecked, long TotalErrors, double ErrorRate, Dictionary<SequenceErrorType, long> ErrorsByType, int SymbolsWithErrors, double AverageGapSize, long MaxGapSize, DateTimeOffset CalculatedAt)
+    parameters:
+    - id: TotalEventsChecked
+      type: System.Int64
+    - id: TotalErrors
+      type: System.Int64
+    - id: ErrorRate
+      type: System.Double
+    - id: ErrorsByType
+      type: System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64}
+    - id: SymbolsWithErrors
+      type: System.Int32
+    - id: AverageGapSize
+      type: System.Double
+    - id: MaxGapSize
+      type: System.Int64
+    - id: CalculatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(TotalEventsChecked As Long, TotalErrors As Long, ErrorRate As Double, ErrorsByType As Dictionary(Of SequenceErrorType, Long), SymbolsWithErrors As Integer, AverageGapSize As Double, MaxGapSize As Long, CalculatedAt As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.#ctor*
+  nameWithType.vb: SequenceErrorStatistics.New(Long, Long, Double, Dictionary(Of SequenceErrorType, Long), Integer, Double, Long, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.New(Long, Long, Double, System.Collections.Generic.Dictionary(Of Meridian.Application.Monitoring.DataQuality.SequenceErrorType, Long), Integer, Double, Long, System.DateTimeOffset)
+  name.vb: New(Long, Long, Double, Dictionary(Of SequenceErrorType, Long), Integer, Double, Long, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked
+  id: TotalEventsChecked
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalEventsChecked
+  nameWithType: SequenceErrorStatistics.TotalEventsChecked
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEventsChecked
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long TotalEventsChecked { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEventsChecked As Long
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked*
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors
+  id: TotalErrors
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalErrors
+  nameWithType: SequenceErrorStatistics.TotalErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalErrors
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 529
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long TotalErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalErrors As Long
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors*
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate
+  id: ErrorRate
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: ErrorRate
+  nameWithType: SequenceErrorStatistics.ErrorRate
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorRate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 530
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double ErrorRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ErrorRate As Double
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate*
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType
+  id: ErrorsByType
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: ErrorsByType
+  nameWithType: SequenceErrorStatistics.ErrorsByType
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorsByType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 531
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public Dictionary<SequenceErrorType, long> ErrorsByType { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64}
+    content.vb: Public Property ErrorsByType As Dictionary(Of SequenceErrorType, Long)
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType*
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors
+  id: SymbolsWithErrors
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: SymbolsWithErrors
+  nameWithType: SequenceErrorStatistics.SymbolsWithErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsWithErrors
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int SymbolsWithErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolsWithErrors As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors*
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize
+  id: AverageGapSize
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageGapSize
+  nameWithType: SequenceErrorStatistics.AverageGapSize
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageGapSize
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 533
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double AverageGapSize { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageGapSize As Double
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize*
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize
+  id: MaxGapSize
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: MaxGapSize
+  nameWithType: SequenceErrorStatistics.MaxGapSize
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxGapSize
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 534
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long MaxGapSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MaxGapSize As Long
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize*
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt
+  id: CalculatedAt
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: CalculatedAt
+  nameWithType: SequenceErrorStatistics.CalculatedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculatedAt
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
+    startLine: 535
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset CalculatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CalculatedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SequenceErrorStatistics>
+  nameWithType: IEquatable<SequenceErrorStatistics>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics>
+  nameWithType.vb: IEquatable(Of SequenceErrorStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics)
+  name.vb: IEquatable(Of SequenceErrorStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+    name: SequenceErrorStatistics
+    href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+    name: SequenceErrorStatistics
+    href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics__ctor_System_Int64_System_Int64_System_Double_System_Collections_Generic_Dictionary_Meridian_Application_Monitoring_DataQuality_SequenceErrorType_System_Int64__System_Int32_System_Double_System_Int64_System_DateTimeOffset_
+  name: SequenceErrorStatistics
+  nameWithType: SequenceErrorStatistics.SequenceErrorStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SequenceErrorStatistics
+  nameWithType.vb: SequenceErrorStatistics.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64}
+  commentId: T:System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.SequenceErrorType,System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<SequenceErrorType, long>
+  nameWithType: Dictionary<SequenceErrorType, long>
+  fullName: System.Collections.Generic.Dictionary<Meridian.Application.Monitoring.DataQuality.SequenceErrorType, long>
+  nameWithType.vb: Dictionary(Of SequenceErrorType, Long)
+  fullName.vb: System.Collections.Generic.Dictionary(Of Meridian.Application.Monitoring.DataQuality.SequenceErrorType, Long)
+  name.vb: Dictionary(Of SequenceErrorType, Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+    name: SequenceErrorType
+    href: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.html
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+    name: SequenceErrorType
+    href: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.html
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_TotalEventsChecked
+  name: TotalEventsChecked
+  nameWithType: SequenceErrorStatistics.TotalEventsChecked
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalEventsChecked
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_TotalErrors
+  name: TotalErrors
+  nameWithType: SequenceErrorStatistics.TotalErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.TotalErrors
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_ErrorRate
+  name: ErrorRate
+  nameWithType: SequenceErrorStatistics.ErrorRate
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorRate
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_ErrorsByType
+  name: ErrorsByType
+  nameWithType: SequenceErrorStatistics.ErrorsByType
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.ErrorsByType
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_SymbolsWithErrors
+  name: SymbolsWithErrors
+  nameWithType: SequenceErrorStatistics.SymbolsWithErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.SymbolsWithErrors
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_AverageGapSize
+  name: AverageGapSize
+  nameWithType: SequenceErrorStatistics.AverageGapSize
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.AverageGapSize
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_MaxGapSize
+  name: MaxGapSize
+  nameWithType: SequenceErrorStatistics.MaxGapSize
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.MaxGapSize
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html#Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_CalculatedAt
+  name: CalculatedAt
+  nameWithType: SequenceErrorStatistics.CalculatedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.CalculatedAt

@@ -1,0 +1,567 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  id: IBApiVersionValidator
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MaxTestedServerVersion
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedClientVersion
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion(System.Int32,System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: IBApiVersionValidator
+  nameWithType: IBApiVersionValidator
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBApiVersionValidator
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Validates the IB API server and client library versions at startup.
+
+    Throws <xref href="Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionMismatchException" data-throw-if-not-resolved="false"></xref> when the connected TWS/Gateway
+
+    server version is below the minimum required by Meridian, and logs a warning when
+
+    the server version exceeds the highest version tested in CI.
+  remarks: >-
+    Version numbers used here are IB EClient/EWrapper "server version" integers exchanged
+
+    during the initial TCP handshake (EClientSocket.ServerVersion after Connect).
+
+    They are NOT the same as the human-readable TWS release numbers shown in the TWS
+
+    title bar (e.g. "10.19").
+
+
+    Meridian version compatibility:
+
+
+    <table><tbody><tr><td class="term">Server version &lt; 70</td><td class="description">Not supported — missing reqTickByTickData, reqSmartComponents, and other modern API methods.</td></tr><tr><td class="term">70 – 178</td><td class="description">Supported and tested.</td></tr><tr><td class="term">&gt; 178</td><td class="description">Untested — Meridian will continue but log a warning.</td></tr></tbody></table>
+  example: []
+  syntax:
+    content: public static class IBApiVersionValidator
+    content.vb: Public Module IBApiVersionValidator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion
+  id: MinSupportedServerVersion
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  langs:
+  - csharp
+  - vb
+  name: MinSupportedServerVersion
+  nameWithType: IBApiVersionValidator.MinSupportedServerVersion
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSupportedServerVersion
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Minimum IB server version Meridian requires. Introduced with TWS 966+.
+
+    Below this version, reqTickByTickData and other critical methods are unavailable.
+  example: []
+  syntax:
+    content: public const int MinSupportedServerVersion = 70
+    return:
+      type: System.Int32
+    content.vb: Public Const MinSupportedServerVersion As Integer = 70
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MaxTestedServerVersion
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MaxTestedServerVersion
+  id: MaxTestedServerVersion
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  langs:
+  - csharp
+  - vb
+  name: MaxTestedServerVersion
+  nameWithType: IBApiVersionValidator.MaxTestedServerVersion
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MaxTestedServerVersion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxTestedServerVersion
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    The highest IB server version verified in Meridian CI. Server versions above
+
+    this are accepted but trigger a warning so operators can update this constant
+
+    after confirming compatibility.
+  example: []
+  syntax:
+    content: public const int MaxTestedServerVersion = 178
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxTestedServerVersion As Integer = 178
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedClientVersion
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedClientVersion
+  id: MinSupportedClientVersion
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  langs:
+  - csharp
+  - vb
+  name: MinSupportedClientVersion
+  nameWithType: IBApiVersionValidator.MinSupportedClientVersion
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedClientVersion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSupportedClientVersion
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Minimum IB client API library version (IBApi DLL) that Meridian is built against.
+
+    This maps to the TWS API installer version 10.19.
+  example: []
+  syntax:
+    content: public const int MinSupportedClientVersion = 178
+    return:
+      type: System.Int32
+    content.vb: Public Const MinSupportedClientVersion As Integer = 178
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion(System.Int32,System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion(System.Int32,System.Int32)
+  id: ValidateServerVersion(System.Int32,System.Int32)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  langs:
+  - csharp
+  - vb
+  name: ValidateServerVersion(int, int)
+  nameWithType: IBApiVersionValidator.ValidateServerVersion(int, int)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion(int, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateServerVersion
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Validates the <code class="paramref">serverVersion</code> returned by TWS/Gateway after
+
+    connection. Call this immediately after <code>EClientSocket.Connect</code> succeeds.
+  example: []
+  syntax:
+    content: public static void ValidateServerVersion(int serverVersion, int clientVersion)
+    parameters:
+    - id: serverVersion
+      type: System.Int32
+      description: The integer server version from <code>EClientSocket.ServerVersion</code>.
+    - id: clientVersion
+      type: System.Int32
+      description: >-
+        The integer client version from the IBApi DLL (pass <code>EClient.MIN_VERSION</code>
+
+        or the constant defined in the official SDK).
+    content.vb: Public Shared Sub ValidateServerVersion(serverVersion As Integer, clientVersion As Integer)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion*
+  exceptions:
+  - type: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionMismatchException
+    commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionMismatchException
+    description: Thrown when <code class="paramref">serverVersion</code> is below <xref href="Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion" data-throw-if-not-resolved="false"></xref>.
+  nameWithType.vb: IBApiVersionValidator.ValidateServerVersion(Integer, Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion(Integer, Integer)
+  name.vb: ValidateServerVersion(Integer, Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage
+  id: BuildVersionRequirementsMessage
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator
+  langs:
+  - csharp
+  - vb
+  name: BuildVersionRequirementsMessage()
+  nameWithType: IBApiVersionValidator.BuildVersionRequirementsMessage()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildVersionRequirementsMessage
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Returns a human-readable summary of the version requirements, suitable for
+
+    inclusion in startup logs or operator runbooks.
+  example: []
+  syntax:
+    content: public static string BuildVersionRequirementsMessage()
+    return:
+      type: System.String
+    content.vb: Public Shared Function BuildVersionRequirementsMessage() As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage*
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionMismatchException
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionMismatchException
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionMismatchException.html
+  name: IBApiVersionMismatchException
+  nameWithType: IBApiVersionMismatchException
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionMismatchException
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiVersionValidator_MinSupportedServerVersion
+  name: MinSupportedServerVersion
+  nameWithType: IBApiVersionValidator.MinSupportedServerVersion
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.MinSupportedServerVersion
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiVersionValidator_ValidateServerVersion_System_Int32_System_Int32_
+  name: ValidateServerVersion
+  nameWithType: IBApiVersionValidator.ValidateServerVersion
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.ValidateServerVersion
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiVersionValidator_BuildVersionRequirementsMessage
+  name: BuildVersionRequirementsMessage
+  nameWithType: IBApiVersionValidator.BuildVersionRequirementsMessage
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiVersionValidator.BuildVersionRequirementsMessage
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

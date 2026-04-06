@@ -1,0 +1,829 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.SecurityMasterImportService
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterImportService
+  id: SecurityMasterImportService
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.SecurityMasterImportService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterService,Meridian.Application.SecurityMaster.SecurityMasterCsvParser,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  - Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterImportService
+  nameWithType: SecurityMasterImportService
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterImportService
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Implementation of bulk security import service.
+  example: []
+  syntax:
+    content: 'public sealed class SecurityMasterImportService : ISecurityMasterImportService'
+    content.vb: Public NotInheritable Class SecurityMasterImportService Implements ISecurityMasterImportService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterImportService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterService,Meridian.Application.SecurityMaster.SecurityMasterCsvParser,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterImportService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterService,Meridian.Application.SecurityMaster.SecurityMasterCsvParser,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  id: '#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterService,Meridian.Application.SecurityMaster.SecurityMasterCsvParser,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)'
+  parent: Meridian.Application.SecurityMaster.SecurityMasterImportService
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterImportService(ISecurityMasterService, SecurityMasterCsvParser, ILogger<SecurityMasterImportService>, ISecurityMasterConflictService?)
+  nameWithType: SecurityMasterImportService.SecurityMasterImportService(ISecurityMasterService, SecurityMasterCsvParser, ILogger<SecurityMasterImportService>, ISecurityMasterConflictService?)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService.SecurityMasterImportService(Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Application.SecurityMaster.SecurityMasterCsvParser, Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterImportService>, Meridian.Application.SecurityMaster.ISecurityMasterConflictService?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public SecurityMasterImportService(ISecurityMasterService securityMasterService, SecurityMasterCsvParser csvParser, ILogger<SecurityMasterImportService> logger, ISecurityMasterConflictService? conflictService = null)
+    parameters:
+    - id: securityMasterService
+      type: Meridian.Contracts.SecurityMaster.ISecurityMasterService
+    - id: csvParser
+      type: Meridian.Application.SecurityMaster.SecurityMasterCsvParser
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService}
+    - id: conflictService
+      type: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+    content.vb: Public Sub New(securityMasterService As ISecurityMasterService, csvParser As SecurityMasterCsvParser, logger As ILogger(Of SecurityMasterImportService), conflictService As ISecurityMasterConflictService = Nothing)
+  overload: Meridian.Application.SecurityMaster.SecurityMasterImportService.#ctor*
+  nameWithType.vb: SecurityMasterImportService.New(ISecurityMasterService, SecurityMasterCsvParser, ILogger(Of SecurityMasterImportService), ISecurityMasterConflictService)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterImportService.New(Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Application.SecurityMaster.SecurityMasterCsvParser, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterImportService), Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  name.vb: New(ISecurityMasterService, SecurityMasterCsvParser, ILogger(Of SecurityMasterImportService), ISecurityMasterConflictService)
+- uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+  id: ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterImportService
+  langs:
+  - csharp
+  - vb
+  name: ImportAsync(string, string, IProgress<SecurityMasterImportProgress>?, CancellationToken)
+  nameWithType: SecurityMasterImportService.ImportAsync(string, string, IProgress<SecurityMasterImportProgress>?, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(string, string, System.IProgress<Meridian.Application.SecurityMaster.SecurityMasterImportProgress>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Imports securities from a file.
+  example: []
+  syntax:
+    content: public Task<SecurityMasterImportResult> ImportAsync(string fileContent, string fileExtension, IProgress<SecurityMasterImportProgress>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: fileContent
+      type: System.String
+      description: The raw file content (CSV or JSON)
+    - id: fileExtension
+      type: System.String
+      description: File extension (csv or json)
+    - id: progress
+      type: System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress}
+      description: Optional progress reporter
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.SecurityMaster.SecurityMasterImportResult}
+      description: Import result with statistics and errors
+    content.vb: Public Function ImportAsync(fileContent As String, fileExtension As String, progress As IProgress(Of SecurityMasterImportProgress) = Nothing, ct As CancellationToken = Nothing) As Task(Of SecurityMasterImportResult)
+  overload: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+  nameWithType.vb: SecurityMasterImportService.ImportAsync(String, String, IProgress(Of SecurityMasterImportProgress), CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(String, String, System.IProgress(Of Meridian.Application.SecurityMaster.SecurityMasterImportProgress), System.Threading.CancellationToken)
+  name.vb: ImportAsync(String, String, IProgress(Of SecurityMasterImportProgress), CancellationToken)
+references:
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterImportService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterImportService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterImportService.html
+  name: ISecurityMasterImportService
+  nameWithType: ISecurityMasterImportService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterImportService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.#ctor*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterImportService.#ctor
+  href: Meridian.Application.SecurityMaster.SecurityMasterImportService.html#Meridian_Application_SecurityMaster_SecurityMasterImportService__ctor_Meridian_Contracts_SecurityMaster_ISecurityMasterService_Meridian_Application_SecurityMaster_SecurityMasterCsvParser_Microsoft_Extensions_Logging_ILogger_Meridian_Application_SecurityMaster_SecurityMasterImportService__Meridian_Application_SecurityMaster_ISecurityMasterConflictService_
+  name: SecurityMasterImportService
+  nameWithType: SecurityMasterImportService.SecurityMasterImportService
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService.SecurityMasterImportService
+  nameWithType.vb: SecurityMasterImportService.New
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterImportService.New
+  name.vb: New
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterService
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterService.html
+  name: ISecurityMasterService
+  nameWithType: ISecurityMasterService
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterService
+- uid: Meridian.Application.SecurityMaster.SecurityMasterCsvParser
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterCsvParser
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterCsvParser.html
+  name: SecurityMasterCsvParser
+  nameWithType: SecurityMasterCsvParser
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterCsvParser
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<SecurityMasterImportService>
+  nameWithType: ILogger<SecurityMasterImportService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterImportService>
+  nameWithType.vb: ILogger(Of SecurityMasterImportService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterImportService)
+  name.vb: ILogger(Of SecurityMasterImportService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportService
+    name: SecurityMasterImportService
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportService
+    name: SecurityMasterImportService
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportService.html
+  - name: )
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html
+  name: ISecurityMasterConflictService
+  nameWithType: ISecurityMasterConflictService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterImportService.html#Meridian_Application_SecurityMaster_SecurityMasterImportService_ImportAsync_System_String_System_String_System_IProgress_Meridian_Application_SecurityMaster_SecurityMasterImportProgress__System_Threading_CancellationToken_
+  name: ImportAsync
+  nameWithType: SecurityMasterImportService.ImportAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterImportService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterImportService.html#Meridian_Application_SecurityMaster_ISecurityMasterImportService_ImportAsync_System_String_System_String_System_IProgress_Meridian_Application_SecurityMaster_SecurityMasterImportProgress__System_Threading_CancellationToken_
+  name: ImportAsync(string, string, IProgress<SecurityMasterImportProgress>, CancellationToken)
+  nameWithType: ISecurityMasterImportService.ImportAsync(string, string, IProgress<SecurityMasterImportProgress>, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(string, string, System.IProgress<Meridian.Application.SecurityMaster.SecurityMasterImportProgress>, System.Threading.CancellationToken)
+  nameWithType.vb: ISecurityMasterImportService.ImportAsync(String, String, IProgress(Of SecurityMasterImportProgress), CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(String, String, System.IProgress(Of Meridian.Application.SecurityMaster.SecurityMasterImportProgress), System.Threading.CancellationToken)
+  name.vb: ImportAsync(String, String, IProgress(Of SecurityMasterImportProgress), CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+    name: ImportAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterImportService.html#Meridian_Application_SecurityMaster_ISecurityMasterImportService_ImportAsync_System_String_System_String_System_IProgress_Meridian_Application_SecurityMaster_SecurityMasterImportProgress__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportProgress
+    name: SecurityMasterImportProgress
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportProgress.html
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
+    name: ImportAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterImportService.html#Meridian_Application_SecurityMaster_ISecurityMasterImportService_ImportAsync_System_String_System_String_System_IProgress_Meridian_Application_SecurityMaster_SecurityMasterImportProgress__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportProgress
+    name: SecurityMasterImportProgress
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportProgress.html
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress}
+  commentId: T:System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<SecurityMasterImportProgress>
+  nameWithType: IProgress<SecurityMasterImportProgress>
+  fullName: System.IProgress<Meridian.Application.SecurityMaster.SecurityMasterImportProgress>
+  nameWithType.vb: IProgress(Of SecurityMasterImportProgress)
+  fullName.vb: System.IProgress(Of Meridian.Application.SecurityMaster.SecurityMasterImportProgress)
+  name.vb: IProgress(Of SecurityMasterImportProgress)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportProgress
+    name: SecurityMasterImportProgress
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportProgress
+    name: SecurityMasterImportProgress
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportProgress.html
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.SecurityMaster.SecurityMasterImportResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.SecurityMaster.SecurityMasterImportResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityMasterImportResult>
+  nameWithType: Task<SecurityMasterImportResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.SecurityMaster.SecurityMasterImportResult>
+  nameWithType.vb: Task(Of SecurityMasterImportResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.SecurityMaster.SecurityMasterImportResult)
+  name.vb: Task(Of SecurityMasterImportResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportResult
+    name: SecurityMasterImportResult
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterImportResult
+    name: SecurityMasterImportResult
+    href: Meridian.Application.SecurityMaster.SecurityMasterImportResult.html
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

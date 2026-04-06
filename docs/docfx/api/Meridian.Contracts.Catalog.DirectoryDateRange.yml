@@ -1,0 +1,528 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange
+  commentId: T:Meridian.Contracts.Catalog.DirectoryDateRange
+  id: DirectoryDateRange
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData
+  - Meridian.Contracts.Catalog.DirectoryDateRange.Earliest
+  - Meridian.Contracts.Catalog.DirectoryDateRange.Granularity
+  - Meridian.Contracts.Catalog.DirectoryDateRange.Latest
+  langs:
+  - csharp
+  - vb
+  name: DirectoryDateRange
+  nameWithType: DirectoryDateRange
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectoryDateRange
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Date range for a directory.
+  example: []
+  syntax:
+    content: public sealed class DirectoryDateRange
+    content.vb: Public NotInheritable Class DirectoryDateRange
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.Earliest
+  commentId: P:Meridian.Contracts.Catalog.DirectoryDateRange.Earliest
+  id: Earliest
+  parent: Meridian.Contracts.Catalog.DirectoryDateRange
+  langs:
+  - csharp
+  - vb
+  name: Earliest
+  nameWithType: DirectoryDateRange.Earliest
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.Earliest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Earliest
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Earliest timestamp in this directory.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("earliest")]
+
+      public DateTime Earliest { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("earliest")>
+
+      Public Property Earliest As Date
+  overload: Meridian.Contracts.Catalog.DirectoryDateRange.Earliest*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: earliest
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.Latest
+  commentId: P:Meridian.Contracts.Catalog.DirectoryDateRange.Latest
+  id: Latest
+  parent: Meridian.Contracts.Catalog.DirectoryDateRange
+  langs:
+  - csharp
+  - vb
+  name: Latest
+  nameWithType: DirectoryDateRange.Latest
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.Latest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Latest
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Latest timestamp in this directory.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("latest")]
+
+      public DateTime Latest { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("latest")>
+
+      Public Property Latest As Date
+  overload: Meridian.Contracts.Catalog.DirectoryDateRange.Latest*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: latest
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.Granularity
+  commentId: P:Meridian.Contracts.Catalog.DirectoryDateRange.Granularity
+  id: Granularity
+  parent: Meridian.Contracts.Catalog.DirectoryDateRange
+  langs:
+  - csharp
+  - vb
+  name: Granularity
+  nameWithType: DirectoryDateRange.Granularity
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.Granularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Granularity
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Date granularity (Daily, Hourly, Monthly).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("granularity")]
+
+      public string? Granularity { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("granularity")>
+
+      Public Property Granularity As String
+  overload: Meridian.Contracts.Catalog.DirectoryDateRange.Granularity*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: granularity
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData
+  commentId: P:Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData
+  id: DatesWithData
+  parent: Meridian.Contracts.Catalog.DirectoryDateRange
+  langs:
+  - csharp
+  - vb
+  name: DatesWithData
+  nameWithType: DirectoryDateRange.DatesWithData
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatesWithData
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Dates with data in this directory.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("datesWithData")]
+
+      public string[]? DatesWithData { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("datesWithData")>
+
+      Public Property DatesWithData As String()
+  overload: Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: datesWithData
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.Earliest*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryDateRange.Earliest
+  href: Meridian.Contracts.Catalog.DirectoryDateRange.html#Meridian_Contracts_Catalog_DirectoryDateRange_Earliest
+  name: Earliest
+  nameWithType: DirectoryDateRange.Earliest
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.Earliest
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.Latest*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryDateRange.Latest
+  href: Meridian.Contracts.Catalog.DirectoryDateRange.html#Meridian_Contracts_Catalog_DirectoryDateRange_Latest
+  name: Latest
+  nameWithType: DirectoryDateRange.Latest
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.Latest
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.Granularity*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryDateRange.Granularity
+  href: Meridian.Contracts.Catalog.DirectoryDateRange.html#Meridian_Contracts_Catalog_DirectoryDateRange_Granularity
+  name: Granularity
+  nameWithType: DirectoryDateRange.Granularity
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.Granularity
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData
+  href: Meridian.Contracts.Catalog.DirectoryDateRange.html#Meridian_Contracts_Catalog_DirectoryDateRange_DatesWithData
+  name: DatesWithData
+  nameWithType: DirectoryDateRange.DatesWithData
+  fullName: Meridian.Contracts.Catalog.DirectoryDateRange.DatesWithData
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )

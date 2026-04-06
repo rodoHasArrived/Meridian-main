@@ -1,0 +1,279 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.MarketState
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketState
+  id: MarketState
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.MarketState.AfterHours
+  - Meridian.Contracts.Domain.Enums.MarketState.Auction
+  - Meridian.Contracts.Domain.Enums.MarketState.Closed
+  - Meridian.Contracts.Domain.Enums.MarketState.Halted
+  - Meridian.Contracts.Domain.Enums.MarketState.Normal
+  - Meridian.Contracts.Domain.Enums.MarketState.PreMarket
+  - Meridian.Contracts.Domain.Enums.MarketState.Unknown
+  langs:
+  - csharp
+  - vb
+  name: MarketState
+  nameWithType: MarketState
+  fullName: Meridian.Contracts.Domain.Enums.MarketState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketState
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Represents the current state of the market.
+  example: []
+  syntax:
+    content: 'public enum MarketState : byte'
+    content.vb: Public Enum MarketState As Byte
+- uid: Meridian.Contracts.Domain.Enums.MarketState.Normal
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketState.Normal
+  id: Normal
+  parent: Meridian.Contracts.Domain.Enums.MarketState
+  langs:
+  - csharp
+  - vb
+  name: Normal
+  nameWithType: MarketState.Normal
+  fullName: Meridian.Contracts.Domain.Enums.MarketState.Normal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normal
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Market is in normal trading hours.
+  example: []
+  syntax:
+    content: Normal = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketState
+- uid: Meridian.Contracts.Domain.Enums.MarketState.Closed
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketState.Closed
+  id: Closed
+  parent: Meridian.Contracts.Domain.Enums.MarketState
+  langs:
+  - csharp
+  - vb
+  name: Closed
+  nameWithType: MarketState.Closed
+  fullName: Meridian.Contracts.Domain.Enums.MarketState.Closed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Closed
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Market is closed.
+  example: []
+  syntax:
+    content: Closed = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketState
+- uid: Meridian.Contracts.Domain.Enums.MarketState.Halted
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketState.Halted
+  id: Halted
+  parent: Meridian.Contracts.Domain.Enums.MarketState
+  langs:
+  - csharp
+  - vb
+  name: Halted
+  nameWithType: MarketState.Halted
+  fullName: Meridian.Contracts.Domain.Enums.MarketState.Halted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Halted
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Trading is halted for this security.
+  example: []
+  syntax:
+    content: Halted = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketState
+- uid: Meridian.Contracts.Domain.Enums.MarketState.Unknown
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketState.Unknown
+  id: Unknown
+  parent: Meridian.Contracts.Domain.Enums.MarketState
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: MarketState.Unknown
+  fullName: Meridian.Contracts.Domain.Enums.MarketState.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Market state is unknown.
+  example: []
+  syntax:
+    content: Unknown = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketState
+- uid: Meridian.Contracts.Domain.Enums.MarketState.PreMarket
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketState.PreMarket
+  id: PreMarket
+  parent: Meridian.Contracts.Domain.Enums.MarketState
+  langs:
+  - csharp
+  - vb
+  name: PreMarket
+  nameWithType: MarketState.PreMarket
+  fullName: Meridian.Contracts.Domain.Enums.MarketState.PreMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreMarket
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Pre-market trading session.
+  example: []
+  syntax:
+    content: PreMarket = 4
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketState
+- uid: Meridian.Contracts.Domain.Enums.MarketState.AfterHours
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketState.AfterHours
+  id: AfterHours
+  parent: Meridian.Contracts.Domain.Enums.MarketState
+  langs:
+  - csharp
+  - vb
+  name: AfterHours
+  nameWithType: MarketState.AfterHours
+  fullName: Meridian.Contracts.Domain.Enums.MarketState.AfterHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AfterHours
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: After-hours trading session.
+  example: []
+  syntax:
+    content: AfterHours = 5
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketState
+- uid: Meridian.Contracts.Domain.Enums.MarketState.Auction
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketState.Auction
+  id: Auction
+  parent: Meridian.Contracts.Domain.Enums.MarketState
+  langs:
+  - csharp
+  - vb
+  name: Auction
+  nameWithType: MarketState.Auction
+  fullName: Meridian.Contracts.Domain.Enums.MarketState.Auction
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Auction
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Market is in auction phase.
+  example: []
+  syntax:
+    content: Auction = 6
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketState
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.MarketState
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketState
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketState.html
+  name: MarketState
+  nameWithType: MarketState
+  fullName: Meridian.Contracts.Domain.Enums.MarketState

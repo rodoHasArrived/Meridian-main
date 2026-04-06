@@ -1,0 +1,721 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope
+  commentId: T:Meridian.Contracts.Pipeline.RetryEnvelope
+  id: RetryEnvelope
+  parent: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount
+  - Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds
+  - Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted
+  - Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries
+  - Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay
+  - Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt
+  - Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass
+  langs:
+  - csharp
+  - vb
+  name: RetryEnvelope
+  nameWithType: RetryEnvelope
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryEnvelope
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Retry envelope tracking attempt count, backoff schedule, and policy.
+  example: []
+  syntax:
+    content: public sealed class RetryEnvelope
+    content.vb: Public NotInheritable Class RetryEnvelope
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount
+  commentId: P:Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount
+  id: AttemptCount
+  parent: Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: AttemptCount
+  nameWithType: RetryEnvelope.AttemptCount
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AttemptCount
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 267
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Number of retry attempts made so far.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("attemptCount")]
+
+      public int AttemptCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("attemptCount")>
+
+      Public Property AttemptCount As Integer
+  overload: Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: attemptCount
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries
+  commentId: P:Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries
+  id: MaxRetries
+  parent: Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: MaxRetries
+  nameWithType: RetryEnvelope.MaxRetries
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetries
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Maximum number of retries allowed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("maxRetries")]
+
+      public int MaxRetries { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("maxRetries")>
+
+      Public Property MaxRetries As Integer
+  overload: Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: maxRetries
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt
+  commentId: P:Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt
+  id: NextRetryAt
+  parent: Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: NextRetryAt
+  nameWithType: RetryEnvelope.NextRetryAt
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextRetryAt
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Scheduled time for the next retry attempt.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("nextRetryAt")]
+
+      public DateTime? NextRetryAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("nextRetryAt")>
+
+      Public Property NextRetryAt As Date?
+  overload: Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: nextRetryAt
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass
+  commentId: P:Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass
+  id: PolicyClass
+  parent: Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: PolicyClass
+  nameWithType: RetryEnvelope.PolicyClass
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolicyClass
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: The retry policy class name (e.g., ExponentialBackoff, Linear).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("policyClass")]
+
+      public string PolicyClass { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("policyClass")>
+
+      Public Property PolicyClass As String
+  overload: Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: policyClass
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds
+  commentId: P:Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds
+  id: BaseDelaySeconds
+  parent: Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: BaseDelaySeconds
+  nameWithType: RetryEnvelope.BaseDelaySeconds
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseDelaySeconds
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Base delay in seconds for retry backoff calculation.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("baseDelaySeconds")]
+
+      public int BaseDelaySeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("baseDelaySeconds")>
+
+      Public Property BaseDelaySeconds As Integer
+  overload: Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: baseDelaySeconds
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted
+  commentId: P:Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted
+  id: IsExhausted
+  parent: Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: IsExhausted
+  nameWithType: RetryEnvelope.IsExhausted
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsExhausted
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Whether retries have been exhausted.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public bool IsExhausted { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property IsExhausted As Boolean
+  overload: Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay
+  commentId: P:Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay
+  id: NextDelay
+  parent: Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: NextDelay
+  nameWithType: RetryEnvelope.NextDelay
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextDelay
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 303
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Calculates the next retry delay using exponential backoff.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public TimeSpan NextDelay { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property NextDelay As TimeSpan
+  overload: Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+references:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount*
+  commentId: Overload:Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html#Meridian_Contracts_Pipeline_RetryEnvelope_AttemptCount
+  name: AttemptCount
+  nameWithType: RetryEnvelope.AttemptCount
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.AttemptCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries*
+  commentId: Overload:Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html#Meridian_Contracts_Pipeline_RetryEnvelope_MaxRetries
+  name: MaxRetries
+  nameWithType: RetryEnvelope.MaxRetries
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.MaxRetries
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt*
+  commentId: Overload:Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html#Meridian_Contracts_Pipeline_RetryEnvelope_NextRetryAt
+  name: NextRetryAt
+  nameWithType: RetryEnvelope.NextRetryAt
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.NextRetryAt
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass*
+  commentId: Overload:Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html#Meridian_Contracts_Pipeline_RetryEnvelope_PolicyClass
+  name: PolicyClass
+  nameWithType: RetryEnvelope.PolicyClass
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.PolicyClass
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds*
+  commentId: Overload:Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html#Meridian_Contracts_Pipeline_RetryEnvelope_BaseDelaySeconds
+  name: BaseDelaySeconds
+  nameWithType: RetryEnvelope.BaseDelaySeconds
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.BaseDelaySeconds
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted*
+  commentId: Overload:Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html#Meridian_Contracts_Pipeline_RetryEnvelope_IsExhausted
+  name: IsExhausted
+  nameWithType: RetryEnvelope.IsExhausted
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.IsExhausted
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay*
+  commentId: Overload:Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html#Meridian_Contracts_Pipeline_RetryEnvelope_NextDelay
+  name: NextDelay
+  nameWithType: RetryEnvelope.NextDelay
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope.NextDelay
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan

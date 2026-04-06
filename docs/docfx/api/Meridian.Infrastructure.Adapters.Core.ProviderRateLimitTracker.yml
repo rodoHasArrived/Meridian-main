@@ -1,0 +1,1166 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  id: ProviderRateLimitTracker
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.#ctor(Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider(System.Collections.Generic.IEnumerable{System.String})
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit(System.String,System.Double)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit(System.String,System.Nullable{System.TimeSpan})
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(System.String,System.Int32,System.TimeSpan,System.TimeSpan)
+  langs:
+  - csharp
+  - vb
+  name: ProviderRateLimitTracker
+  nameWithType: ProviderRateLimitTracker
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRateLimitTracker
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Tracks rate limit status across multiple providers for intelligent rotation.
+  example: []
+  syntax:
+    content: 'public sealed class ProviderRateLimitTracker : IDisposable'
+    content.vb: Public NotInheritable Class ProviderRateLimitTracker Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.#ctor(Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.#ctor(Serilog.ILogger)
+  id: '#ctor(Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: ProviderRateLimitTracker(ILogger?)
+  nameWithType: ProviderRateLimitTracker.ProviderRateLimitTracker(ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ProviderRateLimitTracker(Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public ProviderRateLimitTracker(ILogger? log = null)
+    parameters:
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.#ctor*
+  nameWithType.vb: ProviderRateLimitTracker.New(ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.New(Serilog.ILogger)
+  name.vb: New(ILogger)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(System.String,System.Int32,System.TimeSpan,System.TimeSpan)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(System.String,System.Int32,System.TimeSpan,System.TimeSpan)
+  id: RegisterProvider(System.String,System.Int32,System.TimeSpan,System.TimeSpan)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: RegisterProvider(string, int, TimeSpan, TimeSpan)
+  nameWithType: ProviderRateLimitTracker.RegisterProvider(string, int, TimeSpan, TimeSpan)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(string, int, System.TimeSpan, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Register a provider with its rate limit configuration.
+  example: []
+  syntax:
+    content: public void RegisterProvider(string providerName, int maxRequestsPerWindow, TimeSpan window, TimeSpan minDelay)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: maxRequestsPerWindow
+      type: System.Int32
+    - id: window
+      type: System.TimeSpan
+    - id: minDelay
+      type: System.TimeSpan
+    content.vb: Public Sub RegisterProvider(providerName As String, maxRequestsPerWindow As Integer, window As TimeSpan, minDelay As TimeSpan)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider*
+  nameWithType.vb: ProviderRateLimitTracker.RegisterProvider(String, Integer, TimeSpan, TimeSpan)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(String, Integer, System.TimeSpan, System.TimeSpan)
+  name.vb: RegisterProvider(String, Integer, TimeSpan, TimeSpan)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  id: RegisterProvider(Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: RegisterProvider(IHistoricalDataProvider)
+  nameWithType: ProviderRateLimitTracker.RegisterProvider(IHistoricalDataProvider)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider(Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Register a provider from its interface properties.
+  example: []
+  syntax:
+    content: public void RegisterProvider(IHistoricalDataProvider provider)
+    parameters:
+    - id: provider
+      type: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    content.vb: Public Sub RegisterProvider(provider As IHistoricalDataProvider)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest(System.String)
+  id: RecordRequest(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: RecordRequest(string)
+  nameWithType: ProviderRateLimitTracker.RecordRequest(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordRequest
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Record a successful request to a provider.
+  example: []
+  syntax:
+    content: public void RecordRequest(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    content.vb: Public Sub RecordRequest(providerName As String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest*
+  nameWithType.vb: ProviderRateLimitTracker.RecordRequest(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest(String)
+  name.vb: RecordRequest(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit(System.String,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit(System.String,System.Nullable{System.TimeSpan})
+  id: RecordRateLimitHit(System.String,System.Nullable{System.TimeSpan})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: RecordRateLimitHit(string, TimeSpan?)
+  nameWithType: ProviderRateLimitTracker.RecordRateLimitHit(string, TimeSpan?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit(string, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordRateLimitHit
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Record that a provider hit its rate limit (HTTP 429).
+  example: []
+  syntax:
+    content: public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter = null)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: retryAfter
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Sub RecordRateLimitHit(providerName As String, retryAfter As TimeSpan? = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit*
+  nameWithType.vb: ProviderRateLimitTracker.RecordRateLimitHit(String, TimeSpan?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit(String, System.TimeSpan?)
+  name.vb: RecordRateLimitHit(String, TimeSpan?)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited(System.String)
+  id: IsRateLimited(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: IsRateLimited(string)
+  nameWithType: ProviderRateLimitTracker.IsRateLimited(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRateLimited
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Check if a provider is currently rate limited.
+  example: []
+  syntax:
+    content: public bool IsRateLimited(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsRateLimited(providerName As String) As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited*
+  nameWithType.vb: ProviderRateLimitTracker.IsRateLimited(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited(String)
+  name.vb: IsRateLimited(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit(System.String,System.Double)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit(System.String,System.Double)
+  id: IsApproachingLimit(System.String,System.Double)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: IsApproachingLimit(string, double)
+  nameWithType: ProviderRateLimitTracker.IsApproachingLimit(string, double)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit(string, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsApproachingLimit
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Check if a provider is approaching its rate limit threshold.
+  example: []
+  syntax:
+    content: public bool IsApproachingLimit(string providerName, double threshold = 0.8)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: threshold
+      type: System.Double
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsApproachingLimit(providerName As String, threshold As Double = 0.8) As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit*
+  nameWithType.vb: ProviderRateLimitTracker.IsApproachingLimit(String, Double)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit(String, Double)
+  name.vb: IsApproachingLimit(String, Double)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset(System.String)
+  id: GetTimeUntilReset(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: GetTimeUntilReset(string)
+  nameWithType: ProviderRateLimitTracker.GetTimeUntilReset(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTimeUntilReset
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get time until a provider's rate limit resets.
+  example: []
+  syntax:
+    content: public TimeSpan? GetTimeUntilReset(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Function GetTimeUntilReset(providerName As String) As TimeSpan?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset*
+  nameWithType.vb: ProviderRateLimitTracker.GetTimeUntilReset(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset(String)
+  name.vb: GetTimeUntilReset(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider(System.Collections.Generic.IEnumerable{System.String})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider(System.Collections.Generic.IEnumerable{System.String})
+  id: GetBestAvailableProvider(System.Collections.Generic.IEnumerable{System.String})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: GetBestAvailableProvider(IEnumerable<string>)
+  nameWithType: ProviderRateLimitTracker.GetBestAvailableProvider(IEnumerable<string>)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider(System.Collections.Generic.IEnumerable<string>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBestAvailableProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get the best available provider from a list, preferring those with more capacity.
+  example: []
+  syntax:
+    content: public string? GetBestAvailableProvider(IEnumerable<string> providerNames)
+    parameters:
+    - id: providerNames
+      type: System.Collections.Generic.IEnumerable{System.String}
+    return:
+      type: System.String
+    content.vb: Public Function GetBestAvailableProvider(providerNames As IEnumerable(Of String)) As String
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider*
+  nameWithType.vb: ProviderRateLimitTracker.GetBestAvailableProvider(IEnumerable(Of String))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider(System.Collections.Generic.IEnumerable(Of String))
+  name.vb: GetBestAvailableProvider(IEnumerable(Of String))
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus
+  id: GetAllStatus
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: GetAllStatus()
+  nameWithType: ProviderRateLimitTracker.GetAllStatus()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get status for all tracked providers.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, RateLimitStatus> GetAllStatus()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Infrastructure.Adapters.Core.RateLimitStatus}
+    content.vb: Public Function GetAllStatus() As IReadOnlyDictionary(Of String, RateLimitStatus)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus(System.String)
+  id: GetStatus(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: GetStatus(string)
+  nameWithType: ProviderRateLimitTracker.GetStatus(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get status for a specific provider.
+  example: []
+  syntax:
+    content: public RateLimitStatus? GetStatus(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.RateLimitStatus
+    content.vb: Public Function GetStatus(providerName As String) As RateLimitStatus
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus*
+  nameWithType.vb: ProviderRateLimitTracker.GetStatus(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus(String)
+  name.vb: GetStatus(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState(System.String)
+  id: ClearRateLimitState(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: ClearRateLimitState(string)
+  nameWithType: ProviderRateLimitTracker.ClearRateLimitState(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearRateLimitState
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Clear rate limit state for a provider (e.g., after successful request).
+  example: []
+  syntax:
+    content: public void ClearRateLimitState(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    content.vb: Public Sub ClearRateLimitState(providerName As String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState*
+  nameWithType.vb: ProviderRateLimitTracker.ClearRateLimitState(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState(String)
+  name.vb: ClearRateLimitState(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ProviderRateLimitTracker.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker__ctor_Serilog_ILogger_
+  name: ProviderRateLimitTracker
+  nameWithType: ProviderRateLimitTracker.ProviderRateLimitTracker
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ProviderRateLimitTracker
+  nameWithType.vb: ProviderRateLimitTracker.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.New
+  name.vb: New
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_RegisterProvider_System_String_System_Int32_System_TimeSpan_System_TimeSpan_
+  name: RegisterProvider
+  nameWithType: ProviderRateLimitTracker.RegisterProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RegisterProvider
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  name: IHistoricalDataProvider
+  nameWithType: IHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_RecordRequest_System_String_
+  name: RecordRequest
+  nameWithType: ProviderRateLimitTracker.RecordRequest
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRequest
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_RecordRateLimitHit_System_String_System_Nullable_System_TimeSpan__
+  name: RecordRateLimitHit
+  nameWithType: ProviderRateLimitTracker.RecordRateLimitHit
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.RecordRateLimitHit
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_IsRateLimited_System_String_
+  name: IsRateLimited
+  nameWithType: ProviderRateLimitTracker.IsRateLimited
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsRateLimited
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_IsApproachingLimit_System_String_System_Double_
+  name: IsApproachingLimit
+  nameWithType: ProviderRateLimitTracker.IsApproachingLimit
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.IsApproachingLimit
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_GetTimeUntilReset_System_String_
+  name: GetTimeUntilReset
+  nameWithType: ProviderRateLimitTracker.GetTimeUntilReset
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetTimeUntilReset
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_GetBestAvailableProvider_System_Collections_Generic_IEnumerable_System_String__
+  name: GetBestAvailableProvider
+  nameWithType: ProviderRateLimitTracker.GetBestAvailableProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetBestAvailableProvider
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_GetAllStatus
+  name: GetAllStatus
+  nameWithType: ProviderRateLimitTracker.GetAllStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetAllStatus
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Infrastructure.Adapters.Core.RateLimitStatus}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Infrastructure.Adapters.Core.RateLimitStatus}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, RateLimitStatus>
+  nameWithType: IReadOnlyDictionary<string, RateLimitStatus>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Infrastructure.Adapters.Core.RateLimitStatus>
+  nameWithType.vb: IReadOnlyDictionary(Of String, RateLimitStatus)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Infrastructure.Adapters.Core.RateLimitStatus)
+  name.vb: IReadOnlyDictionary(Of String, RateLimitStatus)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.RateLimitStatus
+    name: RateLimitStatus
+    href: Meridian.Infrastructure.Adapters.Core.RateLimitStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.RateLimitStatus
+    name: RateLimitStatus
+    href: Meridian.Infrastructure.Adapters.Core.RateLimitStatus.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_GetStatus_System_String_
+  name: GetStatus
+  nameWithType: ProviderRateLimitTracker.GetStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.GetStatus
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimitStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.RateLimitStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.RateLimitStatus.html
+  name: RateLimitStatus
+  nameWithType: RateLimitStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimitStatus
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_ClearRateLimitState_System_String_
+  name: ClearRateLimitState
+  nameWithType: ProviderRateLimitTracker.ClearRateLimitState
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.ClearRateLimitState
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_Dispose
+  name: Dispose
+  nameWithType: ProviderRateLimitTracker.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

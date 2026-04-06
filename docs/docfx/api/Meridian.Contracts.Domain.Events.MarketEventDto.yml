@@ -1,0 +1,2275 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventDto
+  id: MarketEventDto
+  parent: Meridian.Contracts.Domain.Events
+  children:
+  - Meridian.Contracts.Domain.Events.MarketEventDto.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Enums.MarketEventType,Meridian.Contracts.Domain.Events.MarketEventPayload,System.Int64,System.String,System.Byte,Meridian.Contracts.Domain.Enums.MarketEventTier,System.String,System.Byte,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.BboQuotePayload,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.DepthIntegrityEvent,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat(System.DateTimeOffset,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalAuction,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalBar,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalQuote,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalTrade,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.IntegrityEvent,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.LOBSnapshot,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.L2SnapshotPayload,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OpenInterestUpdate,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionChainSnapshot,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.GreeksSnapshot,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionQuote,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionTrade,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderAdd,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderCancel,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderExecute,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderFlowStatistics,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderModify,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderReplace,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.Trade,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol
+  - Meridian.Contracts.Domain.Events.MarketEventDto.Payload
+  - Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion
+  - Meridian.Contracts.Domain.Events.MarketEventDto.Sequence
+  - Meridian.Contracts.Domain.Events.MarketEventDto.Source
+  - Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+  - Meridian.Contracts.Domain.Events.MarketEventDto.Tier
+  - Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp
+  - Meridian.Contracts.Domain.Events.MarketEventDto.Type
+  langs:
+  - csharp
+  - vb
+  name: MarketEventDto
+  nameWithType: MarketEventDto
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketEventDto
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Top-level container for all market events with timestamp, symbol, type, and payload.
+  example: []
+  syntax:
+    content: 'public sealed record MarketEventDto : IEquatable<MarketEventDto>'
+    content.vb: Public NotInheritable Class MarketEventDto Implements IEquatable(Of MarketEventDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Enums.MarketEventType,Meridian.Contracts.Domain.Events.MarketEventPayload,System.Int64,System.String,System.Byte,Meridian.Contracts.Domain.Enums.MarketEventTier,System.String,System.Byte,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Enums.MarketEventType,Meridian.Contracts.Domain.Events.MarketEventPayload,System.Int64,System.String,System.Byte,Meridian.Contracts.Domain.Enums.MarketEventTier,System.String,System.Byte,System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Enums.MarketEventType,Meridian.Contracts.Domain.Events.MarketEventPayload,System.Int64,System.String,System.Byte,Meridian.Contracts.Domain.Enums.MarketEventTier,System.String,System.Byte,System.String)'
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: MarketEventDto(DateTimeOffset, string, MarketEventType, MarketEventPayload, long, string, byte, MarketEventTier, string?, byte, string?)
+  nameWithType: MarketEventDto.MarketEventDto(DateTimeOffset, string, MarketEventType, MarketEventPayload, long, string, byte, MarketEventTier, string?, byte, string?)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.MarketEventDto(System.DateTimeOffset, string, Meridian.Contracts.Domain.Enums.MarketEventType, Meridian.Contracts.Domain.Events.MarketEventPayload, long, string, byte, Meridian.Contracts.Domain.Enums.MarketEventTier, string?, byte, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Top-level container for all market events with timestamp, symbol, type, and payload.
+  example: []
+  syntax:
+    content: public MarketEventDto(DateTimeOffset Timestamp, string Symbol, MarketEventType Type, MarketEventPayload Payload, long Sequence = 0, string Source = "IB", byte SchemaVersion = 1, MarketEventTier Tier = MarketEventTier.Raw, string? CanonicalSymbol = null, byte CanonicalizationVersion = 0, string? CanonicalVenue = null)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Symbol
+      type: System.String
+    - id: Type
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+    - id: Payload
+      type: Meridian.Contracts.Domain.Events.MarketEventPayload
+    - id: Sequence
+      type: System.Int64
+    - id: Source
+      type: System.String
+    - id: SchemaVersion
+      type: System.Byte
+    - id: Tier
+      type: Meridian.Contracts.Domain.Enums.MarketEventTier
+    - id: CanonicalSymbol
+      type: System.String
+    - id: CanonicalizationVersion
+      type: System.Byte
+    - id: CanonicalVenue
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Symbol As String, Type As MarketEventType, Payload As MarketEventPayload, Sequence As Long = 0, Source As String = "IB", SchemaVersion As Byte = 1, Tier As MarketEventTier = MarketEventTier.Raw, CanonicalSymbol As String = Nothing, CanonicalizationVersion As Byte = 0, CanonicalVenue As String = Nothing)
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.#ctor*
+  nameWithType.vb: MarketEventDto.New(DateTimeOffset, String, MarketEventType, MarketEventPayload, Long, String, Byte, MarketEventTier, String, Byte, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.New(System.DateTimeOffset, String, Meridian.Contracts.Domain.Enums.MarketEventType, Meridian.Contracts.Domain.Events.MarketEventPayload, Long, String, Byte, Meridian.Contracts.Domain.Enums.MarketEventTier, String, Byte, String)
+  name.vb: New(DateTimeOffset, String, MarketEventType, MarketEventPayload, Long, String, Byte, MarketEventTier, String, Byte, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: MarketEventDto.Timestamp
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: MarketEventDto.Symbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.Symbol*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Type
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Type
+  id: Type
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: MarketEventDto.Type
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public MarketEventType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+    content.vb: Public Property Type As MarketEventType
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.Type*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Payload
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Payload
+  id: Payload
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: Payload
+  nameWithType: MarketEventDto.Payload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Payload
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Payload
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public MarketEventPayload Payload { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventPayload
+    content.vb: Public Property Payload As MarketEventPayload
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.Payload*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Sequence
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Sequence
+  id: Sequence
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: Sequence
+  nameWithType: MarketEventDto.Sequence
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Sequence
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sequence
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public long Sequence { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Sequence As Long
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.Sequence*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Source
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Source
+  id: Source
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: MarketEventDto.Source
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public string Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.Source*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion
+  id: SchemaVersion
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: SchemaVersion
+  nameWithType: MarketEventDto.SchemaVersion
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaVersion
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public byte SchemaVersion { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property SchemaVersion As Byte
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Tier
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Tier
+  id: Tier
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: Tier
+  nameWithType: MarketEventDto.Tier
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Tier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tier
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public MarketEventTier Tier { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventTier
+    content.vb: Public Property Tier As MarketEventTier
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.Tier*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+  id: CanonicalSymbol
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CanonicalSymbol
+  nameWithType: MarketEventDto.CanonicalSymbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalSymbol
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public string? CanonicalSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CanonicalSymbol As String
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion
+  id: CanonicalizationVersion
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizationVersion
+  nameWithType: MarketEventDto.CanonicalizationVersion
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalizationVersion
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public byte CanonicalizationVersion { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property CanonicalizationVersion As Byte
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue
+  id: CanonicalVenue
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CanonicalVenue
+  nameWithType: MarketEventDto.CanonicalVenue
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalVenue
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  syntax:
+    content: public string? CanonicalVenue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CanonicalVenue As String
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol
+  id: EffectiveSymbol
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveSymbol
+  nameWithType: MarketEventDto.EffectiveSymbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveSymbol
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: >-
+    Returns the effective symbol for downstream consumers: <xref href="Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol" data-throw-if-not-resolved="false"></xref>
+
+    when available, otherwise the raw <xref href="Meridian.Contracts.Domain.Events.MarketEventDto.Symbol" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public string EffectiveSymbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property EffectiveSymbol As String
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol*
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.Trade,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.Trade,System.Int64,System.String)
+  id: CreateTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.Trade,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateTrade(DateTimeOffset, string, Trade, long, string)
+  nameWithType: MarketEventDto.CreateTrade(DateTimeOffset, string, Trade, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.Trade, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateTrade
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a trade market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateTrade(DateTimeOffset ts, string symbol, Trade trade, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: trade
+      type: Meridian.Contracts.Domain.Models.Trade
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateTrade(ts As DateTimeOffset, symbol As String, trade As Trade, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade*
+  nameWithType.vb: MarketEventDto.CreateTrade(DateTimeOffset, String, Trade, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.Trade, Long, String)
+  name.vb: CreateTrade(DateTimeOffset, String, Trade, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.LOBSnapshot,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.LOBSnapshot,System.Int64,System.String)
+  id: CreateL2Snapshot(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.LOBSnapshot,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateL2Snapshot(DateTimeOffset, string, LOBSnapshot, long, string)
+  nameWithType: MarketEventDto.CreateL2Snapshot(DateTimeOffset, string, LOBSnapshot, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.LOBSnapshot, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateL2Snapshot
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an L2 snapshot market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateL2Snapshot(DateTimeOffset ts, string symbol, LOBSnapshot snap, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: snap
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateL2Snapshot(ts As DateTimeOffset, symbol As String, snap As LOBSnapshot, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot*
+  nameWithType.vb: MarketEventDto.CreateL2Snapshot(DateTimeOffset, String, LOBSnapshot, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.LOBSnapshot, Long, String)
+  name.vb: CreateL2Snapshot(DateTimeOffset, String, LOBSnapshot, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.BboQuotePayload,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.BboQuotePayload,System.Int64,System.String)
+  id: CreateBboQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.BboQuotePayload,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateBboQuote(DateTimeOffset, string, BboQuotePayload, long, string)
+  nameWithType: MarketEventDto.CreateBboQuote(DateTimeOffset, string, BboQuotePayload, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.BboQuotePayload, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateBboQuote
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a BBO quote market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateBboQuote(DateTimeOffset ts, string symbol, BboQuotePayload quote, long seq = 0, string source = "ALPACA")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateBboQuote(ts As DateTimeOffset, symbol As String, quote As BboQuotePayload, seq As Long = 0, source As String = "ALPACA") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote*
+  nameWithType.vb: MarketEventDto.CreateBboQuote(DateTimeOffset, String, BboQuotePayload, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.BboQuotePayload, Long, String)
+  name.vb: CreateBboQuote(DateTimeOffset, String, BboQuotePayload, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.L2SnapshotPayload,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.L2SnapshotPayload,System.Int64,System.String)
+  id: CreateL2SnapshotPayload(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.L2SnapshotPayload,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateL2SnapshotPayload(DateTimeOffset, string, L2SnapshotPayload, long, string)
+  nameWithType: MarketEventDto.CreateL2SnapshotPayload(DateTimeOffset, string, L2SnapshotPayload, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.L2SnapshotPayload, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateL2SnapshotPayload
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an L2 snapshot payload market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateL2SnapshotPayload(DateTimeOffset ts, string symbol, L2SnapshotPayload payload, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: payload
+      type: Meridian.Contracts.Domain.Models.L2SnapshotPayload
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateL2SnapshotPayload(ts As DateTimeOffset, symbol As String, payload As L2SnapshotPayload, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload*
+  nameWithType.vb: MarketEventDto.CreateL2SnapshotPayload(DateTimeOffset, String, L2SnapshotPayload, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.L2SnapshotPayload, Long, String)
+  name.vb: CreateL2SnapshotPayload(DateTimeOffset, String, L2SnapshotPayload, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderFlowStatistics,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderFlowStatistics,System.Int64,System.String)
+  id: CreateOrderFlow(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderFlowStatistics,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOrderFlow(DateTimeOffset, string, OrderFlowStatistics, long, string)
+  nameWithType: MarketEventDto.CreateOrderFlow(DateTimeOffset, string, OrderFlowStatistics, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OrderFlowStatistics, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOrderFlow
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an order flow statistics market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOrderFlow(DateTimeOffset ts, string symbol, OrderFlowStatistics stats, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: stats
+      type: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOrderFlow(ts As DateTimeOffset, symbol As String, stats As OrderFlowStatistics, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow*
+  nameWithType.vb: MarketEventDto.CreateOrderFlow(DateTimeOffset, String, OrderFlowStatistics, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OrderFlowStatistics, Long, String)
+  name.vb: CreateOrderFlow(DateTimeOffset, String, OrderFlowStatistics, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.IntegrityEvent,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.IntegrityEvent,System.Int64,System.String)
+  id: CreateIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.IntegrityEvent,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateIntegrity(DateTimeOffset, string, IntegrityEvent, long, string)
+  nameWithType: MarketEventDto.CreateIntegrity(DateTimeOffset, string, IntegrityEvent, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.IntegrityEvent, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateIntegrity
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an integrity event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateIntegrity(DateTimeOffset ts, string symbol, IntegrityEvent integrity, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: integrity
+      type: Meridian.Contracts.Domain.Models.IntegrityEvent
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateIntegrity(ts As DateTimeOffset, symbol As String, integrity As IntegrityEvent, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity*
+  nameWithType.vb: MarketEventDto.CreateIntegrity(DateTimeOffset, String, IntegrityEvent, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.IntegrityEvent, Long, String)
+  name.vb: CreateIntegrity(DateTimeOffset, String, IntegrityEvent, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.DepthIntegrityEvent,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.DepthIntegrityEvent,System.Int64,System.String)
+  id: CreateDepthIntegrity(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.DepthIntegrityEvent,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateDepthIntegrity(DateTimeOffset, string, DepthIntegrityEvent, long, string)
+  nameWithType: MarketEventDto.CreateDepthIntegrity(DateTimeOffset, string, DepthIntegrityEvent, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.DepthIntegrityEvent, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateDepthIntegrity
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a depth integrity event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateDepthIntegrity(DateTimeOffset ts, string symbol, DepthIntegrityEvent integrity, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: integrity
+      type: Meridian.Contracts.Domain.Models.DepthIntegrityEvent
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateDepthIntegrity(ts As DateTimeOffset, symbol As String, integrity As DepthIntegrityEvent, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity*
+  nameWithType.vb: MarketEventDto.CreateDepthIntegrity(DateTimeOffset, String, DepthIntegrityEvent, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.DepthIntegrityEvent, Long, String)
+  name.vb: CreateDepthIntegrity(DateTimeOffset, String, DepthIntegrityEvent, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat(System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat(System.DateTimeOffset,System.String)
+  id: CreateHeartbeat(System.DateTimeOffset,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateHeartbeat(DateTimeOffset, string)
+  nameWithType: MarketEventDto.CreateHeartbeat(DateTimeOffset, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat(System.DateTimeOffset, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateHeartbeat
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a heartbeat market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateHeartbeat(DateTimeOffset ts, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateHeartbeat(ts As DateTimeOffset, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat*
+  nameWithType.vb: MarketEventDto.CreateHeartbeat(DateTimeOffset, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat(System.DateTimeOffset, String)
+  name.vb: CreateHeartbeat(DateTimeOffset, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalBar,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalBar,System.Int64,System.String)
+  id: CreateHistoricalBar(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalBar,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateHistoricalBar(DateTimeOffset, string, HistoricalBar, long, string)
+  nameWithType: MarketEventDto.CreateHistoricalBar(DateTimeOffset, string, HistoricalBar, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.HistoricalBar, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateHistoricalBar
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a historical bar market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateHistoricalBar(DateTimeOffset ts, string symbol, HistoricalBar bar, long seq = 0, string source = "stooq")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: bar
+      type: Meridian.Contracts.Domain.Models.HistoricalBar
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateHistoricalBar(ts As DateTimeOffset, symbol As String, bar As HistoricalBar, seq As Long = 0, source As String = "stooq") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar*
+  nameWithType.vb: MarketEventDto.CreateHistoricalBar(DateTimeOffset, String, HistoricalBar, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.HistoricalBar, Long, String)
+  name.vb: CreateHistoricalBar(DateTimeOffset, String, HistoricalBar, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalQuote,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalQuote,System.Int64,System.String)
+  id: CreateHistoricalQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalQuote,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateHistoricalQuote(DateTimeOffset, string, HistoricalQuote, long, string)
+  nameWithType: MarketEventDto.CreateHistoricalQuote(DateTimeOffset, string, HistoricalQuote, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.HistoricalQuote, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateHistoricalQuote
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a historical quote market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateHistoricalQuote(DateTimeOffset ts, string symbol, HistoricalQuote quote, long seq = 0, string source = "alpaca")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.HistoricalQuote
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateHistoricalQuote(ts As DateTimeOffset, symbol As String, quote As HistoricalQuote, seq As Long = 0, source As String = "alpaca") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote*
+  nameWithType.vb: MarketEventDto.CreateHistoricalQuote(DateTimeOffset, String, HistoricalQuote, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.HistoricalQuote, Long, String)
+  name.vb: CreateHistoricalQuote(DateTimeOffset, String, HistoricalQuote, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalTrade,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalTrade,System.Int64,System.String)
+  id: CreateHistoricalTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalTrade,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateHistoricalTrade(DateTimeOffset, string, HistoricalTrade, long, string)
+  nameWithType: MarketEventDto.CreateHistoricalTrade(DateTimeOffset, string, HistoricalTrade, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.HistoricalTrade, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateHistoricalTrade
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a historical trade market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateHistoricalTrade(DateTimeOffset ts, string symbol, HistoricalTrade trade, long seq = 0, string source = "alpaca")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: trade
+      type: Meridian.Contracts.Domain.Models.HistoricalTrade
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateHistoricalTrade(ts As DateTimeOffset, symbol As String, trade As HistoricalTrade, seq As Long = 0, source As String = "alpaca") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade*
+  nameWithType.vb: MarketEventDto.CreateHistoricalTrade(DateTimeOffset, String, HistoricalTrade, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.HistoricalTrade, Long, String)
+  name.vb: CreateHistoricalTrade(DateTimeOffset, String, HistoricalTrade, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalAuction,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalAuction,System.Int64,System.String)
+  id: CreateHistoricalAuction(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.HistoricalAuction,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateHistoricalAuction(DateTimeOffset, string, HistoricalAuction, long, string)
+  nameWithType: MarketEventDto.CreateHistoricalAuction(DateTimeOffset, string, HistoricalAuction, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.HistoricalAuction, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateHistoricalAuction
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates a historical auction market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateHistoricalAuction(DateTimeOffset ts, string symbol, HistoricalAuction auction, long seq = 0, string source = "alpaca")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: auction
+      type: Meridian.Contracts.Domain.Models.HistoricalAuction
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateHistoricalAuction(ts As DateTimeOffset, symbol As String, auction As HistoricalAuction, seq As Long = 0, source As String = "alpaca") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction*
+  nameWithType.vb: MarketEventDto.CreateHistoricalAuction(DateTimeOffset, String, HistoricalAuction, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.HistoricalAuction, Long, String)
+  name.vb: CreateHistoricalAuction(DateTimeOffset, String, HistoricalAuction, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionQuote,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionQuote,System.Int64,System.String)
+  id: CreateOptionQuote(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionQuote,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOptionQuote(DateTimeOffset, string, OptionQuote, long, string)
+  nameWithType: MarketEventDto.CreateOptionQuote(DateTimeOffset, string, OptionQuote, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OptionQuote, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOptionQuote
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an option quote market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOptionQuote(DateTimeOffset ts, string symbol, OptionQuote quote, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.OptionQuote
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOptionQuote(ts As DateTimeOffset, symbol As String, quote As OptionQuote, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote*
+  nameWithType.vb: MarketEventDto.CreateOptionQuote(DateTimeOffset, String, OptionQuote, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OptionQuote, Long, String)
+  name.vb: CreateOptionQuote(DateTimeOffset, String, OptionQuote, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionTrade,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionTrade,System.Int64,System.String)
+  id: CreateOptionTrade(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionTrade,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOptionTrade(DateTimeOffset, string, OptionTrade, long, string)
+  nameWithType: MarketEventDto.CreateOptionTrade(DateTimeOffset, string, OptionTrade, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OptionTrade, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOptionTrade
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an option trade market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOptionTrade(DateTimeOffset ts, string symbol, OptionTrade trade, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: trade
+      type: Meridian.Contracts.Domain.Models.OptionTrade
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOptionTrade(ts As DateTimeOffset, symbol As String, trade As OptionTrade, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade*
+  nameWithType.vb: MarketEventDto.CreateOptionTrade(DateTimeOffset, String, OptionTrade, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OptionTrade, Long, String)
+  name.vb: CreateOptionTrade(DateTimeOffset, String, OptionTrade, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.GreeksSnapshot,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.GreeksSnapshot,System.Int64,System.String)
+  id: CreateOptionGreeks(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.GreeksSnapshot,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOptionGreeks(DateTimeOffset, string, GreeksSnapshot, long, string)
+  nameWithType: MarketEventDto.CreateOptionGreeks(DateTimeOffset, string, GreeksSnapshot, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.GreeksSnapshot, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOptionGreeks
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an option greeks snapshot market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOptionGreeks(DateTimeOffset ts, string symbol, GreeksSnapshot greeks, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: greeks
+      type: Meridian.Contracts.Domain.Models.GreeksSnapshot
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOptionGreeks(ts As DateTimeOffset, symbol As String, greeks As GreeksSnapshot, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks*
+  nameWithType.vb: MarketEventDto.CreateOptionGreeks(DateTimeOffset, String, GreeksSnapshot, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.GreeksSnapshot, Long, String)
+  name.vb: CreateOptionGreeks(DateTimeOffset, String, GreeksSnapshot, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionChainSnapshot,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionChainSnapshot,System.Int64,System.String)
+  id: CreateOptionChain(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionChainSnapshot,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOptionChain(DateTimeOffset, string, OptionChainSnapshot, long, string)
+  nameWithType: MarketEventDto.CreateOptionChain(DateTimeOffset, string, OptionChainSnapshot, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OptionChainSnapshot, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOptionChain
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an option chain snapshot market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOptionChain(DateTimeOffset ts, string underlyingSymbol, OptionChainSnapshot chain, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: underlyingSymbol
+      type: System.String
+    - id: chain
+      type: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOptionChain(ts As DateTimeOffset, underlyingSymbol As String, chain As OptionChainSnapshot, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain*
+  nameWithType.vb: MarketEventDto.CreateOptionChain(DateTimeOffset, String, OptionChainSnapshot, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OptionChainSnapshot, Long, String)
+  name.vb: CreateOptionChain(DateTimeOffset, String, OptionChainSnapshot, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OpenInterestUpdate,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OpenInterestUpdate,System.Int64,System.String)
+  id: CreateOpenInterest(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OpenInterestUpdate,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOpenInterest(DateTimeOffset, string, OpenInterestUpdate, long, string)
+  nameWithType: MarketEventDto.CreateOpenInterest(DateTimeOffset, string, OpenInterestUpdate, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OpenInterestUpdate, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOpenInterest
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an open interest update market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOpenInterest(DateTimeOffset ts, string symbol, OpenInterestUpdate oi, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: oi
+      type: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOpenInterest(ts As DateTimeOffset, symbol As String, oi As OpenInterestUpdate, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest*
+  nameWithType.vb: MarketEventDto.CreateOpenInterest(DateTimeOffset, String, OpenInterestUpdate, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OpenInterestUpdate, Long, String)
+  name.vb: CreateOpenInterest(DateTimeOffset, String, OpenInterestUpdate, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderAdd,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderAdd,System.Int64,System.String)
+  id: CreateOrderAdd(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderAdd,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOrderAdd(DateTimeOffset, string, OrderAdd, long, string)
+  nameWithType: MarketEventDto.CreateOrderAdd(DateTimeOffset, string, OrderAdd, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OrderAdd, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOrderAdd
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an order-add market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOrderAdd(DateTimeOffset ts, string symbol, OrderAdd order, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: order
+      type: Meridian.Contracts.Domain.Models.OrderAdd
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOrderAdd(ts As DateTimeOffset, symbol As String, order As OrderAdd, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd*
+  nameWithType.vb: MarketEventDto.CreateOrderAdd(DateTimeOffset, String, OrderAdd, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OrderAdd, Long, String)
+  name.vb: CreateOrderAdd(DateTimeOffset, String, OrderAdd, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderModify,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderModify,System.Int64,System.String)
+  id: CreateOrderModify(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderModify,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOrderModify(DateTimeOffset, string, OrderModify, long, string)
+  nameWithType: MarketEventDto.CreateOrderModify(DateTimeOffset, string, OrderModify, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OrderModify, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOrderModify
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an order-modify market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOrderModify(DateTimeOffset ts, string symbol, OrderModify modify, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: modify
+      type: Meridian.Contracts.Domain.Models.OrderModify
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOrderModify(ts As DateTimeOffset, symbol As String, modify As OrderModify, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify*
+  nameWithType.vb: MarketEventDto.CreateOrderModify(DateTimeOffset, String, OrderModify, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OrderModify, Long, String)
+  name.vb: CreateOrderModify(DateTimeOffset, String, OrderModify, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderCancel,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderCancel,System.Int64,System.String)
+  id: CreateOrderCancel(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderCancel,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOrderCancel(DateTimeOffset, string, OrderCancel, long, string)
+  nameWithType: MarketEventDto.CreateOrderCancel(DateTimeOffset, string, OrderCancel, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OrderCancel, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOrderCancel
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an order-cancel market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOrderCancel(DateTimeOffset ts, string symbol, OrderCancel cancel, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: cancel
+      type: Meridian.Contracts.Domain.Models.OrderCancel
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOrderCancel(ts As DateTimeOffset, symbol As String, cancel As OrderCancel, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel*
+  nameWithType.vb: MarketEventDto.CreateOrderCancel(DateTimeOffset, String, OrderCancel, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OrderCancel, Long, String)
+  name.vb: CreateOrderCancel(DateTimeOffset, String, OrderCancel, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderExecute,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderExecute,System.Int64,System.String)
+  id: CreateOrderExecute(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderExecute,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOrderExecute(DateTimeOffset, string, OrderExecute, long, string)
+  nameWithType: MarketEventDto.CreateOrderExecute(DateTimeOffset, string, OrderExecute, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OrderExecute, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOrderExecute
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an order-execute market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOrderExecute(DateTimeOffset ts, string symbol, OrderExecute execute, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: execute
+      type: Meridian.Contracts.Domain.Models.OrderExecute
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOrderExecute(ts As DateTimeOffset, symbol As String, execute As OrderExecute, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute*
+  nameWithType.vb: MarketEventDto.CreateOrderExecute(DateTimeOffset, String, OrderExecute, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OrderExecute, Long, String)
+  name.vb: CreateOrderExecute(DateTimeOffset, String, OrderExecute, Long, String)
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderReplace,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderReplace,System.Int64,System.String)
+  id: CreateOrderReplace(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OrderReplace,System.Int64,System.String)
+  parent: Meridian.Contracts.Domain.Events.MarketEventDto
+  langs:
+  - csharp
+  - vb
+  name: CreateOrderReplace(DateTimeOffset, string, OrderReplace, long, string)
+  nameWithType: MarketEventDto.CreateOrderReplace(DateTimeOffset, string, OrderReplace, long, string)
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OrderReplace, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOrderReplace
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Creates an order-replace market event.
+  example: []
+  syntax:
+    content: public static MarketEventDto CreateOrderReplace(DateTimeOffset ts, string symbol, OrderReplace replace, long seq = 0, string source = "IB")
+    parameters:
+    - id: ts
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: replace
+      type: Meridian.Contracts.Domain.Models.OrderReplace
+    - id: seq
+      type: System.Int64
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Events.MarketEventDto
+    content.vb: Public Shared Function CreateOrderReplace(ts As DateTimeOffset, symbol As String, replace As OrderReplace, seq As Long = 0, source As String = "IB") As MarketEventDto
+  overload: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace*
+  nameWithType.vb: MarketEventDto.CreateOrderReplace(DateTimeOffset, String, OrderReplace, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OrderReplace, Long, String)
+  name.vb: CreateOrderReplace(DateTimeOffset, String, OrderReplace, Long, String)
+references:
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventDto>
+  nameWithType: IEquatable<MarketEventDto>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventDto>
+  nameWithType.vb: IEquatable(Of MarketEventDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventDto)
+  name.vb: IEquatable(Of MarketEventDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventDto
+    name: MarketEventDto
+    href: Meridian.Contracts.Domain.Events.MarketEventDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventDto
+    name: MarketEventDto
+    href: Meridian.Contracts.Domain.Events.MarketEventDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.#ctor
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto__ctor_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Enums_MarketEventType_Meridian_Contracts_Domain_Events_MarketEventPayload_System_Int64_System_String_System_Byte_Meridian_Contracts_Domain_Enums_MarketEventTier_System_String_System_Byte_System_String_
+  name: MarketEventDto
+  nameWithType: MarketEventDto.MarketEventDto
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.MarketEventDto
+  nameWithType.vb: MarketEventDto.New
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventDto.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  name: MarketEventType
+  nameWithType: MarketEventType
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventTier
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventTier.html
+  name: MarketEventTier
+  nameWithType: MarketEventTier
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Timestamp
+  name: Timestamp
+  nameWithType: MarketEventDto.Timestamp
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Timestamp
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Symbol
+  name: Symbol
+  nameWithType: MarketEventDto.Symbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Type*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.Type
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Type
+  name: Type
+  nameWithType: MarketEventDto.Type
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Type
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Payload*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.Payload
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Payload
+  name: Payload
+  nameWithType: MarketEventDto.Payload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Payload
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Sequence*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.Sequence
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Sequence
+  name: Sequence
+  nameWithType: MarketEventDto.Sequence
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Sequence
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Source*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.Source
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Source
+  name: Source
+  nameWithType: MarketEventDto.Source
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Source
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_SchemaVersion
+  name: SchemaVersion
+  nameWithType: MarketEventDto.SchemaVersion
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.SchemaVersion
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Tier*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.Tier
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Tier
+  name: Tier
+  nameWithType: MarketEventDto.Tier
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Tier
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CanonicalSymbol
+  name: CanonicalSymbol
+  nameWithType: MarketEventDto.CanonicalSymbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CanonicalizationVersion
+  name: CanonicalizationVersion
+  nameWithType: MarketEventDto.CanonicalizationVersion
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalizationVersion
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CanonicalVenue
+  name: CanonicalVenue
+  nameWithType: MarketEventDto.CanonicalVenue
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalVenue
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CanonicalSymbol
+  name: CanonicalSymbol
+  nameWithType: MarketEventDto.CanonicalSymbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CanonicalSymbol
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+  commentId: P:Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_Symbol
+  name: Symbol
+  nameWithType: MarketEventDto.Symbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.Symbol
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_EffectiveSymbol
+  name: EffectiveSymbol
+  nameWithType: MarketEventDto.EffectiveSymbol
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.EffectiveSymbol
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateTrade_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_Trade_System_Int64_System_String_
+  name: CreateTrade
+  nameWithType: MarketEventDto.CreateTrade
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateTrade
+- uid: Meridian.Contracts.Domain.Models.Trade
+  commentId: T:Meridian.Contracts.Domain.Models.Trade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.Trade.html
+  name: Trade
+  nameWithType: Trade
+  fullName: Meridian.Contracts.Domain.Models.Trade
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventDto
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html
+  name: MarketEventDto
+  nameWithType: MarketEventDto
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateL2Snapshot_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_LOBSnapshot_System_Int64_System_String_
+  name: CreateL2Snapshot
+  nameWithType: MarketEventDto.CreateL2Snapshot
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2Snapshot
+- uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.LOBSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.LOBSnapshot.html
+  name: LOBSnapshot
+  nameWithType: LOBSnapshot
+  fullName: Meridian.Contracts.Domain.Models.LOBSnapshot
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateBboQuote_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload_System_Int64_System_String_
+  name: CreateBboQuote
+  nameWithType: MarketEventDto.CreateBboQuote
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateBboQuote
+- uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+  commentId: T:Meridian.Contracts.Domain.Models.BboQuotePayload
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.BboQuotePayload.html
+  name: BboQuotePayload
+  nameWithType: BboQuotePayload
+  fullName: Meridian.Contracts.Domain.Models.BboQuotePayload
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateL2SnapshotPayload_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_L2SnapshotPayload_System_Int64_System_String_
+  name: CreateL2SnapshotPayload
+  nameWithType: MarketEventDto.CreateL2SnapshotPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateL2SnapshotPayload
+- uid: Meridian.Contracts.Domain.Models.L2SnapshotPayload
+  commentId: T:Meridian.Contracts.Domain.Models.L2SnapshotPayload
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.L2SnapshotPayload.html
+  name: L2SnapshotPayload
+  nameWithType: L2SnapshotPayload
+  fullName: Meridian.Contracts.Domain.Models.L2SnapshotPayload
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOrderFlow_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OrderFlowStatistics_System_Int64_System_String_
+  name: CreateOrderFlow
+  nameWithType: MarketEventDto.CreateOrderFlow
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderFlow
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  commentId: T:Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html
+  name: OrderFlowStatistics
+  nameWithType: OrderFlowStatistics
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateIntegrity_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_IntegrityEvent_System_Int64_System_String_
+  name: CreateIntegrity
+  nameWithType: MarketEventDto.CreateIntegrity
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateIntegrity
+- uid: Meridian.Contracts.Domain.Models.IntegrityEvent
+  commentId: T:Meridian.Contracts.Domain.Models.IntegrityEvent
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.IntegrityEvent.html
+  name: IntegrityEvent
+  nameWithType: IntegrityEvent
+  fullName: Meridian.Contracts.Domain.Models.IntegrityEvent
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateDepthIntegrity_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_DepthIntegrityEvent_System_Int64_System_String_
+  name: CreateDepthIntegrity
+  nameWithType: MarketEventDto.CreateDepthIntegrity
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateDepthIntegrity
+- uid: Meridian.Contracts.Domain.Models.DepthIntegrityEvent
+  commentId: T:Meridian.Contracts.Domain.Models.DepthIntegrityEvent
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.DepthIntegrityEvent.html
+  name: DepthIntegrityEvent
+  nameWithType: DepthIntegrityEvent
+  fullName: Meridian.Contracts.Domain.Models.DepthIntegrityEvent
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateHeartbeat_System_DateTimeOffset_System_String_
+  name: CreateHeartbeat
+  nameWithType: MarketEventDto.CreateHeartbeat
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHeartbeat
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateHistoricalBar_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_HistoricalBar_System_Int64_System_String_
+  name: CreateHistoricalBar
+  nameWithType: MarketEventDto.CreateHistoricalBar
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalBar
+- uid: Meridian.Contracts.Domain.Models.HistoricalBar
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalBar
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalBar.html
+  name: HistoricalBar
+  nameWithType: HistoricalBar
+  fullName: Meridian.Contracts.Domain.Models.HistoricalBar
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateHistoricalQuote_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_HistoricalQuote_System_Int64_System_String_
+  name: CreateHistoricalQuote
+  nameWithType: MarketEventDto.CreateHistoricalQuote
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalQuote
+- uid: Meridian.Contracts.Domain.Models.HistoricalQuote
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalQuote
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalQuote.html
+  name: HistoricalQuote
+  nameWithType: HistoricalQuote
+  fullName: Meridian.Contracts.Domain.Models.HistoricalQuote
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateHistoricalTrade_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_HistoricalTrade_System_Int64_System_String_
+  name: CreateHistoricalTrade
+  nameWithType: MarketEventDto.CreateHistoricalTrade
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalTrade
+- uid: Meridian.Contracts.Domain.Models.HistoricalTrade
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalTrade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalTrade.html
+  name: HistoricalTrade
+  nameWithType: HistoricalTrade
+  fullName: Meridian.Contracts.Domain.Models.HistoricalTrade
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateHistoricalAuction_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_HistoricalAuction_System_Int64_System_String_
+  name: CreateHistoricalAuction
+  nameWithType: MarketEventDto.CreateHistoricalAuction
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateHistoricalAuction
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalAuction
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html
+  name: HistoricalAuction
+  nameWithType: HistoricalAuction
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOptionQuote_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OptionQuote_System_Int64_System_String_
+  name: CreateOptionQuote
+  nameWithType: MarketEventDto.CreateOptionQuote
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionQuote
+- uid: Meridian.Contracts.Domain.Models.OptionQuote
+  commentId: T:Meridian.Contracts.Domain.Models.OptionQuote
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionQuote.html
+  name: OptionQuote
+  nameWithType: OptionQuote
+  fullName: Meridian.Contracts.Domain.Models.OptionQuote
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOptionTrade_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OptionTrade_System_Int64_System_String_
+  name: CreateOptionTrade
+  nameWithType: MarketEventDto.CreateOptionTrade
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionTrade
+- uid: Meridian.Contracts.Domain.Models.OptionTrade
+  commentId: T:Meridian.Contracts.Domain.Models.OptionTrade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html
+  name: OptionTrade
+  nameWithType: OptionTrade
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOptionGreeks_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_GreeksSnapshot_System_Int64_System_String_
+  name: CreateOptionGreeks
+  nameWithType: MarketEventDto.CreateOptionGreeks
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionGreeks
+- uid: Meridian.Contracts.Domain.Models.GreeksSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.GreeksSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.GreeksSnapshot.html
+  name: GreeksSnapshot
+  nameWithType: GreeksSnapshot
+  fullName: Meridian.Contracts.Domain.Models.GreeksSnapshot
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOptionChain_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OptionChainSnapshot_System_Int64_System_String_
+  name: CreateOptionChain
+  nameWithType: MarketEventDto.CreateOptionChain
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOptionChain
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html
+  name: OptionChainSnapshot
+  nameWithType: OptionChainSnapshot
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOpenInterest_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OpenInterestUpdate_System_Int64_System_String_
+  name: CreateOpenInterest
+  nameWithType: MarketEventDto.CreateOpenInterest
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOpenInterest
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  commentId: T:Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html
+  name: OpenInterestUpdate
+  nameWithType: OpenInterestUpdate
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOrderAdd_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OrderAdd_System_Int64_System_String_
+  name: CreateOrderAdd
+  nameWithType: MarketEventDto.CreateOrderAdd
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderAdd
+- uid: Meridian.Contracts.Domain.Models.OrderAdd
+  commentId: T:Meridian.Contracts.Domain.Models.OrderAdd
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OrderAdd.html
+  name: OrderAdd
+  nameWithType: OrderAdd
+  fullName: Meridian.Contracts.Domain.Models.OrderAdd
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOrderModify_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OrderModify_System_Int64_System_String_
+  name: CreateOrderModify
+  nameWithType: MarketEventDto.CreateOrderModify
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderModify
+- uid: Meridian.Contracts.Domain.Models.OrderModify
+  commentId: T:Meridian.Contracts.Domain.Models.OrderModify
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OrderModify.html
+  name: OrderModify
+  nameWithType: OrderModify
+  fullName: Meridian.Contracts.Domain.Models.OrderModify
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOrderCancel_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OrderCancel_System_Int64_System_String_
+  name: CreateOrderCancel
+  nameWithType: MarketEventDto.CreateOrderCancel
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderCancel
+- uid: Meridian.Contracts.Domain.Models.OrderCancel
+  commentId: T:Meridian.Contracts.Domain.Models.OrderCancel
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OrderCancel.html
+  name: OrderCancel
+  nameWithType: OrderCancel
+  fullName: Meridian.Contracts.Domain.Models.OrderCancel
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOrderExecute_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OrderExecute_System_Int64_System_String_
+  name: CreateOrderExecute
+  nameWithType: MarketEventDto.CreateOrderExecute
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderExecute
+- uid: Meridian.Contracts.Domain.Models.OrderExecute
+  commentId: T:Meridian.Contracts.Domain.Models.OrderExecute
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OrderExecute.html
+  name: OrderExecute
+  nameWithType: OrderExecute
+  fullName: Meridian.Contracts.Domain.Models.OrderExecute
+- uid: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace
+  href: Meridian.Contracts.Domain.Events.MarketEventDto.html#Meridian_Contracts_Domain_Events_MarketEventDto_CreateOrderReplace_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OrderReplace_System_Int64_System_String_
+  name: CreateOrderReplace
+  nameWithType: MarketEventDto.CreateOrderReplace
+  fullName: Meridian.Contracts.Domain.Events.MarketEventDto.CreateOrderReplace
+- uid: Meridian.Contracts.Domain.Models.OrderReplace
+  commentId: T:Meridian.Contracts.Domain.Models.OrderReplace
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html
+  name: OrderReplace
+  nameWithType: OrderReplace
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace

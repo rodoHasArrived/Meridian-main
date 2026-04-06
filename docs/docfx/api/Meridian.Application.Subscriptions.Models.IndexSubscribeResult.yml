@@ -1,0 +1,669 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  commentId: T:Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  id: IndexSubscribeResult
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.IndexSubscribeResult.#ctor(System.String,System.Int32,System.Int32,System.String[],System.String[],System.String)
+  - Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped
+  - Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed
+  - Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId
+  - Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message
+  - Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols
+  - Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols
+  langs:
+  - csharp
+  - vb
+  name: IndexSubscribeResult
+  nameWithType: IndexSubscribeResult
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexSubscribeResult
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Result of an index subscription operation.
+  example: []
+  syntax:
+    content: 'public sealed record IndexSubscribeResult : IEquatable<IndexSubscribeResult>'
+    content.vb: Public NotInheritable Class IndexSubscribeResult Implements IEquatable(Of IndexSubscribeResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.IndexSubscribeResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.#ctor(System.String,System.Int32,System.Int32,System.String[],System.String[],System.String)
+  commentId: M:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.#ctor(System.String,System.Int32,System.Int32,System.String[],System.String[],System.String)
+  id: '#ctor(System.String,System.Int32,System.Int32,System.String[],System.String[],System.String)'
+  parent: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  langs:
+  - csharp
+  - vb
+  name: IndexSubscribeResult(string, int, int, string[], string[], string?)
+  nameWithType: IndexSubscribeResult.IndexSubscribeResult(string, int, int, string[], string[], string?)
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexSubscribeResult(string, int, int, string[], string[], string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Result of an index subscription operation.
+  example: []
+  syntax:
+    content: public IndexSubscribeResult(string IndexId, int ComponentsSubscribed, int ComponentsSkipped, string[] SubscribedSymbols, string[] SkippedSymbols, string? Message = null)
+    parameters:
+    - id: IndexId
+      type: System.String
+    - id: ComponentsSubscribed
+      type: System.Int32
+    - id: ComponentsSkipped
+      type: System.Int32
+    - id: SubscribedSymbols
+      type: System.String[]
+    - id: SkippedSymbols
+      type: System.String[]
+    - id: Message
+      type: System.String
+    content.vb: Public Sub New(IndexId As String, ComponentsSubscribed As Integer, ComponentsSkipped As Integer, SubscribedSymbols As String(), SkippedSymbols As String(), Message As String = Nothing)
+  overload: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.#ctor*
+  nameWithType.vb: IndexSubscribeResult.New(String, Integer, Integer, String(), String(), String)
+  fullName.vb: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.New(String, Integer, Integer, String(), String(), String)
+  name.vb: New(String, Integer, Integer, String(), String(), String)
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId
+  commentId: P:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId
+  id: IndexId
+  parent: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  langs:
+  - csharp
+  - vb
+  name: IndexId
+  nameWithType: IndexSubscribeResult.IndexId
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexId
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string IndexId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IndexId As String
+  overload: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId*
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed
+  commentId: P:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed
+  id: ComponentsSubscribed
+  parent: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  langs:
+  - csharp
+  - vb
+  name: ComponentsSubscribed
+  nameWithType: IndexSubscribeResult.ComponentsSubscribed
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComponentsSubscribed
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public int ComponentsSubscribed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ComponentsSubscribed As Integer
+  overload: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed*
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped
+  commentId: P:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped
+  id: ComponentsSkipped
+  parent: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  langs:
+  - csharp
+  - vb
+  name: ComponentsSkipped
+  nameWithType: IndexSubscribeResult.ComponentsSkipped
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComponentsSkipped
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public int ComponentsSkipped { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ComponentsSkipped As Integer
+  overload: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped*
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols
+  commentId: P:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols
+  id: SubscribedSymbols
+  parent: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  langs:
+  - csharp
+  - vb
+  name: SubscribedSymbols
+  nameWithType: IndexSubscribeResult.SubscribedSymbols
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedSymbols
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string[] SubscribedSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property SubscribedSymbols As String()
+  overload: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols*
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols
+  commentId: P:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols
+  id: SkippedSymbols
+  parent: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  langs:
+  - csharp
+  - vb
+  name: SkippedSymbols
+  nameWithType: IndexSubscribeResult.SkippedSymbols
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedSymbols
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string[] SkippedSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property SkippedSymbols As String()
+  overload: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols*
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message
+  commentId: P:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message
+  id: Message
+  parent: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: IndexSubscribeResult.Message
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.IndexSubscribeResult}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.IndexSubscribeResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<IndexSubscribeResult>
+  nameWithType: IEquatable<IndexSubscribeResult>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.IndexSubscribeResult>
+  nameWithType.vb: IEquatable(Of IndexSubscribeResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.IndexSubscribeResult)
+  name.vb: IEquatable(Of IndexSubscribeResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+    name: IndexSubscribeResult
+    href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult
+    name: IndexSubscribeResult
+    href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.#ctor
+  href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html#Meridian_Application_Subscriptions_Models_IndexSubscribeResult__ctor_System_String_System_Int32_System_Int32_System_String___System_String___System_String_
+  name: IndexSubscribeResult
+  nameWithType: IndexSubscribeResult.IndexSubscribeResult
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexSubscribeResult
+  nameWithType.vb: IndexSubscribeResult.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId
+  href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html#Meridian_Application_Subscriptions_Models_IndexSubscribeResult_IndexId
+  name: IndexId
+  nameWithType: IndexSubscribeResult.IndexId
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.IndexId
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed
+  href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html#Meridian_Application_Subscriptions_Models_IndexSubscribeResult_ComponentsSubscribed
+  name: ComponentsSubscribed
+  nameWithType: IndexSubscribeResult.ComponentsSubscribed
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSubscribed
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped
+  href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html#Meridian_Application_Subscriptions_Models_IndexSubscribeResult_ComponentsSkipped
+  name: ComponentsSkipped
+  nameWithType: IndexSubscribeResult.ComponentsSkipped
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.ComponentsSkipped
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols
+  href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html#Meridian_Application_Subscriptions_Models_IndexSubscribeResult_SubscribedSymbols
+  name: SubscribedSymbols
+  nameWithType: IndexSubscribeResult.SubscribedSymbols
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SubscribedSymbols
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols
+  href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html#Meridian_Application_Subscriptions_Models_IndexSubscribeResult_SkippedSymbols
+  name: SkippedSymbols
+  nameWithType: IndexSubscribeResult.SkippedSymbols
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.SkippedSymbols
+- uid: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message
+  href: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.html#Meridian_Application_Subscriptions_Models_IndexSubscribeResult_Message
+  name: Message
+  nameWithType: IndexSubscribeResult.Message
+  fullName: Meridian.Application.Subscriptions.Models.IndexSubscribeResult.Message

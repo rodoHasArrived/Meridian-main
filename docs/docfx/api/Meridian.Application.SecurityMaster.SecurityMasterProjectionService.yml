@@ -1,0 +1,707 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+  id: SecurityMasterProjectionService
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.SecurityMasterProjectionService.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterProjectionService})
+  - Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync(System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterProjectionService
+  nameWithType: SecurityMasterProjectionService
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterProjectionService
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public sealed class SecurityMasterProjectionService
+    content.vb: Public NotInheritable Class SecurityMasterProjectionService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterProjectionService})
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterProjectionService.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterProjectionService})
+  id: '#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterProjectionService})'
+  parent: Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterProjectionService(ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, ILogger<SecurityMasterProjectionService>)
+  nameWithType: SecurityMasterProjectionService.SecurityMasterProjectionService(ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, ILogger<SecurityMasterProjectionService>)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.SecurityMasterProjectionService(Meridian.Storage.SecurityMaster.ISecurityMasterStore, Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache, Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder, Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterProjectionService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public SecurityMasterProjectionService(ISecurityMasterStore store, SecurityMasterProjectionCache cache, SecurityMasterAggregateRebuilder rebuilder, ILogger<SecurityMasterProjectionService> logger)
+    parameters:
+    - id: store
+      type: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+    - id: cache
+      type: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+    - id: rebuilder
+      type: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterProjectionService}
+    content.vb: Public Sub New(store As ISecurityMasterStore, cache As SecurityMasterProjectionCache, rebuilder As SecurityMasterAggregateRebuilder, logger As ILogger(Of SecurityMasterProjectionService))
+  overload: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.#ctor*
+  nameWithType.vb: SecurityMasterProjectionService.New(ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, ILogger(Of SecurityMasterProjectionService))
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.New(Meridian.Storage.SecurityMaster.ISecurityMasterStore, Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache, Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterProjectionService))
+  name.vb: New(ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, ILogger(Of SecurityMasterProjectionService))
+- uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync(System.Threading.CancellationToken)
+  id: BuildWarmSetAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+  langs:
+  - csharp
+  - vb
+  name: BuildWarmSetAsync(CancellationToken)
+  nameWithType: SecurityMasterProjectionService.BuildWarmSetAsync(CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildWarmSetAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public Task<IReadOnlyList<SecurityProjectionRecord>> BuildWarmSetAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}}
+    content.vb: Public Function BuildWarmSetAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecurityProjectionRecord))
+  overload: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync*
+- uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync(System.Threading.CancellationToken)
+  id: WarmAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+  langs:
+  - csharp
+  - vb
+  name: WarmAsync(CancellationToken)
+  nameWithType: SecurityMasterProjectionService.WarmAsync(CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WarmAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public Task WarmAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WarmAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync*
+references:
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.#ctor*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterProjectionService.#ctor
+  href: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.html#Meridian_Application_SecurityMaster_SecurityMasterProjectionService__ctor_Meridian_Storage_SecurityMaster_ISecurityMasterStore_Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_Meridian_Application_SecurityMaster_SecurityMasterAggregateRebuilder_Microsoft_Extensions_Logging_ILogger_Meridian_Application_SecurityMaster_SecurityMasterProjectionService__
+  name: SecurityMasterProjectionService
+  nameWithType: SecurityMasterProjectionService.SecurityMasterProjectionService
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.SecurityMasterProjectionService
+  nameWithType.vb: SecurityMasterProjectionService.New
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.New
+  name.vb: New
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html
+  name: ISecurityMasterStore
+  nameWithType: ISecurityMasterStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  commentId: T:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.html
+  name: SecurityMasterProjectionCache
+  nameWithType: SecurityMasterProjectionCache
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.html
+  name: SecurityMasterAggregateRebuilder
+  nameWithType: SecurityMasterAggregateRebuilder
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterProjectionService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterProjectionService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<SecurityMasterProjectionService>
+  nameWithType: ILogger<SecurityMasterProjectionService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterProjectionService>
+  nameWithType.vb: ILogger(Of SecurityMasterProjectionService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterProjectionService)
+  name.vb: ILogger(Of SecurityMasterProjectionService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+    name: SecurityMasterProjectionService
+    href: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService
+    name: SecurityMasterProjectionService
+    href: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.html
+  - name: )
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.html#Meridian_Application_SecurityMaster_SecurityMasterProjectionService_BuildWarmSetAsync_System_Threading_CancellationToken_
+  name: BuildWarmSetAsync
+  nameWithType: SecurityMasterProjectionService.BuildWarmSetAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.BuildWarmSetAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecurityProjectionRecord>>
+  nameWithType: Task<IReadOnlyList<SecurityProjectionRecord>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecurityProjectionRecord))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord))
+  name.vb: Task(Of IReadOnlyList(Of SecurityProjectionRecord))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.html#Meridian_Application_SecurityMaster_SecurityMasterProjectionService_WarmAsync_System_Threading_CancellationToken_
+  name: WarmAsync
+  nameWithType: SecurityMasterProjectionService.WarmAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterProjectionService.WarmAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task

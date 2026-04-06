@@ -1,0 +1,228 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.RestructuringType
+  commentId: T:Meridian.Contracts.DirectLending.RestructuringType
+  id: RestructuringType
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.RestructuringType.DebtForEquitySwap
+  - Meridian.Contracts.DirectLending.RestructuringType.Full
+  - Meridian.Contracts.DirectLending.RestructuringType.MaturityExtension
+  - Meridian.Contracts.DirectLending.RestructuringType.PikConversion
+  - Meridian.Contracts.DirectLending.RestructuringType.PrincipalHaircut
+  - Meridian.Contracts.DirectLending.RestructuringType.RateReduction
+  langs:
+  - csharp
+  - vb
+  name: RestructuringType
+  nameWithType: RestructuringType
+  fullName: Meridian.Contracts.DirectLending.RestructuringType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RestructuringType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum RestructuringType : byte'
+    content.vb: Public Enum RestructuringType As Byte
+- uid: Meridian.Contracts.DirectLending.RestructuringType.MaturityExtension
+  commentId: F:Meridian.Contracts.DirectLending.RestructuringType.MaturityExtension
+  id: MaturityExtension
+  parent: Meridian.Contracts.DirectLending.RestructuringType
+  langs:
+  - csharp
+  - vb
+  name: MaturityExtension
+  nameWithType: RestructuringType.MaturityExtension
+  fullName: Meridian.Contracts.DirectLending.RestructuringType.MaturityExtension
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaturityExtension
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: MaturityExtension = 0
+    return:
+      type: Meridian.Contracts.DirectLending.RestructuringType
+- uid: Meridian.Contracts.DirectLending.RestructuringType.RateReduction
+  commentId: F:Meridian.Contracts.DirectLending.RestructuringType.RateReduction
+  id: RateReduction
+  parent: Meridian.Contracts.DirectLending.RestructuringType
+  langs:
+  - csharp
+  - vb
+  name: RateReduction
+  nameWithType: RestructuringType.RateReduction
+  fullName: Meridian.Contracts.DirectLending.RestructuringType.RateReduction
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateReduction
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: RateReduction = 1
+    return:
+      type: Meridian.Contracts.DirectLending.RestructuringType
+- uid: Meridian.Contracts.DirectLending.RestructuringType.PrincipalHaircut
+  commentId: F:Meridian.Contracts.DirectLending.RestructuringType.PrincipalHaircut
+  id: PrincipalHaircut
+  parent: Meridian.Contracts.DirectLending.RestructuringType
+  langs:
+  - csharp
+  - vb
+  name: PrincipalHaircut
+  nameWithType: RestructuringType.PrincipalHaircut
+  fullName: Meridian.Contracts.DirectLending.RestructuringType.PrincipalHaircut
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrincipalHaircut
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: PrincipalHaircut = 2
+    return:
+      type: Meridian.Contracts.DirectLending.RestructuringType
+- uid: Meridian.Contracts.DirectLending.RestructuringType.DebtForEquitySwap
+  commentId: F:Meridian.Contracts.DirectLending.RestructuringType.DebtForEquitySwap
+  id: DebtForEquitySwap
+  parent: Meridian.Contracts.DirectLending.RestructuringType
+  langs:
+  - csharp
+  - vb
+  name: DebtForEquitySwap
+  nameWithType: RestructuringType.DebtForEquitySwap
+  fullName: Meridian.Contracts.DirectLending.RestructuringType.DebtForEquitySwap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DebtForEquitySwap
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: DebtForEquitySwap = 3
+    return:
+      type: Meridian.Contracts.DirectLending.RestructuringType
+- uid: Meridian.Contracts.DirectLending.RestructuringType.PikConversion
+  commentId: F:Meridian.Contracts.DirectLending.RestructuringType.PikConversion
+  id: PikConversion
+  parent: Meridian.Contracts.DirectLending.RestructuringType
+  langs:
+  - csharp
+  - vb
+  name: PikConversion
+  nameWithType: RestructuringType.PikConversion
+  fullName: Meridian.Contracts.DirectLending.RestructuringType.PikConversion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PikConversion
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: PikConversion = 4
+    return:
+      type: Meridian.Contracts.DirectLending.RestructuringType
+- uid: Meridian.Contracts.DirectLending.RestructuringType.Full
+  commentId: F:Meridian.Contracts.DirectLending.RestructuringType.Full
+  id: Full
+  parent: Meridian.Contracts.DirectLending.RestructuringType
+  langs:
+  - csharp
+  - vb
+  name: Full
+  nameWithType: RestructuringType.Full
+  fullName: Meridian.Contracts.DirectLending.RestructuringType.Full
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Full
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Full = 5
+    return:
+      type: Meridian.Contracts.DirectLending.RestructuringType
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.RestructuringType
+  commentId: T:Meridian.Contracts.DirectLending.RestructuringType
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.RestructuringType.html
+  name: RestructuringType
+  nameWithType: RestructuringType
+  fullName: Meridian.Contracts.DirectLending.RestructuringType

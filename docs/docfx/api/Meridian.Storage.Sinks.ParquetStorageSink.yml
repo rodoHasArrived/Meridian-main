@@ -1,0 +1,840 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Sinks.ParquetStorageSink
+  commentId: T:Meridian.Storage.Sinks.ParquetStorageSink
+  id: ParquetStorageSink
+  parent: Meridian.Storage.Sinks
+  children:
+  - Meridian.Storage.Sinks.ParquetStorageSink.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Sinks.ParquetStorageOptions)
+  - Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  - Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync
+  - Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ParquetStorageSink
+  nameWithType: ParquetStorageSink
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParquetStorageSink
+    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Apache Parquet storage sink for high-performance columnar storage.
+
+    Provides 10-20x better compression than JSONL and optimized for analytics.
+
+
+    Based on: https://github.com/aloneguid/parquet-dotnet (MIT)
+
+    Reference: docs/open-source-references.md #20
+  example: []
+  syntax:
+    content: >-
+      [StorageSink("parquet", "Apache Parquet Storage", Description = "Writes market events to columnar Parquet files for high-performance analytics.")]
+
+      public sealed class ParquetStorageSink : IStorageSink, IAsyncDisposable, IFlushable
+    content.vb: >-
+      <StorageSink("parquet", "Apache Parquet Storage", Description:="Writes market events to columnar Parquet files for high-performance analytics.")>
+
+      Public NotInheritable Class ParquetStorageSink Implements IStorageSink, IAsyncDisposable, IFlushable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink
+  - System.IAsyncDisposable
+  - Meridian.Application.Services.IFlushable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Storage.StorageSinkAttribute
+    ctor: Meridian.Storage.StorageSinkAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: parquet
+    - type: System.String
+      value: Apache Parquet Storage
+    namedArguments:
+    - name: Description
+      type: System.String
+      value: Writes market events to columnar Parquet files for high-performance analytics.
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Sinks.ParquetStorageOptions)
+  commentId: M:Meridian.Storage.Sinks.ParquetStorageSink.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Sinks.ParquetStorageOptions)
+  id: '#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Sinks.ParquetStorageOptions)'
+  parent: Meridian.Storage.Sinks.ParquetStorageSink
+  langs:
+  - csharp
+  - vb
+  name: ParquetStorageSink(StorageOptions, ParquetStorageOptions?)
+  nameWithType: ParquetStorageSink.ParquetStorageSink(StorageOptions, ParquetStorageOptions?)
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.ParquetStorageSink(Meridian.Storage.StorageOptions, Meridian.Storage.Sinks.ParquetStorageOptions?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null)
+    parameters:
+    - id: options
+      type: Meridian.Storage.StorageOptions
+    - id: parquetOptions
+      type: Meridian.Storage.Sinks.ParquetStorageOptions
+    content.vb: Public Sub New(options As StorageOptions, parquetOptions As ParquetStorageOptions = Nothing)
+  overload: Meridian.Storage.Sinks.ParquetStorageSink.#ctor*
+  nameWithType.vb: ParquetStorageSink.New(StorageOptions, ParquetStorageOptions)
+  fullName.vb: Meridian.Storage.Sinks.ParquetStorageSink.New(Meridian.Storage.StorageOptions, Meridian.Storage.Sinks.ParquetStorageOptions)
+  name.vb: New(StorageOptions, ParquetStorageOptions)
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Sinks.ParquetStorageSink
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(MarketEvent, CancellationToken)
+  nameWithType: ParquetStorageSink.AppendAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  example: []
+  syntax:
+    content: public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask
+    content.vb: Public Function AppendAsync(evt As MarketEvent, ct As CancellationToken = Nothing) As ValueTask
+  overload: Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync*
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Sinks.ParquetStorageSink
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: ParquetStorageSink.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  example: []
+  syntax:
+    content: public Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync*
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync
+  commentId: M:Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Storage.Sinks.ParquetStorageSink
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: ParquetStorageSink.DisposeAsync()
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
+    startLine: 584
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  href: Meridian.html
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Interfaces.IStorageSink
+  commentId: T:Meridian.Storage.Interfaces.IStorageSink
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStorageSink.html
+  name: IStorageSink
+  nameWithType: IStorageSink
+  fullName: Meridian.Storage.Interfaces.IStorageSink
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: Meridian.Application.Services.IFlushable
+  commentId: T:Meridian.Application.Services.IFlushable
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IFlushable.html
+  name: IFlushable
+  nameWithType: IFlushable
+  fullName: Meridian.Application.Services.IFlushable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.#ctor*
+  commentId: Overload:Meridian.Storage.Sinks.ParquetStorageSink.#ctor
+  href: Meridian.Storage.Sinks.ParquetStorageSink.html#Meridian_Storage_Sinks_ParquetStorageSink__ctor_Meridian_Storage_StorageOptions_Meridian_Storage_Sinks_ParquetStorageOptions_
+  name: ParquetStorageSink
+  nameWithType: ParquetStorageSink.ParquetStorageSink
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.ParquetStorageSink
+  nameWithType.vb: ParquetStorageSink.New
+  fullName.vb: Meridian.Storage.Sinks.ParquetStorageSink.New
+  name.vb: New
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: Meridian.Storage.Sinks.ParquetStorageOptions
+  commentId: T:Meridian.Storage.Sinks.ParquetStorageOptions
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.ParquetStorageOptions.html
+  name: ParquetStorageOptions
+  nameWithType: ParquetStorageOptions
+  fullName: Meridian.Storage.Sinks.ParquetStorageOptions
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync*
+  commentId: Overload:Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync
+  href: Meridian.Storage.Sinks.ParquetStorageSink.html#Meridian_Storage_Sinks_ParquetStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: ParquetStorageSink.AppendAsync
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.AppendAsync
+- uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  isExternal: true
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: AppendAsync(MarketEvent, CancellationToken)
+  nameWithType: IStorageSink.AppendAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync*
+  commentId: Overload:Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync
+  href: Meridian.Storage.Sinks.ParquetStorageSink.html#Meridian_Storage_Sinks_ParquetStorageSink_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: ParquetStorageSink.FlushAsync
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.FlushAsync
+- uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  isExternal: true
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync(CancellationToken)
+  nameWithType: IStorageSink.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.IFlushable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: FlushAsync(CancellationToken)
+  nameWithType: IFlushable.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync*
+  commentId: Overload:Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync
+  href: Meridian.Storage.Sinks.ParquetStorageSink.html#Meridian_Storage_Sinks_ParquetStorageSink_DisposeAsync
+  name: DisposeAsync
+  nameWithType: ParquetStorageSink.DisposeAsync
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )

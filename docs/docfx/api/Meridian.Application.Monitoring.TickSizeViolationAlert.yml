@@ -1,0 +1,818 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert
+  commentId: T:Meridian.Application.Monitoring.TickSizeViolationAlert
+  id: TickSizeViolationAlert
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.#ctor(System.String,System.Decimal,Meridian.Application.Monitoring.TickSizePriceType,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.Int64)
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.Price
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.Provider
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp
+  - Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount
+  langs:
+  - csharp
+  - vb
+  name: TickSizeViolationAlert
+  nameWithType: TickSizeViolationAlert
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TickSizeViolationAlert
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a tick size violation.
+  example: []
+  syntax:
+    content: 'public readonly record struct TickSizeViolationAlert : IEquatable<TickSizeViolationAlert>'
+    content.vb: Public Structure TickSizeViolationAlert Implements IEquatable(Of TickSizeViolationAlert)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.TickSizeViolationAlert}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.#ctor(System.String,System.Decimal,Meridian.Application.Monitoring.TickSizePriceType,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.Int64)
+  commentId: M:Meridian.Application.Monitoring.TickSizeViolationAlert.#ctor(System.String,System.Decimal,Meridian.Application.Monitoring.TickSizePriceType,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.Int64)
+  id: '#ctor(System.String,System.Decimal,Meridian.Application.Monitoring.TickSizePriceType,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.Int64)'
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: TickSizeViolationAlert(string, decimal, TickSizePriceType, decimal, decimal, decimal, decimal, string?, DateTimeOffset, long)
+  nameWithType: TickSizeViolationAlert.TickSizeViolationAlert(string, decimal, TickSizePriceType, decimal, decimal, decimal, decimal, string?, DateTimeOffset, long)
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.TickSizeViolationAlert(string, decimal, Meridian.Application.Monitoring.TickSizePriceType, decimal, decimal, decimal, decimal, string?, System.DateTimeOffset, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a tick size violation.
+  example: []
+  syntax:
+    content: public TickSizeViolationAlert(string Symbol, decimal Price, TickSizePriceType PriceType, decimal ExpectedTickSize, decimal Remainder, decimal NearestValidPriceLow, decimal NearestValidPriceHigh, string? Provider, DateTimeOffset Timestamp, long ViolationCount)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Price
+      type: System.Decimal
+    - id: PriceType
+      type: Meridian.Application.Monitoring.TickSizePriceType
+    - id: ExpectedTickSize
+      type: System.Decimal
+    - id: Remainder
+      type: System.Decimal
+    - id: NearestValidPriceLow
+      type: System.Decimal
+    - id: NearestValidPriceHigh
+      type: System.Decimal
+    - id: Provider
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: ViolationCount
+      type: System.Int64
+    content.vb: Public Sub New(Symbol As String, Price As Decimal, PriceType As TickSizePriceType, ExpectedTickSize As Decimal, Remainder As Decimal, NearestValidPriceLow As Decimal, NearestValidPriceHigh As Decimal, Provider As String, Timestamp As DateTimeOffset, ViolationCount As Long)
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.#ctor*
+  nameWithType.vb: TickSizeViolationAlert.New(String, Decimal, TickSizePriceType, Decimal, Decimal, Decimal, Decimal, String, DateTimeOffset, Long)
+  fullName.vb: Meridian.Application.Monitoring.TickSizeViolationAlert.New(String, Decimal, Meridian.Application.Monitoring.TickSizePriceType, Decimal, Decimal, Decimal, Decimal, String, System.DateTimeOffset, Long)
+  name.vb: New(String, Decimal, TickSizePriceType, Decimal, Decimal, Decimal, Decimal, String, DateTimeOffset, Long)
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: TickSizeViolationAlert.Symbol
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Price
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.Price
+  id: Price
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: TickSizeViolationAlert.Price
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 360
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.Price*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType
+  id: PriceType
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: PriceType
+  nameWithType: TickSizeViolationAlert.PriceType
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceType
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 361
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public TickSizePriceType PriceType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+    content.vb: Public Property PriceType As TickSizePriceType
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize
+  id: ExpectedTickSize
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: ExpectedTickSize
+  nameWithType: TickSizeViolationAlert.ExpectedTickSize
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedTickSize
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal ExpectedTickSize { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ExpectedTickSize As Decimal
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder
+  id: Remainder
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: Remainder
+  nameWithType: TickSizeViolationAlert.Remainder
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Remainder
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal Remainder { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Remainder As Decimal
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow
+  id: NearestValidPriceLow
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: NearestValidPriceLow
+  nameWithType: TickSizeViolationAlert.NearestValidPriceLow
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NearestValidPriceLow
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 364
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal NearestValidPriceLow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NearestValidPriceLow As Decimal
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh
+  id: NearestValidPriceHigh
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: NearestValidPriceHigh
+  nameWithType: TickSizeViolationAlert.NearestValidPriceHigh
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NearestValidPriceHigh
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal NearestValidPriceHigh { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NearestValidPriceHigh As Decimal
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Provider
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: TickSizeViolationAlert.Provider
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 366
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.Provider*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: TickSizeViolationAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 367
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp*
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount
+  commentId: P:Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount
+  id: ViolationCount
+  parent: Meridian.Application.Monitoring.TickSizeViolationAlert
+  langs:
+  - csharp
+  - vb
+  name: ViolationCount
+  nameWithType: TickSizeViolationAlert.ViolationCount
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViolationCount
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 368
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long ViolationCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ViolationCount As Long
+  overload: Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.TickSizeViolationAlert}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.TickSizeViolationAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TickSizeViolationAlert>
+  nameWithType: IEquatable<TickSizeViolationAlert>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.TickSizeViolationAlert>
+  nameWithType.vb: IEquatable(Of TickSizeViolationAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.TickSizeViolationAlert)
+  name.vb: IEquatable(Of TickSizeViolationAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.TickSizeViolationAlert
+    name: TickSizeViolationAlert
+    href: Meridian.Application.Monitoring.TickSizeViolationAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.TickSizeViolationAlert
+    name: TickSizeViolationAlert
+    href: Meridian.Application.Monitoring.TickSizeViolationAlert.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.#ctor
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert__ctor_System_String_System_Decimal_Meridian_Application_Monitoring_TickSizePriceType_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_String_System_DateTimeOffset_System_Int64_
+  name: TickSizeViolationAlert
+  nameWithType: TickSizeViolationAlert.TickSizeViolationAlert
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.TickSizeViolationAlert
+  nameWithType.vb: TickSizeViolationAlert.New
+  fullName.vb: Meridian.Application.Monitoring.TickSizeViolationAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Application.Monitoring.TickSizePriceType
+  commentId: T:Meridian.Application.Monitoring.TickSizePriceType
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.TickSizePriceType.html
+  name: TickSizePriceType
+  nameWithType: TickSizePriceType
+  fullName: Meridian.Application.Monitoring.TickSizePriceType
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_Symbol
+  name: Symbol
+  nameWithType: TickSizeViolationAlert.Symbol
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Symbol
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Price*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.Price
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_Price
+  name: Price
+  nameWithType: TickSizeViolationAlert.Price
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Price
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_PriceType
+  name: PriceType
+  nameWithType: TickSizeViolationAlert.PriceType
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.PriceType
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_ExpectedTickSize
+  name: ExpectedTickSize
+  nameWithType: TickSizeViolationAlert.ExpectedTickSize
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.ExpectedTickSize
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_Remainder
+  name: Remainder
+  nameWithType: TickSizeViolationAlert.Remainder
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Remainder
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_NearestValidPriceLow
+  name: NearestValidPriceLow
+  nameWithType: TickSizeViolationAlert.NearestValidPriceLow
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceLow
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_NearestValidPriceHigh
+  name: NearestValidPriceHigh
+  nameWithType: TickSizeViolationAlert.NearestValidPriceHigh
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.NearestValidPriceHigh
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.Provider
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_Provider
+  name: Provider
+  nameWithType: TickSizeViolationAlert.Provider
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Provider
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_Timestamp
+  name: Timestamp
+  nameWithType: TickSizeViolationAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.Timestamp
+- uid: Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount
+  href: Meridian.Application.Monitoring.TickSizeViolationAlert.html#Meridian_Application_Monitoring_TickSizeViolationAlert_ViolationCount
+  name: ViolationCount
+  nameWithType: TickSizeViolationAlert.ViolationCount
+  fullName: Meridian.Application.Monitoring.TickSizeViolationAlert.ViolationCount

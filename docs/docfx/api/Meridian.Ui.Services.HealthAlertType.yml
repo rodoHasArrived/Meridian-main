@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.HealthAlertType
+  commentId: T:Meridian.Ui.Services.HealthAlertType
+  id: HealthAlertType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.HealthAlertType.ConnectionLost
+  - Meridian.Ui.Services.HealthAlertType.FrequentReconnects
+  - Meridian.Ui.Services.HealthAlertType.HighLatency
+  - Meridian.Ui.Services.HealthAlertType.LowCompleteness
+  - Meridian.Ui.Services.HealthAlertType.LowOverallScore
+  langs:
+  - csharp
+  - vb
+  name: HealthAlertType
+  nameWithType: HealthAlertType
+  fullName: Meridian.Ui.Services.HealthAlertType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthAlertType
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum HealthAlertType : byte'
+    content.vb: Public Enum HealthAlertType As Byte
+- uid: Meridian.Ui.Services.HealthAlertType.LowOverallScore
+  commentId: F:Meridian.Ui.Services.HealthAlertType.LowOverallScore
+  id: LowOverallScore
+  parent: Meridian.Ui.Services.HealthAlertType
+  langs:
+  - csharp
+  - vb
+  name: LowOverallScore
+  nameWithType: HealthAlertType.LowOverallScore
+  fullName: Meridian.Ui.Services.HealthAlertType.LowOverallScore
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowOverallScore
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 447
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: LowOverallScore = 0
+    return:
+      type: Meridian.Ui.Services.HealthAlertType
+- uid: Meridian.Ui.Services.HealthAlertType.HighLatency
+  commentId: F:Meridian.Ui.Services.HealthAlertType.HighLatency
+  id: HighLatency
+  parent: Meridian.Ui.Services.HealthAlertType
+  langs:
+  - csharp
+  - vb
+  name: HighLatency
+  nameWithType: HealthAlertType.HighLatency
+  fullName: Meridian.Ui.Services.HealthAlertType.HighLatency
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighLatency
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 448
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: HighLatency = 1
+    return:
+      type: Meridian.Ui.Services.HealthAlertType
+- uid: Meridian.Ui.Services.HealthAlertType.LowCompleteness
+  commentId: F:Meridian.Ui.Services.HealthAlertType.LowCompleteness
+  id: LowCompleteness
+  parent: Meridian.Ui.Services.HealthAlertType
+  langs:
+  - csharp
+  - vb
+  name: LowCompleteness
+  nameWithType: HealthAlertType.LowCompleteness
+  fullName: Meridian.Ui.Services.HealthAlertType.LowCompleteness
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowCompleteness
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 449
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: LowCompleteness = 2
+    return:
+      type: Meridian.Ui.Services.HealthAlertType
+- uid: Meridian.Ui.Services.HealthAlertType.FrequentReconnects
+  commentId: F:Meridian.Ui.Services.HealthAlertType.FrequentReconnects
+  id: FrequentReconnects
+  parent: Meridian.Ui.Services.HealthAlertType
+  langs:
+  - csharp
+  - vb
+  name: FrequentReconnects
+  nameWithType: HealthAlertType.FrequentReconnects
+  fullName: Meridian.Ui.Services.HealthAlertType.FrequentReconnects
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FrequentReconnects
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 450
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: FrequentReconnects = 3
+    return:
+      type: Meridian.Ui.Services.HealthAlertType
+- uid: Meridian.Ui.Services.HealthAlertType.ConnectionLost
+  commentId: F:Meridian.Ui.Services.HealthAlertType.ConnectionLost
+  id: ConnectionLost
+  parent: Meridian.Ui.Services.HealthAlertType
+  langs:
+  - csharp
+  - vb
+  name: ConnectionLost
+  nameWithType: HealthAlertType.ConnectionLost
+  fullName: Meridian.Ui.Services.HealthAlertType.ConnectionLost
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionLost
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 451
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ConnectionLost = 4
+    return:
+      type: Meridian.Ui.Services.HealthAlertType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.HealthAlertType
+  commentId: T:Meridian.Ui.Services.HealthAlertType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.HealthAlertType.html
+  name: HealthAlertType
+  nameWithType: HealthAlertType
+  fullName: Meridian.Ui.Services.HealthAlertType

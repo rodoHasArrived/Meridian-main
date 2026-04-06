@@ -44,7 +44,16 @@ pwsh -File scripts/dev/capture-desktop-screenshots.ps1 -KeepAppOpen
 ```
 
 The script builds `src/Meridian.Wpf`, launches fixture mode (`MDC_FIXTURE_MODE=1`),
-navigates each page via Command Palette, and writes PNGs to `docs/screenshots/desktop/`.
+navigates each page via the shared desktop workflow runner, and writes PNGs to `docs/screenshots/desktop/`.
+
+For other scripted desktop walkthroughs, use:
+
+```powershell
+pwsh -File scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
+pwsh -File scripts/dev/generate-desktop-user-manual.ps1
+```
+
+`Symbols` is currently excluded from the automated screenshot refresh flow because the page exits the desktop shell in fixture-mode automation; the committed `desktop/wpf-symbols.png` remains as the last known-good capture until that crash is fixed.
 
 ---
 

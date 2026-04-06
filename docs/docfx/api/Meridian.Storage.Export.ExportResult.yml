@@ -1,0 +1,1505 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.ExportResult
+  commentId: T:Meridian.Storage.Export.ExportResult
+  id: ExportResult
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.ExportResult.CompletedAt
+  - Meridian.Storage.Export.ExportResult.CreateFailure(System.String,System.String)
+  - Meridian.Storage.Export.ExportResult.CreateSuccess(System.String,System.String)
+  - Meridian.Storage.Export.ExportResult.DataDictionaryPath
+  - Meridian.Storage.Export.ExportResult.DateRange
+  - Meridian.Storage.Export.ExportResult.DurationSeconds
+  - Meridian.Storage.Export.ExportResult.Error
+  - Meridian.Storage.Export.ExportResult.Files
+  - Meridian.Storage.Export.ExportResult.FilesGenerated
+  - Meridian.Storage.Export.ExportResult.JobId
+  - Meridian.Storage.Export.ExportResult.LineageManifestPath
+  - Meridian.Storage.Export.ExportResult.LoaderScriptPath
+  - Meridian.Storage.Export.ExportResult.OutputDirectory
+  - Meridian.Storage.Export.ExportResult.ProfileId
+  - Meridian.Storage.Export.ExportResult.QualitySummary
+  - Meridian.Storage.Export.ExportResult.StartedAt
+  - Meridian.Storage.Export.ExportResult.Success
+  - Meridian.Storage.Export.ExportResult.Symbols
+  - Meridian.Storage.Export.ExportResult.TotalBytes
+  - Meridian.Storage.Export.ExportResult.TotalRecords
+  - Meridian.Storage.Export.ExportResult.Warnings
+  langs:
+  - csharp
+  - vb
+  name: ExportResult
+  nameWithType: ExportResult
+  fullName: Meridian.Storage.Export.ExportResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportResult
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Result of an export operation.
+  example: []
+  syntax:
+    content: public sealed class ExportResult
+    content.vb: Public NotInheritable Class ExportResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Export.ExportResult.JobId
+  commentId: P:Meridian.Storage.Export.ExportResult.JobId
+  id: JobId
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: JobId
+  nameWithType: ExportResult.JobId
+  fullName: Meridian.Storage.Export.ExportResult.JobId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobId
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Unique ID for this export job.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("jobId")]
+
+      public string JobId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("jobId")>
+
+      Public Property JobId As String
+  overload: Meridian.Storage.Export.ExportResult.JobId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: jobId
+- uid: Meridian.Storage.Export.ExportResult.Success
+  commentId: P:Meridian.Storage.Export.ExportResult.Success
+  id: Success
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: ExportResult.Success
+  fullName: Meridian.Storage.Export.ExportResult.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether the export completed successfully.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("success")]
+
+      public bool Success { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("success")>
+
+      Public Property Success As Boolean
+  overload: Meridian.Storage.Export.ExportResult.Success*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: success
+- uid: Meridian.Storage.Export.ExportResult.ProfileId
+  commentId: P:Meridian.Storage.Export.ExportResult.ProfileId
+  id: ProfileId
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: ProfileId
+  nameWithType: ExportResult.ProfileId
+  fullName: Meridian.Storage.Export.ExportResult.ProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProfileId
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Export profile used.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("profileId")]
+
+      public string ProfileId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("profileId")>
+
+      Public Property ProfileId As String
+  overload: Meridian.Storage.Export.ExportResult.ProfileId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: profileId
+- uid: Meridian.Storage.Export.ExportResult.StartedAt
+  commentId: P:Meridian.Storage.Export.ExportResult.StartedAt
+  id: StartedAt
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: ExportResult.StartedAt
+  fullName: Meridian.Storage.Export.ExportResult.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Start time of export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("startedAt")]
+
+      public DateTime StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("startedAt")>
+
+      Public Property StartedAt As Date
+  overload: Meridian.Storage.Export.ExportResult.StartedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: startedAt
+- uid: Meridian.Storage.Export.ExportResult.CompletedAt
+  commentId: P:Meridian.Storage.Export.ExportResult.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: ExportResult.CompletedAt
+  fullName: Meridian.Storage.Export.ExportResult.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Completion time of export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("completedAt")]
+
+      public DateTime? CompletedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("completedAt")>
+
+      Public Property CompletedAt As Date?
+  overload: Meridian.Storage.Export.ExportResult.CompletedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: completedAt
+- uid: Meridian.Storage.Export.ExportResult.DurationSeconds
+  commentId: P:Meridian.Storage.Export.ExportResult.DurationSeconds
+  id: DurationSeconds
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: DurationSeconds
+  nameWithType: ExportResult.DurationSeconds
+  fullName: Meridian.Storage.Export.ExportResult.DurationSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DurationSeconds
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Duration in seconds.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("durationSeconds")]
+
+      public double DurationSeconds { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <JsonPropertyName("durationSeconds")>
+
+      Public ReadOnly Property DurationSeconds As Double
+  overload: Meridian.Storage.Export.ExportResult.DurationSeconds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: durationSeconds
+- uid: Meridian.Storage.Export.ExportResult.FilesGenerated
+  commentId: P:Meridian.Storage.Export.ExportResult.FilesGenerated
+  id: FilesGenerated
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: FilesGenerated
+  nameWithType: ExportResult.FilesGenerated
+  fullName: Meridian.Storage.Export.ExportResult.FilesGenerated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesGenerated
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Number of files generated.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("filesGenerated")]
+
+      public int FilesGenerated { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("filesGenerated")>
+
+      Public Property FilesGenerated As Integer
+  overload: Meridian.Storage.Export.ExportResult.FilesGenerated*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: filesGenerated
+- uid: Meridian.Storage.Export.ExportResult.TotalRecords
+  commentId: P:Meridian.Storage.Export.ExportResult.TotalRecords
+  id: TotalRecords
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: TotalRecords
+  nameWithType: ExportResult.TotalRecords
+  fullName: Meridian.Storage.Export.ExportResult.TotalRecords
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRecords
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Total records exported.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalRecords")]
+
+      public long TotalRecords { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalRecords")>
+
+      Public Property TotalRecords As Long
+  overload: Meridian.Storage.Export.ExportResult.TotalRecords*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalRecords
+- uid: Meridian.Storage.Export.ExportResult.TotalBytes
+  commentId: P:Meridian.Storage.Export.ExportResult.TotalBytes
+  id: TotalBytes
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: TotalBytes
+  nameWithType: ExportResult.TotalBytes
+  fullName: Meridian.Storage.Export.ExportResult.TotalBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytes
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Total bytes written.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalBytes")]
+
+      public long TotalBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalBytes")>
+
+      Public Property TotalBytes As Long
+  overload: Meridian.Storage.Export.ExportResult.TotalBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalBytes
+- uid: Meridian.Storage.Export.ExportResult.Symbols
+  commentId: P:Meridian.Storage.Export.ExportResult.Symbols
+  id: Symbols
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: ExportResult.Symbols
+  fullName: Meridian.Storage.Export.ExportResult.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Symbols exported.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbols")]
+
+      public string[] Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("symbols")>
+
+      Public Property Symbols As String()
+  overload: Meridian.Storage.Export.ExportResult.Symbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbols
+- uid: Meridian.Storage.Export.ExportResult.DateRange
+  commentId: P:Meridian.Storage.Export.ExportResult.DateRange
+  id: DateRange
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: DateRange
+  nameWithType: ExportResult.DateRange
+  fullName: Meridian.Storage.Export.ExportResult.DateRange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRange
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Date range exported.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("dateRange")]
+
+      public ExportDateRange? DateRange { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportDateRange
+    content.vb: >-
+      <JsonPropertyName("dateRange")>
+
+      Public Property DateRange As ExportDateRange
+  overload: Meridian.Storage.Export.ExportResult.DateRange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dateRange
+- uid: Meridian.Storage.Export.ExportResult.OutputDirectory
+  commentId: P:Meridian.Storage.Export.ExportResult.OutputDirectory
+  id: OutputDirectory
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: OutputDirectory
+  nameWithType: ExportResult.OutputDirectory
+  fullName: Meridian.Storage.Export.ExportResult.OutputDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputDirectory
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Output directory.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("outputDirectory")]
+
+      public string OutputDirectory { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("outputDirectory")>
+
+      Public Property OutputDirectory As String
+  overload: Meridian.Storage.Export.ExportResult.OutputDirectory*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: outputDirectory
+- uid: Meridian.Storage.Export.ExportResult.Files
+  commentId: P:Meridian.Storage.Export.ExportResult.Files
+  id: Files
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: Files
+  nameWithType: ExportResult.Files
+  fullName: Meridian.Storage.Export.ExportResult.Files
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Files
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Generated files.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("files")]
+
+      public ExportedFile[] Files { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportedFile[]
+    content.vb: >-
+      <JsonPropertyName("files")>
+
+      Public Property Files As ExportedFile()
+  overload: Meridian.Storage.Export.ExportResult.Files*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: files
+- uid: Meridian.Storage.Export.ExportResult.DataDictionaryPath
+  commentId: P:Meridian.Storage.Export.ExportResult.DataDictionaryPath
+  id: DataDictionaryPath
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: DataDictionaryPath
+  nameWithType: ExportResult.DataDictionaryPath
+  fullName: Meridian.Storage.Export.ExportResult.DataDictionaryPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataDictionaryPath
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Path to generated data dictionary.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("dataDictionaryPath")]
+
+      public string? DataDictionaryPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("dataDictionaryPath")>
+
+      Public Property DataDictionaryPath As String
+  overload: Meridian.Storage.Export.ExportResult.DataDictionaryPath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dataDictionaryPath
+- uid: Meridian.Storage.Export.ExportResult.LoaderScriptPath
+  commentId: P:Meridian.Storage.Export.ExportResult.LoaderScriptPath
+  id: LoaderScriptPath
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: LoaderScriptPath
+  nameWithType: ExportResult.LoaderScriptPath
+  fullName: Meridian.Storage.Export.ExportResult.LoaderScriptPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoaderScriptPath
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Path to generated loader script.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("loaderScriptPath")]
+
+      public string? LoaderScriptPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("loaderScriptPath")>
+
+      Public Property LoaderScriptPath As String
+  overload: Meridian.Storage.Export.ExportResult.LoaderScriptPath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: loaderScriptPath
+- uid: Meridian.Storage.Export.ExportResult.LineageManifestPath
+  commentId: P:Meridian.Storage.Export.ExportResult.LineageManifestPath
+  id: LineageManifestPath
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: LineageManifestPath
+  nameWithType: ExportResult.LineageManifestPath
+  fullName: Meridian.Storage.Export.ExportResult.LineageManifestPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LineageManifestPath
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Path to generated lineage manifest (provenance tracking).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lineageManifestPath")]
+
+      public string? LineageManifestPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("lineageManifestPath")>
+
+      Public Property LineageManifestPath As String
+  overload: Meridian.Storage.Export.ExportResult.LineageManifestPath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lineageManifestPath
+- uid: Meridian.Storage.Export.ExportResult.QualitySummary
+  commentId: P:Meridian.Storage.Export.ExportResult.QualitySummary
+  id: QualitySummary
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: QualitySummary
+  nameWithType: ExportResult.QualitySummary
+  fullName: Meridian.Storage.Export.ExportResult.QualitySummary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualitySummary
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Data quality summary.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("qualitySummary")]
+
+      public ExportQualitySummary? QualitySummary { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportQualitySummary
+    content.vb: >-
+      <JsonPropertyName("qualitySummary")>
+
+      Public Property QualitySummary As ExportQualitySummary
+  overload: Meridian.Storage.Export.ExportResult.QualitySummary*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: qualitySummary
+- uid: Meridian.Storage.Export.ExportResult.Warnings
+  commentId: P:Meridian.Storage.Export.ExportResult.Warnings
+  id: Warnings
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: ExportResult.Warnings
+  fullName: Meridian.Storage.Export.ExportResult.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Warnings encountered during export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("warnings")]
+
+      public string[] Warnings { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("warnings")>
+
+      Public Property Warnings As String()
+  overload: Meridian.Storage.Export.ExportResult.Warnings*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: warnings
+- uid: Meridian.Storage.Export.ExportResult.Error
+  commentId: P:Meridian.Storage.Export.ExportResult.Error
+  id: Error
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ExportResult.Error
+  fullName: Meridian.Storage.Export.ExportResult.Error
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Error message if failed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("error")]
+
+      public string? Error { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("error")>
+
+      Public Property [Error] As String
+  overload: Meridian.Storage.Export.ExportResult.Error*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: error
+- uid: Meridian.Storage.Export.ExportResult.CreateSuccess(System.String,System.String)
+  commentId: M:Meridian.Storage.Export.ExportResult.CreateSuccess(System.String,System.String)
+  id: CreateSuccess(System.String,System.String)
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: CreateSuccess(string, string)
+  nameWithType: ExportResult.CreateSuccess(string, string)
+  fullName: Meridian.Storage.Export.ExportResult.CreateSuccess(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSuccess
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Create a success result.
+  example: []
+  syntax:
+    content: public static ExportResult CreateSuccess(string profileId, string outputDir)
+    parameters:
+    - id: profileId
+      type: System.String
+    - id: outputDir
+      type: System.String
+    return:
+      type: Meridian.Storage.Export.ExportResult
+    content.vb: Public Shared Function CreateSuccess(profileId As String, outputDir As String) As ExportResult
+  overload: Meridian.Storage.Export.ExportResult.CreateSuccess*
+  nameWithType.vb: ExportResult.CreateSuccess(String, String)
+  fullName.vb: Meridian.Storage.Export.ExportResult.CreateSuccess(String, String)
+  name.vb: CreateSuccess(String, String)
+- uid: Meridian.Storage.Export.ExportResult.CreateFailure(System.String,System.String)
+  commentId: M:Meridian.Storage.Export.ExportResult.CreateFailure(System.String,System.String)
+  id: CreateFailure(System.String,System.String)
+  parent: Meridian.Storage.Export.ExportResult
+  langs:
+  - csharp
+  - vb
+  name: CreateFailure(string, string)
+  nameWithType: ExportResult.CreateFailure(string, string)
+  fullName: Meridian.Storage.Export.ExportResult.CreateFailure(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateFailure
+    path: ../../src/Meridian.Storage/Export/ExportResult.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Create a failure result.
+  example: []
+  syntax:
+    content: public static ExportResult CreateFailure(string profileId, string error)
+    parameters:
+    - id: profileId
+      type: System.String
+    - id: error
+      type: System.String
+    return:
+      type: Meridian.Storage.Export.ExportResult
+    content.vb: Public Shared Function CreateFailure(profileId As String, [error] As String) As ExportResult
+  overload: Meridian.Storage.Export.ExportResult.CreateFailure*
+  nameWithType.vb: ExportResult.CreateFailure(String, String)
+  fullName.vb: Meridian.Storage.Export.ExportResult.CreateFailure(String, String)
+  name.vb: CreateFailure(String, String)
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Export.ExportResult.JobId*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.JobId
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_JobId
+  name: JobId
+  nameWithType: ExportResult.JobId
+  fullName: Meridian.Storage.Export.ExportResult.JobId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Export.ExportResult.Success*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.Success
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_Success
+  name: Success
+  nameWithType: ExportResult.Success
+  fullName: Meridian.Storage.Export.ExportResult.Success
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Export.ExportResult.ProfileId*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.ProfileId
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_ProfileId
+  name: ProfileId
+  nameWithType: ExportResult.ProfileId
+  fullName: Meridian.Storage.Export.ExportResult.ProfileId
+- uid: Meridian.Storage.Export.ExportResult.StartedAt*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.StartedAt
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_StartedAt
+  name: StartedAt
+  nameWithType: ExportResult.StartedAt
+  fullName: Meridian.Storage.Export.ExportResult.StartedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Storage.Export.ExportResult.CompletedAt*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.CompletedAt
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_CompletedAt
+  name: CompletedAt
+  nameWithType: ExportResult.CompletedAt
+  fullName: Meridian.Storage.Export.ExportResult.CompletedAt
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Export.ExportResult.DurationSeconds*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.DurationSeconds
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_DurationSeconds
+  name: DurationSeconds
+  nameWithType: ExportResult.DurationSeconds
+  fullName: Meridian.Storage.Export.ExportResult.DurationSeconds
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Export.ExportResult.FilesGenerated*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.FilesGenerated
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_FilesGenerated
+  name: FilesGenerated
+  nameWithType: ExportResult.FilesGenerated
+  fullName: Meridian.Storage.Export.ExportResult.FilesGenerated
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Export.ExportResult.TotalRecords*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.TotalRecords
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_TotalRecords
+  name: TotalRecords
+  nameWithType: ExportResult.TotalRecords
+  fullName: Meridian.Storage.Export.ExportResult.TotalRecords
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Export.ExportResult.TotalBytes*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.TotalBytes
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_TotalBytes
+  name: TotalBytes
+  nameWithType: ExportResult.TotalBytes
+  fullName: Meridian.Storage.Export.ExportResult.TotalBytes
+- uid: Meridian.Storage.Export.ExportResult.Symbols*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.Symbols
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_Symbols
+  name: Symbols
+  nameWithType: ExportResult.Symbols
+  fullName: Meridian.Storage.Export.ExportResult.Symbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Export.ExportResult.DateRange*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.DateRange
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_DateRange
+  name: DateRange
+  nameWithType: ExportResult.DateRange
+  fullName: Meridian.Storage.Export.ExportResult.DateRange
+- uid: Meridian.Storage.Export.ExportDateRange
+  commentId: T:Meridian.Storage.Export.ExportDateRange
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportDateRange.html
+  name: ExportDateRange
+  nameWithType: ExportDateRange
+  fullName: Meridian.Storage.Export.ExportDateRange
+- uid: Meridian.Storage.Export.ExportResult.OutputDirectory*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.OutputDirectory
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_OutputDirectory
+  name: OutputDirectory
+  nameWithType: ExportResult.OutputDirectory
+  fullName: Meridian.Storage.Export.ExportResult.OutputDirectory
+- uid: Meridian.Storage.Export.ExportResult.Files*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.Files
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_Files
+  name: Files
+  nameWithType: ExportResult.Files
+  fullName: Meridian.Storage.Export.ExportResult.Files
+- uid: Meridian.Storage.Export.ExportedFile[]
+  isExternal: true
+  href: Meridian.Storage.Export.ExportedFile.html
+  name: ExportedFile[]
+  nameWithType: ExportedFile[]
+  fullName: Meridian.Storage.Export.ExportedFile[]
+  nameWithType.vb: ExportedFile()
+  fullName.vb: Meridian.Storage.Export.ExportedFile()
+  name.vb: ExportedFile()
+  spec.csharp:
+  - uid: Meridian.Storage.Export.ExportedFile
+    name: ExportedFile
+    href: Meridian.Storage.Export.ExportedFile.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Storage.Export.ExportedFile
+    name: ExportedFile
+    href: Meridian.Storage.Export.ExportedFile.html
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Export.ExportResult.DataDictionaryPath*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.DataDictionaryPath
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_DataDictionaryPath
+  name: DataDictionaryPath
+  nameWithType: ExportResult.DataDictionaryPath
+  fullName: Meridian.Storage.Export.ExportResult.DataDictionaryPath
+- uid: Meridian.Storage.Export.ExportResult.LoaderScriptPath*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.LoaderScriptPath
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_LoaderScriptPath
+  name: LoaderScriptPath
+  nameWithType: ExportResult.LoaderScriptPath
+  fullName: Meridian.Storage.Export.ExportResult.LoaderScriptPath
+- uid: Meridian.Storage.Export.ExportResult.LineageManifestPath*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.LineageManifestPath
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_LineageManifestPath
+  name: LineageManifestPath
+  nameWithType: ExportResult.LineageManifestPath
+  fullName: Meridian.Storage.Export.ExportResult.LineageManifestPath
+- uid: Meridian.Storage.Export.ExportResult.QualitySummary*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.QualitySummary
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_QualitySummary
+  name: QualitySummary
+  nameWithType: ExportResult.QualitySummary
+  fullName: Meridian.Storage.Export.ExportResult.QualitySummary
+- uid: Meridian.Storage.Export.ExportQualitySummary
+  commentId: T:Meridian.Storage.Export.ExportQualitySummary
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportQualitySummary.html
+  name: ExportQualitySummary
+  nameWithType: ExportQualitySummary
+  fullName: Meridian.Storage.Export.ExportQualitySummary
+- uid: Meridian.Storage.Export.ExportResult.Warnings*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.Warnings
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_Warnings
+  name: Warnings
+  nameWithType: ExportResult.Warnings
+  fullName: Meridian.Storage.Export.ExportResult.Warnings
+- uid: Meridian.Storage.Export.ExportResult.Error*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.Error
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_Error
+  name: Error
+  nameWithType: ExportResult.Error
+  fullName: Meridian.Storage.Export.ExportResult.Error
+- uid: Meridian.Storage.Export.ExportResult.CreateSuccess*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.CreateSuccess
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_CreateSuccess_System_String_System_String_
+  name: CreateSuccess
+  nameWithType: ExportResult.CreateSuccess
+  fullName: Meridian.Storage.Export.ExportResult.CreateSuccess
+- uid: Meridian.Storage.Export.ExportResult
+  commentId: T:Meridian.Storage.Export.ExportResult
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportResult.html
+  name: ExportResult
+  nameWithType: ExportResult
+  fullName: Meridian.Storage.Export.ExportResult
+- uid: Meridian.Storage.Export.ExportResult.CreateFailure*
+  commentId: Overload:Meridian.Storage.Export.ExportResult.CreateFailure
+  href: Meridian.Storage.Export.ExportResult.html#Meridian_Storage_Export_ExportResult_CreateFailure_System_String_System_String_
+  name: CreateFailure
+  nameWithType: ExportResult.CreateFailure
+  fullName: Meridian.Storage.Export.ExportResult.CreateFailure

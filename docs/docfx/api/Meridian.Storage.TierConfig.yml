@@ -1,0 +1,644 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.TierConfig
+  commentId: T:Meridian.Storage.TierConfig
+  id: TierConfig
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.TierConfig.Compression
+  - Meridian.Storage.TierConfig.Format
+  - Meridian.Storage.TierConfig.MaxAgeDays
+  - Meridian.Storage.TierConfig.MaxSizeGb
+  - Meridian.Storage.TierConfig.Name
+  - Meridian.Storage.TierConfig.Path
+  - Meridian.Storage.TierConfig.StorageClass
+  langs:
+  - csharp
+  - vb
+  name: TierConfig
+  nameWithType: TierConfig
+  fullName: Meridian.Storage.TierConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TierConfig
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Configuration for a single storage tier.
+  example: []
+  syntax:
+    content: public sealed class TierConfig
+    content.vb: Public NotInheritable Class TierConfig
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.TierConfig.Name
+  commentId: P:Meridian.Storage.TierConfig.Name
+  id: Name
+  parent: Meridian.Storage.TierConfig
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: TierConfig.Name
+  fullName: Meridian.Storage.TierConfig.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Tier name (hot, warm, cold, archive).
+  example: []
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Storage.TierConfig.Name*
+- uid: Meridian.Storage.TierConfig.Path
+  commentId: P:Meridian.Storage.TierConfig.Path
+  id: Path
+  parent: Meridian.Storage.TierConfig
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: TierConfig.Path
+  fullName: Meridian.Storage.TierConfig.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 361
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Storage path for this tier.
+  example: []
+  syntax:
+    content: public string Path { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.Storage.TierConfig.Path*
+- uid: Meridian.Storage.TierConfig.MaxAgeDays
+  commentId: P:Meridian.Storage.TierConfig.MaxAgeDays
+  id: MaxAgeDays
+  parent: Meridian.Storage.TierConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxAgeDays
+  nameWithType: TierConfig.MaxAgeDays
+  fullName: Meridian.Storage.TierConfig.MaxAgeDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxAgeDays
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 364
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Maximum age in days before migration to next tier.
+  example: []
+  syntax:
+    content: public int? MaxAgeDays { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property MaxAgeDays As Integer?
+  overload: Meridian.Storage.TierConfig.MaxAgeDays*
+- uid: Meridian.Storage.TierConfig.MaxSizeGb
+  commentId: P:Meridian.Storage.TierConfig.MaxSizeGb
+  id: MaxSizeGb
+  parent: Meridian.Storage.TierConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxSizeGb
+  nameWithType: TierConfig.MaxSizeGb
+  fullName: Meridian.Storage.TierConfig.MaxSizeGb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSizeGb
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 367
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Maximum size in GB for this tier.
+  example: []
+  syntax:
+    content: public long? MaxSizeGb { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MaxSizeGb As Long?
+  overload: Meridian.Storage.TierConfig.MaxSizeGb*
+- uid: Meridian.Storage.TierConfig.Format
+  commentId: P:Meridian.Storage.TierConfig.Format
+  id: Format
+  parent: Meridian.Storage.TierConfig
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: TierConfig.Format
+  fullName: Meridian.Storage.TierConfig.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 370
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: File format for this tier (jsonl, jsonl.gz, parquet).
+  example: []
+  syntax:
+    content: public string Format { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Format As String
+  overload: Meridian.Storage.TierConfig.Format*
+- uid: Meridian.Storage.TierConfig.Compression
+  commentId: P:Meridian.Storage.TierConfig.Compression
+  id: Compression
+  parent: Meridian.Storage.TierConfig
+  langs:
+  - csharp
+  - vb
+  name: Compression
+  nameWithType: TierConfig.Compression
+  fullName: Meridian.Storage.TierConfig.Compression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compression
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 373
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Compression for this tier.
+  example: []
+  syntax:
+    content: public CompressionCodec? Compression { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Storage.CompressionCodec}
+    content.vb: Public Property Compression As CompressionCodec?
+  overload: Meridian.Storage.TierConfig.Compression*
+- uid: Meridian.Storage.TierConfig.StorageClass
+  commentId: P:Meridian.Storage.TierConfig.StorageClass
+  id: StorageClass
+  parent: Meridian.Storage.TierConfig
+  langs:
+  - csharp
+  - vb
+  name: StorageClass
+  nameWithType: TierConfig.StorageClass
+  fullName: Meridian.Storage.TierConfig.StorageClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageClass
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: S3 storage class for cloud tiers.
+  example: []
+  syntax:
+    content: public string? StorageClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StorageClass As String
+  overload: Meridian.Storage.TierConfig.StorageClass*
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.TierConfig.Name*
+  commentId: Overload:Meridian.Storage.TierConfig.Name
+  href: Meridian.Storage.TierConfig.html#Meridian_Storage_TierConfig_Name
+  name: Name
+  nameWithType: TierConfig.Name
+  fullName: Meridian.Storage.TierConfig.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.TierConfig.Path*
+  commentId: Overload:Meridian.Storage.TierConfig.Path
+  href: Meridian.Storage.TierConfig.html#Meridian_Storage_TierConfig_Path
+  name: Path
+  nameWithType: TierConfig.Path
+  fullName: Meridian.Storage.TierConfig.Path
+- uid: Meridian.Storage.TierConfig.MaxAgeDays*
+  commentId: Overload:Meridian.Storage.TierConfig.MaxAgeDays
+  href: Meridian.Storage.TierConfig.html#Meridian_Storage_TierConfig_MaxAgeDays
+  name: MaxAgeDays
+  nameWithType: TierConfig.MaxAgeDays
+  fullName: Meridian.Storage.TierConfig.MaxAgeDays
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.TierConfig.MaxSizeGb*
+  commentId: Overload:Meridian.Storage.TierConfig.MaxSizeGb
+  href: Meridian.Storage.TierConfig.html#Meridian_Storage_TierConfig_MaxSizeGb
+  name: MaxSizeGb
+  nameWithType: TierConfig.MaxSizeGb
+  fullName: Meridian.Storage.TierConfig.MaxSizeGb
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Storage.TierConfig.Format*
+  commentId: Overload:Meridian.Storage.TierConfig.Format
+  href: Meridian.Storage.TierConfig.html#Meridian_Storage_TierConfig_Format
+  name: Format
+  nameWithType: TierConfig.Format
+  fullName: Meridian.Storage.TierConfig.Format
+- uid: Meridian.Storage.TierConfig.Compression*
+  commentId: Overload:Meridian.Storage.TierConfig.Compression
+  href: Meridian.Storage.TierConfig.html#Meridian_Storage_TierConfig_Compression
+  name: Compression
+  nameWithType: TierConfig.Compression
+  fullName: Meridian.Storage.TierConfig.Compression
+- uid: System.Nullable{Meridian.Storage.CompressionCodec}
+  commentId: T:System.Nullable{Meridian.Storage.CompressionCodec}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Storage.CompressionCodec.html
+  name: CompressionCodec?
+  nameWithType: CompressionCodec?
+  fullName: Meridian.Storage.CompressionCodec?
+  spec.csharp:
+  - uid: Meridian.Storage.CompressionCodec
+    name: CompressionCodec
+    href: Meridian.Storage.CompressionCodec.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Storage.CompressionCodec
+    name: CompressionCodec
+    href: Meridian.Storage.CompressionCodec.html
+  - name: '?'
+- uid: Meridian.Storage.TierConfig.StorageClass*
+  commentId: Overload:Meridian.Storage.TierConfig.StorageClass
+  href: Meridian.Storage.TierConfig.html#Meridian_Storage_TierConfig_StorageClass
+  name: StorageClass
+  nameWithType: TierConfig.StorageClass
+  fullName: Meridian.Storage.TierConfig.StorageClass

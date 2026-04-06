@@ -1,0 +1,849 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto
+  commentId: T:Meridian.Contracts.Configuration.DerivativesConfigDto
+  id: DerivativesConfigDto
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange
+  - Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings
+  langs:
+  - csharp
+  - vb
+  name: DerivativesConfigDto
+  nameWithType: DerivativesConfigDto
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DerivativesConfigDto
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Configuration for derivatives (options and futures) data collection.
+  example: []
+  syntax:
+    content: public sealed class DerivativesConfigDto
+    content.vb: Public NotInheritable Class DerivativesConfigDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled
+  id: Enabled
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: DerivativesConfigDto.Enabled
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Whether derivatives tracking is enabled.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("enabled")]
+
+      public bool Enabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("enabled")>
+
+      Public Property Enabled As Boolean
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: enabled
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings
+  id: Underlyings
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Underlyings
+  nameWithType: DerivativesConfigDto.Underlyings
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Underlyings
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Underlying symbols to track options for (e.g., ["SPX", "SPY", "QQQ", "AAPL"]).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("underlyings")]
+
+      public string[]? Underlyings { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("underlyings")>
+
+      Public Property Underlyings As String()
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: underlyings
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration
+  id: MaxDaysToExpiration
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: MaxDaysToExpiration
+  nameWithType: DerivativesConfigDto.MaxDaysToExpiration
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDaysToExpiration
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: >-
+    Maximum days to expiration for tracked contracts (0 = no limit).
+
+    Default: 90 (only track near-term options).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("maxDaysToExpiration")]
+
+      public int MaxDaysToExpiration { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("maxDaysToExpiration")>
+
+      Public Property MaxDaysToExpiration As Integer
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: maxDaysToExpiration
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange
+  id: StrikeRange
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: StrikeRange
+  nameWithType: DerivativesConfigDto.StrikeRange
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrikeRange
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: >-
+    Number of strikes above and below ATM to track (0 = all strikes).
+
+    Default: 20 (±20 strikes from at-the-money).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("strikeRange")]
+
+      public int StrikeRange { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("strikeRange")>
+
+      Public Property StrikeRange As Integer
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: strikeRange
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks
+  id: CaptureGreeks
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: CaptureGreeks
+  nameWithType: DerivativesConfigDto.CaptureGreeks
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CaptureGreeks
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Whether to capture greeks (delta, gamma, theta, vega, rho, IV).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("captureGreeks")]
+
+      public bool CaptureGreeks { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("captureGreeks")>
+
+      Public Property CaptureGreeks As Boolean
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: captureGreeks
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots
+  id: CaptureChainSnapshots
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: CaptureChainSnapshots
+  nameWithType: DerivativesConfigDto.CaptureChainSnapshots
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CaptureChainSnapshots
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Whether to capture periodic chain snapshots.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("captureChainSnapshots")]
+
+      public bool CaptureChainSnapshots { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("captureChainSnapshots")>
+
+      Public Property CaptureChainSnapshots As Boolean
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: captureChainSnapshots
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds
+  id: ChainSnapshotIntervalSeconds
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: ChainSnapshotIntervalSeconds
+  nameWithType: DerivativesConfigDto.ChainSnapshotIntervalSeconds
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChainSnapshotIntervalSeconds
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: 'Interval in seconds between chain snapshots (default: 300 = 5 minutes).'
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("chainSnapshotIntervalSeconds")]
+
+      public int ChainSnapshotIntervalSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("chainSnapshotIntervalSeconds")>
+
+      Public Property ChainSnapshotIntervalSeconds As Integer
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: chainSnapshotIntervalSeconds
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest
+  id: CaptureOpenInterest
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: CaptureOpenInterest
+  nameWithType: DerivativesConfigDto.CaptureOpenInterest
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CaptureOpenInterest
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Whether to capture open interest updates (typically daily).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("captureOpenInterest")]
+
+      public bool CaptureOpenInterest { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("captureOpenInterest")>
+
+      Public Property CaptureOpenInterest As Boolean
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: captureOpenInterest
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter
+  id: ExpirationFilter
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: ExpirationFilter
+  nameWithType: DerivativesConfigDto.ExpirationFilter
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpirationFilter
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: >-
+    Filter for expiration types to track.
+
+    Values: "Weekly", "Monthly", "Quarterly", "LEAPS", "All".
+
+    Default: ["Weekly", "Monthly"] — skip quarterlies and LEAPS unless needed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("expirationFilter")]
+
+      public string[]? ExpirationFilter { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("expirationFilter")>
+
+      Public Property ExpirationFilter As String()
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: expirationFilter
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions
+  commentId: P:Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions
+  id: IndexOptions
+  parent: Meridian.Contracts.Configuration.DerivativesConfigDto
+  langs:
+  - csharp
+  - vb
+  name: IndexOptions
+  nameWithType: DerivativesConfigDto.IndexOptions
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexOptions
+    path: ../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: >-
+    Index options configuration (SPX, NDX, RUT, VIX).
+
+    These are European-style and cash-settled.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("indexOptions")]
+
+      public IndexOptionsConfigDto? IndexOptions { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+    content.vb: >-
+      <JsonPropertyName("indexOptions")>
+
+      Public Property IndexOptions As IndexOptionsConfigDto
+  overload: Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: indexOptions
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_Enabled
+  name: Enabled
+  nameWithType: DerivativesConfigDto.Enabled
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_Underlyings
+  name: Underlyings
+  nameWithType: DerivativesConfigDto.Underlyings
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.Underlyings
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_MaxDaysToExpiration
+  name: MaxDaysToExpiration
+  nameWithType: DerivativesConfigDto.MaxDaysToExpiration
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.MaxDaysToExpiration
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_StrikeRange
+  name: StrikeRange
+  nameWithType: DerivativesConfigDto.StrikeRange
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.StrikeRange
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_CaptureGreeks
+  name: CaptureGreeks
+  nameWithType: DerivativesConfigDto.CaptureGreeks
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureGreeks
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_CaptureChainSnapshots
+  name: CaptureChainSnapshots
+  nameWithType: DerivativesConfigDto.CaptureChainSnapshots
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureChainSnapshots
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_ChainSnapshotIntervalSeconds
+  name: ChainSnapshotIntervalSeconds
+  nameWithType: DerivativesConfigDto.ChainSnapshotIntervalSeconds
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.ChainSnapshotIntervalSeconds
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_CaptureOpenInterest
+  name: CaptureOpenInterest
+  nameWithType: DerivativesConfigDto.CaptureOpenInterest
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.CaptureOpenInterest
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_ExpirationFilter
+  name: ExpirationFilter
+  nameWithType: DerivativesConfigDto.ExpirationFilter
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.ExpirationFilter
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions*
+  commentId: Overload:Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html#Meridian_Contracts_Configuration_DerivativesConfigDto_IndexOptions
+  name: IndexOptions
+  nameWithType: DerivativesConfigDto.IndexOptions
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto.IndexOptions
+- uid: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+  commentId: T:Meridian.Contracts.Configuration.IndexOptionsConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IndexOptionsConfigDto.html
+  name: IndexOptionsConfigDto
+  nameWithType: IndexOptionsConfigDto
+  fullName: Meridian.Contracts.Configuration.IndexOptionsConfigDto

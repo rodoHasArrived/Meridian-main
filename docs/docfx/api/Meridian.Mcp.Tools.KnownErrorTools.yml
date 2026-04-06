@@ -1,0 +1,491 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Mcp.Tools.KnownErrorTools
+  commentId: T:Meridian.Mcp.Tools.KnownErrorTools
+  id: KnownErrorTools
+  parent: Meridian.Mcp.Tools
+  children:
+  - Meridian.Mcp.Tools.KnownErrorTools.#ctor(Meridian.Mcp.Services.RepoPathService)
+  - Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors(System.String)
+  - Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors(System.String)
+  langs:
+  - csharp
+  - vb
+  name: KnownErrorTools
+  nameWithType: KnownErrorTools
+  fullName: Meridian.Mcp.Tools.KnownErrorTools
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KnownErrorTools
+    path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs
+    startLine: 2
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerToolType]
+
+      public sealed class KnownErrorTools
+    content.vb: >-
+      <McpServerToolType>
+
+      Public NotInheritable Class KnownErrorTools
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolTypeAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolTypeAttribute.#ctor
+    arguments: []
+- uid: Meridian.Mcp.Tools.KnownErrorTools.#ctor(Meridian.Mcp.Services.RepoPathService)
+  commentId: M:Meridian.Mcp.Tools.KnownErrorTools.#ctor(Meridian.Mcp.Services.RepoPathService)
+  id: '#ctor(Meridian.Mcp.Services.RepoPathService)'
+  parent: Meridian.Mcp.Tools.KnownErrorTools
+  langs:
+  - csharp
+  - vb
+  name: KnownErrorTools(RepoPathService)
+  nameWithType: KnownErrorTools.KnownErrorTools(RepoPathService)
+  fullName: Meridian.Mcp.Tools.KnownErrorTools.KnownErrorTools(Meridian.Mcp.Services.RepoPathService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs
+    startLine: 2
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: public KnownErrorTools(RepoPathService repo)
+    parameters:
+    - id: repo
+      type: Meridian.Mcp.Services.RepoPathService
+    content.vb: Public Sub New(repo As RepoPathService)
+  overload: Meridian.Mcp.Tools.KnownErrorTools.#ctor*
+  nameWithType.vb: KnownErrorTools.New(RepoPathService)
+  fullName.vb: Meridian.Mcp.Tools.KnownErrorTools.New(Meridian.Mcp.Services.RepoPathService)
+  name.vb: New(RepoPathService)
+- uid: Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors(System.String)
+  commentId: M:Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors(System.String)
+  id: GetKnownErrors(System.String)
+  parent: Meridian.Mcp.Tools.KnownErrorTools
+  langs:
+  - csharp
+  - vb
+  name: GetKnownErrors(string?)
+  nameWithType: KnownErrorTools.GetKnownErrors(string?)
+  fullName: Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetKnownErrors
+    path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs
+    startLine: 5
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerTool(Name = "get_known_errors")]
+
+      public string GetKnownErrors(string? area = null)
+    parameters:
+    - id: area
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool(Name:="get_known_errors")>
+
+      Public Function GetKnownErrors(area As String = Nothing) As String
+  overload: Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Name
+      type: System.String
+      value: get_known_errors
+  nameWithType.vb: KnownErrorTools.GetKnownErrors(String)
+  fullName.vb: Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors(String)
+  name.vb: GetKnownErrors(String)
+- uid: Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors(System.String)
+  commentId: M:Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors(System.String)
+  id: SearchKnownErrors(System.String)
+  parent: Meridian.Mcp.Tools.KnownErrorTools
+  langs:
+  - csharp
+  - vb
+  name: SearchKnownErrors(string)
+  nameWithType: KnownErrorTools.SearchKnownErrors(string)
+  fullName: Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchKnownErrors
+    path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs
+    startLine: 23
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerTool(Name = "search_known_errors")]
+
+      public string SearchKnownErrors(string query)
+    parameters:
+    - id: query
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool(Name:="search_known_errors")>
+
+      Public Function SearchKnownErrors(query As String) As String
+  overload: Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Name
+      type: System.String
+      value: search_known_errors
+  nameWithType.vb: KnownErrorTools.SearchKnownErrors(String)
+  fullName.vb: Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors(String)
+  name.vb: SearchKnownErrors(String)
+references:
+- uid: Meridian.Mcp.Tools
+  commentId: N:Meridian.Mcp.Tools
+  href: Meridian.html
+  name: Meridian.Mcp.Tools
+  nameWithType: Meridian.Mcp.Tools
+  fullName: Meridian.Mcp.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Tools
+    name: Tools
+    href: Meridian.Mcp.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Tools
+    name: Tools
+    href: Meridian.Mcp.Tools.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Mcp.Tools.KnownErrorTools.#ctor*
+  commentId: Overload:Meridian.Mcp.Tools.KnownErrorTools.#ctor
+  href: Meridian.Mcp.Tools.KnownErrorTools.html#Meridian_Mcp_Tools_KnownErrorTools__ctor_Meridian_Mcp_Services_RepoPathService_
+  name: KnownErrorTools
+  nameWithType: KnownErrorTools.KnownErrorTools
+  fullName: Meridian.Mcp.Tools.KnownErrorTools.KnownErrorTools
+  nameWithType.vb: KnownErrorTools.New
+  fullName.vb: Meridian.Mcp.Tools.KnownErrorTools.New
+  name.vb: New
+- uid: Meridian.Mcp.Services.RepoPathService
+  commentId: T:Meridian.Mcp.Services.RepoPathService
+  parent: Meridian.Mcp.Services
+  href: Meridian.Mcp.Services.RepoPathService.html
+  name: RepoPathService
+  nameWithType: RepoPathService
+  fullName: Meridian.Mcp.Services.RepoPathService
+- uid: Meridian.Mcp.Services
+  commentId: N:Meridian.Mcp.Services
+  href: Meridian.html
+  name: Meridian.Mcp.Services
+  nameWithType: Meridian.Mcp.Services
+  fullName: Meridian.Mcp.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+- uid: Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors*
+  commentId: Overload:Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors
+  href: Meridian.Mcp.Tools.KnownErrorTools.html#Meridian_Mcp_Tools_KnownErrorTools_GetKnownErrors_System_String_
+  name: GetKnownErrors
+  nameWithType: KnownErrorTools.GetKnownErrors
+  fullName: Meridian.Mcp.Tools.KnownErrorTools.GetKnownErrors
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors*
+  commentId: Overload:Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors
+  href: Meridian.Mcp.Tools.KnownErrorTools.html#Meridian_Mcp_Tools_KnownErrorTools_SearchKnownErrors_System_String_
+  name: SearchKnownErrors
+  nameWithType: KnownErrorTools.SearchKnownErrors
+  fullName: Meridian.Mcp.Tools.KnownErrorTools.SearchKnownErrors

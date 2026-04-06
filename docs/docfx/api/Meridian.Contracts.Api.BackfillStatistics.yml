@@ -1,0 +1,667 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.BackfillStatistics
+  commentId: T:Meridian.Contracts.Api.BackfillStatistics
+  id: BackfillStatistics
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds
+  - Meridian.Contracts.Api.BackfillStatistics.FailedExecutions
+  - Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution
+  - Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions
+  - Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded
+  - Meridian.Contracts.Api.BackfillStatistics.TotalExecutions
+  langs:
+  - csharp
+  - vb
+  name: BackfillStatistics
+  nameWithType: BackfillStatistics
+  fullName: Meridian.Contracts.Api.BackfillStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillStatistics
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Backfill statistics summary.
+  example: []
+  syntax:
+    content: public sealed class BackfillStatistics
+    content.vb: Public NotInheritable Class BackfillStatistics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.BackfillStatistics.TotalExecutions
+  commentId: P:Meridian.Contracts.Api.BackfillStatistics.TotalExecutions
+  id: TotalExecutions
+  parent: Meridian.Contracts.Api.BackfillStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalExecutions
+  nameWithType: BackfillStatistics.TotalExecutions
+  fullName: Meridian.Contracts.Api.BackfillStatistics.TotalExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalExecutions
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the total number of backfill executions.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalExecutions")]
+
+      public int TotalExecutions { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalExecutions")>
+
+      Public Property TotalExecutions As Integer
+  overload: Meridian.Contracts.Api.BackfillStatistics.TotalExecutions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalExecutions
+- uid: Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions
+  commentId: P:Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions
+  id: SuccessfulExecutions
+  parent: Meridian.Contracts.Api.BackfillStatistics
+  langs:
+  - csharp
+  - vb
+  name: SuccessfulExecutions
+  nameWithType: BackfillStatistics.SuccessfulExecutions
+  fullName: Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessfulExecutions
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the number of successful executions.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("successfulExecutions")]
+
+      public int SuccessfulExecutions { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("successfulExecutions")>
+
+      Public Property SuccessfulExecutions As Integer
+  overload: Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: successfulExecutions
+- uid: Meridian.Contracts.Api.BackfillStatistics.FailedExecutions
+  commentId: P:Meridian.Contracts.Api.BackfillStatistics.FailedExecutions
+  id: FailedExecutions
+  parent: Meridian.Contracts.Api.BackfillStatistics
+  langs:
+  - csharp
+  - vb
+  name: FailedExecutions
+  nameWithType: BackfillStatistics.FailedExecutions
+  fullName: Meridian.Contracts.Api.BackfillStatistics.FailedExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedExecutions
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the number of failed executions.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("failedExecutions")]
+
+      public int FailedExecutions { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("failedExecutions")>
+
+      Public Property FailedExecutions As Integer
+  overload: Meridian.Contracts.Api.BackfillStatistics.FailedExecutions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: failedExecutions
+- uid: Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded
+  commentId: P:Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded
+  id: TotalBarsDownloaded
+  parent: Meridian.Contracts.Api.BackfillStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalBarsDownloaded
+  nameWithType: BackfillStatistics.TotalBarsDownloaded
+  fullName: Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBarsDownloaded
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the total count of bars downloaded.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalBarsDownloaded")]
+
+      public long TotalBarsDownloaded { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalBarsDownloaded")>
+
+      Public Property TotalBarsDownloaded As Long
+  overload: Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalBarsDownloaded
+- uid: Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds
+  commentId: P:Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds
+  id: AverageExecutionTimeSeconds
+  parent: Meridian.Contracts.Api.BackfillStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageExecutionTimeSeconds
+  nameWithType: BackfillStatistics.AverageExecutionTimeSeconds
+  fullName: Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageExecutionTimeSeconds
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the average execution time in seconds.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("averageExecutionTimeSeconds")]
+
+      public float AverageExecutionTimeSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("averageExecutionTimeSeconds")>
+
+      Public Property AverageExecutionTimeSeconds As Single
+  overload: Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: averageExecutionTimeSeconds
+- uid: Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution
+  commentId: P:Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution
+  id: LastSuccessfulExecution
+  parent: Meridian.Contracts.Api.BackfillStatistics
+  langs:
+  - csharp
+  - vb
+  name: LastSuccessfulExecution
+  nameWithType: BackfillStatistics.LastSuccessfulExecution
+  fullName: Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastSuccessfulExecution
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the timestamp of the last successful execution.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastSuccessfulExecution")]
+
+      public DateTime? LastSuccessfulExecution { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastSuccessfulExecution")>
+
+      Public Property LastSuccessfulExecution As Date?
+  overload: Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastSuccessfulExecution
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.BackfillStatistics.TotalExecutions*
+  commentId: Overload:Meridian.Contracts.Api.BackfillStatistics.TotalExecutions
+  href: Meridian.Contracts.Api.BackfillStatistics.html#Meridian_Contracts_Api_BackfillStatistics_TotalExecutions
+  name: TotalExecutions
+  nameWithType: BackfillStatistics.TotalExecutions
+  fullName: Meridian.Contracts.Api.BackfillStatistics.TotalExecutions
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions*
+  commentId: Overload:Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions
+  href: Meridian.Contracts.Api.BackfillStatistics.html#Meridian_Contracts_Api_BackfillStatistics_SuccessfulExecutions
+  name: SuccessfulExecutions
+  nameWithType: BackfillStatistics.SuccessfulExecutions
+  fullName: Meridian.Contracts.Api.BackfillStatistics.SuccessfulExecutions
+- uid: Meridian.Contracts.Api.BackfillStatistics.FailedExecutions*
+  commentId: Overload:Meridian.Contracts.Api.BackfillStatistics.FailedExecutions
+  href: Meridian.Contracts.Api.BackfillStatistics.html#Meridian_Contracts_Api_BackfillStatistics_FailedExecutions
+  name: FailedExecutions
+  nameWithType: BackfillStatistics.FailedExecutions
+  fullName: Meridian.Contracts.Api.BackfillStatistics.FailedExecutions
+- uid: Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded*
+  commentId: Overload:Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded
+  href: Meridian.Contracts.Api.BackfillStatistics.html#Meridian_Contracts_Api_BackfillStatistics_TotalBarsDownloaded
+  name: TotalBarsDownloaded
+  nameWithType: BackfillStatistics.TotalBarsDownloaded
+  fullName: Meridian.Contracts.Api.BackfillStatistics.TotalBarsDownloaded
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds*
+  commentId: Overload:Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds
+  href: Meridian.Contracts.Api.BackfillStatistics.html#Meridian_Contracts_Api_BackfillStatistics_AverageExecutionTimeSeconds
+  name: AverageExecutionTimeSeconds
+  nameWithType: BackfillStatistics.AverageExecutionTimeSeconds
+  fullName: Meridian.Contracts.Api.BackfillStatistics.AverageExecutionTimeSeconds
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution*
+  commentId: Overload:Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution
+  href: Meridian.Contracts.Api.BackfillStatistics.html#Meridian_Contracts_Api_BackfillStatistics_LastSuccessfulExecution
+  name: LastSuccessfulExecution
+  nameWithType: BackfillStatistics.LastSuccessfulExecution
+  fullName: Meridian.Contracts.Api.BackfillStatistics.LastSuccessfulExecution
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

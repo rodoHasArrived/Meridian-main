@@ -1,0 +1,243 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.FixtureScenario
+  commentId: T:Meridian.Ui.Services.Services.FixtureScenario
+  id: FixtureScenario
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.FixtureScenario.Connected
+  - Meridian.Ui.Services.Services.FixtureScenario.Degraded
+  - Meridian.Ui.Services.Services.FixtureScenario.Disconnected
+  - Meridian.Ui.Services.Services.FixtureScenario.Error
+  - Meridian.Ui.Services.Services.FixtureScenario.Loading
+  langs:
+  - csharp
+  - vb
+  name: FixtureScenario
+  nameWithType: FixtureScenario
+  fullName: Meridian.Ui.Services.Services.FixtureScenario
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FixtureScenario
+    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Named fixture scenarios for UI development and debugging.
+
+    Each scenario corresponds to a distinct system state that can be activated
+
+    at runtime without restarting the application, enabling rapid iteration
+
+    over all visual states in a single session.
+  example: []
+  syntax:
+    content: public enum FixtureScenario
+    content.vb: Public Enum FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario.Connected
+  commentId: F:Meridian.Ui.Services.Services.FixtureScenario.Connected
+  id: Connected
+  parent: Meridian.Ui.Services.Services.FixtureScenario
+  langs:
+  - csharp
+  - vb
+  name: Connected
+  nameWithType: FixtureScenario.Connected
+  fullName: Meridian.Ui.Services.Services.FixtureScenario.Connected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connected
+    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    System fully connected with healthy metrics — the happy-path state.
+
+    Providers are active, throughput is nominal, no errors.
+  example: []
+  syntax:
+    content: Connected = 0
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario.Disconnected
+  commentId: F:Meridian.Ui.Services.Services.FixtureScenario.Disconnected
+  id: Disconnected
+  parent: Meridian.Ui.Services.Services.FixtureScenario
+  langs:
+  - csharp
+  - vb
+  name: Disconnected
+  nameWithType: FixtureScenario.Disconnected
+  fullName: Meridian.Ui.Services.Services.FixtureScenario.Disconnected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disconnected
+    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    System disconnected from all providers.
+
+    Useful for testing empty-state / reconnection UI paths.
+  example: []
+  syntax:
+    content: Disconnected = 1
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario.Degraded
+  commentId: F:Meridian.Ui.Services.Services.FixtureScenario.Degraded
+  id: Degraded
+  parent: Meridian.Ui.Services.Services.FixtureScenario
+  langs:
+  - csharp
+  - vb
+  name: Degraded
+  nameWithType: FixtureScenario.Degraded
+  fullName: Meridian.Ui.Services.Services.FixtureScenario.Degraded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Degraded
+    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    System partially connected with degraded metrics.
+
+    Some providers are unavailable or rate-limited; throughput is reduced.
+  example: []
+  syntax:
+    content: Degraded = 2
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario.Error
+  commentId: F:Meridian.Ui.Services.Services.FixtureScenario.Error
+  id: Error
+  parent: Meridian.Ui.Services.Services.FixtureScenario
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: FixtureScenario.Error
+  fullName: Meridian.Ui.Services.Services.FixtureScenario.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    System in error state — provider errors, high drop rate, low throughput.
+
+    Useful for testing error banners, alerts, and recovery UI flows.
+  example: []
+  syntax:
+    content: Error = 3
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario.Loading
+  commentId: F:Meridian.Ui.Services.Services.FixtureScenario.Loading
+  id: Loading
+  parent: Meridian.Ui.Services.Services.FixtureScenario
+  langs:
+  - csharp
+  - vb
+  name: Loading
+  nameWithType: FixtureScenario.Loading
+  fullName: Meridian.Ui.Services.Services.FixtureScenario.Loading
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Loading
+    path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    System is initializing or loading — connections pending, data not yet available.
+
+    Useful for testing skeleton/loading states and progress indicators.
+  example: []
+  syntax:
+    content: Loading = 4
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: Meridian.Ui.Services.Services.FixtureScenario
+  commentId: T:Meridian.Ui.Services.Services.FixtureScenario
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.FixtureScenario.html
+  name: FixtureScenario
+  nameWithType: FixtureScenario
+  fullName: Meridian.Ui.Services.Services.FixtureScenario

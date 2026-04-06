@@ -1,0 +1,75 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Collections
+  commentId: N:Meridian.Ui.Services.Collections
+  id: Meridian.Ui.Services.Collections
+  children:
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  - Meridian.Ui.Services.Collections.CircularBufferExtensions
+  - Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Ui.Services.Collections
+  nameWithType: Meridian.Ui.Services.Collections
+  fullName: Meridian.Ui.Services.Collections
+  type: Namespace
+  assemblies:
+  - Meridian.Ui.Services
+references:
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  commentId: T:Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  name: BoundedObservableCollection<T>
+  nameWithType: BoundedObservableCollection<T>
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>
+  nameWithType.vb: BoundedObservableCollection(Of T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T)
+  name.vb: BoundedObservableCollection(Of T)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+    name: BoundedObservableCollection
+    href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+    name: BoundedObservableCollection
+    href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+  commentId: T:Meridian.Ui.Services.Collections.CircularBuffer`1
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  name: CircularBuffer<T>
+  nameWithType: CircularBuffer<T>
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>
+  nameWithType.vb: CircularBuffer(Of T)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T)
+  name.vb: CircularBuffer(Of T)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+    name: CircularBuffer
+    href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+    name: CircularBuffer
+    href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  commentId: T:Meridian.Ui.Services.Collections.CircularBufferExtensions
+  href: Meridian.Ui.Services.Collections.CircularBufferExtensions.html
+  name: CircularBufferExtensions
+  nameWithType: CircularBufferExtensions
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions

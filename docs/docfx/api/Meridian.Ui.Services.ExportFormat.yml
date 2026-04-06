@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ExportFormat
+  commentId: T:Meridian.Ui.Services.ExportFormat
+  id: ExportFormat
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ExportFormat.Csv
+  - Meridian.Ui.Services.ExportFormat.JsonLines
+  - Meridian.Ui.Services.ExportFormat.Parquet
+  - Meridian.Ui.Services.ExportFormat.Raw
+  langs:
+  - csharp
+  - vb
+  name: ExportFormat
+  nameWithType: ExportFormat
+  fullName: Meridian.Ui.Services.ExportFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportFormat
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 677
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum ExportFormat : byte'
+    content.vb: Public Enum ExportFormat As Byte
+- uid: Meridian.Ui.Services.ExportFormat.Raw
+  commentId: F:Meridian.Ui.Services.ExportFormat.Raw
+  id: Raw
+  parent: Meridian.Ui.Services.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Raw
+  nameWithType: ExportFormat.Raw
+  fullName: Meridian.Ui.Services.ExportFormat.Raw
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Raw
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 679
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Raw = 0
+    return:
+      type: Meridian.Ui.Services.ExportFormat
+- uid: Meridian.Ui.Services.ExportFormat.JsonLines
+  commentId: F:Meridian.Ui.Services.ExportFormat.JsonLines
+  id: JsonLines
+  parent: Meridian.Ui.Services.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: JsonLines
+  nameWithType: ExportFormat.JsonLines
+  fullName: Meridian.Ui.Services.ExportFormat.JsonLines
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JsonLines
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 680
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: JsonLines = 1
+    return:
+      type: Meridian.Ui.Services.ExportFormat
+- uid: Meridian.Ui.Services.ExportFormat.Csv
+  commentId: F:Meridian.Ui.Services.ExportFormat.Csv
+  id: Csv
+  parent: Meridian.Ui.Services.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Csv
+  nameWithType: ExportFormat.Csv
+  fullName: Meridian.Ui.Services.ExportFormat.Csv
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Csv
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 681
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Csv = 2
+    return:
+      type: Meridian.Ui.Services.ExportFormat
+- uid: Meridian.Ui.Services.ExportFormat.Parquet
+  commentId: F:Meridian.Ui.Services.ExportFormat.Parquet
+  id: Parquet
+  parent: Meridian.Ui.Services.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Parquet
+  nameWithType: ExportFormat.Parquet
+  fullName: Meridian.Ui.Services.ExportFormat.Parquet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parquet
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 682
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Parquet = 3
+    return:
+      type: Meridian.Ui.Services.ExportFormat
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ExportFormat
+  commentId: T:Meridian.Ui.Services.ExportFormat
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportFormat.html
+  name: ExportFormat
+  nameWithType: ExportFormat
+  fullName: Meridian.Ui.Services.ExportFormat

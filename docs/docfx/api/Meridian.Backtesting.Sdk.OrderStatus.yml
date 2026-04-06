@@ -1,0 +1,230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.OrderStatus
+  commentId: T:Meridian.Backtesting.Sdk.OrderStatus
+  id: OrderStatus
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.OrderStatus.Cancelled
+  - Meridian.Backtesting.Sdk.OrderStatus.Expired
+  - Meridian.Backtesting.Sdk.OrderStatus.Filled
+  - Meridian.Backtesting.Sdk.OrderStatus.PartiallyFilled
+  - Meridian.Backtesting.Sdk.OrderStatus.Pending
+  - Meridian.Backtesting.Sdk.OrderStatus.Rejected
+  langs:
+  - csharp
+  - vb
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Backtesting.Sdk.OrderStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderStatus
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Lifecycle state of a simulated order.
+  example: []
+  syntax:
+    content: public enum OrderStatus
+    content.vb: Public Enum OrderStatus
+- uid: Meridian.Backtesting.Sdk.OrderStatus.Pending
+  commentId: F:Meridian.Backtesting.Sdk.OrderStatus.Pending
+  id: Pending
+  parent: Meridian.Backtesting.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: OrderStatus.Pending
+  fullName: Meridian.Backtesting.Sdk.OrderStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Backtesting.Sdk.OrderStatus
+- uid: Meridian.Backtesting.Sdk.OrderStatus.PartiallyFilled
+  commentId: F:Meridian.Backtesting.Sdk.OrderStatus.PartiallyFilled
+  id: PartiallyFilled
+  parent: Meridian.Backtesting.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: PartiallyFilled
+  nameWithType: OrderStatus.PartiallyFilled
+  fullName: Meridian.Backtesting.Sdk.OrderStatus.PartiallyFilled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartiallyFilled
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: PartiallyFilled = 1
+    return:
+      type: Meridian.Backtesting.Sdk.OrderStatus
+- uid: Meridian.Backtesting.Sdk.OrderStatus.Filled
+  commentId: F:Meridian.Backtesting.Sdk.OrderStatus.Filled
+  id: Filled
+  parent: Meridian.Backtesting.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Filled
+  nameWithType: OrderStatus.Filled
+  fullName: Meridian.Backtesting.Sdk.OrderStatus.Filled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Filled
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Filled = 2
+    return:
+      type: Meridian.Backtesting.Sdk.OrderStatus
+- uid: Meridian.Backtesting.Sdk.OrderStatus.Cancelled
+  commentId: F:Meridian.Backtesting.Sdk.OrderStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Backtesting.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: OrderStatus.Cancelled
+  fullName: Meridian.Backtesting.Sdk.OrderStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Cancelled = 3
+    return:
+      type: Meridian.Backtesting.Sdk.OrderStatus
+- uid: Meridian.Backtesting.Sdk.OrderStatus.Rejected
+  commentId: F:Meridian.Backtesting.Sdk.OrderStatus.Rejected
+  id: Rejected
+  parent: Meridian.Backtesting.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: OrderStatus.Rejected
+  fullName: Meridian.Backtesting.Sdk.OrderStatus.Rejected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Rejected = 4
+    return:
+      type: Meridian.Backtesting.Sdk.OrderStatus
+- uid: Meridian.Backtesting.Sdk.OrderStatus.Expired
+  commentId: F:Meridian.Backtesting.Sdk.OrderStatus.Expired
+  id: Expired
+  parent: Meridian.Backtesting.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Expired
+  nameWithType: OrderStatus.Expired
+  fullName: Meridian.Backtesting.Sdk.OrderStatus.Expired
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expired
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Expired = 5
+    return:
+      type: Meridian.Backtesting.Sdk.OrderStatus
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.OrderStatus
+  commentId: T:Meridian.Backtesting.Sdk.OrderStatus
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.OrderStatus.html
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Backtesting.Sdk.OrderStatus

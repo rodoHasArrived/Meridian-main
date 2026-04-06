@@ -1,0 +1,1337 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  commentId: T:Meridian.Contracts.DirectLending.LoanServicingStateDto
+  id: LoanServicingStateDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.#ctor(System.Guid,Meridian.Contracts.DirectLending.LoanStatus,System.Decimal,System.Decimal,System.Decimal,Meridian.Contracts.DirectLending.OutstandingBalancesDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto},Meridian.Contracts.DirectLending.RateResetDto,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto},System.Decimal,System.Decimal,System.Boolean)
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.Status
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount
+  - Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium
+  langs:
+  - csharp
+  - vb
+  name: LoanServicingStateDto
+  nameWithType: LoanServicingStateDto
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoanServicingStateDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record LoanServicingStateDto : IEquatable<LoanServicingStateDto>'
+    content.vb: Public NotInheritable Class LoanServicingStateDto Implements IEquatable(Of LoanServicingStateDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.LoanServicingStateDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.#ctor(System.Guid,Meridian.Contracts.DirectLending.LoanStatus,System.Decimal,System.Decimal,System.Decimal,Meridian.Contracts.DirectLending.OutstandingBalancesDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto},Meridian.Contracts.DirectLending.RateResetDto,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto},System.Decimal,System.Decimal,System.Boolean)
+  commentId: M:Meridian.Contracts.DirectLending.LoanServicingStateDto.#ctor(System.Guid,Meridian.Contracts.DirectLending.LoanStatus,System.Decimal,System.Decimal,System.Decimal,Meridian.Contracts.DirectLending.OutstandingBalancesDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto},Meridian.Contracts.DirectLending.RateResetDto,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto},System.Decimal,System.Decimal,System.Boolean)
+  id: '#ctor(System.Guid,Meridian.Contracts.DirectLending.LoanStatus,System.Decimal,System.Decimal,System.Decimal,Meridian.Contracts.DirectLending.OutstandingBalancesDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto},Meridian.Contracts.DirectLending.RateResetDto,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto},System.Decimal,System.Decimal,System.Boolean)'
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: LoanServicingStateDto(Guid, LoanStatus, decimal, decimal, decimal, OutstandingBalancesDto, IReadOnlyList<DrawdownLotDto>, RateResetDto?, DateOnly?, DateOnly?, long, IReadOnlyList<ServicingRevisionDto>, IReadOnlyList<DailyAccrualEntryDto>, IReadOnlyList<CollateralDto>?, decimal, decimal, bool)
+  nameWithType: LoanServicingStateDto.LoanServicingStateDto(Guid, LoanStatus, decimal, decimal, decimal, OutstandingBalancesDto, IReadOnlyList<DrawdownLotDto>, RateResetDto?, DateOnly?, DateOnly?, long, IReadOnlyList<ServicingRevisionDto>, IReadOnlyList<DailyAccrualEntryDto>, IReadOnlyList<CollateralDto>?, decimal, decimal, bool)
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanServicingStateDto(System.Guid, Meridian.Contracts.DirectLending.LoanStatus, decimal, decimal, decimal, Meridian.Contracts.DirectLending.OutstandingBalancesDto, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.DrawdownLotDto>, Meridian.Contracts.DirectLending.RateResetDto?, System.DateOnly?, System.DateOnly?, long, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicingRevisionDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.DailyAccrualEntryDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.CollateralDto>?, decimal, decimal, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public LoanServicingStateDto(Guid LoanId, LoanStatus Status, decimal CurrentCommitment, decimal TotalDrawn, decimal AvailableToDraw, OutstandingBalancesDto Balances, IReadOnlyList<DrawdownLotDto> DrawdownLots, RateResetDto? CurrentRateReset, DateOnly? LastAccrualDate, DateOnly? LastPaymentDate, long ServicingRevision, IReadOnlyList<ServicingRevisionDto> RevisionHistory, IReadOnlyList<DailyAccrualEntryDto> AccrualEntries, IReadOnlyList<CollateralDto>? Collateral = null, decimal UnamortizedDiscount = 0, decimal UnamortizedPremium = 0, bool IsPikToggled = false)
+    parameters:
+    - id: LoanId
+      type: System.Guid
+    - id: Status
+      type: Meridian.Contracts.DirectLending.LoanStatus
+    - id: CurrentCommitment
+      type: System.Decimal
+    - id: TotalDrawn
+      type: System.Decimal
+    - id: AvailableToDraw
+      type: System.Decimal
+    - id: Balances
+      type: Meridian.Contracts.DirectLending.OutstandingBalancesDto
+    - id: DrawdownLots
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto}
+    - id: CurrentRateReset
+      type: Meridian.Contracts.DirectLending.RateResetDto
+    - id: LastAccrualDate
+      type: System.Nullable{System.DateOnly}
+    - id: LastPaymentDate
+      type: System.Nullable{System.DateOnly}
+    - id: ServicingRevision
+      type: System.Int64
+    - id: RevisionHistory
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto}
+    - id: AccrualEntries
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto}
+    - id: Collateral
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto}
+    - id: UnamortizedDiscount
+      type: System.Decimal
+    - id: UnamortizedPremium
+      type: System.Decimal
+    - id: IsPikToggled
+      type: System.Boolean
+    content.vb: Public Sub New(LoanId As Guid, Status As LoanStatus, CurrentCommitment As Decimal, TotalDrawn As Decimal, AvailableToDraw As Decimal, Balances As OutstandingBalancesDto, DrawdownLots As IReadOnlyList(Of DrawdownLotDto), CurrentRateReset As RateResetDto, LastAccrualDate As DateOnly?, LastPaymentDate As DateOnly?, ServicingRevision As Long, RevisionHistory As IReadOnlyList(Of ServicingRevisionDto), AccrualEntries As IReadOnlyList(Of DailyAccrualEntryDto), Collateral As IReadOnlyList(Of CollateralDto) = Nothing, UnamortizedDiscount As Decimal = 0, UnamortizedPremium As Decimal = 0, IsPikToggled As Boolean = False)
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.#ctor*
+  nameWithType.vb: LoanServicingStateDto.New(Guid, LoanStatus, Decimal, Decimal, Decimal, OutstandingBalancesDto, IReadOnlyList(Of DrawdownLotDto), RateResetDto, DateOnly?, DateOnly?, Long, IReadOnlyList(Of ServicingRevisionDto), IReadOnlyList(Of DailyAccrualEntryDto), IReadOnlyList(Of CollateralDto), Decimal, Decimal, Boolean)
+  fullName.vb: Meridian.Contracts.DirectLending.LoanServicingStateDto.New(System.Guid, Meridian.Contracts.DirectLending.LoanStatus, Decimal, Decimal, Decimal, Meridian.Contracts.DirectLending.OutstandingBalancesDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.DrawdownLotDto), Meridian.Contracts.DirectLending.RateResetDto, System.DateOnly?, System.DateOnly?, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicingRevisionDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.DailyAccrualEntryDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.CollateralDto), Decimal, Decimal, Boolean)
+  name.vb: New(Guid, LoanStatus, Decimal, Decimal, Decimal, OutstandingBalancesDto, IReadOnlyList(Of DrawdownLotDto), RateResetDto, DateOnly?, DateOnly?, Long, IReadOnlyList(Of ServicingRevisionDto), IReadOnlyList(Of DailyAccrualEntryDto), IReadOnlyList(Of CollateralDto), Decimal, Decimal, Boolean)
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId
+  id: LoanId
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: LoanId
+  nameWithType: LoanServicingStateDto.LoanId
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoanId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid LoanId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LoanId As Guid
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.Status
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.Status
+  id: Status
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: LoanServicingStateDto.Status
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public LoanStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+    content.vb: Public Property Status As LoanStatus
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.Status*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment
+  id: CurrentCommitment
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: CurrentCommitment
+  nameWithType: LoanServicingStateDto.CurrentCommitment
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentCommitment
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal CurrentCommitment { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CurrentCommitment As Decimal
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn
+  id: TotalDrawn
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: TotalDrawn
+  nameWithType: LoanServicingStateDto.TotalDrawn
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDrawn
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal TotalDrawn { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalDrawn As Decimal
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw
+  id: AvailableToDraw
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: AvailableToDraw
+  nameWithType: LoanServicingStateDto.AvailableToDraw
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailableToDraw
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal AvailableToDraw { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AvailableToDraw As Decimal
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances
+  id: Balances
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: Balances
+  nameWithType: LoanServicingStateDto.Balances
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balances
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public OutstandingBalancesDto Balances { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.OutstandingBalancesDto
+    content.vb: Public Property Balances As OutstandingBalancesDto
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots
+  id: DrawdownLots
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: DrawdownLots
+  nameWithType: LoanServicingStateDto.DrawdownLots
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrawdownLots
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public IReadOnlyList<DrawdownLotDto> DrawdownLots { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto}
+    content.vb: Public Property DrawdownLots As IReadOnlyList(Of DrawdownLotDto)
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset
+  id: CurrentRateReset
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: CurrentRateReset
+  nameWithType: LoanServicingStateDto.CurrentRateReset
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentRateReset
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public RateResetDto? CurrentRateReset { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.RateResetDto
+    content.vb: Public Property CurrentRateReset As RateResetDto
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate
+  id: LastAccrualDate
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: LastAccrualDate
+  nameWithType: LoanServicingStateDto.LastAccrualDate
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastAccrualDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly? LastAccrualDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property LastAccrualDate As DateOnly?
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate
+  id: LastPaymentDate
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: LastPaymentDate
+  nameWithType: LoanServicingStateDto.LastPaymentDate
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPaymentDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly? LastPaymentDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property LastPaymentDate As DateOnly?
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision
+  id: ServicingRevision
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: ServicingRevision
+  nameWithType: LoanServicingStateDto.ServicingRevision
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicingRevision
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public long ServicingRevision { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ServicingRevision As Long
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory
+  id: RevisionHistory
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: RevisionHistory
+  nameWithType: LoanServicingStateDto.RevisionHistory
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RevisionHistory
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public IReadOnlyList<ServicingRevisionDto> RevisionHistory { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto}
+    content.vb: Public Property RevisionHistory As IReadOnlyList(Of ServicingRevisionDto)
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries
+  id: AccrualEntries
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: AccrualEntries
+  nameWithType: LoanServicingStateDto.AccrualEntries
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccrualEntries
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public IReadOnlyList<DailyAccrualEntryDto> AccrualEntries { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto}
+    content.vb: Public Property AccrualEntries As IReadOnlyList(Of DailyAccrualEntryDto)
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral
+  id: Collateral
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: Collateral
+  nameWithType: LoanServicingStateDto.Collateral
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Collateral
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public IReadOnlyList<CollateralDto>? Collateral { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto}
+    content.vb: Public Property Collateral As IReadOnlyList(Of CollateralDto)
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount
+  id: UnamortizedDiscount
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: UnamortizedDiscount
+  nameWithType: LoanServicingStateDto.UnamortizedDiscount
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnamortizedDiscount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal UnamortizedDiscount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnamortizedDiscount As Decimal
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium
+  id: UnamortizedPremium
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: UnamortizedPremium
+  nameWithType: LoanServicingStateDto.UnamortizedPremium
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnamortizedPremium
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal UnamortizedPremium { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnamortizedPremium As Decimal
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium*
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled
+  commentId: P:Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled
+  id: IsPikToggled
+  parent: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  langs:
+  - csharp
+  - vb
+  name: IsPikToggled
+  nameWithType: LoanServicingStateDto.IsPikToggled
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsPikToggled
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public bool IsPikToggled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsPikToggled As Boolean
+  overload: Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.LoanServicingStateDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.LoanServicingStateDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LoanServicingStateDto>
+  nameWithType: IEquatable<LoanServicingStateDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.LoanServicingStateDto>
+  nameWithType.vb: IEquatable(Of LoanServicingStateDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.LoanServicingStateDto)
+  name.vb: IEquatable(Of LoanServicingStateDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.LoanServicingStateDto
+    name: LoanServicingStateDto
+    href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.LoanServicingStateDto
+    name: LoanServicingStateDto
+    href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.#ctor
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto__ctor_System_Guid_Meridian_Contracts_DirectLending_LoanStatus_System_Decimal_System_Decimal_System_Decimal_Meridian_Contracts_DirectLending_OutstandingBalancesDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_DrawdownLotDto__Meridian_Contracts_DirectLending_RateResetDto_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_ServicingRevisionDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_DailyAccrualEntryDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_CollateralDto__System_Decimal_System_Decimal_System_Boolean_
+  name: LoanServicingStateDto
+  nameWithType: LoanServicingStateDto.LoanServicingStateDto
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanServicingStateDto
+  nameWithType.vb: LoanServicingStateDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.LoanServicingStateDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.DirectLending.LoanStatus
+  commentId: T:Meridian.Contracts.DirectLending.LoanStatus
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.LoanStatus.html
+  name: LoanStatus
+  nameWithType: LoanStatus
+  fullName: Meridian.Contracts.DirectLending.LoanStatus
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.DirectLending.OutstandingBalancesDto
+  commentId: T:Meridian.Contracts.DirectLending.OutstandingBalancesDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.OutstandingBalancesDto.html
+  name: OutstandingBalancesDto
+  nameWithType: OutstandingBalancesDto
+  fullName: Meridian.Contracts.DirectLending.OutstandingBalancesDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DrawdownLotDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DrawdownLotDto>
+  nameWithType: IReadOnlyList<DrawdownLotDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.DrawdownLotDto>
+  nameWithType.vb: IReadOnlyList(Of DrawdownLotDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.DrawdownLotDto)
+  name.vb: IReadOnlyList(Of DrawdownLotDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.DrawdownLotDto
+    name: DrawdownLotDto
+    href: Meridian.Contracts.DirectLending.DrawdownLotDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.DrawdownLotDto
+    name: DrawdownLotDto
+    href: Meridian.Contracts.DirectLending.DrawdownLotDto.html
+  - name: )
+- uid: Meridian.Contracts.DirectLending.RateResetDto
+  commentId: T:Meridian.Contracts.DirectLending.RateResetDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.RateResetDto.html
+  name: RateResetDto
+  nameWithType: RateResetDto
+  fullName: Meridian.Contracts.DirectLending.RateResetDto
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicingRevisionDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ServicingRevisionDto>
+  nameWithType: IReadOnlyList<ServicingRevisionDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicingRevisionDto>
+  nameWithType.vb: IReadOnlyList(Of ServicingRevisionDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicingRevisionDto)
+  name.vb: IReadOnlyList(Of ServicingRevisionDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicingRevisionDto
+    name: ServicingRevisionDto
+    href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicingRevisionDto
+    name: ServicingRevisionDto
+    href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.DailyAccrualEntryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DailyAccrualEntryDto>
+  nameWithType: IReadOnlyList<DailyAccrualEntryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.DailyAccrualEntryDto>
+  nameWithType.vb: IReadOnlyList(Of DailyAccrualEntryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.DailyAccrualEntryDto)
+  name.vb: IReadOnlyList(Of DailyAccrualEntryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+    name: DailyAccrualEntryDto
+    href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+    name: DailyAccrualEntryDto
+    href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CollateralDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CollateralDto>
+  nameWithType: IReadOnlyList<CollateralDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.CollateralDto>
+  nameWithType.vb: IReadOnlyList(Of CollateralDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.CollateralDto)
+  name.vb: IReadOnlyList(Of CollateralDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.CollateralDto
+    name: CollateralDto
+    href: Meridian.Contracts.DirectLending.CollateralDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.CollateralDto
+    name: CollateralDto
+    href: Meridian.Contracts.DirectLending.CollateralDto.html
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_LoanId
+  name: LoanId
+  nameWithType: LoanServicingStateDto.LoanId
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LoanId
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.Status*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.Status
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_Status
+  name: Status
+  nameWithType: LoanServicingStateDto.Status
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.Status
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_CurrentCommitment
+  name: CurrentCommitment
+  nameWithType: LoanServicingStateDto.CurrentCommitment
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentCommitment
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_TotalDrawn
+  name: TotalDrawn
+  nameWithType: LoanServicingStateDto.TotalDrawn
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.TotalDrawn
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_AvailableToDraw
+  name: AvailableToDraw
+  nameWithType: LoanServicingStateDto.AvailableToDraw
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.AvailableToDraw
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_Balances
+  name: Balances
+  nameWithType: LoanServicingStateDto.Balances
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.Balances
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_DrawdownLots
+  name: DrawdownLots
+  nameWithType: LoanServicingStateDto.DrawdownLots
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.DrawdownLots
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_CurrentRateReset
+  name: CurrentRateReset
+  nameWithType: LoanServicingStateDto.CurrentRateReset
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.CurrentRateReset
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_LastAccrualDate
+  name: LastAccrualDate
+  nameWithType: LoanServicingStateDto.LastAccrualDate
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastAccrualDate
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_LastPaymentDate
+  name: LastPaymentDate
+  nameWithType: LoanServicingStateDto.LastPaymentDate
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.LastPaymentDate
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_ServicingRevision
+  name: ServicingRevision
+  nameWithType: LoanServicingStateDto.ServicingRevision
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.ServicingRevision
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_RevisionHistory
+  name: RevisionHistory
+  nameWithType: LoanServicingStateDto.RevisionHistory
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.RevisionHistory
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_AccrualEntries
+  name: AccrualEntries
+  nameWithType: LoanServicingStateDto.AccrualEntries
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.AccrualEntries
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_Collateral
+  name: Collateral
+  nameWithType: LoanServicingStateDto.Collateral
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.Collateral
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_UnamortizedDiscount
+  name: UnamortizedDiscount
+  nameWithType: LoanServicingStateDto.UnamortizedDiscount
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedDiscount
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_UnamortizedPremium
+  name: UnamortizedPremium
+  nameWithType: LoanServicingStateDto.UnamortizedPremium
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.UnamortizedPremium
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html#Meridian_Contracts_DirectLending_LoanServicingStateDto_IsPikToggled
+  name: IsPikToggled
+  nameWithType: LoanServicingStateDto.IsPikToggled
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto.IsPikToggled

@@ -1,0 +1,132 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  id: SecurityStatusDto
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.SecurityStatusDto.Active
+  - Meridian.Contracts.SecurityMaster.SecurityStatusDto.Inactive
+  langs:
+  - csharp
+  - vb
+  name: SecurityStatusDto
+  nameWithType: SecurityStatusDto
+  fullName: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityStatusDto
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<SecurityStatusDto>))]
+
+      public enum SecurityStatusDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of SecurityStatusDto)))>
+
+      Public Enum SecurityStatusDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.SecurityMaster.SecurityStatusDto}
+- uid: Meridian.Contracts.SecurityMaster.SecurityStatusDto.Active
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityStatusDto.Active
+  id: Active
+  parent: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  langs:
+  - csharp
+  - vb
+  name: Active
+  nameWithType: SecurityStatusDto.Active
+  fullName: Meridian.Contracts.SecurityMaster.SecurityStatusDto.Active
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Active
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Active = 0
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+- uid: Meridian.Contracts.SecurityMaster.SecurityStatusDto.Inactive
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityStatusDto.Inactive
+  id: Inactive
+  parent: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  langs:
+  - csharp
+  - vb
+  name: Inactive
+  nameWithType: SecurityStatusDto.Inactive
+  fullName: Meridian.Contracts.SecurityMaster.SecurityStatusDto.Inactive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Inactive
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Inactive = 1
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityStatusDto.html
+  name: SecurityStatusDto
+  nameWithType: SecurityStatusDto
+  fullName: Meridian.Contracts.SecurityMaster.SecurityStatusDto

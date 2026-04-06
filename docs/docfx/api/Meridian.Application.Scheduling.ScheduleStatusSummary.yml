@@ -1,0 +1,700 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary
+  commentId: T:Meridian.Application.Scheduling.ScheduleStatusSummary
+  id: ScheduleStatusSummary
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules
+  - Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses
+  langs:
+  - csharp
+  - vb
+  name: ScheduleStatusSummary
+  nameWithType: ScheduleStatusSummary
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleStatusSummary
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Summary of all schedule statuses.
+  example: []
+  syntax:
+    content: 'public sealed record ScheduleStatusSummary : IEquatable<ScheduleStatusSummary>'
+    content.vb: Public NotInheritable Class ScheduleStatusSummary Implements IEquatable(Of ScheduleStatusSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Scheduling.ScheduleStatusSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules
+  id: TotalSchedules
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalSchedules
+  nameWithType: ScheduleStatusSummary.TotalSchedules
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSchedules
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 414
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int TotalSchedules { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalSchedules As Integer
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules
+  id: EnabledSchedules
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: EnabledSchedules
+  nameWithType: ScheduleStatusSummary.EnabledSchedules
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnabledSchedules
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 415
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int EnabledSchedules { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EnabledSchedules As Integer
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules
+  id: DisabledSchedules
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: DisabledSchedules
+  nameWithType: ScheduleStatusSummary.DisabledSchedules
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisabledSchedules
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int DisabledSchedules { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DisabledSchedules As Integer
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow
+  id: SchedulesDueNow
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: SchedulesDueNow
+  nameWithType: ScheduleStatusSummary.SchedulesDueNow
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchedulesDueNow
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int SchedulesDueNow { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SchedulesDueNow As Integer
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution
+  id: NextScheduledExecution
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: NextScheduledExecution
+  nameWithType: ScheduleStatusSummary.NextScheduledExecution
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextScheduledExecution
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 418
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public DateTimeOffset NextScheduledExecution { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property NextScheduledExecution As DateTimeOffset
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions
+  id: TotalExecutions
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalExecutions
+  nameWithType: ScheduleStatusSummary.TotalExecutions
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalExecutions
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 419
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int TotalExecutions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalExecutions As Integer
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses
+  id: TotalSuccesses
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalSuccesses
+  nameWithType: ScheduleStatusSummary.TotalSuccesses
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSuccesses
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 420
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int TotalSuccesses { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalSuccesses As Integer
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures
+  id: TotalFailures
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalFailures
+  nameWithType: ScheduleStatusSummary.TotalFailures
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFailures
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int TotalFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFailures As Integer
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures*
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate
+  commentId: P:Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate
+  id: OverallSuccessRate
+  parent: Meridian.Application.Scheduling.ScheduleStatusSummary
+  langs:
+  - csharp
+  - vb
+  name: OverallSuccessRate
+  nameWithType: ScheduleStatusSummary.OverallSuccessRate
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallSuccessRate
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 422
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public double OverallSuccessRate { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property OverallSuccessRate As Double
+  overload: Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Scheduling.ScheduleStatusSummary}
+  commentId: T:System.IEquatable{Meridian.Application.Scheduling.ScheduleStatusSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ScheduleStatusSummary>
+  nameWithType: IEquatable<ScheduleStatusSummary>
+  fullName: System.IEquatable<Meridian.Application.Scheduling.ScheduleStatusSummary>
+  nameWithType.vb: IEquatable(Of ScheduleStatusSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Scheduling.ScheduleStatusSummary)
+  name.vb: IEquatable(Of ScheduleStatusSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.ScheduleStatusSummary
+    name: ScheduleStatusSummary
+    href: Meridian.Application.Scheduling.ScheduleStatusSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ScheduleStatusSummary
+    name: ScheduleStatusSummary
+    href: Meridian.Application.Scheduling.ScheduleStatusSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_TotalSchedules
+  name: TotalSchedules
+  nameWithType: ScheduleStatusSummary.TotalSchedules
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSchedules
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_EnabledSchedules
+  name: EnabledSchedules
+  nameWithType: ScheduleStatusSummary.EnabledSchedules
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.EnabledSchedules
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_DisabledSchedules
+  name: DisabledSchedules
+  nameWithType: ScheduleStatusSummary.DisabledSchedules
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.DisabledSchedules
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_SchedulesDueNow
+  name: SchedulesDueNow
+  nameWithType: ScheduleStatusSummary.SchedulesDueNow
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.SchedulesDueNow
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_NextScheduledExecution
+  name: NextScheduledExecution
+  nameWithType: ScheduleStatusSummary.NextScheduledExecution
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.NextScheduledExecution
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_TotalExecutions
+  name: TotalExecutions
+  nameWithType: ScheduleStatusSummary.TotalExecutions
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalExecutions
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_TotalSuccesses
+  name: TotalSuccesses
+  nameWithType: ScheduleStatusSummary.TotalSuccesses
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalSuccesses
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_TotalFailures
+  name: TotalFailures
+  nameWithType: ScheduleStatusSummary.TotalFailures
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.TotalFailures
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html#Meridian_Application_Scheduling_ScheduleStatusSummary_OverallSuccessRate
+  name: OverallSuccessRate
+  nameWithType: ScheduleStatusSummary.OverallSuccessRate
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary.OverallSuccessRate
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

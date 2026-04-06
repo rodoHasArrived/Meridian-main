@@ -1,0 +1,715 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ExportEstimate
+  commentId: T:Meridian.Ui.Services.ExportEstimate
+  id: ExportEstimate
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ExportEstimate.AvailableRecords
+  - Meridian.Ui.Services.ExportEstimate.CompletenessPercent
+  - Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted
+  - Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds
+  - Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes
+  - Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted
+  - Meridian.Ui.Services.ExportEstimate.TotalRecords
+  - Meridian.Ui.Services.ExportEstimate.Warnings
+  langs:
+  - csharp
+  - vb
+  name: ExportEstimate
+  nameWithType: ExportEstimate
+  fullName: Meridian.Ui.Services.ExportEstimate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportEstimate
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1257
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Export size and duration estimate.
+  example: []
+  syntax:
+    content: public sealed class ExportEstimate
+    content.vb: Public NotInheritable Class ExportEstimate
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ExportEstimate.TotalRecords
+  commentId: P:Meridian.Ui.Services.ExportEstimate.TotalRecords
+  id: TotalRecords
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: TotalRecords
+  nameWithType: ExportEstimate.TotalRecords
+  fullName: Meridian.Ui.Services.ExportEstimate.TotalRecords
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRecords
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1259
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalRecords { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalRecords As Long
+  overload: Meridian.Ui.Services.ExportEstimate.TotalRecords*
+- uid: Meridian.Ui.Services.ExportEstimate.AvailableRecords
+  commentId: P:Meridian.Ui.Services.ExportEstimate.AvailableRecords
+  id: AvailableRecords
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: AvailableRecords
+  nameWithType: ExportEstimate.AvailableRecords
+  fullName: Meridian.Ui.Services.ExportEstimate.AvailableRecords
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailableRecords
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1260
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long AvailableRecords { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property AvailableRecords As Long
+  overload: Meridian.Ui.Services.ExportEstimate.AvailableRecords*
+- uid: Meridian.Ui.Services.ExportEstimate.CompletenessPercent
+  commentId: P:Meridian.Ui.Services.ExportEstimate.CompletenessPercent
+  id: CompletenessPercent
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: CompletenessPercent
+  nameWithType: ExportEstimate.CompletenessPercent
+  fullName: Meridian.Ui.Services.ExportEstimate.CompletenessPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessPercent
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1261
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double CompletenessPercent { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CompletenessPercent As Double
+  overload: Meridian.Ui.Services.ExportEstimate.CompletenessPercent*
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes
+  commentId: P:Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes
+  id: EstimatedSizeBytes
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: EstimatedSizeBytes
+  nameWithType: ExportEstimate.EstimatedSizeBytes
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedSizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1262
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long EstimatedSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EstimatedSizeBytes As Long
+  overload: Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes*
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds
+  commentId: P:Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds
+  id: EstimatedDurationSeconds
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: EstimatedDurationSeconds
+  nameWithType: ExportEstimate.EstimatedDurationSeconds
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedDurationSeconds
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1263
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int EstimatedDurationSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EstimatedDurationSeconds As Integer
+  overload: Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds*
+- uid: Meridian.Ui.Services.ExportEstimate.Warnings
+  commentId: P:Meridian.Ui.Services.ExportEstimate.Warnings
+  id: Warnings
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: ExportEstimate.Warnings
+  fullName: Meridian.Ui.Services.ExportEstimate.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1264
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string> Warnings { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Warnings As List(Of String)
+  overload: Meridian.Ui.Services.ExportEstimate.Warnings*
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted
+  commentId: P:Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted
+  id: EstimatedSizeFormatted
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: EstimatedSizeFormatted
+  nameWithType: ExportEstimate.EstimatedSizeFormatted
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedSizeFormatted
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1266
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string EstimatedSizeFormatted { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property EstimatedSizeFormatted As String
+  overload: Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted*
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted
+  commentId: P:Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted
+  id: EstimatedDurationFormatted
+  parent: Meridian.Ui.Services.ExportEstimate
+  langs:
+  - csharp
+  - vb
+  name: EstimatedDurationFormatted
+  nameWithType: ExportEstimate.EstimatedDurationFormatted
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedDurationFormatted
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1267
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string EstimatedDurationFormatted { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property EstimatedDurationFormatted As String
+  overload: Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ExportEstimate.TotalRecords*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.TotalRecords
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_TotalRecords
+  name: TotalRecords
+  nameWithType: ExportEstimate.TotalRecords
+  fullName: Meridian.Ui.Services.ExportEstimate.TotalRecords
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.ExportEstimate.AvailableRecords*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.AvailableRecords
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_AvailableRecords
+  name: AvailableRecords
+  nameWithType: ExportEstimate.AvailableRecords
+  fullName: Meridian.Ui.Services.ExportEstimate.AvailableRecords
+- uid: Meridian.Ui.Services.ExportEstimate.CompletenessPercent*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.CompletenessPercent
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_CompletenessPercent
+  name: CompletenessPercent
+  nameWithType: ExportEstimate.CompletenessPercent
+  fullName: Meridian.Ui.Services.ExportEstimate.CompletenessPercent
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_EstimatedSizeBytes
+  name: EstimatedSizeBytes
+  nameWithType: ExportEstimate.EstimatedSizeBytes
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedSizeBytes
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_EstimatedDurationSeconds
+  name: EstimatedDurationSeconds
+  nameWithType: ExportEstimate.EstimatedDurationSeconds
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedDurationSeconds
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.ExportEstimate.Warnings*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.Warnings
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_Warnings
+  name: Warnings
+  nameWithType: ExportEstimate.Warnings
+  fullName: Meridian.Ui.Services.ExportEstimate.Warnings
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_EstimatedSizeFormatted
+  name: EstimatedSizeFormatted
+  nameWithType: ExportEstimate.EstimatedSizeFormatted
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedSizeFormatted
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted*
+  commentId: Overload:Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted
+  href: Meridian.Ui.Services.ExportEstimate.html#Meridian_Ui_Services_ExportEstimate_EstimatedDurationFormatted
+  name: EstimatedDurationFormatted
+  nameWithType: ExportEstimate.EstimatedDurationFormatted
+  fullName: Meridian.Ui.Services.ExportEstimate.EstimatedDurationFormatted

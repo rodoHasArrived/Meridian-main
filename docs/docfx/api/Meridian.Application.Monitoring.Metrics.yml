@@ -1,0 +1,1649 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Metrics
+  commentId: T:Meridian.Application.Monitoring.Metrics
+  id: Metrics
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.Metrics.AverageLatencyUs
+  - Meridian.Application.Monitoring.Metrics.DepthUpdates
+  - Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond
+  - Meridian.Application.Monitoring.Metrics.DropRate
+  - Meridian.Application.Monitoring.Metrics.Dropped
+  - Meridian.Application.Monitoring.Metrics.EventsPerSecond
+  - Meridian.Application.Monitoring.Metrics.Gc0Collections
+  - Meridian.Application.Monitoring.Metrics.Gc0Delta
+  - Meridian.Application.Monitoring.Metrics.Gc1Collections
+  - Meridian.Application.Monitoring.Metrics.Gc1Delta
+  - Meridian.Application.Monitoring.Metrics.Gc2Collections
+  - Meridian.Application.Monitoring.Metrics.Gc2Delta
+  - Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot
+  - Meridian.Application.Monitoring.Metrics.GetSnapshot
+  - Meridian.Application.Monitoring.Metrics.HeapSizeMb
+  - Meridian.Application.Monitoring.Metrics.HistoricalBars
+  - Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond
+  - Meridian.Application.Monitoring.Metrics.IncDepthUpdates
+  - Meridian.Application.Monitoring.Metrics.IncDropped
+  - Meridian.Application.Monitoring.Metrics.IncHistoricalBars
+  - Meridian.Application.Monitoring.Metrics.IncIntegrity
+  - Meridian.Application.Monitoring.Metrics.IncPublished
+  - Meridian.Application.Monitoring.Metrics.IncQuotes
+  - Meridian.Application.Monitoring.Metrics.IncTrades
+  - Meridian.Application.Monitoring.Metrics.Integrity
+  - Meridian.Application.Monitoring.Metrics.LatencySampleCount
+  - Meridian.Application.Monitoring.Metrics.MaxLatencyUs
+  - Meridian.Application.Monitoring.Metrics.MemoryUsageMb
+  - Meridian.Application.Monitoring.Metrics.MinLatencyUs
+  - Meridian.Application.Monitoring.Metrics.Published
+  - Meridian.Application.Monitoring.Metrics.Quotes
+  - Meridian.Application.Monitoring.Metrics.RecordLatency(System.Int64)
+  - Meridian.Application.Monitoring.Metrics.Reset
+  - Meridian.Application.Monitoring.Metrics.Trades
+  - Meridian.Application.Monitoring.Metrics.TradesPerSecond
+  - Meridian.Application.Monitoring.Metrics.UpdateGcCounts
+  langs:
+  - csharp
+  - vb
+  name: Metrics
+  nameWithType: Metrics
+  fullName: Meridian.Application.Monitoring.Metrics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metrics
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Minimal hot-path safe counters (no allocations; thread-safe).
+
+    Enhanced with latency tracking and GC monitoring.
+  example: []
+  syntax:
+    content: public static class Metrics
+    content.vb: Public Module Metrics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.Metrics.Published
+  commentId: P:Meridian.Application.Monitoring.Metrics.Published
+  id: Published
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Published
+  nameWithType: Metrics.Published
+  fullName: Meridian.Application.Monitoring.Metrics.Published
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Published
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Published { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Published As Long
+  overload: Meridian.Application.Monitoring.Metrics.Published*
+- uid: Meridian.Application.Monitoring.Metrics.Dropped
+  commentId: P:Meridian.Application.Monitoring.Metrics.Dropped
+  id: Dropped
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Dropped
+  nameWithType: Metrics.Dropped
+  fullName: Meridian.Application.Monitoring.Metrics.Dropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dropped
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Dropped { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Dropped As Long
+  overload: Meridian.Application.Monitoring.Metrics.Dropped*
+- uid: Meridian.Application.Monitoring.Metrics.Integrity
+  commentId: P:Meridian.Application.Monitoring.Metrics.Integrity
+  id: Integrity
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Integrity
+  nameWithType: Metrics.Integrity
+  fullName: Meridian.Application.Monitoring.Metrics.Integrity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Integrity
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Integrity { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Integrity As Long
+  overload: Meridian.Application.Monitoring.Metrics.Integrity*
+- uid: Meridian.Application.Monitoring.Metrics.Trades
+  commentId: P:Meridian.Application.Monitoring.Metrics.Trades
+  id: Trades
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Trades
+  nameWithType: Metrics.Trades
+  fullName: Meridian.Application.Monitoring.Metrics.Trades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trades
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Trades { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Trades As Long
+  overload: Meridian.Application.Monitoring.Metrics.Trades*
+- uid: Meridian.Application.Monitoring.Metrics.DepthUpdates
+  commentId: P:Meridian.Application.Monitoring.Metrics.DepthUpdates
+  id: DepthUpdates
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdates
+  nameWithType: Metrics.DepthUpdates
+  fullName: Meridian.Application.Monitoring.Metrics.DepthUpdates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdates
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long DepthUpdates { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property DepthUpdates As Long
+  overload: Meridian.Application.Monitoring.Metrics.DepthUpdates*
+- uid: Meridian.Application.Monitoring.Metrics.Quotes
+  commentId: P:Meridian.Application.Monitoring.Metrics.Quotes
+  id: Quotes
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Quotes
+  nameWithType: Metrics.Quotes
+  fullName: Meridian.Application.Monitoring.Metrics.Quotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quotes
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Quotes { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Quotes As Long
+  overload: Meridian.Application.Monitoring.Metrics.Quotes*
+- uid: Meridian.Application.Monitoring.Metrics.HistoricalBars
+  commentId: P:Meridian.Application.Monitoring.Metrics.HistoricalBars
+  id: HistoricalBars
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: HistoricalBars
+  nameWithType: Metrics.HistoricalBars
+  fullName: Meridian.Application.Monitoring.Metrics.HistoricalBars
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalBars
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long HistoricalBars { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property HistoricalBars As Long
+  overload: Meridian.Application.Monitoring.Metrics.HistoricalBars*
+- uid: Meridian.Application.Monitoring.Metrics.IncPublished
+  commentId: M:Meridian.Application.Monitoring.Metrics.IncPublished
+  id: IncPublished
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: IncPublished()
+  nameWithType: Metrics.IncPublished()
+  fullName: Meridian.Application.Monitoring.Metrics.IncPublished()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncPublished
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncPublished()
+    content.vb: Public Shared Sub IncPublished()
+  overload: Meridian.Application.Monitoring.Metrics.IncPublished*
+- uid: Meridian.Application.Monitoring.Metrics.IncDropped
+  commentId: M:Meridian.Application.Monitoring.Metrics.IncDropped
+  id: IncDropped
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: IncDropped()
+  nameWithType: Metrics.IncDropped()
+  fullName: Meridian.Application.Monitoring.Metrics.IncDropped()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncDropped
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncDropped()
+    content.vb: Public Shared Sub IncDropped()
+  overload: Meridian.Application.Monitoring.Metrics.IncDropped*
+- uid: Meridian.Application.Monitoring.Metrics.IncIntegrity
+  commentId: M:Meridian.Application.Monitoring.Metrics.IncIntegrity
+  id: IncIntegrity
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: IncIntegrity()
+  nameWithType: Metrics.IncIntegrity()
+  fullName: Meridian.Application.Monitoring.Metrics.IncIntegrity()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncIntegrity
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncIntegrity()
+    content.vb: Public Shared Sub IncIntegrity()
+  overload: Meridian.Application.Monitoring.Metrics.IncIntegrity*
+- uid: Meridian.Application.Monitoring.Metrics.IncTrades
+  commentId: M:Meridian.Application.Monitoring.Metrics.IncTrades
+  id: IncTrades
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: IncTrades()
+  nameWithType: Metrics.IncTrades()
+  fullName: Meridian.Application.Monitoring.Metrics.IncTrades()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncTrades
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncTrades()
+    content.vb: Public Shared Sub IncTrades()
+  overload: Meridian.Application.Monitoring.Metrics.IncTrades*
+- uid: Meridian.Application.Monitoring.Metrics.IncDepthUpdates
+  commentId: M:Meridian.Application.Monitoring.Metrics.IncDepthUpdates
+  id: IncDepthUpdates
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: IncDepthUpdates()
+  nameWithType: Metrics.IncDepthUpdates()
+  fullName: Meridian.Application.Monitoring.Metrics.IncDepthUpdates()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncDepthUpdates
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncDepthUpdates()
+    content.vb: Public Shared Sub IncDepthUpdates()
+  overload: Meridian.Application.Monitoring.Metrics.IncDepthUpdates*
+- uid: Meridian.Application.Monitoring.Metrics.IncQuotes
+  commentId: M:Meridian.Application.Monitoring.Metrics.IncQuotes
+  id: IncQuotes
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: IncQuotes()
+  nameWithType: Metrics.IncQuotes()
+  fullName: Meridian.Application.Monitoring.Metrics.IncQuotes()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncQuotes
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncQuotes()
+    content.vb: Public Shared Sub IncQuotes()
+  overload: Meridian.Application.Monitoring.Metrics.IncQuotes*
+- uid: Meridian.Application.Monitoring.Metrics.IncHistoricalBars
+  commentId: M:Meridian.Application.Monitoring.Metrics.IncHistoricalBars
+  id: IncHistoricalBars
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: IncHistoricalBars()
+  nameWithType: Metrics.IncHistoricalBars()
+  fullName: Meridian.Application.Monitoring.Metrics.IncHistoricalBars()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncHistoricalBars
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncHistoricalBars()
+    content.vb: Public Shared Sub IncHistoricalBars()
+  overload: Meridian.Application.Monitoring.Metrics.IncHistoricalBars*
+- uid: Meridian.Application.Monitoring.Metrics.RecordLatency(System.Int64)
+  commentId: M:Meridian.Application.Monitoring.Metrics.RecordLatency(System.Int64)
+  id: RecordLatency(System.Int64)
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(long)
+  nameWithType: Metrics.RecordLatency(long)
+  fullName: Meridian.Application.Monitoring.Metrics.RecordLatency(long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records a latency sample in ticks.
+  example: []
+  syntax:
+    content: public static void RecordLatency(long startTimestamp)
+    parameters:
+    - id: startTimestamp
+      type: System.Int64
+    content.vb: Public Shared Sub RecordLatency(startTimestamp As Long)
+  overload: Meridian.Application.Monitoring.Metrics.RecordLatency*
+  nameWithType.vb: Metrics.RecordLatency(Long)
+  fullName.vb: Meridian.Application.Monitoring.Metrics.RecordLatency(Long)
+  name.vb: RecordLatency(Long)
+- uid: Meridian.Application.Monitoring.Metrics.AverageLatencyUs
+  commentId: P:Meridian.Application.Monitoring.Metrics.AverageLatencyUs
+  id: AverageLatencyUs
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: AverageLatencyUs
+  nameWithType: Metrics.AverageLatencyUs
+  fullName: Meridian.Application.Monitoring.Metrics.AverageLatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageLatencyUs
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the average latency in microseconds.
+  example: []
+  syntax:
+    content: public static double AverageLatencyUs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property AverageLatencyUs As Double
+  overload: Meridian.Application.Monitoring.Metrics.AverageLatencyUs*
+- uid: Meridian.Application.Monitoring.Metrics.MinLatencyUs
+  commentId: P:Meridian.Application.Monitoring.Metrics.MinLatencyUs
+  id: MinLatencyUs
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: MinLatencyUs
+  nameWithType: Metrics.MinLatencyUs
+  fullName: Meridian.Application.Monitoring.Metrics.MinLatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinLatencyUs
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the minimum latency in microseconds.
+  example: []
+  syntax:
+    content: public static double MinLatencyUs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property MinLatencyUs As Double
+  overload: Meridian.Application.Monitoring.Metrics.MinLatencyUs*
+- uid: Meridian.Application.Monitoring.Metrics.MaxLatencyUs
+  commentId: P:Meridian.Application.Monitoring.Metrics.MaxLatencyUs
+  id: MaxLatencyUs
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: MaxLatencyUs
+  nameWithType: Metrics.MaxLatencyUs
+  fullName: Meridian.Application.Monitoring.Metrics.MaxLatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxLatencyUs
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the maximum latency in microseconds.
+  example: []
+  syntax:
+    content: public static double MaxLatencyUs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property MaxLatencyUs As Double
+  overload: Meridian.Application.Monitoring.Metrics.MaxLatencyUs*
+- uid: Meridian.Application.Monitoring.Metrics.LatencySampleCount
+  commentId: P:Meridian.Application.Monitoring.Metrics.LatencySampleCount
+  id: LatencySampleCount
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: LatencySampleCount
+  nameWithType: Metrics.LatencySampleCount
+  fullName: Meridian.Application.Monitoring.Metrics.LatencySampleCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencySampleCount
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the total number of latency samples recorded.
+  example: []
+  syntax:
+    content: public static long LatencySampleCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property LatencySampleCount As Long
+  overload: Meridian.Application.Monitoring.Metrics.LatencySampleCount*
+- uid: Meridian.Application.Monitoring.Metrics.EventsPerSecond
+  commentId: P:Meridian.Application.Monitoring.Metrics.EventsPerSecond
+  id: EventsPerSecond
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: EventsPerSecond
+  nameWithType: Metrics.EventsPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.EventsPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventsPerSecond
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the events per second rate.
+  example: []
+  syntax:
+    content: public static double EventsPerSecond { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property EventsPerSecond As Double
+  overload: Meridian.Application.Monitoring.Metrics.EventsPerSecond*
+- uid: Meridian.Application.Monitoring.Metrics.TradesPerSecond
+  commentId: P:Meridian.Application.Monitoring.Metrics.TradesPerSecond
+  id: TradesPerSecond
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: TradesPerSecond
+  nameWithType: Metrics.TradesPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.TradesPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradesPerSecond
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the trades per second rate.
+  example: []
+  syntax:
+    content: public static double TradesPerSecond { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property TradesPerSecond As Double
+  overload: Meridian.Application.Monitoring.Metrics.TradesPerSecond*
+- uid: Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond
+  commentId: P:Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond
+  id: DepthUpdatesPerSecond
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdatesPerSecond
+  nameWithType: Metrics.DepthUpdatesPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdatesPerSecond
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the depth updates per second rate.
+  example: []
+  syntax:
+    content: public static double DepthUpdatesPerSecond { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property DepthUpdatesPerSecond As Double
+  overload: Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond*
+- uid: Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond
+  commentId: P:Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond
+  id: HistoricalBarsPerSecond
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: HistoricalBarsPerSecond
+  nameWithType: Metrics.HistoricalBarsPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalBarsPerSecond
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the historical bars per second rate (useful during backfills).
+  example: []
+  syntax:
+    content: public static double HistoricalBarsPerSecond { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property HistoricalBarsPerSecond As Double
+  overload: Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond*
+- uid: Meridian.Application.Monitoring.Metrics.DropRate
+  commentId: P:Meridian.Application.Monitoring.Metrics.DropRate
+  id: DropRate
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: DropRate
+  nameWithType: Metrics.DropRate
+  fullName: Meridian.Application.Monitoring.Metrics.DropRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DropRate
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the drop rate as a percentage.
+  example: []
+  syntax:
+    content: public static double DropRate { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property DropRate As Double
+  overload: Meridian.Application.Monitoring.Metrics.DropRate*
+- uid: Meridian.Application.Monitoring.Metrics.UpdateGcCounts
+  commentId: M:Meridian.Application.Monitoring.Metrics.UpdateGcCounts
+  id: UpdateGcCounts
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: UpdateGcCounts()
+  nameWithType: Metrics.UpdateGcCounts()
+  fullName: Meridian.Application.Monitoring.Metrics.UpdateGcCounts()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateGcCounts
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Updates GC collection counts and calculates deltas since last update.
+  example: []
+  syntax:
+    content: public static void UpdateGcCounts()
+    content.vb: Public Shared Sub UpdateGcCounts()
+  overload: Meridian.Application.Monitoring.Metrics.UpdateGcCounts*
+- uid: Meridian.Application.Monitoring.Metrics.Gc0Collections
+  commentId: P:Meridian.Application.Monitoring.Metrics.Gc0Collections
+  id: Gc0Collections
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Gc0Collections
+  nameWithType: Metrics.Gc0Collections
+  fullName: Meridian.Application.Monitoring.Metrics.Gc0Collections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gc0Collections
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Gc0Collections { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Gc0Collections As Long
+  overload: Meridian.Application.Monitoring.Metrics.Gc0Collections*
+- uid: Meridian.Application.Monitoring.Metrics.Gc1Collections
+  commentId: P:Meridian.Application.Monitoring.Metrics.Gc1Collections
+  id: Gc1Collections
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Gc1Collections
+  nameWithType: Metrics.Gc1Collections
+  fullName: Meridian.Application.Monitoring.Metrics.Gc1Collections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gc1Collections
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Gc1Collections { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Gc1Collections As Long
+  overload: Meridian.Application.Monitoring.Metrics.Gc1Collections*
+- uid: Meridian.Application.Monitoring.Metrics.Gc2Collections
+  commentId: P:Meridian.Application.Monitoring.Metrics.Gc2Collections
+  id: Gc2Collections
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Gc2Collections
+  nameWithType: Metrics.Gc2Collections
+  fullName: Meridian.Application.Monitoring.Metrics.Gc2Collections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gc2Collections
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Gc2Collections { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Gc2Collections As Long
+  overload: Meridian.Application.Monitoring.Metrics.Gc2Collections*
+- uid: Meridian.Application.Monitoring.Metrics.Gc0Delta
+  commentId: P:Meridian.Application.Monitoring.Metrics.Gc0Delta
+  id: Gc0Delta
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Gc0Delta
+  nameWithType: Metrics.Gc0Delta
+  fullName: Meridian.Application.Monitoring.Metrics.Gc0Delta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gc0Delta
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 261
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Gc0Delta { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Gc0Delta As Long
+  overload: Meridian.Application.Monitoring.Metrics.Gc0Delta*
+- uid: Meridian.Application.Monitoring.Metrics.Gc1Delta
+  commentId: P:Meridian.Application.Monitoring.Metrics.Gc1Delta
+  id: Gc1Delta
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Gc1Delta
+  nameWithType: Metrics.Gc1Delta
+  fullName: Meridian.Application.Monitoring.Metrics.Gc1Delta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gc1Delta
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Gc1Delta { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Gc1Delta As Long
+  overload: Meridian.Application.Monitoring.Metrics.Gc1Delta*
+- uid: Meridian.Application.Monitoring.Metrics.Gc2Delta
+  commentId: P:Meridian.Application.Monitoring.Metrics.Gc2Delta
+  id: Gc2Delta
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Gc2Delta
+  nameWithType: Metrics.Gc2Delta
+  fullName: Meridian.Application.Monitoring.Metrics.Gc2Delta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gc2Delta
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 263
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long Gc2Delta { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Gc2Delta As Long
+  overload: Meridian.Application.Monitoring.Metrics.Gc2Delta*
+- uid: Meridian.Application.Monitoring.Metrics.MemoryUsageMb
+  commentId: P:Meridian.Application.Monitoring.Metrics.MemoryUsageMb
+  id: MemoryUsageMb
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: MemoryUsageMb
+  nameWithType: Metrics.MemoryUsageMb
+  fullName: Meridian.Application.Monitoring.Metrics.MemoryUsageMb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MemoryUsageMb
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 268
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the current memory usage in megabytes.
+  example: []
+  syntax:
+    content: public static double MemoryUsageMb { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property MemoryUsageMb As Double
+  overload: Meridian.Application.Monitoring.Metrics.MemoryUsageMb*
+- uid: Meridian.Application.Monitoring.Metrics.HeapSizeMb
+  commentId: P:Meridian.Application.Monitoring.Metrics.HeapSizeMb
+  id: HeapSizeMb
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: HeapSizeMb
+  nameWithType: Metrics.HeapSizeMb
+  fullName: Meridian.Application.Monitoring.Metrics.HeapSizeMb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeapSizeMb
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the GC heap size in megabytes.
+  example: []
+  syntax:
+    content: public static double HeapSizeMb { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property HeapSizeMb As Double
+  overload: Meridian.Application.Monitoring.Metrics.HeapSizeMb*
+- uid: Meridian.Application.Monitoring.Metrics.Reset
+  commentId: M:Meridian.Application.Monitoring.Metrics.Reset
+  id: Reset
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: Reset()
+  nameWithType: Metrics.Reset()
+  fullName: Meridian.Application.Monitoring.Metrics.Reset()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Resets all counters to zero.
+  example: []
+  syntax:
+    content: public static void Reset()
+    content.vb: Public Shared Sub Reset()
+  overload: Meridian.Application.Monitoring.Metrics.Reset*
+- uid: Meridian.Application.Monitoring.Metrics.GetSnapshot
+  commentId: M:Meridian.Application.Monitoring.Metrics.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: Metrics.GetSnapshot()
+  fullName: Meridian.Application.Monitoring.Metrics.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 300
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets a snapshot of all current metrics.
+  example: []
+  syntax:
+    content: public static MetricsSnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.Monitoring.MetricsSnapshot
+    content.vb: Public Shared Function GetSnapshot() As MetricsSnapshot
+  overload: Meridian.Application.Monitoring.Metrics.GetSnapshot*
+- uid: Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot
+  commentId: M:Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot
+  id: GetCombinedSnapshot
+  parent: Meridian.Application.Monitoring.Metrics
+  langs:
+  - csharp
+  - vb
+  name: GetCombinedSnapshot()
+  nameWithType: Metrics.GetCombinedSnapshot()
+  fullName: Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCombinedSnapshot
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets a combined snapshot of all metrics including resubscription metrics.
+  example: []
+  syntax:
+    content: public static CombinedMetricsSnapshot GetCombinedSnapshot()
+    return:
+      type: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+    content.vb: Public Shared Function GetCombinedSnapshot() As CombinedMetricsSnapshot
+  overload: Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.Metrics.Published*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Published
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Published
+  name: Published
+  nameWithType: Metrics.Published
+  fullName: Meridian.Application.Monitoring.Metrics.Published
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.Metrics.Dropped*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Dropped
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Dropped
+  name: Dropped
+  nameWithType: Metrics.Dropped
+  fullName: Meridian.Application.Monitoring.Metrics.Dropped
+- uid: Meridian.Application.Monitoring.Metrics.Integrity*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Integrity
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Integrity
+  name: Integrity
+  nameWithType: Metrics.Integrity
+  fullName: Meridian.Application.Monitoring.Metrics.Integrity
+- uid: Meridian.Application.Monitoring.Metrics.Trades*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Trades
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Trades
+  name: Trades
+  nameWithType: Metrics.Trades
+  fullName: Meridian.Application.Monitoring.Metrics.Trades
+- uid: Meridian.Application.Monitoring.Metrics.DepthUpdates*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.DepthUpdates
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_DepthUpdates
+  name: DepthUpdates
+  nameWithType: Metrics.DepthUpdates
+  fullName: Meridian.Application.Monitoring.Metrics.DepthUpdates
+- uid: Meridian.Application.Monitoring.Metrics.Quotes*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Quotes
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Quotes
+  name: Quotes
+  nameWithType: Metrics.Quotes
+  fullName: Meridian.Application.Monitoring.Metrics.Quotes
+- uid: Meridian.Application.Monitoring.Metrics.HistoricalBars*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.HistoricalBars
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_HistoricalBars
+  name: HistoricalBars
+  nameWithType: Metrics.HistoricalBars
+  fullName: Meridian.Application.Monitoring.Metrics.HistoricalBars
+- uid: Meridian.Application.Monitoring.Metrics.IncPublished*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.IncPublished
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_IncPublished
+  name: IncPublished
+  nameWithType: Metrics.IncPublished
+  fullName: Meridian.Application.Monitoring.Metrics.IncPublished
+- uid: Meridian.Application.Monitoring.Metrics.IncDropped*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.IncDropped
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_IncDropped
+  name: IncDropped
+  nameWithType: Metrics.IncDropped
+  fullName: Meridian.Application.Monitoring.Metrics.IncDropped
+- uid: Meridian.Application.Monitoring.Metrics.IncIntegrity*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.IncIntegrity
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_IncIntegrity
+  name: IncIntegrity
+  nameWithType: Metrics.IncIntegrity
+  fullName: Meridian.Application.Monitoring.Metrics.IncIntegrity
+- uid: Meridian.Application.Monitoring.Metrics.IncTrades*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.IncTrades
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_IncTrades
+  name: IncTrades
+  nameWithType: Metrics.IncTrades
+  fullName: Meridian.Application.Monitoring.Metrics.IncTrades
+- uid: Meridian.Application.Monitoring.Metrics.IncDepthUpdates*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.IncDepthUpdates
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_IncDepthUpdates
+  name: IncDepthUpdates
+  nameWithType: Metrics.IncDepthUpdates
+  fullName: Meridian.Application.Monitoring.Metrics.IncDepthUpdates
+- uid: Meridian.Application.Monitoring.Metrics.IncQuotes*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.IncQuotes
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_IncQuotes
+  name: IncQuotes
+  nameWithType: Metrics.IncQuotes
+  fullName: Meridian.Application.Monitoring.Metrics.IncQuotes
+- uid: Meridian.Application.Monitoring.Metrics.IncHistoricalBars*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.IncHistoricalBars
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_IncHistoricalBars
+  name: IncHistoricalBars
+  nameWithType: Metrics.IncHistoricalBars
+  fullName: Meridian.Application.Monitoring.Metrics.IncHistoricalBars
+- uid: Meridian.Application.Monitoring.Metrics.RecordLatency*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.RecordLatency
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_RecordLatency_System_Int64_
+  name: RecordLatency
+  nameWithType: Metrics.RecordLatency
+  fullName: Meridian.Application.Monitoring.Metrics.RecordLatency
+- uid: Meridian.Application.Monitoring.Metrics.AverageLatencyUs*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.AverageLatencyUs
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_AverageLatencyUs
+  name: AverageLatencyUs
+  nameWithType: Metrics.AverageLatencyUs
+  fullName: Meridian.Application.Monitoring.Metrics.AverageLatencyUs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.Metrics.MinLatencyUs*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.MinLatencyUs
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_MinLatencyUs
+  name: MinLatencyUs
+  nameWithType: Metrics.MinLatencyUs
+  fullName: Meridian.Application.Monitoring.Metrics.MinLatencyUs
+- uid: Meridian.Application.Monitoring.Metrics.MaxLatencyUs*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.MaxLatencyUs
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_MaxLatencyUs
+  name: MaxLatencyUs
+  nameWithType: Metrics.MaxLatencyUs
+  fullName: Meridian.Application.Monitoring.Metrics.MaxLatencyUs
+- uid: Meridian.Application.Monitoring.Metrics.LatencySampleCount*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.LatencySampleCount
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_LatencySampleCount
+  name: LatencySampleCount
+  nameWithType: Metrics.LatencySampleCount
+  fullName: Meridian.Application.Monitoring.Metrics.LatencySampleCount
+- uid: Meridian.Application.Monitoring.Metrics.EventsPerSecond*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.EventsPerSecond
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_EventsPerSecond
+  name: EventsPerSecond
+  nameWithType: Metrics.EventsPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.EventsPerSecond
+- uid: Meridian.Application.Monitoring.Metrics.TradesPerSecond*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.TradesPerSecond
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_TradesPerSecond
+  name: TradesPerSecond
+  nameWithType: Metrics.TradesPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.TradesPerSecond
+- uid: Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_DepthUpdatesPerSecond
+  name: DepthUpdatesPerSecond
+  nameWithType: Metrics.DepthUpdatesPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.DepthUpdatesPerSecond
+- uid: Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_HistoricalBarsPerSecond
+  name: HistoricalBarsPerSecond
+  nameWithType: Metrics.HistoricalBarsPerSecond
+  fullName: Meridian.Application.Monitoring.Metrics.HistoricalBarsPerSecond
+- uid: Meridian.Application.Monitoring.Metrics.DropRate*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.DropRate
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_DropRate
+  name: DropRate
+  nameWithType: Metrics.DropRate
+  fullName: Meridian.Application.Monitoring.Metrics.DropRate
+- uid: Meridian.Application.Monitoring.Metrics.UpdateGcCounts*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.UpdateGcCounts
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_UpdateGcCounts
+  name: UpdateGcCounts
+  nameWithType: Metrics.UpdateGcCounts
+  fullName: Meridian.Application.Monitoring.Metrics.UpdateGcCounts
+- uid: Meridian.Application.Monitoring.Metrics.Gc0Collections*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Gc0Collections
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Gc0Collections
+  name: Gc0Collections
+  nameWithType: Metrics.Gc0Collections
+  fullName: Meridian.Application.Monitoring.Metrics.Gc0Collections
+- uid: Meridian.Application.Monitoring.Metrics.Gc1Collections*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Gc1Collections
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Gc1Collections
+  name: Gc1Collections
+  nameWithType: Metrics.Gc1Collections
+  fullName: Meridian.Application.Monitoring.Metrics.Gc1Collections
+- uid: Meridian.Application.Monitoring.Metrics.Gc2Collections*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Gc2Collections
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Gc2Collections
+  name: Gc2Collections
+  nameWithType: Metrics.Gc2Collections
+  fullName: Meridian.Application.Monitoring.Metrics.Gc2Collections
+- uid: Meridian.Application.Monitoring.Metrics.Gc0Delta*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Gc0Delta
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Gc0Delta
+  name: Gc0Delta
+  nameWithType: Metrics.Gc0Delta
+  fullName: Meridian.Application.Monitoring.Metrics.Gc0Delta
+- uid: Meridian.Application.Monitoring.Metrics.Gc1Delta*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Gc1Delta
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Gc1Delta
+  name: Gc1Delta
+  nameWithType: Metrics.Gc1Delta
+  fullName: Meridian.Application.Monitoring.Metrics.Gc1Delta
+- uid: Meridian.Application.Monitoring.Metrics.Gc2Delta*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Gc2Delta
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Gc2Delta
+  name: Gc2Delta
+  nameWithType: Metrics.Gc2Delta
+  fullName: Meridian.Application.Monitoring.Metrics.Gc2Delta
+- uid: Meridian.Application.Monitoring.Metrics.MemoryUsageMb*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.MemoryUsageMb
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_MemoryUsageMb
+  name: MemoryUsageMb
+  nameWithType: Metrics.MemoryUsageMb
+  fullName: Meridian.Application.Monitoring.Metrics.MemoryUsageMb
+- uid: Meridian.Application.Monitoring.Metrics.HeapSizeMb*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.HeapSizeMb
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_HeapSizeMb
+  name: HeapSizeMb
+  nameWithType: Metrics.HeapSizeMb
+  fullName: Meridian.Application.Monitoring.Metrics.HeapSizeMb
+- uid: Meridian.Application.Monitoring.Metrics.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.Reset
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_Reset
+  name: Reset
+  nameWithType: Metrics.Reset
+  fullName: Meridian.Application.Monitoring.Metrics.Reset
+- uid: Meridian.Application.Monitoring.Metrics.GetSnapshot*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.GetSnapshot
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_GetSnapshot
+  name: GetSnapshot
+  nameWithType: Metrics.GetSnapshot
+  fullName: Meridian.Application.Monitoring.Metrics.GetSnapshot
+- uid: Meridian.Application.Monitoring.MetricsSnapshot
+  commentId: T:Meridian.Application.Monitoring.MetricsSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.MetricsSnapshot.html
+  name: MetricsSnapshot
+  nameWithType: MetricsSnapshot
+  fullName: Meridian.Application.Monitoring.MetricsSnapshot
+- uid: Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot*
+  commentId: Overload:Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot
+  href: Meridian.Application.Monitoring.Metrics.html#Meridian_Application_Monitoring_Metrics_GetCombinedSnapshot
+  name: GetCombinedSnapshot
+  nameWithType: Metrics.GetCombinedSnapshot
+  fullName: Meridian.Application.Monitoring.Metrics.GetCombinedSnapshot
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  commentId: T:Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.CombinedMetricsSnapshot.html
+  name: CombinedMetricsSnapshot
+  nameWithType: CombinedMetricsSnapshot
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot

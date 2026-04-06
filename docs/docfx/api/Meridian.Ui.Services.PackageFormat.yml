@@ -1,0 +1,147 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.PackageFormat
+  commentId: T:Meridian.Ui.Services.PackageFormat
+  id: PackageFormat
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.PackageFormat.SevenZip
+  - Meridian.Ui.Services.PackageFormat.TarGz
+  - Meridian.Ui.Services.PackageFormat.Zip
+  langs:
+  - csharp
+  - vb
+  name: PackageFormat
+  nameWithType: PackageFormat
+  fullName: Meridian.Ui.Services.PackageFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageFormat
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 823
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum PackageFormat : byte'
+    content.vb: Public Enum PackageFormat As Byte
+- uid: Meridian.Ui.Services.PackageFormat.Zip
+  commentId: F:Meridian.Ui.Services.PackageFormat.Zip
+  id: Zip
+  parent: Meridian.Ui.Services.PackageFormat
+  langs:
+  - csharp
+  - vb
+  name: Zip
+  nameWithType: PackageFormat.Zip
+  fullName: Meridian.Ui.Services.PackageFormat.Zip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zip
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 825
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Zip = 0
+    return:
+      type: Meridian.Ui.Services.PackageFormat
+- uid: Meridian.Ui.Services.PackageFormat.TarGz
+  commentId: F:Meridian.Ui.Services.PackageFormat.TarGz
+  id: TarGz
+  parent: Meridian.Ui.Services.PackageFormat
+  langs:
+  - csharp
+  - vb
+  name: TarGz
+  nameWithType: PackageFormat.TarGz
+  fullName: Meridian.Ui.Services.PackageFormat.TarGz
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TarGz
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 826
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: TarGz = 1
+    return:
+      type: Meridian.Ui.Services.PackageFormat
+- uid: Meridian.Ui.Services.PackageFormat.SevenZip
+  commentId: F:Meridian.Ui.Services.PackageFormat.SevenZip
+  id: SevenZip
+  parent: Meridian.Ui.Services.PackageFormat
+  langs:
+  - csharp
+  - vb
+  name: SevenZip
+  nameWithType: PackageFormat.SevenZip
+  fullName: Meridian.Ui.Services.PackageFormat.SevenZip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SevenZip
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 827
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SevenZip = 2
+    return:
+      type: Meridian.Ui.Services.PackageFormat
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.PackageFormat
+  commentId: T:Meridian.Ui.Services.PackageFormat
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PackageFormat.html
+  name: PackageFormat
+  nameWithType: PackageFormat
+  fullName: Meridian.Ui.Services.PackageFormat

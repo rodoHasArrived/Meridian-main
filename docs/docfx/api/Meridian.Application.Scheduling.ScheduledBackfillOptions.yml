@@ -1,0 +1,688 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  commentId: T:Meridian.Application.Scheduling.ScheduledBackfillOptions
+  id: ScheduledBackfillOptions
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours
+  - Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval
+  langs:
+  - csharp
+  - vb
+  name: ScheduledBackfillOptions
+  nameWithType: ScheduledBackfillOptions
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledBackfillOptions
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 618
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Configuration options for the scheduled backfill service.
+  example: []
+  syntax:
+    content: 'public sealed record ScheduledBackfillOptions : IEquatable<ScheduledBackfillOptions>'
+    content.vb: Public NotInheritable Class ScheduledBackfillOptions Implements IEquatable(Of ScheduledBackfillOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Scheduling.ScheduledBackfillOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval
+  id: ScheduleCheckInterval
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: ScheduleCheckInterval
+  nameWithType: ScheduledBackfillOptions.ScheduleCheckInterval
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleCheckInterval
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 623
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: How often to check for due schedules.
+  example: []
+  syntax:
+    content: public TimeSpan ScheduleCheckInterval { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property ScheduleCheckInterval As TimeSpan
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration
+  id: MaxExecutionDuration
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxExecutionDuration
+  nameWithType: ScheduledBackfillOptions.MaxExecutionDuration
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxExecutionDuration
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 628
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Maximum duration for a single execution.
+  example: []
+  syntax:
+    content: public TimeSpan MaxExecutionDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MaxExecutionDuration As TimeSpan
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules
+  id: CatchUpMissedSchedules
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: CatchUpMissedSchedules
+  nameWithType: ScheduledBackfillOptions.CatchUpMissedSchedules
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatchUpMissedSchedules
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 633
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Whether to catch up missed schedules on startup.
+  example: []
+  syntax:
+    content: public bool CatchUpMissedSchedules { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property CatchUpMissedSchedules As Boolean
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow
+  id: CatchUpWindow
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: CatchUpWindow
+  nameWithType: ScheduledBackfillOptions.CatchUpWindow
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatchUpWindow
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 638
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: How far back to look for missed schedules.
+  example: []
+  syntax:
+    content: public TimeSpan CatchUpWindow { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property CatchUpWindow As TimeSpan
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions
+  id: MaxConcurrentExecutions
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxConcurrentExecutions
+  nameWithType: ScheduledBackfillOptions.MaxConcurrentExecutions
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxConcurrentExecutions
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 643
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Maximum concurrent scheduled executions.
+  example: []
+  syntax:
+    content: public int MaxConcurrentExecutions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxConcurrentExecutions As Integer
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours
+  id: PauseDuringMarketHours
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: PauseDuringMarketHours
+  nameWithType: ScheduledBackfillOptions.PauseDuringMarketHours
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PauseDuringMarketHours
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 648
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Whether to pause executions during market hours.
+  example: []
+  syntax:
+    content: public bool PauseDuringMarketHours { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property PauseDuringMarketHours As Boolean
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime
+  id: MarketOpenTime
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: MarketOpenTime
+  nameWithType: ScheduledBackfillOptions.MarketOpenTime
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketOpenTime
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 653
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Market open time (Eastern Time).
+  example: []
+  syntax:
+    content: public TimeOnly MarketOpenTime { get; init; }
+    parameters: []
+    return:
+      type: System.TimeOnly
+    content.vb: Public Property MarketOpenTime As TimeOnly
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime
+  id: MarketCloseTime
+  parent: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  langs:
+  - csharp
+  - vb
+  name: MarketCloseTime
+  nameWithType: ScheduledBackfillOptions.MarketCloseTime
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketCloseTime
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 658
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Market close time (Eastern Time).
+  example: []
+  syntax:
+    content: public TimeOnly MarketCloseTime { get; init; }
+    parameters: []
+    return:
+      type: System.TimeOnly
+    content.vb: Public Property MarketCloseTime As TimeOnly
+  overload: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Scheduling.ScheduledBackfillOptions}
+  commentId: T:System.IEquatable{Meridian.Application.Scheduling.ScheduledBackfillOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ScheduledBackfillOptions>
+  nameWithType: IEquatable<ScheduledBackfillOptions>
+  fullName: System.IEquatable<Meridian.Application.Scheduling.ScheduledBackfillOptions>
+  nameWithType.vb: IEquatable(Of ScheduledBackfillOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Scheduling.ScheduledBackfillOptions)
+  name.vb: IEquatable(Of ScheduledBackfillOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.ScheduledBackfillOptions
+    name: ScheduledBackfillOptions
+    href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ScheduledBackfillOptions
+    name: ScheduledBackfillOptions
+    href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_ScheduleCheckInterval
+  name: ScheduleCheckInterval
+  nameWithType: ScheduledBackfillOptions.ScheduleCheckInterval
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.ScheduleCheckInterval
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_MaxExecutionDuration
+  name: MaxExecutionDuration
+  nameWithType: ScheduledBackfillOptions.MaxExecutionDuration
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxExecutionDuration
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_CatchUpMissedSchedules
+  name: CatchUpMissedSchedules
+  nameWithType: ScheduledBackfillOptions.CatchUpMissedSchedules
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpMissedSchedules
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_CatchUpWindow
+  name: CatchUpWindow
+  nameWithType: ScheduledBackfillOptions.CatchUpWindow
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.CatchUpWindow
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_MaxConcurrentExecutions
+  name: MaxConcurrentExecutions
+  nameWithType: ScheduledBackfillOptions.MaxConcurrentExecutions
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MaxConcurrentExecutions
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_PauseDuringMarketHours
+  name: PauseDuringMarketHours
+  nameWithType: ScheduledBackfillOptions.PauseDuringMarketHours
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.PauseDuringMarketHours
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_MarketOpenTime
+  name: MarketOpenTime
+  nameWithType: ScheduledBackfillOptions.MarketOpenTime
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketOpenTime
+- uid: System.TimeOnly
+  commentId: T:System.TimeOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timeonly
+  name: TimeOnly
+  nameWithType: TimeOnly
+  fullName: System.TimeOnly
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html#Meridian_Application_Scheduling_ScheduledBackfillOptions_MarketCloseTime
+  name: MarketCloseTime
+  nameWithType: ScheduledBackfillOptions.MarketCloseTime
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions.MarketCloseTime

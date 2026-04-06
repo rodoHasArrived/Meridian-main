@@ -1,0 +1,1373 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics
+  commentId: T:Meridian.Backtesting.Sdk.BacktestMetrics
+  id: BacktestMetrics
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.BacktestMetrics.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.Double,System.Decimal,System.Decimal,System.Int32,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution})
+  - Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn
+  - Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio
+  - Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity
+  - Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl
+  - Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital
+  - Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades
+  - Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown
+  - Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent
+  - Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays
+  - Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl
+  - Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor
+  - Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+  - Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+  - Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution
+  - Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions
+  - Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest
+  - Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn
+  - Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates
+  - Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades
+  - Meridian.Backtesting.Sdk.BacktestMetrics.WinRate
+  - Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades
+  - Meridian.Backtesting.Sdk.BacktestMetrics.Xirr
+  langs:
+  - csharp
+  - vb
+  name: BacktestMetrics
+  nameWithType: BacktestMetrics
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestMetrics
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Aggregate performance statistics computed by <code>BacktestMetricsEngine</code>.
+  example: []
+  syntax:
+    content: 'public sealed record BacktestMetrics : IEquatable<BacktestMetrics>'
+    content.vb: Public NotInheritable Class BacktestMetrics Implements IEquatable(Of BacktestMetrics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.BacktestMetrics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.Double,System.Decimal,System.Decimal,System.Int32,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution})
+  commentId: M:Meridian.Backtesting.Sdk.BacktestMetrics.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.Double,System.Decimal,System.Decimal,System.Int32,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution})
+  id: '#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.Double,System.Decimal,System.Decimal,System.Int32,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution})'
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: BacktestMetrics(decimal, decimal, decimal, decimal, decimal, decimal, double, double, double, decimal, decimal, int, double, double, int, int, int, decimal, decimal, decimal, double, IReadOnlyDictionary<string, SymbolAttribution>)
+  nameWithType: BacktestMetrics.BacktestMetrics(decimal, decimal, decimal, decimal, decimal, decimal, double, double, double, decimal, decimal, int, double, double, int, int, int, decimal, decimal, decimal, double, IReadOnlyDictionary<string, SymbolAttribution>)
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.BacktestMetrics(decimal, decimal, decimal, decimal, decimal, decimal, double, double, double, decimal, decimal, int, double, double, int, int, int, decimal, decimal, decimal, double, System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Backtesting.Sdk.SymbolAttribution>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Aggregate performance statistics computed by <code>BacktestMetricsEngine</code>.
+  example: []
+  syntax:
+    content: public BacktestMetrics(decimal InitialCapital, decimal FinalEquity, decimal GrossPnl, decimal NetPnl, decimal TotalReturn, decimal AnnualizedReturn, double SharpeRatio, double SortinoRatio, double CalmarRatio, decimal MaxDrawdown, decimal MaxDrawdownPercent, int MaxDrawdownRecoveryDays, double ProfitFactor, double WinRate, int TotalTrades, int WinningTrades, int LosingTrades, decimal TotalCommissions, decimal TotalMarginInterest, decimal TotalShortRebates, double Xirr, IReadOnlyDictionary<string, SymbolAttribution> SymbolAttribution)
+    parameters:
+    - id: InitialCapital
+      type: System.Decimal
+    - id: FinalEquity
+      type: System.Decimal
+    - id: GrossPnl
+      type: System.Decimal
+    - id: NetPnl
+      type: System.Decimal
+    - id: TotalReturn
+      type: System.Decimal
+    - id: AnnualizedReturn
+      type: System.Decimal
+    - id: SharpeRatio
+      type: System.Double
+    - id: SortinoRatio
+      type: System.Double
+    - id: CalmarRatio
+      type: System.Double
+    - id: MaxDrawdown
+      type: System.Decimal
+    - id: MaxDrawdownPercent
+      type: System.Decimal
+    - id: MaxDrawdownRecoveryDays
+      type: System.Int32
+    - id: ProfitFactor
+      type: System.Double
+    - id: WinRate
+      type: System.Double
+    - id: TotalTrades
+      type: System.Int32
+    - id: WinningTrades
+      type: System.Int32
+    - id: LosingTrades
+      type: System.Int32
+    - id: TotalCommissions
+      type: System.Decimal
+    - id: TotalMarginInterest
+      type: System.Decimal
+    - id: TotalShortRebates
+      type: System.Decimal
+    - id: Xirr
+      type: System.Double
+    - id: SymbolAttribution
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution}
+    content.vb: Public Sub New(InitialCapital As Decimal, FinalEquity As Decimal, GrossPnl As Decimal, NetPnl As Decimal, TotalReturn As Decimal, AnnualizedReturn As Decimal, SharpeRatio As Double, SortinoRatio As Double, CalmarRatio As Double, MaxDrawdown As Decimal, MaxDrawdownPercent As Decimal, MaxDrawdownRecoveryDays As Integer, ProfitFactor As Double, WinRate As Double, TotalTrades As Integer, WinningTrades As Integer, LosingTrades As Integer, TotalCommissions As Decimal, TotalMarginInterest As Decimal, TotalShortRebates As Decimal, Xirr As Double, SymbolAttribution As IReadOnlyDictionary(Of String, SymbolAttribution))
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.#ctor*
+  nameWithType.vb: BacktestMetrics.New(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Double, Double, Double, Decimal, Decimal, Integer, Double, Double, Integer, Integer, Integer, Decimal, Decimal, Decimal, Double, IReadOnlyDictionary(Of String, SymbolAttribution))
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestMetrics.New(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Double, Double, Double, Decimal, Decimal, Integer, Double, Double, Integer, Integer, Integer, Decimal, Decimal, Decimal, Double, System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Backtesting.Sdk.SymbolAttribution))
+  name.vb: New(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Double, Double, Double, Decimal, Decimal, Integer, Double, Double, Integer, Integer, Integer, Decimal, Decimal, Decimal, Double, IReadOnlyDictionary(Of String, SymbolAttribution))
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital
+  id: InitialCapital
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: InitialCapital
+  nameWithType: BacktestMetrics.InitialCapital
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialCapital
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal InitialCapital { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property InitialCapital As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity
+  id: FinalEquity
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: FinalEquity
+  nameWithType: BacktestMetrics.FinalEquity
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinalEquity
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal FinalEquity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property FinalEquity As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl
+  id: GrossPnl
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: GrossPnl
+  nameWithType: BacktestMetrics.GrossPnl
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GrossPnl
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal GrossPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property GrossPnl As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl
+  id: NetPnl
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: NetPnl
+  nameWithType: BacktestMetrics.NetPnl
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetPnl
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal NetPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetPnl As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn
+  id: TotalReturn
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: TotalReturn
+  nameWithType: BacktestMetrics.TotalReturn
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalReturn
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal TotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalReturn As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn
+  id: AnnualizedReturn
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: AnnualizedReturn
+  nameWithType: BacktestMetrics.AnnualizedReturn
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualizedReturn
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal AnnualizedReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AnnualizedReturn As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+  id: SharpeRatio
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: SharpeRatio
+  nameWithType: BacktestMetrics.SharpeRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharpeRatio
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double SharpeRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SharpeRatio As Double
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+  id: SortinoRatio
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: SortinoRatio
+  nameWithType: BacktestMetrics.SortinoRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SortinoRatio
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double SortinoRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SortinoRatio As Double
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio
+  id: CalmarRatio
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: CalmarRatio
+  nameWithType: BacktestMetrics.CalmarRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalmarRatio
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double CalmarRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CalmarRatio As Double
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown
+  id: MaxDrawdown
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: MaxDrawdown
+  nameWithType: BacktestMetrics.MaxDrawdown
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDrawdown
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal MaxDrawdown { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MaxDrawdown As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent
+  id: MaxDrawdownPercent
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: MaxDrawdownPercent
+  nameWithType: BacktestMetrics.MaxDrawdownPercent
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDrawdownPercent
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal MaxDrawdownPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MaxDrawdownPercent As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays
+  id: MaxDrawdownRecoveryDays
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: MaxDrawdownRecoveryDays
+  nameWithType: BacktestMetrics.MaxDrawdownRecoveryDays
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDrawdownRecoveryDays
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public int MaxDrawdownRecoveryDays { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxDrawdownRecoveryDays As Integer
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor
+  id: ProfitFactor
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: ProfitFactor
+  nameWithType: BacktestMetrics.ProfitFactor
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProfitFactor
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double ProfitFactor { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ProfitFactor As Double
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.WinRate
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.WinRate
+  id: WinRate
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: WinRate
+  nameWithType: BacktestMetrics.WinRate
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.WinRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WinRate
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double WinRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property WinRate As Double
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.WinRate*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades
+  id: TotalTrades
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: TotalTrades
+  nameWithType: BacktestMetrics.TotalTrades
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalTrades
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public int TotalTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalTrades As Integer
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades
+  id: WinningTrades
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: WinningTrades
+  nameWithType: BacktestMetrics.WinningTrades
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WinningTrades
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public int WinningTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property WinningTrades As Integer
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades
+  id: LosingTrades
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: LosingTrades
+  nameWithType: BacktestMetrics.LosingTrades
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LosingTrades
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public int LosingTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property LosingTrades As Integer
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions
+  id: TotalCommissions
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: TotalCommissions
+  nameWithType: BacktestMetrics.TotalCommissions
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCommissions
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal TotalCommissions { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalCommissions As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest
+  id: TotalMarginInterest
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: TotalMarginInterest
+  nameWithType: BacktestMetrics.TotalMarginInterest
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalMarginInterest
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal TotalMarginInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalMarginInterest As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates
+  id: TotalShortRebates
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: TotalShortRebates
+  nameWithType: BacktestMetrics.TotalShortRebates
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalShortRebates
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal TotalShortRebates { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalShortRebates As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.Xirr
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.Xirr
+  id: Xirr
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: Xirr
+  nameWithType: BacktestMetrics.Xirr
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.Xirr
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Xirr
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double Xirr { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Xirr As Double
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.Xirr*
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution
+  id: SymbolAttribution
+  parent: Meridian.Backtesting.Sdk.BacktestMetrics
+  langs:
+  - csharp
+  - vb
+  name: SymbolAttribution
+  nameWithType: BacktestMetrics.SymbolAttribution
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolAttribution
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public IReadOnlyDictionary<string, SymbolAttribution> SymbolAttribution { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution}
+    content.vb: Public Property SymbolAttribution As IReadOnlyDictionary(Of String, SymbolAttribution)
+  overload: Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.BacktestMetrics}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.BacktestMetrics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BacktestMetrics>
+  nameWithType: IEquatable<BacktestMetrics>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.BacktestMetrics>
+  nameWithType.vb: IEquatable(Of BacktestMetrics)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.BacktestMetrics)
+  name.vb: IEquatable(Of BacktestMetrics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.BacktestMetrics
+    name: BacktestMetrics
+    href: Meridian.Backtesting.Sdk.BacktestMetrics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.BacktestMetrics
+    name: BacktestMetrics
+    href: Meridian.Backtesting.Sdk.BacktestMetrics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.#ctor
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics__ctor_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Double_System_Double_System_Double_System_Decimal_System_Decimal_System_Int32_System_Double_System_Double_System_Int32_System_Int32_System_Int32_System_Decimal_System_Decimal_System_Decimal_System_Double_System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Backtesting_Sdk_SymbolAttribution__
+  name: BacktestMetrics
+  nameWithType: BacktestMetrics.BacktestMetrics
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.BacktestMetrics
+  nameWithType.vb: BacktestMetrics.New
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestMetrics.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.SymbolAttribution}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, SymbolAttribution>
+  nameWithType: IReadOnlyDictionary<string, SymbolAttribution>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Backtesting.Sdk.SymbolAttribution>
+  nameWithType.vb: IReadOnlyDictionary(Of String, SymbolAttribution)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Backtesting.Sdk.SymbolAttribution)
+  name.vb: IReadOnlyDictionary(Of String, SymbolAttribution)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.SymbolAttribution
+    name: SymbolAttribution
+    href: Meridian.Backtesting.Sdk.SymbolAttribution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.SymbolAttribution
+    name: SymbolAttribution
+    href: Meridian.Backtesting.Sdk.SymbolAttribution.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_InitialCapital
+  name: InitialCapital
+  nameWithType: BacktestMetrics.InitialCapital
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.InitialCapital
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_FinalEquity
+  name: FinalEquity
+  nameWithType: BacktestMetrics.FinalEquity
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.FinalEquity
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_GrossPnl
+  name: GrossPnl
+  nameWithType: BacktestMetrics.GrossPnl
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.GrossPnl
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_NetPnl
+  name: NetPnl
+  nameWithType: BacktestMetrics.NetPnl
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.NetPnl
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_TotalReturn
+  name: TotalReturn
+  nameWithType: BacktestMetrics.TotalReturn
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalReturn
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_AnnualizedReturn
+  name: AnnualizedReturn
+  nameWithType: BacktestMetrics.AnnualizedReturn
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.AnnualizedReturn
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_SharpeRatio
+  name: SharpeRatio
+  nameWithType: BacktestMetrics.SharpeRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_SortinoRatio
+  name: SortinoRatio
+  nameWithType: BacktestMetrics.SortinoRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_CalmarRatio
+  name: CalmarRatio
+  nameWithType: BacktestMetrics.CalmarRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.CalmarRatio
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_MaxDrawdown
+  name: MaxDrawdown
+  nameWithType: BacktestMetrics.MaxDrawdown
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdown
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_MaxDrawdownPercent
+  name: MaxDrawdownPercent
+  nameWithType: BacktestMetrics.MaxDrawdownPercent
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownPercent
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_MaxDrawdownRecoveryDays
+  name: MaxDrawdownRecoveryDays
+  nameWithType: BacktestMetrics.MaxDrawdownRecoveryDays
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.MaxDrawdownRecoveryDays
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_ProfitFactor
+  name: ProfitFactor
+  nameWithType: BacktestMetrics.ProfitFactor
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.ProfitFactor
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.WinRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.WinRate
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_WinRate
+  name: WinRate
+  nameWithType: BacktestMetrics.WinRate
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.WinRate
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_TotalTrades
+  name: TotalTrades
+  nameWithType: BacktestMetrics.TotalTrades
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalTrades
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_WinningTrades
+  name: WinningTrades
+  nameWithType: BacktestMetrics.WinningTrades
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.WinningTrades
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_LosingTrades
+  name: LosingTrades
+  nameWithType: BacktestMetrics.LosingTrades
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.LosingTrades
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_TotalCommissions
+  name: TotalCommissions
+  nameWithType: BacktestMetrics.TotalCommissions
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalCommissions
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_TotalMarginInterest
+  name: TotalMarginInterest
+  nameWithType: BacktestMetrics.TotalMarginInterest
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalMarginInterest
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_TotalShortRebates
+  name: TotalShortRebates
+  nameWithType: BacktestMetrics.TotalShortRebates
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.TotalShortRebates
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.Xirr*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.Xirr
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_Xirr
+  name: Xirr
+  nameWithType: BacktestMetrics.Xirr
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.Xirr
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_SymbolAttribution
+  name: SymbolAttribution
+  nameWithType: BacktestMetrics.SymbolAttribution
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SymbolAttribution

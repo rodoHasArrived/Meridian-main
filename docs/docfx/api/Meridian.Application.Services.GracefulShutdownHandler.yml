@@ -1,0 +1,1217 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.GracefulShutdownHandler
+  commentId: T:Meridian.Application.Services.GracefulShutdownHandler
+  id: GracefulShutdownHandler
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.GracefulShutdownHandler.#ctor(Meridian.Application.Services.GracefulShutdownConfig)
+  - Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync
+  - Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync(Meridian.Application.Services.ShutdownReason,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown
+  - Meridian.Application.Services.GracefulShutdownHandler.OnProgress
+  - Meridian.Application.Services.GracefulShutdownHandler.OnShutdownCompleted
+  - Meridian.Application.Services.GracefulShutdownHandler.OnShutdownStarted
+  - Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable(System.IAsyncDisposable)
+  - Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable(Meridian.Application.Services.IFlushable)
+  - Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback(System.Func{Meridian.Application.Services.ShutdownContext,System.Threading.Tasks.Task})
+  - Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask
+  - Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken
+  - Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: GracefulShutdownHandler
+  nameWithType: GracefulShutdownHandler
+  fullName: Meridian.Application.Services.GracefulShutdownHandler
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GracefulShutdownHandler
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Handles graceful shutdown of the application, ensuring all buffered events
+
+    are flushed to storage before termination. Provides timeout handling,
+
+    progress reporting, and webhook notifications.
+  example: []
+  syntax:
+    content: 'public sealed class GracefulShutdownHandler : IAsyncDisposable'
+    content.vb: Public NotInheritable Class GracefulShutdownHandler Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.GracefulShutdownHandler.OnShutdownStarted
+  commentId: E:Meridian.Application.Services.GracefulShutdownHandler.OnShutdownStarted
+  id: OnShutdownStarted
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: OnShutdownStarted
+  nameWithType: GracefulShutdownHandler.OnShutdownStarted
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.OnShutdownStarted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnShutdownStarted
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Event raised when shutdown begins.
+  example: []
+  syntax:
+    content: public event Action<ShutdownContext>? OnShutdownStarted
+    return:
+      type: System.Action{Meridian.Application.Services.ShutdownContext}
+    content.vb: Public Event OnShutdownStarted As Action(Of ShutdownContext)
+- uid: Meridian.Application.Services.GracefulShutdownHandler.OnShutdownCompleted
+  commentId: E:Meridian.Application.Services.GracefulShutdownHandler.OnShutdownCompleted
+  id: OnShutdownCompleted
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: OnShutdownCompleted
+  nameWithType: GracefulShutdownHandler.OnShutdownCompleted
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.OnShutdownCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnShutdownCompleted
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Event raised when shutdown completes.
+  example: []
+  syntax:
+    content: public event Action<ShutdownResult>? OnShutdownCompleted
+    return:
+      type: System.Action{Meridian.Application.Services.ShutdownResult}
+    content.vb: Public Event OnShutdownCompleted As Action(Of ShutdownResult)
+- uid: Meridian.Application.Services.GracefulShutdownHandler.OnProgress
+  commentId: E:Meridian.Application.Services.GracefulShutdownHandler.OnProgress
+  id: OnProgress
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: OnProgress
+  nameWithType: GracefulShutdownHandler.OnProgress
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.OnProgress
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnProgress
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Event raised to report shutdown progress.
+  example: []
+  syntax:
+    content: public event Action<ShutdownProgress>? OnProgress
+    return:
+      type: System.Action{Meridian.Application.Services.ShutdownProgress}
+    content.vb: Public Event OnProgress As Action(Of ShutdownProgress)
+- uid: Meridian.Application.Services.GracefulShutdownHandler.#ctor(Meridian.Application.Services.GracefulShutdownConfig)
+  commentId: M:Meridian.Application.Services.GracefulShutdownHandler.#ctor(Meridian.Application.Services.GracefulShutdownConfig)
+  id: '#ctor(Meridian.Application.Services.GracefulShutdownConfig)'
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: GracefulShutdownHandler(GracefulShutdownConfig?)
+  nameWithType: GracefulShutdownHandler.GracefulShutdownHandler(GracefulShutdownConfig?)
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.GracefulShutdownHandler(Meridian.Application.Services.GracefulShutdownConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public GracefulShutdownHandler(GracefulShutdownConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Services.GracefulShutdownConfig
+    content.vb: Public Sub New(config As GracefulShutdownConfig = Nothing)
+  overload: Meridian.Application.Services.GracefulShutdownHandler.#ctor*
+  nameWithType.vb: GracefulShutdownHandler.New(GracefulShutdownConfig)
+  fullName.vb: Meridian.Application.Services.GracefulShutdownHandler.New(Meridian.Application.Services.GracefulShutdownConfig)
+  name.vb: New(GracefulShutdownConfig)
+- uid: Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable(Meridian.Application.Services.IFlushable)
+  commentId: M:Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable(Meridian.Application.Services.IFlushable)
+  id: RegisterFlushable(Meridian.Application.Services.IFlushable)
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: RegisterFlushable(IFlushable)
+  nameWithType: GracefulShutdownHandler.RegisterFlushable(IFlushable)
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable(Meridian.Application.Services.IFlushable)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterFlushable
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers a flushable component that needs to be flushed on shutdown.
+  example: []
+  syntax:
+    content: public void RegisterFlushable(IFlushable flushable)
+    parameters:
+    - id: flushable
+      type: Meridian.Application.Services.IFlushable
+    content.vb: Public Sub RegisterFlushable(flushable As IFlushable)
+  overload: Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable*
+- uid: Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable(System.IAsyncDisposable)
+  commentId: M:Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable(System.IAsyncDisposable)
+  id: RegisterDisposable(System.IAsyncDisposable)
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: RegisterDisposable(IAsyncDisposable)
+  nameWithType: GracefulShutdownHandler.RegisterDisposable(IAsyncDisposable)
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable(System.IAsyncDisposable)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterDisposable
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers a disposable component that needs to be disposed on shutdown.
+  example: []
+  syntax:
+    content: public void RegisterDisposable(IAsyncDisposable disposable)
+    parameters:
+    - id: disposable
+      type: System.IAsyncDisposable
+    content.vb: Public Sub RegisterDisposable(disposable As IAsyncDisposable)
+  overload: Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable*
+- uid: Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback(System.Func{Meridian.Application.Services.ShutdownContext,System.Threading.Tasks.Task})
+  commentId: M:Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback(System.Func{Meridian.Application.Services.ShutdownContext,System.Threading.Tasks.Task})
+  id: RegisterShutdownCallback(System.Func{Meridian.Application.Services.ShutdownContext,System.Threading.Tasks.Task})
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: RegisterShutdownCallback(Func<ShutdownContext, Task>)
+  nameWithType: GracefulShutdownHandler.RegisterShutdownCallback(Func<ShutdownContext, Task>)
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback(System.Func<Meridian.Application.Services.ShutdownContext, System.Threading.Tasks.Task>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterShutdownCallback
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Registers a callback to be invoked during shutdown.
+
+    Callbacks are invoked in registration order before flushing.
+  example: []
+  syntax:
+    content: public void RegisterShutdownCallback(Func<ShutdownContext, Task> callback)
+    parameters:
+    - id: callback
+      type: System.Func{Meridian.Application.Services.ShutdownContext,System.Threading.Tasks.Task}
+    content.vb: Public Sub RegisterShutdownCallback(callback As Func(Of ShutdownContext, Task))
+  overload: Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback*
+  nameWithType.vb: GracefulShutdownHandler.RegisterShutdownCallback(Func(Of ShutdownContext, Task))
+  fullName.vb: Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback(System.Func(Of Meridian.Application.Services.ShutdownContext, System.Threading.Tasks.Task))
+  name.vb: RegisterShutdownCallback(Func(Of ShutdownContext, Task))
+- uid: Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken
+  commentId: P:Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken
+  id: ShutdownToken
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: ShutdownToken
+  nameWithType: GracefulShutdownHandler.ShutdownToken
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShutdownToken
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets a cancellation token that is cancelled when shutdown is requested.
+  example: []
+  syntax:
+    content: public CancellationToken ShutdownToken { get; }
+    parameters: []
+    return:
+      type: System.Threading.CancellationToken
+    content.vb: Public ReadOnly Property ShutdownToken As CancellationToken
+  overload: Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken*
+- uid: Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask
+  commentId: P:Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask
+  id: ShutdownRequestedTask
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: ShutdownRequestedTask
+  nameWithType: GracefulShutdownHandler.ShutdownRequestedTask
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShutdownRequestedTask
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets a task that completes when shutdown is requested.
+  example: []
+  syntax:
+    content: public Task ShutdownRequestedTask { get; }
+    parameters: []
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public ReadOnly Property ShutdownRequestedTask As Task
+  overload: Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask*
+- uid: Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown
+  commentId: P:Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown
+  id: IsShuttingDown
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: IsShuttingDown
+  nameWithType: GracefulShutdownHandler.IsShuttingDown
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsShuttingDown
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns true if shutdown has been initiated.
+  example: []
+  syntax:
+    content: public bool IsShuttingDown { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsShuttingDown As Boolean
+  overload: Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown*
+- uid: Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync(Meridian.Application.Services.ShutdownReason,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync(Meridian.Application.Services.ShutdownReason,System.String,System.Threading.CancellationToken)
+  id: InitiateShutdownAsync(Meridian.Application.Services.ShutdownReason,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: InitiateShutdownAsync(ShutdownReason, string?, CancellationToken)
+  nameWithType: GracefulShutdownHandler.InitiateShutdownAsync(ShutdownReason, string?, CancellationToken)
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync(Meridian.Application.Services.ShutdownReason, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitiateShutdownAsync
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Initiates graceful shutdown with the specified reason.
+  example: []
+  syntax:
+    content: public Task<ShutdownResult> InitiateShutdownAsync(ShutdownReason reason, string? message = null, CancellationToken ct = default)
+    parameters:
+    - id: reason
+      type: Meridian.Application.Services.ShutdownReason
+    - id: message
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.ShutdownResult}
+    content.vb: Public Function InitiateShutdownAsync(reason As ShutdownReason, message As String = Nothing, ct As CancellationToken = Nothing) As Task(Of ShutdownResult)
+  overload: Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync*
+  nameWithType.vb: GracefulShutdownHandler.InitiateShutdownAsync(ShutdownReason, String, CancellationToken)
+  fullName.vb: Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync(Meridian.Application.Services.ShutdownReason, String, System.Threading.CancellationToken)
+  name.vb: InitiateShutdownAsync(ShutdownReason, String, CancellationToken)
+- uid: Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync(System.Threading.CancellationToken)
+  id: WaitForShutdownAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: WaitForShutdownAsync(CancellationToken)
+  nameWithType: GracefulShutdownHandler.WaitForShutdownAsync(CancellationToken)
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WaitForShutdownAsync
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Waits for shutdown to be requested, then performs graceful shutdown.
+
+    Use this in your main loop.
+  example: []
+  syntax:
+    content: public Task WaitForShutdownAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WaitForShutdownAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync*
+- uid: Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync
+  commentId: M:Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Services.GracefulShutdownHandler
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: GracefulShutdownHandler.DisposeAsync()
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 419
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Services.ShutdownContext}
+  commentId: T:System.Action{Meridian.Application.Services.ShutdownContext}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ShutdownContext>
+  nameWithType: Action<ShutdownContext>
+  fullName: System.Action<Meridian.Application.Services.ShutdownContext>
+  nameWithType.vb: Action(Of ShutdownContext)
+  fullName.vb: System.Action(Of Meridian.Application.Services.ShutdownContext)
+  name.vb: Action(Of ShutdownContext)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Services.ShutdownContext
+    name: ShutdownContext
+    href: Meridian.Application.Services.ShutdownContext.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ShutdownContext
+    name: ShutdownContext
+    href: Meridian.Application.Services.ShutdownContext.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action{Meridian.Application.Services.ShutdownResult}
+  commentId: T:System.Action{Meridian.Application.Services.ShutdownResult}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ShutdownResult>
+  nameWithType: Action<ShutdownResult>
+  fullName: System.Action<Meridian.Application.Services.ShutdownResult>
+  nameWithType.vb: Action(Of ShutdownResult)
+  fullName.vb: System.Action(Of Meridian.Application.Services.ShutdownResult)
+  name.vb: Action(Of ShutdownResult)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Services.ShutdownResult
+    name: ShutdownResult
+    href: Meridian.Application.Services.ShutdownResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ShutdownResult
+    name: ShutdownResult
+    href: Meridian.Application.Services.ShutdownResult.html
+  - name: )
+- uid: System.Action{Meridian.Application.Services.ShutdownProgress}
+  commentId: T:System.Action{Meridian.Application.Services.ShutdownProgress}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ShutdownProgress>
+  nameWithType: Action<ShutdownProgress>
+  fullName: System.Action<Meridian.Application.Services.ShutdownProgress>
+  nameWithType.vb: Action(Of ShutdownProgress)
+  fullName.vb: System.Action(Of Meridian.Application.Services.ShutdownProgress)
+  name.vb: Action(Of ShutdownProgress)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Services.ShutdownProgress
+    name: ShutdownProgress
+    href: Meridian.Application.Services.ShutdownProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ShutdownProgress
+    name: ShutdownProgress
+    href: Meridian.Application.Services.ShutdownProgress.html
+  - name: )
+- uid: Meridian.Application.Services.GracefulShutdownHandler.#ctor*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.#ctor
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler__ctor_Meridian_Application_Services_GracefulShutdownConfig_
+  name: GracefulShutdownHandler
+  nameWithType: GracefulShutdownHandler.GracefulShutdownHandler
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.GracefulShutdownHandler
+  nameWithType.vb: GracefulShutdownHandler.New
+  fullName.vb: Meridian.Application.Services.GracefulShutdownHandler.New
+  name.vb: New
+- uid: Meridian.Application.Services.GracefulShutdownConfig
+  commentId: T:Meridian.Application.Services.GracefulShutdownConfig
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.GracefulShutdownConfig.html
+  name: GracefulShutdownConfig
+  nameWithType: GracefulShutdownConfig
+  fullName: Meridian.Application.Services.GracefulShutdownConfig
+- uid: Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_RegisterFlushable_Meridian_Application_Services_IFlushable_
+  name: RegisterFlushable
+  nameWithType: GracefulShutdownHandler.RegisterFlushable
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.RegisterFlushable
+- uid: Meridian.Application.Services.IFlushable
+  commentId: T:Meridian.Application.Services.IFlushable
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IFlushable.html
+  name: IFlushable
+  nameWithType: IFlushable
+  fullName: Meridian.Application.Services.IFlushable
+- uid: Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_RegisterDisposable_System_IAsyncDisposable_
+  name: RegisterDisposable
+  nameWithType: GracefulShutdownHandler.RegisterDisposable
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.RegisterDisposable
+- uid: Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_RegisterShutdownCallback_System_Func_Meridian_Application_Services_ShutdownContext_System_Threading_Tasks_Task__
+  name: RegisterShutdownCallback
+  nameWithType: GracefulShutdownHandler.RegisterShutdownCallback
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.RegisterShutdownCallback
+- uid: System.Func{Meridian.Application.Services.ShutdownContext,System.Threading.Tasks.Task}
+  commentId: T:System.Func{Meridian.Application.Services.ShutdownContext,System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<ShutdownContext, Task>
+  nameWithType: Func<ShutdownContext, Task>
+  fullName: System.Func<Meridian.Application.Services.ShutdownContext, System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of ShutdownContext, Task)
+  fullName.vb: System.Func(Of Meridian.Application.Services.ShutdownContext, System.Threading.Tasks.Task)
+  name.vb: Func(Of ShutdownContext, Task)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Services.ShutdownContext
+    name: ShutdownContext
+    href: Meridian.Application.Services.ShutdownContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ShutdownContext
+    name: ShutdownContext
+    href: Meridian.Application.Services.ShutdownContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_ShutdownToken
+  name: ShutdownToken
+  nameWithType: GracefulShutdownHandler.ShutdownToken
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.ShutdownToken
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_ShutdownRequestedTask
+  name: ShutdownRequestedTask
+  nameWithType: GracefulShutdownHandler.ShutdownRequestedTask
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.ShutdownRequestedTask
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_IsShuttingDown
+  name: IsShuttingDown
+  nameWithType: GracefulShutdownHandler.IsShuttingDown
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.IsShuttingDown
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_InitiateShutdownAsync_Meridian_Application_Services_ShutdownReason_System_String_System_Threading_CancellationToken_
+  name: InitiateShutdownAsync
+  nameWithType: GracefulShutdownHandler.InitiateShutdownAsync
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.InitiateShutdownAsync
+- uid: Meridian.Application.Services.ShutdownReason
+  commentId: T:Meridian.Application.Services.ShutdownReason
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ShutdownReason.html
+  name: ShutdownReason
+  nameWithType: ShutdownReason
+  fullName: Meridian.Application.Services.ShutdownReason
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.ShutdownResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.ShutdownResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ShutdownResult>
+  nameWithType: Task<ShutdownResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.ShutdownResult>
+  nameWithType.vb: Task(Of ShutdownResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.ShutdownResult)
+  name.vb: Task(Of ShutdownResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.ShutdownResult
+    name: ShutdownResult
+    href: Meridian.Application.Services.ShutdownResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ShutdownResult
+    name: ShutdownResult
+    href: Meridian.Application.Services.ShutdownResult.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_WaitForShutdownAsync_System_Threading_CancellationToken_
+  name: WaitForShutdownAsync
+  nameWithType: GracefulShutdownHandler.WaitForShutdownAsync
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.WaitForShutdownAsync
+- uid: Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync*
+  commentId: Overload:Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync
+  href: Meridian.Application.Services.GracefulShutdownHandler.html#Meridian_Application_Services_GracefulShutdownHandler_DisposeAsync
+  name: DisposeAsync
+  nameWithType: GracefulShutdownHandler.DisposeAsync
+  fullName: Meridian.Application.Services.GracefulShutdownHandler.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

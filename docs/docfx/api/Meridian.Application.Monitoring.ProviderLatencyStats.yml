@@ -1,0 +1,771 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats
+  commentId: T:Meridian.Application.Monitoring.ProviderLatencyStats
+  id: ProviderLatencyStats
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderLatencyStats.#ctor(System.String,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime
+  - Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs
+  - Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs
+  - Meridian.Application.Monitoring.ProviderLatencyStats.MinMs
+  - Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms
+  - Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms
+  - Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms
+  - Meridian.Application.Monitoring.ProviderLatencyStats.Provider
+  - Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount
+  langs:
+  - csharp
+  - vb
+  name: ProviderLatencyStats
+  nameWithType: ProviderLatencyStats
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderLatencyStats
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 419
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Summary statistics for a provider.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderLatencyStats : IEquatable<ProviderLatencyStats>'
+    content.vb: Public NotInheritable Class ProviderLatencyStats Implements IEquatable(Of ProviderLatencyStats)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ProviderLatencyStats}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.#ctor(System.String,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyStats.#ctor(System.String,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.String,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: ProviderLatencyStats(string, long, double, double, double, double, double, double, DateTimeOffset)
+  nameWithType: ProviderLatencyStats.ProviderLatencyStats(string, long, double, double, double, double, double, double, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.ProviderLatencyStats(string, long, double, double, double, double, double, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 419
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Summary statistics for a provider.
+  example: []
+  syntax:
+    content: public ProviderLatencyStats(string Provider, long SampleCount, double MeanMs, double P50Ms, double P95Ms, double P99Ms, double MinMs, double MaxMs, DateTimeOffset LastUpdateTime)
+    parameters:
+    - id: Provider
+      type: System.String
+    - id: SampleCount
+      type: System.Int64
+    - id: MeanMs
+      type: System.Double
+    - id: P50Ms
+      type: System.Double
+    - id: P95Ms
+      type: System.Double
+    - id: P99Ms
+      type: System.Double
+    - id: MinMs
+      type: System.Double
+    - id: MaxMs
+      type: System.Double
+    - id: LastUpdateTime
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Provider As String, SampleCount As Long, MeanMs As Double, P50Ms As Double, P95Ms As Double, P99Ms As Double, MinMs As Double, MaxMs As Double, LastUpdateTime As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.#ctor*
+  nameWithType.vb: ProviderLatencyStats.New(String, Long, Double, Double, Double, Double, Double, Double, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyStats.New(String, Long, Double, Double, Double, Double, Double, Double, System.DateTimeOffset)
+  name.vb: New(String, Long, Double, Double, Double, Double, Double, Double, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.Provider
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: ProviderLatencyStats.Provider
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 420
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.Provider*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount
+  id: SampleCount
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: SampleCount
+  nameWithType: ProviderLatencyStats.SampleCount
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SampleCount
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long SampleCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SampleCount As Long
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs
+  id: MeanMs
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: MeanMs
+  nameWithType: ProviderLatencyStats.MeanMs
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MeanMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 422
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double MeanMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MeanMs As Double
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms
+  id: P50Ms
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: P50Ms
+  nameWithType: ProviderLatencyStats.P50Ms
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P50Ms
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 423
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double P50Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P50Ms As Double
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms
+  id: P95Ms
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: P95Ms
+  nameWithType: ProviderLatencyStats.P95Ms
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P95Ms
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 424
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double P95Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P95Ms As Double
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms
+  id: P99Ms
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: P99Ms
+  nameWithType: ProviderLatencyStats.P99Ms
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P99Ms
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double P99Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P99Ms As Double
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.MinMs
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.MinMs
+  id: MinMs
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: MinMs
+  nameWithType: ProviderLatencyStats.MinMs
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.MinMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 426
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double MinMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MinMs As Double
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.MinMs*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs
+  id: MaxMs
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: MaxMs
+  nameWithType: ProviderLatencyStats.MaxMs
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 427
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double MaxMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxMs As Double
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs*
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime
+  commentId: P:Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime
+  id: LastUpdateTime
+  parent: Meridian.Application.Monitoring.ProviderLatencyStats
+  langs:
+  - csharp
+  - vb
+  name: LastUpdateTime
+  nameWithType: ProviderLatencyStats.LastUpdateTime
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdateTime
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset LastUpdateTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastUpdateTime As DateTimeOffset
+  overload: Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.ProviderLatencyStats}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ProviderLatencyStats}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderLatencyStats>
+  nameWithType: IEquatable<ProviderLatencyStats>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ProviderLatencyStats>
+  nameWithType.vb: IEquatable(Of ProviderLatencyStats)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ProviderLatencyStats)
+  name.vb: IEquatable(Of ProviderLatencyStats)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderLatencyStats
+    name: ProviderLatencyStats
+    href: Meridian.Application.Monitoring.ProviderLatencyStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderLatencyStats
+    name: ProviderLatencyStats
+    href: Meridian.Application.Monitoring.ProviderLatencyStats.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.#ctor
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats__ctor_System_String_System_Int64_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_DateTimeOffset_
+  name: ProviderLatencyStats
+  nameWithType: ProviderLatencyStats.ProviderLatencyStats
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.ProviderLatencyStats
+  nameWithType.vb: ProviderLatencyStats.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyStats.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.Provider
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_Provider
+  name: Provider
+  nameWithType: ProviderLatencyStats.Provider
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.Provider
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_SampleCount
+  name: SampleCount
+  nameWithType: ProviderLatencyStats.SampleCount
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.SampleCount
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_MeanMs
+  name: MeanMs
+  nameWithType: ProviderLatencyStats.MeanMs
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.MeanMs
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_P50Ms
+  name: P50Ms
+  nameWithType: ProviderLatencyStats.P50Ms
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.P50Ms
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_P95Ms
+  name: P95Ms
+  nameWithType: ProviderLatencyStats.P95Ms
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.P95Ms
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_P99Ms
+  name: P99Ms
+  nameWithType: ProviderLatencyStats.P99Ms
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.P99Ms
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.MinMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.MinMs
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_MinMs
+  name: MinMs
+  nameWithType: ProviderLatencyStats.MinMs
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.MinMs
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_MaxMs
+  name: MaxMs
+  nameWithType: ProviderLatencyStats.MaxMs
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.MaxMs
+- uid: Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime
+  href: Meridian.Application.Monitoring.ProviderLatencyStats.html#Meridian_Application_Monitoring_ProviderLatencyStats_LastUpdateTime
+  name: LastUpdateTime
+  nameWithType: ProviderLatencyStats.LastUpdateTime
+  fullName: Meridian.Application.Monitoring.ProviderLatencyStats.LastUpdateTime

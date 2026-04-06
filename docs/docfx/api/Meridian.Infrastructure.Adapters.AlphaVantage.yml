@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage
+  commentId: N:Meridian.Infrastructure.Adapters.AlphaVantage
+  id: Meridian.Infrastructure.Adapters.AlphaVantage
+  children:
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.AlphaVantage
+  nameWithType: Meridian.Infrastructure.Adapters.AlphaVantage
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html
+  name: AlphaVantageHistoricalDataProvider
+  nameWithType: AlphaVantageHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider

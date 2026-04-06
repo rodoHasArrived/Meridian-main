@@ -1,0 +1,108 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  id: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  - Meridian.Contracts.Pipeline.IngestionJob
+  - Meridian.Contracts.Pipeline.IngestionJobState
+  - Meridian.Contracts.Pipeline.IngestionSla
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  - Meridian.Contracts.Pipeline.IngestionWorkloadType
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  - Meridian.Contracts.Pipeline.RetryEnvelope
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Pipeline.IngestionJob
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJob
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJob.html
+  name: IngestionJob
+  nameWithType: IngestionJob
+  fullName: Meridian.Contracts.Pipeline.IngestionJob
+- uid: Meridian.Contracts.Pipeline.IngestionJobState
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJobState
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJobState.html
+  name: IngestionJobState
+  nameWithType: IngestionJobState
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  commentId: T:Meridian.Contracts.Pipeline.IngestionWorkloadType
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionWorkloadType.html
+  name: IngestionWorkloadType
+  nameWithType: IngestionWorkloadType
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  commentId: T:Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html
+  name: IngestionCheckpointToken
+  nameWithType: IngestionCheckpointToken
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope
+  commentId: T:Meridian.Contracts.Pipeline.RetryEnvelope
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html
+  name: RetryEnvelope
+  nameWithType: RetryEnvelope
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope
+- uid: Meridian.Contracts.Pipeline.IngestionSla
+  commentId: T:Meridian.Contracts.Pipeline.IngestionSla
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionSla.html
+  name: IngestionSla
+  nameWithType: IngestionSla
+  fullName: Meridian.Contracts.Pipeline.IngestionSla
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  commentId: T:Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html
+  name: IngestionSymbolProgress
+  nameWithType: IngestionSymbolProgress
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  commentId: T:Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  href: Meridian.Contracts.Pipeline.PipelinePolicyConstants.html
+  name: PipelinePolicyConstants
+  nameWithType: PipelinePolicyConstants
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html

@@ -1,0 +1,740 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus
+  commentId: T:Meridian.Application.Monitoring.CircuitBreakerStatus
+  id: CircuitBreakerStatus
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.String,System.TimeSpan,System.Nullable{System.TimeSpan})
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.LastError
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.Name
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.State
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange
+  - Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerStatus
+  nameWithType: CircuitBreakerStatus
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerStatus
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Status of a single circuit breaker.
+  example: []
+  syntax:
+    content: 'public sealed record CircuitBreakerStatus : IEquatable<CircuitBreakerStatus>'
+    content.vb: Public NotInheritable Class CircuitBreakerStatus Implements IEquatable(Of CircuitBreakerStatus)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.CircuitBreakerStatus}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.String,System.TimeSpan,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.Monitoring.CircuitBreakerStatus.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.String,System.TimeSpan,System.Nullable{System.TimeSpan})
+  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.String,System.TimeSpan,System.Nullable{System.TimeSpan})'
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerStatus(string, string, DateTimeOffset, int, string?, TimeSpan, TimeSpan?)
+  nameWithType: CircuitBreakerStatus.CircuitBreakerStatus(string, string, DateTimeOffset, int, string?, TimeSpan, TimeSpan?)
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.CircuitBreakerStatus(string, string, System.DateTimeOffset, int, string?, System.TimeSpan, System.TimeSpan?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Status of a single circuit breaker.
+  example: []
+  syntax:
+    content: public CircuitBreakerStatus(string Name, string State, DateTimeOffset LastStateChange, int TripCount, string? LastError, TimeSpan TimeSinceLastChange, TimeSpan? CooldownRemaining)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: State
+      type: System.String
+    - id: LastStateChange
+      type: System.DateTimeOffset
+    - id: TripCount
+      type: System.Int32
+    - id: LastError
+      type: System.String
+    - id: TimeSinceLastChange
+      type: System.TimeSpan
+    - id: CooldownRemaining
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Sub New(Name As String, State As String, LastStateChange As DateTimeOffset, TripCount As Integer, LastError As String, TimeSinceLastChange As TimeSpan, CooldownRemaining As TimeSpan?)
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.#ctor*
+  nameWithType.vb: CircuitBreakerStatus.New(String, String, DateTimeOffset, Integer, String, TimeSpan, TimeSpan?)
+  fullName.vb: Meridian.Application.Monitoring.CircuitBreakerStatus.New(String, String, System.DateTimeOffset, Integer, String, System.TimeSpan, System.TimeSpan?)
+  name.vb: New(String, String, DateTimeOffset, Integer, String, TimeSpan, TimeSpan?)
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.Name
+  commentId: P:Meridian.Application.Monitoring.CircuitBreakerStatus.Name
+  id: Name
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CircuitBreakerStatus.Name
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.Name*
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.State
+  commentId: P:Meridian.Application.Monitoring.CircuitBreakerStatus.State
+  id: State
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: CircuitBreakerStatus.State
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string State { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property State As String
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.State*
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange
+  commentId: P:Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange
+  id: LastStateChange
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: LastStateChange
+  nameWithType: CircuitBreakerStatus.LastStateChange
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastStateChange
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset LastStateChange { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastStateChange As DateTimeOffset
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange*
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount
+  commentId: P:Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount
+  id: TripCount
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: TripCount
+  nameWithType: CircuitBreakerStatus.TripCount
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TripCount
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int TripCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TripCount As Integer
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount*
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.LastError
+  commentId: P:Meridian.Application.Monitoring.CircuitBreakerStatus.LastError
+  id: LastError
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: LastError
+  nameWithType: CircuitBreakerStatus.LastError
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.LastError
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastError
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? LastError { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastError As String
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.LastError*
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange
+  commentId: P:Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange
+  id: TimeSinceLastChange
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: TimeSinceLastChange
+  nameWithType: CircuitBreakerStatus.TimeSinceLastChange
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeSinceLastChange
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public TimeSpan TimeSinceLastChange { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TimeSinceLastChange As TimeSpan
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange*
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining
+  commentId: P:Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining
+  id: CooldownRemaining
+  parent: Meridian.Application.Monitoring.CircuitBreakerStatus
+  langs:
+  - csharp
+  - vb
+  name: CooldownRemaining
+  nameWithType: CircuitBreakerStatus.CooldownRemaining
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CooldownRemaining
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public TimeSpan? CooldownRemaining { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property CooldownRemaining As TimeSpan?
+  overload: Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.CircuitBreakerStatus}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.CircuitBreakerStatus}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CircuitBreakerStatus>
+  nameWithType: IEquatable<CircuitBreakerStatus>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.CircuitBreakerStatus>
+  nameWithType.vb: IEquatable(Of CircuitBreakerStatus)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.CircuitBreakerStatus)
+  name.vb: IEquatable(Of CircuitBreakerStatus)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.CircuitBreakerStatus
+    name: CircuitBreakerStatus
+    href: Meridian.Application.Monitoring.CircuitBreakerStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.CircuitBreakerStatus
+    name: CircuitBreakerStatus
+    href: Meridian.Application.Monitoring.CircuitBreakerStatus.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.#ctor
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus__ctor_System_String_System_String_System_DateTimeOffset_System_Int32_System_String_System_TimeSpan_System_Nullable_System_TimeSpan__
+  name: CircuitBreakerStatus
+  nameWithType: CircuitBreakerStatus.CircuitBreakerStatus
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.CircuitBreakerStatus
+  nameWithType.vb: CircuitBreakerStatus.New
+  fullName.vb: Meridian.Application.Monitoring.CircuitBreakerStatus.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.Name*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.Name
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus_Name
+  name: Name
+  nameWithType: CircuitBreakerStatus.Name
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.Name
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.State*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.State
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus_State
+  name: State
+  nameWithType: CircuitBreakerStatus.State
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.State
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus_LastStateChange
+  name: LastStateChange
+  nameWithType: CircuitBreakerStatus.LastStateChange
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.LastStateChange
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus_TripCount
+  name: TripCount
+  nameWithType: CircuitBreakerStatus.TripCount
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.TripCount
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.LastError*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.LastError
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus_LastError
+  name: LastError
+  nameWithType: CircuitBreakerStatus.LastError
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.LastError
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus_TimeSinceLastChange
+  name: TimeSinceLastChange
+  nameWithType: CircuitBreakerStatus.TimeSinceLastChange
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.TimeSinceLastChange
+- uid: Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining*
+  commentId: Overload:Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining
+  href: Meridian.Application.Monitoring.CircuitBreakerStatus.html#Meridian_Application_Monitoring_CircuitBreakerStatus_CooldownRemaining
+  name: CooldownRemaining
+  nameWithType: CircuitBreakerStatus.CooldownRemaining
+  fullName: Meridian.Application.Monitoring.CircuitBreakerStatus.CooldownRemaining

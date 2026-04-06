@@ -1,0 +1,336 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.DataAggregation
+  commentId: T:Meridian.Contracts.Export.DataAggregation
+  id: DataAggregation
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.DataAggregation.Daily
+  - Meridian.Contracts.Export.DataAggregation.FifteenMinute
+  - Meridian.Contracts.Export.DataAggregation.FiveMinute
+  - Meridian.Contracts.Export.DataAggregation.Hour
+  - Meridian.Contracts.Export.DataAggregation.Minute
+  - Meridian.Contracts.Export.DataAggregation.Monthly
+  - Meridian.Contracts.Export.DataAggregation.Second
+  - Meridian.Contracts.Export.DataAggregation.ThirtyMinute
+  - Meridian.Contracts.Export.DataAggregation.Tick
+  - Meridian.Contracts.Export.DataAggregation.Weekly
+  langs:
+  - csharp
+  - vb
+  name: DataAggregation
+  nameWithType: DataAggregation
+  fullName: Meridian.Contracts.Export.DataAggregation
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataAggregation
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: 'public enum DataAggregation : byte'
+    content.vb: Public Enum DataAggregation As Byte
+- uid: Meridian.Contracts.Export.DataAggregation.Tick
+  commentId: F:Meridian.Contracts.Export.DataAggregation.Tick
+  id: Tick
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: Tick
+  nameWithType: DataAggregation.Tick
+  fullName: Meridian.Contracts.Export.DataAggregation.Tick
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tick
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Tick = 0
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.Second
+  commentId: F:Meridian.Contracts.Export.DataAggregation.Second
+  id: Second
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: Second
+  nameWithType: DataAggregation.Second
+  fullName: Meridian.Contracts.Export.DataAggregation.Second
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Second
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Second = 1
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.Minute
+  commentId: F:Meridian.Contracts.Export.DataAggregation.Minute
+  id: Minute
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: Minute
+  nameWithType: DataAggregation.Minute
+  fullName: Meridian.Contracts.Export.DataAggregation.Minute
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Minute = 2
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.FiveMinute
+  commentId: F:Meridian.Contracts.Export.DataAggregation.FiveMinute
+  id: FiveMinute
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: FiveMinute
+  nameWithType: DataAggregation.FiveMinute
+  fullName: Meridian.Contracts.Export.DataAggregation.FiveMinute
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FiveMinute
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: FiveMinute = 3
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.FifteenMinute
+  commentId: F:Meridian.Contracts.Export.DataAggregation.FifteenMinute
+  id: FifteenMinute
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: FifteenMinute
+  nameWithType: DataAggregation.FifteenMinute
+  fullName: Meridian.Contracts.Export.DataAggregation.FifteenMinute
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FifteenMinute
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: FifteenMinute = 4
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.ThirtyMinute
+  commentId: F:Meridian.Contracts.Export.DataAggregation.ThirtyMinute
+  id: ThirtyMinute
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: ThirtyMinute
+  nameWithType: DataAggregation.ThirtyMinute
+  fullName: Meridian.Contracts.Export.DataAggregation.ThirtyMinute
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ThirtyMinute
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: ThirtyMinute = 5
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.Hour
+  commentId: F:Meridian.Contracts.Export.DataAggregation.Hour
+  id: Hour
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: Hour
+  nameWithType: DataAggregation.Hour
+  fullName: Meridian.Contracts.Export.DataAggregation.Hour
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hour
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Hour = 6
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.Daily
+  commentId: F:Meridian.Contracts.Export.DataAggregation.Daily
+  id: Daily
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: Daily
+  nameWithType: DataAggregation.Daily
+  fullName: Meridian.Contracts.Export.DataAggregation.Daily
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Daily
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Daily = 7
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.Weekly
+  commentId: F:Meridian.Contracts.Export.DataAggregation.Weekly
+  id: Weekly
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: Weekly
+  nameWithType: DataAggregation.Weekly
+  fullName: Meridian.Contracts.Export.DataAggregation.Weekly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weekly
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Weekly = 8
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+- uid: Meridian.Contracts.Export.DataAggregation.Monthly
+  commentId: F:Meridian.Contracts.Export.DataAggregation.Monthly
+  id: Monthly
+  parent: Meridian.Contracts.Export.DataAggregation
+  langs:
+  - csharp
+  - vb
+  name: Monthly
+  nameWithType: DataAggregation.Monthly
+  fullName: Meridian.Contracts.Export.DataAggregation.Monthly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Monthly
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Monthly = 9
+    return:
+      type: Meridian.Contracts.Export.DataAggregation
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: Meridian.Contracts.Export.DataAggregation
+  commentId: T:Meridian.Contracts.Export.DataAggregation
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.DataAggregation.html
+  name: DataAggregation
+  nameWithType: DataAggregation
+  fullName: Meridian.Contracts.Export.DataAggregation

@@ -1,0 +1,751 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.OpenApiOperation
+  commentId: T:Meridian.Application.Services.OpenApiOperation
+  id: OpenApiOperation
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.OpenApiOperation.Description
+  - Meridian.Application.Services.OpenApiOperation.OperationId
+  - Meridian.Application.Services.OpenApiOperation.Parameters
+  - Meridian.Application.Services.OpenApiOperation.RequestBody
+  - Meridian.Application.Services.OpenApiOperation.Responses
+  - Meridian.Application.Services.OpenApiOperation.Summary
+  - Meridian.Application.Services.OpenApiOperation.Tags
+  langs:
+  - csharp
+  - vb
+  name: OpenApiOperation
+  nameWithType: OpenApiOperation
+  fullName: Meridian.Application.Services.OpenApiOperation
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenApiOperation
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 545
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public sealed class OpenApiOperation
+    content.vb: Public NotInheritable Class OpenApiOperation
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.OpenApiOperation.Tags
+  commentId: P:Meridian.Application.Services.OpenApiOperation.Tags
+  id: Tags
+  parent: Meridian.Application.Services.OpenApiOperation
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: OpenApiOperation.Tags
+  fullName: Meridian.Application.Services.OpenApiOperation.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 547
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string[]? Tags { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Tags As String()
+  overload: Meridian.Application.Services.OpenApiOperation.Tags*
+- uid: Meridian.Application.Services.OpenApiOperation.Summary
+  commentId: P:Meridian.Application.Services.OpenApiOperation.Summary
+  id: Summary
+  parent: Meridian.Application.Services.OpenApiOperation
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: OpenApiOperation.Summary
+  fullName: Meridian.Application.Services.OpenApiOperation.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 548
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Summary { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Application.Services.OpenApiOperation.Summary*
+- uid: Meridian.Application.Services.OpenApiOperation.Description
+  commentId: P:Meridian.Application.Services.OpenApiOperation.Description
+  id: Description
+  parent: Meridian.Application.Services.OpenApiOperation
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: OpenApiOperation.Description
+  fullName: Meridian.Application.Services.OpenApiOperation.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 549
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.Services.OpenApiOperation.Description*
+- uid: Meridian.Application.Services.OpenApiOperation.OperationId
+  commentId: P:Meridian.Application.Services.OpenApiOperation.OperationId
+  id: OperationId
+  parent: Meridian.Application.Services.OpenApiOperation
+  langs:
+  - csharp
+  - vb
+  name: OperationId
+  nameWithType: OpenApiOperation.OperationId
+  fullName: Meridian.Application.Services.OpenApiOperation.OperationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OperationId
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 550
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? OperationId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OperationId As String
+  overload: Meridian.Application.Services.OpenApiOperation.OperationId*
+- uid: Meridian.Application.Services.OpenApiOperation.Parameters
+  commentId: P:Meridian.Application.Services.OpenApiOperation.Parameters
+  id: Parameters
+  parent: Meridian.Application.Services.OpenApiOperation
+  langs:
+  - csharp
+  - vb
+  name: Parameters
+  nameWithType: OpenApiOperation.Parameters
+  fullName: Meridian.Application.Services.OpenApiOperation.Parameters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parameters
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 551
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public List<OpenApiParameter>? Parameters { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Application.Services.OpenApiParameter}
+    content.vb: Public Property Parameters As List(Of OpenApiParameter)
+  overload: Meridian.Application.Services.OpenApiOperation.Parameters*
+- uid: Meridian.Application.Services.OpenApiOperation.RequestBody
+  commentId: P:Meridian.Application.Services.OpenApiOperation.RequestBody
+  id: RequestBody
+  parent: Meridian.Application.Services.OpenApiOperation
+  langs:
+  - csharp
+  - vb
+  name: RequestBody
+  nameWithType: OpenApiOperation.RequestBody
+  fullName: Meridian.Application.Services.OpenApiOperation.RequestBody
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestBody
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 552
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public OpenApiRequestBody? RequestBody { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.OpenApiRequestBody
+    content.vb: Public Property RequestBody As OpenApiRequestBody
+  overload: Meridian.Application.Services.OpenApiOperation.RequestBody*
+- uid: Meridian.Application.Services.OpenApiOperation.Responses
+  commentId: P:Meridian.Application.Services.OpenApiOperation.Responses
+  id: Responses
+  parent: Meridian.Application.Services.OpenApiOperation
+  langs:
+  - csharp
+  - vb
+  name: Responses
+  nameWithType: OpenApiOperation.Responses
+  fullName: Meridian.Application.Services.OpenApiOperation.Responses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ApiDocumentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Responses
+    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Dictionary<string, OpenApiResponse>? Responses { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Services.OpenApiResponse}
+    content.vb: Public Property Responses As Dictionary(Of String, OpenApiResponse)
+  overload: Meridian.Application.Services.OpenApiOperation.Responses*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.OpenApiOperation.Tags*
+  commentId: Overload:Meridian.Application.Services.OpenApiOperation.Tags
+  href: Meridian.Application.Services.OpenApiOperation.html#Meridian_Application_Services_OpenApiOperation_Tags
+  name: Tags
+  nameWithType: OpenApiOperation.Tags
+  fullName: Meridian.Application.Services.OpenApiOperation.Tags
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Services.OpenApiOperation.Summary*
+  commentId: Overload:Meridian.Application.Services.OpenApiOperation.Summary
+  href: Meridian.Application.Services.OpenApiOperation.html#Meridian_Application_Services_OpenApiOperation_Summary
+  name: Summary
+  nameWithType: OpenApiOperation.Summary
+  fullName: Meridian.Application.Services.OpenApiOperation.Summary
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.OpenApiOperation.Description*
+  commentId: Overload:Meridian.Application.Services.OpenApiOperation.Description
+  href: Meridian.Application.Services.OpenApiOperation.html#Meridian_Application_Services_OpenApiOperation_Description
+  name: Description
+  nameWithType: OpenApiOperation.Description
+  fullName: Meridian.Application.Services.OpenApiOperation.Description
+- uid: Meridian.Application.Services.OpenApiOperation.OperationId*
+  commentId: Overload:Meridian.Application.Services.OpenApiOperation.OperationId
+  href: Meridian.Application.Services.OpenApiOperation.html#Meridian_Application_Services_OpenApiOperation_OperationId
+  name: OperationId
+  nameWithType: OpenApiOperation.OperationId
+  fullName: Meridian.Application.Services.OpenApiOperation.OperationId
+- uid: Meridian.Application.Services.OpenApiOperation.Parameters*
+  commentId: Overload:Meridian.Application.Services.OpenApiOperation.Parameters
+  href: Meridian.Application.Services.OpenApiOperation.html#Meridian_Application_Services_OpenApiOperation_Parameters
+  name: Parameters
+  nameWithType: OpenApiOperation.Parameters
+  fullName: Meridian.Application.Services.OpenApiOperation.Parameters
+- uid: System.Collections.Generic.List{Meridian.Application.Services.OpenApiParameter}
+  commentId: T:System.Collections.Generic.List{Meridian.Application.Services.OpenApiParameter}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<OpenApiParameter>
+  nameWithType: List<OpenApiParameter>
+  fullName: System.Collections.Generic.List<Meridian.Application.Services.OpenApiParameter>
+  nameWithType.vb: List(Of OpenApiParameter)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Application.Services.OpenApiParameter)
+  name.vb: List(Of OpenApiParameter)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Application.Services.OpenApiParameter
+    name: OpenApiParameter
+    href: Meridian.Application.Services.OpenApiParameter.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.OpenApiParameter
+    name: OpenApiParameter
+    href: Meridian.Application.Services.OpenApiParameter.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.OpenApiOperation.RequestBody*
+  commentId: Overload:Meridian.Application.Services.OpenApiOperation.RequestBody
+  href: Meridian.Application.Services.OpenApiOperation.html#Meridian_Application_Services_OpenApiOperation_RequestBody
+  name: RequestBody
+  nameWithType: OpenApiOperation.RequestBody
+  fullName: Meridian.Application.Services.OpenApiOperation.RequestBody
+- uid: Meridian.Application.Services.OpenApiRequestBody
+  commentId: T:Meridian.Application.Services.OpenApiRequestBody
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.OpenApiRequestBody.html
+  name: OpenApiRequestBody
+  nameWithType: OpenApiRequestBody
+  fullName: Meridian.Application.Services.OpenApiRequestBody
+- uid: Meridian.Application.Services.OpenApiOperation.Responses*
+  commentId: Overload:Meridian.Application.Services.OpenApiOperation.Responses
+  href: Meridian.Application.Services.OpenApiOperation.html#Meridian_Application_Services_OpenApiOperation_Responses
+  name: Responses
+  nameWithType: OpenApiOperation.Responses
+  fullName: Meridian.Application.Services.OpenApiOperation.Responses
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Services.OpenApiResponse}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Application.Services.OpenApiResponse}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, OpenApiResponse>
+  nameWithType: Dictionary<string, OpenApiResponse>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Application.Services.OpenApiResponse>
+  nameWithType.vb: Dictionary(Of String, OpenApiResponse)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Application.Services.OpenApiResponse)
+  name.vb: Dictionary(Of String, OpenApiResponse)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Services.OpenApiResponse
+    name: OpenApiResponse
+    href: Meridian.Application.Services.OpenApiResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Services.OpenApiResponse
+    name: OpenApiResponse
+    href: Meridian.Application.Services.OpenApiResponse.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )

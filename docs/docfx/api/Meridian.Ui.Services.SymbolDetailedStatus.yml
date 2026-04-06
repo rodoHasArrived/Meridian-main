@@ -1,0 +1,1379 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolDetailedStatus
+  commentId: T:Meridian.Ui.Services.SymbolDetailedStatus
+  id: SymbolDetailedStatus
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider
+  - Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount
+  - Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes
+  - Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount
+  - Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount
+  - Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore
+  - Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels
+  - Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed
+  - Meridian.Ui.Services.SymbolDetailedStatus.Error
+  - Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate
+  - Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime
+  - Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData
+  - Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues
+  - Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured
+  - Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored
+  - Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate
+  - Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime
+  - Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime
+  - Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol
+  - Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond
+  - Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps
+  - Meridian.Ui.Services.SymbolDetailedStatus.Symbol
+  - Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates
+  - Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived
+  - Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived
+  - Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond
+  - Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed
+  langs:
+  - csharp
+  - vb
+  name: SymbolDetailedStatus
+  nameWithType: SymbolDetailedStatus
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolDetailedStatus
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class SymbolDetailedStatus
+    content.vb: Public NotInheritable Class SymbolDetailedStatus
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.Symbol
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolDetailedStatus.Symbol
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.Symbol*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.Error
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.Error
+  id: Error
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: SymbolDetailedStatus.Error
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.Error
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Error { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property [Error] As String
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.Error*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured
+  id: IsConfigured
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: IsConfigured
+  nameWithType: SymbolDetailedStatus.IsConfigured
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConfigured
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsConfigured { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsConfigured As Boolean
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored
+  id: IsMonitored
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: IsMonitored
+  nameWithType: SymbolDetailedStatus.IsMonitored
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsMonitored
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsMonitored { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsMonitored As Boolean
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed
+  id: TradesSubscribed
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: TradesSubscribed
+  nameWithType: SymbolDetailedStatus.TradesSubscribed
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradesSubscribed
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool TradesSubscribed { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property TradesSubscribed As Boolean
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed
+  id: DepthSubscribed
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: DepthSubscribed
+  nameWithType: SymbolDetailedStatus.DepthSubscribed
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthSubscribed
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool DepthSubscribed { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property DepthSubscribed As Boolean
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels
+  id: DepthLevels
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: DepthLevels
+  nameWithType: SymbolDetailedStatus.DepthLevels
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthLevels
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int DepthLevels { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DepthLevels As Integer
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime
+  id: FirstSeenTime
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: FirstSeenTime
+  nameWithType: SymbolDetailedStatus.FirstSeenTime
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstSeenTime
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? FirstSeenTime { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property FirstSeenTime As Date?
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime
+  id: LastTradeTime
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: LastTradeTime
+  nameWithType: SymbolDetailedStatus.LastTradeTime
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastTradeTime
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? LastTradeTime { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property LastTradeTime As Date?
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime
+  id: LastQuoteTime
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: LastQuoteTime
+  nameWithType: SymbolDetailedStatus.LastQuoteTime
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastQuoteTime
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 526
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? LastQuoteTime { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property LastQuoteTime As Date?
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived
+  id: TotalTradesReceived
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: TotalTradesReceived
+  nameWithType: SymbolDetailedStatus.TotalTradesReceived
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalTradesReceived
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 527
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalTradesReceived { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalTradesReceived As Long
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived
+  id: TotalQuotesReceived
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: TotalQuotesReceived
+  nameWithType: SymbolDetailedStatus.TotalQuotesReceived
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalQuotesReceived
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalQuotesReceived { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalQuotesReceived As Long
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates
+  id: TotalDepthUpdates
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: TotalDepthUpdates
+  nameWithType: SymbolDetailedStatus.TotalDepthUpdates
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDepthUpdates
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 529
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalDepthUpdates { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalDepthUpdates As Long
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond
+  id: TradesPerSecond
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: TradesPerSecond
+  nameWithType: SymbolDetailedStatus.TradesPerSecond
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradesPerSecond
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 530
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double TradesPerSecond { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property TradesPerSecond As Double
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond
+  id: QuotesPerSecond
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: QuotesPerSecond
+  nameWithType: SymbolDetailedStatus.QuotesPerSecond
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotesPerSecond
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 531
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double QuotesPerSecond { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property QuotesPerSecond As Double
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData
+  id: HasArchivedData
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: HasArchivedData
+  nameWithType: SymbolDetailedStatus.HasArchivedData
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasArchivedData
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 534
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool HasArchivedData { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HasArchivedData As Boolean
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate
+  id: FirstArchiveDate
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: FirstArchiveDate
+  nameWithType: SymbolDetailedStatus.FirstArchiveDate
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstArchiveDate
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 535
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly? FirstArchiveDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property FirstArchiveDate As DateOnly?
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate
+  id: LastArchiveDate
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: LastArchiveDate
+  nameWithType: SymbolDetailedStatus.LastArchiveDate
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastArchiveDate
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 536
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly? LastArchiveDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property LastArchiveDate As DateOnly?
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount
+  id: ArchivedTradeCount
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: ArchivedTradeCount
+  nameWithType: SymbolDetailedStatus.ArchivedTradeCount
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchivedTradeCount
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 537
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long ArchivedTradeCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ArchivedTradeCount As Long
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount
+  id: ArchivedQuoteCount
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: ArchivedQuoteCount
+  nameWithType: SymbolDetailedStatus.ArchivedQuoteCount
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchivedQuoteCount
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 538
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long ArchivedQuoteCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ArchivedQuoteCount As Long
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes
+  id: ArchiveSizeBytes
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: ArchiveSizeBytes
+  nameWithType: SymbolDetailedStatus.ArchiveSizeBytes
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveSizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 539
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long ArchiveSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ArchiveSizeBytes As Long
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount
+  id: ArchiveDayCount
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: ArchiveDayCount
+  nameWithType: SymbolDetailedStatus.ArchiveDayCount
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveDayCount
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 540
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int ArchiveDayCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ArchiveDayCount As Integer
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore
+  id: DataQualityScore
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: DataQualityScore
+  nameWithType: SymbolDetailedStatus.DataQualityScore
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityScore
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 543
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double DataQualityScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DataQualityScore As Double
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps
+  id: SequenceGaps
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: SequenceGaps
+  nameWithType: SymbolDetailedStatus.SequenceGaps
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceGaps
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 544
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int SequenceGaps { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SequenceGaps As Integer
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues
+  id: IntegrityIssues
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: IntegrityIssues
+  nameWithType: SymbolDetailedStatus.IntegrityIssues
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityIssues
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 545
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int IntegrityIssues { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property IntegrityIssues As Integer
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider
+  id: ActiveProvider
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: ActiveProvider
+  nameWithType: SymbolDetailedStatus.ActiveProvider
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveProvider
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 548
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? ActiveProvider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ActiveProvider As String
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider*
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol
+  commentId: P:Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol
+  id: MappedProviderSymbol
+  parent: Meridian.Ui.Services.SymbolDetailedStatus
+  langs:
+  - csharp
+  - vb
+  name: MappedProviderSymbol
+  nameWithType: SymbolDetailedStatus.MappedProviderSymbol
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MappedProviderSymbol
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 549
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? MappedProviderSymbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MappedProviderSymbol As String
+  overload: Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.Symbol*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.Symbol
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_Symbol
+  name: Symbol
+  nameWithType: SymbolDetailedStatus.Symbol
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.Error*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.Error
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_Error
+  name: Error
+  nameWithType: SymbolDetailedStatus.Error
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.Error
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_IsConfigured
+  name: IsConfigured
+  nameWithType: SymbolDetailedStatus.IsConfigured
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.IsConfigured
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_IsMonitored
+  name: IsMonitored
+  nameWithType: SymbolDetailedStatus.IsMonitored
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.IsMonitored
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_TradesSubscribed
+  name: TradesSubscribed
+  nameWithType: SymbolDetailedStatus.TradesSubscribed
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TradesSubscribed
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_DepthSubscribed
+  name: DepthSubscribed
+  nameWithType: SymbolDetailedStatus.DepthSubscribed
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.DepthSubscribed
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_DepthLevels
+  name: DepthLevels
+  nameWithType: SymbolDetailedStatus.DepthLevels
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.DepthLevels
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_FirstSeenTime
+  name: FirstSeenTime
+  nameWithType: SymbolDetailedStatus.FirstSeenTime
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.FirstSeenTime
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_LastTradeTime
+  name: LastTradeTime
+  nameWithType: SymbolDetailedStatus.LastTradeTime
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.LastTradeTime
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_LastQuoteTime
+  name: LastQuoteTime
+  nameWithType: SymbolDetailedStatus.LastQuoteTime
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.LastQuoteTime
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_TotalTradesReceived
+  name: TotalTradesReceived
+  nameWithType: SymbolDetailedStatus.TotalTradesReceived
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TotalTradesReceived
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_TotalQuotesReceived
+  name: TotalQuotesReceived
+  nameWithType: SymbolDetailedStatus.TotalQuotesReceived
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TotalQuotesReceived
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_TotalDepthUpdates
+  name: TotalDepthUpdates
+  nameWithType: SymbolDetailedStatus.TotalDepthUpdates
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TotalDepthUpdates
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_TradesPerSecond
+  name: TradesPerSecond
+  nameWithType: SymbolDetailedStatus.TradesPerSecond
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.TradesPerSecond
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_QuotesPerSecond
+  name: QuotesPerSecond
+  nameWithType: SymbolDetailedStatus.QuotesPerSecond
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.QuotesPerSecond
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_HasArchivedData
+  name: HasArchivedData
+  nameWithType: SymbolDetailedStatus.HasArchivedData
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.HasArchivedData
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_FirstArchiveDate
+  name: FirstArchiveDate
+  nameWithType: SymbolDetailedStatus.FirstArchiveDate
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.FirstArchiveDate
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_LastArchiveDate
+  name: LastArchiveDate
+  nameWithType: SymbolDetailedStatus.LastArchiveDate
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.LastArchiveDate
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_ArchivedTradeCount
+  name: ArchivedTradeCount
+  nameWithType: SymbolDetailedStatus.ArchivedTradeCount
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedTradeCount
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_ArchivedQuoteCount
+  name: ArchivedQuoteCount
+  nameWithType: SymbolDetailedStatus.ArchivedQuoteCount
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchivedQuoteCount
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_ArchiveSizeBytes
+  name: ArchiveSizeBytes
+  nameWithType: SymbolDetailedStatus.ArchiveSizeBytes
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveSizeBytes
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_ArchiveDayCount
+  name: ArchiveDayCount
+  nameWithType: SymbolDetailedStatus.ArchiveDayCount
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ArchiveDayCount
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_DataQualityScore
+  name: DataQualityScore
+  nameWithType: SymbolDetailedStatus.DataQualityScore
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.DataQualityScore
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_SequenceGaps
+  name: SequenceGaps
+  nameWithType: SymbolDetailedStatus.SequenceGaps
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.SequenceGaps
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_IntegrityIssues
+  name: IntegrityIssues
+  nameWithType: SymbolDetailedStatus.IntegrityIssues
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.IntegrityIssues
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_ActiveProvider
+  name: ActiveProvider
+  nameWithType: SymbolDetailedStatus.ActiveProvider
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.ActiveProvider
+- uid: Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol*
+  commentId: Overload:Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol
+  href: Meridian.Ui.Services.SymbolDetailedStatus.html#Meridian_Ui_Services_SymbolDetailedStatus_MappedProviderSymbol
+  name: MappedProviderSymbol
+  nameWithType: SymbolDetailedStatus.MappedProviderSymbol
+  fullName: Meridian.Ui.Services.SymbolDetailedStatus.MappedProviderSymbol

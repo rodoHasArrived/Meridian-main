@@ -1,0 +1,449 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.AlertSuppressionRule
+  commentId: T:Meridian.Ui.Services.AlertSuppressionRule
+  id: AlertSuppressionRule
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.AlertSuppressionRule.Category
+  - Meridian.Ui.Services.AlertSuppressionRule.CreatedAt
+  - Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil
+  - Meridian.Ui.Services.AlertSuppressionRule.TitlePattern
+  langs:
+  - csharp
+  - vb
+  name: AlertSuppressionRule
+  nameWithType: AlertSuppressionRule
+  fullName: Meridian.Ui.Services.AlertSuppressionRule
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertSuppressionRule
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 578
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Rule for suppressing specific types of alerts.
+  example: []
+  syntax:
+    content: public sealed class AlertSuppressionRule
+    content.vb: Public NotInheritable Class AlertSuppressionRule
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.AlertSuppressionRule.Category
+  commentId: P:Meridian.Ui.Services.AlertSuppressionRule.Category
+  id: Category
+  parent: Meridian.Ui.Services.AlertSuppressionRule
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: AlertSuppressionRule.Category
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 580
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Category { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Category As String
+  overload: Meridian.Ui.Services.AlertSuppressionRule.Category*
+- uid: Meridian.Ui.Services.AlertSuppressionRule.TitlePattern
+  commentId: P:Meridian.Ui.Services.AlertSuppressionRule.TitlePattern
+  id: TitlePattern
+  parent: Meridian.Ui.Services.AlertSuppressionRule
+  langs:
+  - csharp
+  - vb
+  name: TitlePattern
+  nameWithType: AlertSuppressionRule.TitlePattern
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.TitlePattern
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TitlePattern
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 581
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? TitlePattern { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TitlePattern As String
+  overload: Meridian.Ui.Services.AlertSuppressionRule.TitlePattern*
+- uid: Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil
+  commentId: P:Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil
+  id: SuppressUntil
+  parent: Meridian.Ui.Services.AlertSuppressionRule
+  langs:
+  - csharp
+  - vb
+  name: SuppressUntil
+  nameWithType: AlertSuppressionRule.SuppressUntil
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuppressUntil
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 582
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime SuppressUntil { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property SuppressUntil As Date
+  overload: Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil*
+- uid: Meridian.Ui.Services.AlertSuppressionRule.CreatedAt
+  commentId: P:Meridian.Ui.Services.AlertSuppressionRule.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Ui.Services.AlertSuppressionRule
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: AlertSuppressionRule.CreatedAt
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 583
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property CreatedAt As Date
+  overload: Meridian.Ui.Services.AlertSuppressionRule.CreatedAt*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.AlertSuppressionRule.Category*
+  commentId: Overload:Meridian.Ui.Services.AlertSuppressionRule.Category
+  href: Meridian.Ui.Services.AlertSuppressionRule.html#Meridian_Ui_Services_AlertSuppressionRule_Category
+  name: Category
+  nameWithType: AlertSuppressionRule.Category
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.Category
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.AlertSuppressionRule.TitlePattern*
+  commentId: Overload:Meridian.Ui.Services.AlertSuppressionRule.TitlePattern
+  href: Meridian.Ui.Services.AlertSuppressionRule.html#Meridian_Ui_Services_AlertSuppressionRule_TitlePattern
+  name: TitlePattern
+  nameWithType: AlertSuppressionRule.TitlePattern
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.TitlePattern
+- uid: Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil*
+  commentId: Overload:Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil
+  href: Meridian.Ui.Services.AlertSuppressionRule.html#Meridian_Ui_Services_AlertSuppressionRule_SuppressUntil
+  name: SuppressUntil
+  nameWithType: AlertSuppressionRule.SuppressUntil
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.SuppressUntil
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.AlertSuppressionRule.CreatedAt*
+  commentId: Overload:Meridian.Ui.Services.AlertSuppressionRule.CreatedAt
+  href: Meridian.Ui.Services.AlertSuppressionRule.html#Meridian_Ui_Services_AlertSuppressionRule_CreatedAt
+  name: CreatedAt
+  nameWithType: AlertSuppressionRule.CreatedAt
+  fullName: Meridian.Ui.Services.AlertSuppressionRule.CreatedAt

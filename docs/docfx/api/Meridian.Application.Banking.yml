@@ -1,0 +1,68 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Banking
+  commentId: N:Meridian.Application.Banking
+  id: Meridian.Application.Banking
+  children:
+  - Meridian.Application.Banking.BankingException
+  - Meridian.Application.Banking.IBankingService
+  - Meridian.Application.Banking.InMemoryBankingService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Banking
+  nameWithType: Meridian.Application.Banking
+  fullName: Meridian.Application.Banking
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Banking.BankingException
+  commentId: T:Meridian.Application.Banking.BankingException
+  href: Meridian.Application.Banking.BankingException.html
+  name: BankingException
+  nameWithType: BankingException
+  fullName: Meridian.Application.Banking.BankingException
+- uid: Meridian.Application.Banking.IBankingService
+  commentId: T:Meridian.Application.Banking.IBankingService
+  parent: Meridian.Application.Banking
+  href: Meridian.Application.Banking.IBankingService.html
+  name: IBankingService
+  nameWithType: IBankingService
+  fullName: Meridian.Application.Banking.IBankingService
+- uid: Meridian.Application.Banking.InMemoryBankingService
+  commentId: T:Meridian.Application.Banking.InMemoryBankingService
+  href: Meridian.Application.Banking.InMemoryBankingService.html
+  name: InMemoryBankingService
+  nameWithType: InMemoryBankingService
+  fullName: Meridian.Application.Banking.InMemoryBankingService
+- uid: Meridian.Application.Banking
+  commentId: N:Meridian.Application.Banking
+  href: Meridian.html
+  name: Meridian.Application.Banking
+  nameWithType: Meridian.Application.Banking
+  fullName: Meridian.Application.Banking
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Banking
+    name: Banking
+    href: Meridian.Application.Banking.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Banking
+    name: Banking
+    href: Meridian.Application.Banking.html

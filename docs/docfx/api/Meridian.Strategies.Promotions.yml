@@ -1,0 +1,70 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Promotions
+  commentId: N:Meridian.Strategies.Promotions
+  id: Meridian.Strategies.Promotions
+  children:
+  - Meridian.Strategies.Promotions.BacktestToLivePromoter
+  - Meridian.Strategies.Promotions.PromotionCriteria
+  - Meridian.Strategies.Promotions.StrategyPromotionRecord
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Strategies.Promotions
+  nameWithType: Meridian.Strategies.Promotions
+  fullName: Meridian.Strategies.Promotions
+  type: Namespace
+  assemblies:
+  - Meridian.Strategies
+references:
+- uid: Meridian.Strategies.Promotions.BacktestToLivePromoter
+  commentId: T:Meridian.Strategies.Promotions.BacktestToLivePromoter
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.BacktestToLivePromoter.html
+  name: BacktestToLivePromoter
+  nameWithType: BacktestToLivePromoter
+  fullName: Meridian.Strategies.Promotions.BacktestToLivePromoter
+- uid: Meridian.Strategies.Promotions.PromotionCriteria
+  commentId: T:Meridian.Strategies.Promotions.PromotionCriteria
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.PromotionCriteria.html
+  name: PromotionCriteria
+  nameWithType: PromotionCriteria
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria
+- uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+  commentId: T:Meridian.Strategies.Promotions.StrategyPromotionRecord
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  name: StrategyPromotionRecord
+  nameWithType: StrategyPromotionRecord
+  fullName: Meridian.Strategies.Promotions.StrategyPromotionRecord
+- uid: Meridian.Strategies.Promotions
+  commentId: N:Meridian.Strategies.Promotions
+  href: Meridian.html
+  name: Meridian.Strategies.Promotions
+  nameWithType: Meridian.Strategies.Promotions
+  fullName: Meridian.Strategies.Promotions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html

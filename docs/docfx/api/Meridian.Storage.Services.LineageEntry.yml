@@ -1,0 +1,794 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.LineageEntry
+  commentId: T:Meridian.Storage.Services.LineageEntry
+  id: LineageEntry
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.LineageEntry.#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Storage.Services.LineageEntry.Description
+  - Meridian.Storage.Services.LineageEntry.Operation
+  - Meridian.Storage.Services.LineageEntry.Parameters
+  - Meridian.Storage.Services.LineageEntry.SourcePath
+  - Meridian.Storage.Services.LineageEntry.SourceProvider
+  - Meridian.Storage.Services.LineageEntry.TimestampUtc
+  - Meridian.Storage.Services.LineageEntry.TransformationType
+  langs:
+  - csharp
+  - vb
+  name: LineageEntry
+  nameWithType: LineageEntry
+  fullName: Meridian.Storage.Services.LineageEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LineageEntry
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: A lineage entry tracking the provenance of data.
+  example: []
+  syntax:
+    content: 'public sealed record LineageEntry : IEquatable<LineageEntry>'
+    content.vb: Public NotInheritable Class LineageEntry Implements IEquatable(Of LineageEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.LineageEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.LineageEntry.#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Storage.Services.LineageEntry.#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: '#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})'
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: LineageEntry(DateTime, string, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?)
+  nameWithType: LineageEntry.LineageEntry(DateTime, string, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?)
+  fullName: Meridian.Storage.Services.LineageEntry.LineageEntry(System.DateTime, string, string?, string?, string?, string?, System.Collections.Generic.IReadOnlyDictionary<string, string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: A lineage entry tracking the provenance of data.
+  example: []
+  syntax:
+    content: public LineageEntry(DateTime TimestampUtc, string Operation, string? SourcePath, string? SourceProvider, string? TransformationType, string? Description, IReadOnlyDictionary<string, string>? Parameters = null)
+    parameters:
+    - id: TimestampUtc
+      type: System.DateTime
+    - id: Operation
+      type: System.String
+    - id: SourcePath
+      type: System.String
+    - id: SourceProvider
+      type: System.String
+    - id: TransformationType
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: Parameters
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Sub New(TimestampUtc As Date, Operation As String, SourcePath As String, SourceProvider As String, TransformationType As String, Description As String, Parameters As IReadOnlyDictionary(Of String, String) = Nothing)
+  overload: Meridian.Storage.Services.LineageEntry.#ctor*
+  nameWithType.vb: LineageEntry.New(Date, String, String, String, String, String, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Storage.Services.LineageEntry.New(Date, String, String, String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: New(Date, String, String, String, String, String, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Storage.Services.LineageEntry.TimestampUtc
+  commentId: P:Meridian.Storage.Services.LineageEntry.TimestampUtc
+  id: TimestampUtc
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: TimestampUtc
+  nameWithType: LineageEntry.TimestampUtc
+  fullName: Meridian.Storage.Services.LineageEntry.TimestampUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampUtc
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTime TimestampUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property TimestampUtc As Date
+  overload: Meridian.Storage.Services.LineageEntry.TimestampUtc*
+- uid: Meridian.Storage.Services.LineageEntry.Operation
+  commentId: P:Meridian.Storage.Services.LineageEntry.Operation
+  id: Operation
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: Operation
+  nameWithType: LineageEntry.Operation
+  fullName: Meridian.Storage.Services.LineageEntry.Operation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Operation
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Operation { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Operation As String
+  overload: Meridian.Storage.Services.LineageEntry.Operation*
+- uid: Meridian.Storage.Services.LineageEntry.SourcePath
+  commentId: P:Meridian.Storage.Services.LineageEntry.SourcePath
+  id: SourcePath
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: SourcePath
+  nameWithType: LineageEntry.SourcePath
+  fullName: Meridian.Storage.Services.LineageEntry.SourcePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourcePath
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? SourcePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourcePath As String
+  overload: Meridian.Storage.Services.LineageEntry.SourcePath*
+- uid: Meridian.Storage.Services.LineageEntry.SourceProvider
+  commentId: P:Meridian.Storage.Services.LineageEntry.SourceProvider
+  id: SourceProvider
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: SourceProvider
+  nameWithType: LineageEntry.SourceProvider
+  fullName: Meridian.Storage.Services.LineageEntry.SourceProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceProvider
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? SourceProvider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceProvider As String
+  overload: Meridian.Storage.Services.LineageEntry.SourceProvider*
+- uid: Meridian.Storage.Services.LineageEntry.TransformationType
+  commentId: P:Meridian.Storage.Services.LineageEntry.TransformationType
+  id: TransformationType
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: TransformationType
+  nameWithType: LineageEntry.TransformationType
+  fullName: Meridian.Storage.Services.LineageEntry.TransformationType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TransformationType
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? TransformationType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TransformationType As String
+  overload: Meridian.Storage.Services.LineageEntry.TransformationType*
+- uid: Meridian.Storage.Services.LineageEntry.Description
+  commentId: P:Meridian.Storage.Services.LineageEntry.Description
+  id: Description
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: LineageEntry.Description
+  fullName: Meridian.Storage.Services.LineageEntry.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Storage.Services.LineageEntry.Description*
+- uid: Meridian.Storage.Services.LineageEntry.Parameters
+  commentId: P:Meridian.Storage.Services.LineageEntry.Parameters
+  id: Parameters
+  parent: Meridian.Storage.Services.LineageEntry
+  langs:
+  - csharp
+  - vb
+  name: Parameters
+  nameWithType: LineageEntry.Parameters
+  fullName: Meridian.Storage.Services.LineageEntry.Parameters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parameters
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 322
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? Parameters { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Parameters As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Storage.Services.LineageEntry.Parameters*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.LineageEntry}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.LineageEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LineageEntry>
+  nameWithType: IEquatable<LineageEntry>
+  fullName: System.IEquatable<Meridian.Storage.Services.LineageEntry>
+  nameWithType.vb: IEquatable(Of LineageEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.LineageEntry)
+  name.vb: IEquatable(Of LineageEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.LineageEntry
+    name: LineageEntry
+    href: Meridian.Storage.Services.LineageEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.LineageEntry
+    name: LineageEntry
+    href: Meridian.Storage.Services.LineageEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.LineageEntry.#ctor*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.#ctor
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry__ctor_System_DateTime_System_String_System_String_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: LineageEntry
+  nameWithType: LineageEntry.LineageEntry
+  fullName: Meridian.Storage.Services.LineageEntry.LineageEntry
+  nameWithType.vb: LineageEntry.New
+  fullName.vb: Meridian.Storage.Services.LineageEntry.New
+  name.vb: New
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.LineageEntry.TimestampUtc*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.TimestampUtc
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry_TimestampUtc
+  name: TimestampUtc
+  nameWithType: LineageEntry.TimestampUtc
+  fullName: Meridian.Storage.Services.LineageEntry.TimestampUtc
+- uid: Meridian.Storage.Services.LineageEntry.Operation*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.Operation
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry_Operation
+  name: Operation
+  nameWithType: LineageEntry.Operation
+  fullName: Meridian.Storage.Services.LineageEntry.Operation
+- uid: Meridian.Storage.Services.LineageEntry.SourcePath*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.SourcePath
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry_SourcePath
+  name: SourcePath
+  nameWithType: LineageEntry.SourcePath
+  fullName: Meridian.Storage.Services.LineageEntry.SourcePath
+- uid: Meridian.Storage.Services.LineageEntry.SourceProvider*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.SourceProvider
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry_SourceProvider
+  name: SourceProvider
+  nameWithType: LineageEntry.SourceProvider
+  fullName: Meridian.Storage.Services.LineageEntry.SourceProvider
+- uid: Meridian.Storage.Services.LineageEntry.TransformationType*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.TransformationType
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry_TransformationType
+  name: TransformationType
+  nameWithType: LineageEntry.TransformationType
+  fullName: Meridian.Storage.Services.LineageEntry.TransformationType
+- uid: Meridian.Storage.Services.LineageEntry.Description*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.Description
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry_Description
+  name: Description
+  nameWithType: LineageEntry.Description
+  fullName: Meridian.Storage.Services.LineageEntry.Description
+- uid: Meridian.Storage.Services.LineageEntry.Parameters*
+  commentId: Overload:Meridian.Storage.Services.LineageEntry.Parameters
+  href: Meridian.Storage.Services.LineageEntry.html#Meridian_Storage_Services_LineageEntry_Parameters
+  name: Parameters
+  nameWithType: LineageEntry.Parameters
+  fullName: Meridian.Storage.Services.LineageEntry.Parameters

@@ -1,0 +1,730 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  commentId: T:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  id: SecurityEconomicDefinitionSummaryDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.#ctor(System.String,System.Int64,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType
+  - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version
+  langs:
+  - csharp
+  - vb
+  name: SecurityEconomicDefinitionSummaryDto
+  nameWithType: SecurityEconomicDefinitionSummaryDto
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityEconomicDefinitionSummaryDto
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Workstation-facing Security Master economic definition summary.
+
+    Includes optional classification fields populated when the full economic definition has been rebuilt.
+  example: []
+  syntax:
+    content: 'public sealed record SecurityEconomicDefinitionSummaryDto : IEquatable<SecurityEconomicDefinitionSummaryDto>'
+    content.vb: Public NotInheritable Class SecurityEconomicDefinitionSummaryDto Implements IEquatable(Of SecurityEconomicDefinitionSummaryDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.#ctor(System.String,System.Int64,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.#ctor(System.String,System.Int64,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)
+  id: '#ctor(System.String,System.Int64,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: SecurityEconomicDefinitionSummaryDto(string, long, DateTimeOffset?, DateTimeOffset?, string?, string?, string?)
+  nameWithType: SecurityEconomicDefinitionSummaryDto.SecurityEconomicDefinitionSummaryDto(string, long, DateTimeOffset?, DateTimeOffset?, string?, string?, string?)
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SecurityEconomicDefinitionSummaryDto(string, long, System.DateTimeOffset?, System.DateTimeOffset?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Workstation-facing Security Master economic definition summary.
+
+    Includes optional classification fields populated when the full economic definition has been rebuilt.
+  example: []
+  syntax:
+    content: public SecurityEconomicDefinitionSummaryDto(string Currency, long Version, DateTimeOffset? EffectiveFrom, DateTimeOffset? EffectiveTo, string? SubType = null, string? AssetFamily = null, string? IssuerType = null)
+    parameters:
+    - id: Currency
+      type: System.String
+    - id: Version
+      type: System.Int64
+    - id: EffectiveFrom
+      type: System.Nullable{System.DateTimeOffset}
+    - id: EffectiveTo
+      type: System.Nullable{System.DateTimeOffset}
+    - id: SubType
+      type: System.String
+    - id: AssetFamily
+      type: System.String
+    - id: IssuerType
+      type: System.String
+    content.vb: Public Sub New(Currency As String, Version As Long, EffectiveFrom As DateTimeOffset?, EffectiveTo As DateTimeOffset?, SubType As String = Nothing, AssetFamily As String = Nothing, IssuerType As String = Nothing)
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.#ctor*
+  nameWithType.vb: SecurityEconomicDefinitionSummaryDto.New(String, Long, DateTimeOffset?, DateTimeOffset?, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.New(String, Long, System.DateTimeOffset?, System.DateTimeOffset?, String, String, String)
+  name.vb: New(String, Long, DateTimeOffset?, DateTimeOffset?, String, String, String)
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency
+  commentId: P:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency
+  id: Currency
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: SecurityEconomicDefinitionSummaryDto.Currency
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency*
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version
+  commentId: P:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version
+  id: Version
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Version
+  nameWithType: SecurityEconomicDefinitionSummaryDto.Version
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Version
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public long Version { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Version As Long
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version*
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+  commentId: P:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property EffectiveFrom As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom*
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo
+  commentId: P:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo
+  id: EffectiveTo
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveTo
+  nameWithType: SecurityEconomicDefinitionSummaryDto.EffectiveTo
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveTo
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? EffectiveTo { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property EffectiveTo As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo*
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType
+  commentId: P:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType
+  id: SubType
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: SubType
+  nameWithType: SecurityEconomicDefinitionSummaryDto.SubType
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubType
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? SubType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SubType As String
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType*
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily
+  commentId: P:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily
+  id: AssetFamily
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: AssetFamily
+  nameWithType: SecurityEconomicDefinitionSummaryDto.AssetFamily
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetFamily
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AssetFamily { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetFamily As String
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily*
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType
+  commentId: P:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType
+  id: IssuerType
+  parent: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: IssuerType
+  nameWithType: SecurityEconomicDefinitionSummaryDto.IssuerType
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssuerType
+    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? IssuerType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IssuerType As String
+  overload: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SecurityEconomicDefinitionSummaryDto>
+  nameWithType: IEquatable<SecurityEconomicDefinitionSummaryDto>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto>
+  nameWithType.vb: IEquatable(Of SecurityEconomicDefinitionSummaryDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto)
+  name.vb: IEquatable(Of SecurityEconomicDefinitionSummaryDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+    name: SecurityEconomicDefinitionSummaryDto
+    href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
+    name: SecurityEconomicDefinitionSummaryDto
+    href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.#ctor
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto__ctor_System_String_System_Int64_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_
+  name: SecurityEconomicDefinitionSummaryDto
+  nameWithType: SecurityEconomicDefinitionSummaryDto.SecurityEconomicDefinitionSummaryDto
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SecurityEconomicDefinitionSummaryDto
+  nameWithType.vb: SecurityEconomicDefinitionSummaryDto.New
+  fullName.vb: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto_Currency
+  name: Currency
+  nameWithType: SecurityEconomicDefinitionSummaryDto.Currency
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Currency
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto_Version
+  name: Version
+  nameWithType: SecurityEconomicDefinitionSummaryDto.Version
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.Version
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveFrom
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto_EffectiveTo
+  name: EffectiveTo
+  nameWithType: SecurityEconomicDefinitionSummaryDto.EffectiveTo
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.EffectiveTo
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto_SubType
+  name: SubType
+  nameWithType: SecurityEconomicDefinitionSummaryDto.SubType
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.SubType
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto_AssetFamily
+  name: AssetFamily
+  nameWithType: SecurityEconomicDefinitionSummaryDto.AssetFamily
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.AssetFamily
+- uid: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType*
+  commentId: Overload:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType
+  href: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.html#Meridian_Contracts_Workstation_SecurityEconomicDefinitionSummaryDto_IssuerType
+  name: IssuerType
+  nameWithType: SecurityEconomicDefinitionSummaryDto.IssuerType
+  fullName: Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.IssuerType

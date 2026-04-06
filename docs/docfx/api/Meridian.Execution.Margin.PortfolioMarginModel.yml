@@ -1,0 +1,900 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Margin.PortfolioMarginModel
+  commentId: T:Meridian.Execution.Margin.PortfolioMarginModel
+  id: PortfolioMarginModel
+  parent: Meridian.Execution.Margin
+  children:
+  - Meridian.Execution.Margin.PortfolioMarginModel.#ctor(System.Decimal,System.Decimal)
+  - Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+  - Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+  - Meridian.Execution.Margin.PortfolioMarginModel.ModelName
+  langs:
+  - csharp
+  - vb
+  name: PortfolioMarginModel
+  nameWithType: PortfolioMarginModel
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioMarginModel
+    path: ../../src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: >-
+    Portfolio Margin model that uses risk-based margining (similar to CBOE/TIMS methodology).
+
+    Margin is calculated as the maximum potential loss across a set of market-stress scenarios
+
+    rather than a fixed percentage of notional value.
+  remarks: >-
+    This is a simplified implementation suitable for backtesting and paper trading.
+
+    Live-account portfolio-margin calculations require broker-specific haircuts and
+
+    correlation adjustments not modelled here.
+  example: []
+  syntax:
+    content: 'public sealed class PortfolioMarginModel : IMarginModel'
+    content.vb: Public NotInheritable Class PortfolioMarginModel Implements IMarginModel
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Execution.Margin.IMarginModel
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.#ctor(System.Decimal,System.Decimal)
+  commentId: M:Meridian.Execution.Margin.PortfolioMarginModel.#ctor(System.Decimal,System.Decimal)
+  id: '#ctor(System.Decimal,System.Decimal)'
+  parent: Meridian.Execution.Margin.PortfolioMarginModel
+  langs:
+  - csharp
+  - vb
+  name: PortfolioMarginModel(decimal, decimal)
+  nameWithType: PortfolioMarginModel.PortfolioMarginModel(decimal, decimal)
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.PortfolioMarginModel(decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Initialises a Portfolio Margin model.
+  example: []
+  syntax:
+    content: public PortfolioMarginModel(decimal stressUpPercent = 0.15, decimal stressDownPercent = 0.15)
+    parameters:
+    - id: stressUpPercent
+      type: System.Decimal
+      description: >-
+        Upward price-move shock as a decimal fraction (e.g., 0.15 = 15 %).
+
+        Defaults to 0.15.
+    - id: stressDownPercent
+      type: System.Decimal
+      description: >-
+        Downward price-move shock as a decimal fraction (e.g., 0.15 = 15 %).
+
+        Defaults to 0.15.
+    content.vb: Public Sub New(stressUpPercent As Decimal = 0.15, stressDownPercent As Decimal = 0.15)
+  overload: Meridian.Execution.Margin.PortfolioMarginModel.#ctor*
+  nameWithType.vb: PortfolioMarginModel.New(Decimal, Decimal)
+  fullName.vb: Meridian.Execution.Margin.PortfolioMarginModel.New(Decimal, Decimal)
+  name.vb: New(Decimal, Decimal)
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.ModelName
+  commentId: P:Meridian.Execution.Margin.PortfolioMarginModel.ModelName
+  id: ModelName
+  parent: Meridian.Execution.Margin.PortfolioMarginModel
+  langs:
+  - csharp
+  - vb
+  name: ModelName
+  nameWithType: PortfolioMarginModel.ModelName
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.ModelName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModelName
+    path: ../../src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Human-readable name of this margin model (e.g., "Reg T", "Portfolio Margin").
+  example: []
+  syntax:
+    content: public string ModelName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ModelName As String
+  overload: Meridian.Execution.Margin.PortfolioMarginModel.ModelName*
+  implements:
+  - Meridian.Execution.Margin.IMarginModel.ModelName
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+  id: CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+  parent: Meridian.Execution.Margin.PortfolioMarginModel
+  langs:
+  - csharp
+  - vb
+  name: CalculateForPosition(ExecutionPosition, decimal, decimal)
+  nameWithType: PortfolioMarginModel.CalculateForPosition(ExecutionPosition, decimal, decimal)
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition, decimal, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateForPosition
+    path: ../../src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: >-
+    Calculates the margin requirement for a single position described by
+
+    <code class="paramref">position</code>.
+  example: []
+  syntax:
+    content: public MarginRequirement CalculateForPosition(ExecutionPosition position, decimal lastPrice, decimal portfolioEquity)
+    parameters:
+    - id: position
+      type: Meridian.Execution.Models.ExecutionPosition
+      description: The position to evaluate.
+    - id: lastPrice
+      type: System.Decimal
+      description: Current market price of the instrument.
+    - id: portfolioEquity
+      type: System.Decimal
+      description: Current total portfolio equity (used for excess-liquidity calculation).
+    return:
+      type: Meridian.Execution.Margin.MarginRequirement
+      description: A <xref href="Meridian.Execution.Margin.MarginRequirement" data-throw-if-not-resolved="false"></xref> for the position.
+    content.vb: Public Function CalculateForPosition(position As ExecutionPosition, lastPrice As Decimal, portfolioEquity As Decimal) As MarginRequirement
+  overload: Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition*
+  implements:
+  - Meridian.Execution.Margin.IMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+  nameWithType.vb: PortfolioMarginModel.CalculateForPosition(ExecutionPosition, Decimal, Decimal)
+  fullName.vb: Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition, Decimal, Decimal)
+  name.vb: CalculateForPosition(ExecutionPosition, Decimal, Decimal)
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+  commentId: M:Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+  id: CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+  parent: Meridian.Execution.Margin.PortfolioMarginModel
+  langs:
+  - csharp
+  - vb
+  name: CalculatePortfolioRequirement(IReadOnlyDictionary<string, ExecutionPosition>, IReadOnlyDictionary<string, decimal>, decimal)
+  nameWithType: PortfolioMarginModel.CalculatePortfolioRequirement(IReadOnlyDictionary<string, ExecutionPosition>, IReadOnlyDictionary<string, decimal>, decimal)
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition>, System.Collections.Generic.IReadOnlyDictionary<string, decimal>, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculatePortfolioRequirement
+    path: ../../src/Meridian.Execution/Margin/PortfolioMarginModel.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Calculates the aggregate portfolio-level margin requirement across all open positions.
+  example: []
+  syntax:
+    content: public MarginRequirement CalculatePortfolioRequirement(IReadOnlyDictionary<string, ExecutionPosition> positions, IReadOnlyDictionary<string, decimal> prices, decimal cash)
+    parameters:
+    - id: positions
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+      description: All open positions in the portfolio.
+    - id: prices
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+      description: Current market prices keyed by symbol.
+    - id: cash
+      type: System.Decimal
+      description: Available cash in the portfolio.
+    return:
+      type: Meridian.Execution.Margin.MarginRequirement
+      description: A portfolio-level <xref href="Meridian.Execution.Margin.MarginRequirement" data-throw-if-not-resolved="false"></xref> (Symbol = null).
+    content.vb: Public Function CalculatePortfolioRequirement(positions As IReadOnlyDictionary(Of String, ExecutionPosition), prices As IReadOnlyDictionary(Of String, Decimal), cash As Decimal) As MarginRequirement
+  overload: Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement*
+  implements:
+  - Meridian.Execution.Margin.IMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+  nameWithType.vb: PortfolioMarginModel.CalculatePortfolioRequirement(IReadOnlyDictionary(Of String, ExecutionPosition), IReadOnlyDictionary(Of String, Decimal), Decimal)
+  fullName.vb: Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.ExecutionPosition), System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal), Decimal)
+  name.vb: CalculatePortfolioRequirement(IReadOnlyDictionary(Of String, ExecutionPosition), IReadOnlyDictionary(Of String, Decimal), Decimal)
+references:
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Execution.Margin.IMarginModel
+  commentId: T:Meridian.Execution.Margin.IMarginModel
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.IMarginModel.html
+  name: IMarginModel
+  nameWithType: IMarginModel
+  fullName: Meridian.Execution.Margin.IMarginModel
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.#ctor*
+  commentId: Overload:Meridian.Execution.Margin.PortfolioMarginModel.#ctor
+  href: Meridian.Execution.Margin.PortfolioMarginModel.html#Meridian_Execution_Margin_PortfolioMarginModel__ctor_System_Decimal_System_Decimal_
+  name: PortfolioMarginModel
+  nameWithType: PortfolioMarginModel.PortfolioMarginModel
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.PortfolioMarginModel
+  nameWithType.vb: PortfolioMarginModel.New
+  fullName.vb: Meridian.Execution.Margin.PortfolioMarginModel.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.ModelName*
+  commentId: Overload:Meridian.Execution.Margin.PortfolioMarginModel.ModelName
+  href: Meridian.Execution.Margin.PortfolioMarginModel.html#Meridian_Execution_Margin_PortfolioMarginModel_ModelName
+  name: ModelName
+  nameWithType: PortfolioMarginModel.ModelName
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.ModelName
+- uid: Meridian.Execution.Margin.IMarginModel.ModelName
+  commentId: P:Meridian.Execution.Margin.IMarginModel.ModelName
+  parent: Meridian.Execution.Margin.IMarginModel
+  href: Meridian.Execution.Margin.IMarginModel.html#Meridian_Execution_Margin_IMarginModel_ModelName
+  name: ModelName
+  nameWithType: IMarginModel.ModelName
+  fullName: Meridian.Execution.Margin.IMarginModel.ModelName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Margin.MarginRequirement
+  commentId: T:Meridian.Execution.Margin.MarginRequirement
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginRequirement.html
+  name: MarginRequirement
+  nameWithType: MarginRequirement
+  fullName: Meridian.Execution.Margin.MarginRequirement
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition*
+  commentId: Overload:Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition
+  href: Meridian.Execution.Margin.PortfolioMarginModel.html#Meridian_Execution_Margin_PortfolioMarginModel_CalculateForPosition_Meridian_Execution_Models_ExecutionPosition_System_Decimal_System_Decimal_
+  name: CalculateForPosition
+  nameWithType: PortfolioMarginModel.CalculateForPosition
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.CalculateForPosition
+- uid: Meridian.Execution.Margin.IMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Execution.Margin.IMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+  parent: Meridian.Execution.Margin.IMarginModel
+  isExternal: true
+  href: Meridian.Execution.Margin.IMarginModel.html#Meridian_Execution_Margin_IMarginModel_CalculateForPosition_Meridian_Execution_Models_ExecutionPosition_System_Decimal_System_Decimal_
+  name: CalculateForPosition(ExecutionPosition, decimal, decimal)
+  nameWithType: IMarginModel.CalculateForPosition(ExecutionPosition, decimal, decimal)
+  fullName: Meridian.Execution.Margin.IMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition, decimal, decimal)
+  nameWithType.vb: IMarginModel.CalculateForPosition(ExecutionPosition, Decimal, Decimal)
+  fullName.vb: Meridian.Execution.Margin.IMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition, Decimal, Decimal)
+  name.vb: CalculateForPosition(ExecutionPosition, Decimal, Decimal)
+  spec.csharp:
+  - uid: Meridian.Execution.Margin.IMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+    name: CalculateForPosition
+    href: Meridian.Execution.Margin.IMarginModel.html#Meridian_Execution_Margin_IMarginModel_CalculateForPosition_Meridian_Execution_Models_ExecutionPosition_System_Decimal_System_Decimal_
+  - name: (
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Margin.IMarginModel.CalculateForPosition(Meridian.Execution.Models.ExecutionPosition,System.Decimal,System.Decimal)
+    name: CalculateForPosition
+    href: Meridian.Execution.Margin.IMarginModel.html#Meridian_Execution_Margin_IMarginModel_CalculateForPosition_Meridian_Execution_Models_ExecutionPosition_System_Decimal_System_Decimal_
+  - name: (
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: Meridian.Execution.Models.ExecutionPosition
+  commentId: T:Meridian.Execution.Models.ExecutionPosition
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionPosition.html
+  name: ExecutionPosition
+  nameWithType: ExecutionPosition
+  fullName: Meridian.Execution.Models.ExecutionPosition
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement*
+  commentId: Overload:Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement
+  href: Meridian.Execution.Margin.PortfolioMarginModel.html#Meridian_Execution_Margin_PortfolioMarginModel_CalculatePortfolioRequirement_System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Execution_Models_ExecutionPosition__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__System_Decimal_
+  name: CalculatePortfolioRequirement
+  nameWithType: PortfolioMarginModel.CalculatePortfolioRequirement
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel.CalculatePortfolioRequirement
+- uid: Meridian.Execution.Margin.IMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+  commentId: M:Meridian.Execution.Margin.IMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+  parent: Meridian.Execution.Margin.IMarginModel
+  isExternal: true
+  href: Meridian.Execution.Margin.IMarginModel.html#Meridian_Execution_Margin_IMarginModel_CalculatePortfolioRequirement_System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Execution_Models_ExecutionPosition__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__System_Decimal_
+  name: CalculatePortfolioRequirement(IReadOnlyDictionary<string, ExecutionPosition>, IReadOnlyDictionary<string, decimal>, decimal)
+  nameWithType: IMarginModel.CalculatePortfolioRequirement(IReadOnlyDictionary<string, ExecutionPosition>, IReadOnlyDictionary<string, decimal>, decimal)
+  fullName: Meridian.Execution.Margin.IMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition>, System.Collections.Generic.IReadOnlyDictionary<string, decimal>, decimal)
+  nameWithType.vb: IMarginModel.CalculatePortfolioRequirement(IReadOnlyDictionary(Of String, ExecutionPosition), IReadOnlyDictionary(Of String, Decimal), Decimal)
+  fullName.vb: Meridian.Execution.Margin.IMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.ExecutionPosition), System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal), Decimal)
+  name.vb: CalculatePortfolioRequirement(IReadOnlyDictionary(Of String, ExecutionPosition), IReadOnlyDictionary(Of String, Decimal), Decimal)
+  spec.csharp:
+  - uid: Meridian.Execution.Margin.IMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+    name: CalculatePortfolioRequirement
+    href: Meridian.Execution.Margin.IMarginModel.html#Meridian_Execution_Margin_IMarginModel_CalculatePortfolioRequirement_System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Execution_Models_ExecutionPosition__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__System_Decimal_
+  - name: (
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Margin.IMarginModel.CalculatePortfolioRequirement(System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Decimal)
+    name: CalculatePortfolioRequirement
+    href: Meridian.Execution.Margin.IMarginModel.html#Meridian_Execution_Margin_IMarginModel_CalculatePortfolioRequirement_System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Execution_Models_ExecutionPosition__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__System_Decimal_
+  - name: (
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, ExecutionPosition>
+  nameWithType: IReadOnlyDictionary<string, ExecutionPosition>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition>
+  nameWithType.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.ExecutionPosition)
+  name.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, decimal>
+  nameWithType: IReadOnlyDictionary<string, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal)
+  name.vb: IReadOnlyDictionary(Of String, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

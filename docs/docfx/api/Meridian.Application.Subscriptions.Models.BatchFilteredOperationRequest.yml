@@ -1,0 +1,655 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  id: BatchFilteredOperationRequest
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.#ctor(Meridian.Application.Subscriptions.Models.BatchFilter,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})
+  - Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter
+  - Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation
+  - Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters
+  langs:
+  - csharp
+  - vb
+  name: BatchFilteredOperationRequest
+  nameWithType: BatchFilteredOperationRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchFilteredOperationRequest
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Request to perform batch operations with a filter.
+  example: []
+  syntax:
+    content: 'public sealed record BatchFilteredOperationRequest : IEquatable<BatchFilteredOperationRequest>'
+    content.vb: Public NotInheritable Class BatchFilteredOperationRequest Implements IEquatable(Of BatchFilteredOperationRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.#ctor(Meridian.Application.Subscriptions.Models.BatchFilter,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.#ctor(Meridian.Application.Subscriptions.Models.BatchFilter,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})
+  id: '#ctor(Meridian.Application.Subscriptions.Models.BatchFilter,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})'
+  parent: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  langs:
+  - csharp
+  - vb
+  name: BatchFilteredOperationRequest(BatchFilter, string, Dictionary<string, object?>?)
+  nameWithType: BatchFilteredOperationRequest.BatchFilteredOperationRequest(BatchFilter, string, Dictionary<string, object?>?)
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.BatchFilteredOperationRequest(Meridian.Application.Subscriptions.Models.BatchFilter, string, System.Collections.Generic.Dictionary<string, object?>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Request to perform batch operations with a filter.
+  example: []
+  syntax:
+    content: public BatchFilteredOperationRequest(BatchFilter Filter, string Operation, Dictionary<string, object?>? Parameters = null)
+    parameters:
+    - id: Filter
+      type: Meridian.Application.Subscriptions.Models.BatchFilter
+      description: Filter criteria to select symbols.
+    - id: Operation
+      type: System.String
+      description: Operation to perform (toggle, delete, update).
+    - id: Parameters
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: Parameters for the operation.
+    content.vb: Public Sub New(Filter As BatchFilter, Operation As String, Parameters As Dictionary(Of String, Object) = Nothing)
+  overload: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.#ctor*
+  nameWithType.vb: BatchFilteredOperationRequest.New(BatchFilter, String, Dictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.New(Meridian.Application.Subscriptions.Models.BatchFilter, String, System.Collections.Generic.Dictionary(Of String, Object))
+  name.vb: New(BatchFilter, String, Dictionary(Of String, Object))
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter
+  id: Filter
+  parent: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  langs:
+  - csharp
+  - vb
+  name: Filter
+  nameWithType: BatchFilteredOperationRequest.Filter
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Filter
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Filter criteria to select symbols.
+  example: []
+  syntax:
+    content: public BatchFilter Filter { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Models.BatchFilter
+    content.vb: Public Property Filter As BatchFilter
+  overload: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter*
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation
+  id: Operation
+  parent: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  langs:
+  - csharp
+  - vb
+  name: Operation
+  nameWithType: BatchFilteredOperationRequest.Operation
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Operation
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Operation to perform (toggle, delete, update).
+  example: []
+  syntax:
+    content: public string Operation { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Operation As String
+  overload: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation*
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters
+  id: Parameters
+  parent: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  langs:
+  - csharp
+  - vb
+  name: Parameters
+  nameWithType: BatchFilteredOperationRequest.Parameters
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parameters
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Parameters for the operation.
+  example: []
+  syntax:
+    content: public Dictionary<string, object?>? Parameters { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+    content.vb: Public Property Parameters As Dictionary(Of String, Object)
+  overload: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BatchFilteredOperationRequest>
+  nameWithType: IEquatable<BatchFilteredOperationRequest>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest>
+  nameWithType.vb: IEquatable(Of BatchFilteredOperationRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest)
+  name.vb: IEquatable(Of BatchFilteredOperationRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+    name: BatchFilteredOperationRequest
+    href: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+    name: BatchFilteredOperationRequest
+    href: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.#ctor
+  href: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.html#Meridian_Application_Subscriptions_Models_BatchFilteredOperationRequest__ctor_Meridian_Application_Subscriptions_Models_BatchFilter_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__
+  name: BatchFilteredOperationRequest
+  nameWithType: BatchFilteredOperationRequest.BatchFilteredOperationRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.BatchFilteredOperationRequest
+  nameWithType.vb: BatchFilteredOperationRequest.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.New
+  name.vb: New
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchFilter
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html
+  name: BatchFilter
+  nameWithType: BatchFilter
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter
+  href: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.html#Meridian_Application_Subscriptions_Models_BatchFilteredOperationRequest_Filter
+  name: Filter
+  nameWithType: BatchFilteredOperationRequest.Filter
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Filter
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation
+  href: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.html#Meridian_Application_Subscriptions_Models_BatchFilteredOperationRequest_Operation
+  name: Operation
+  nameWithType: BatchFilteredOperationRequest.Operation
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Operation
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters
+  href: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.html#Meridian_Application_Subscriptions_Models_BatchFilteredOperationRequest_Parameters
+  name: Parameters
+  nameWithType: BatchFilteredOperationRequest.Parameters
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.Parameters

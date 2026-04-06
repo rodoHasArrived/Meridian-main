@@ -1,0 +1,761 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  commentId: T:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  id: MultiCurrencyCashBalance
+  parent: Meridian.Execution.MultiCurrency
+  children:
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add(System.String,System.Decimal)
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get(System.String)
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract(System.String,System.Decimal)
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  langs:
+  - csharp
+  - vb
+  name: MultiCurrencyCashBalance
+  nameWithType: MultiCurrencyCashBalance
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MultiCurrencyCashBalance
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: A multi-currency cash balance that tracks cash amounts per ISO 4217 currency code.
+  remarks: >-
+    Used by execution contexts that need to manage holdings in multiple currencies (e.g.,
+
+    a global equity portfolio that settles trades in USD, EUR, GBP, and JPY simultaneously).
+
+    The balance is thread-safe for concurrent reads after construction; mutations require
+
+    the caller to ensure exclusive access or use a copy-on-write pattern.
+  example: []
+  syntax:
+    content: public sealed class MultiCurrencyCashBalance
+    content.vb: Public NotInheritable Class MultiCurrencyCashBalance
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor
+  commentId: M:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor
+  id: '#ctor'
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: MultiCurrencyCashBalance()
+  nameWithType: MultiCurrencyCashBalance.MultiCurrencyCashBalance()
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.MultiCurrencyCashBalance()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Initialises an empty balance.
+  example: []
+  syntax:
+    content: public MultiCurrencyCashBalance()
+    content.vb: Public Sub New()
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor*
+  nameWithType.vb: MultiCurrencyCashBalance.New()
+  fullName.vb: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.New()
+  name.vb: New()
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  commentId: M:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  id: '#ctor(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})'
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: MultiCurrencyCashBalance(IReadOnlyDictionary<string, decimal>)
+  nameWithType: MultiCurrencyCashBalance.MultiCurrencyCashBalance(IReadOnlyDictionary<string, decimal>)
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.MultiCurrencyCashBalance(System.Collections.Generic.IReadOnlyDictionary<string, decimal>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Initialises the balance from an existing dictionary of currency → amount pairs.
+  example: []
+  syntax:
+    content: public MultiCurrencyCashBalance(IReadOnlyDictionary<string, decimal> initial)
+    parameters:
+    - id: initial
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public Sub New(initial As IReadOnlyDictionary(Of String, Decimal))
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor*
+  nameWithType.vb: MultiCurrencyCashBalance.New(IReadOnlyDictionary(Of String, Decimal))
+  fullName.vb: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.New(System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal))
+  name.vb: New(IReadOnlyDictionary(Of String, Decimal))
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances
+  commentId: P:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances
+  id: Balances
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: Balances
+  nameWithType: MultiCurrencyCashBalance.Balances
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balances
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Returns all currencies that have a non-zero balance.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, decimal> Balances { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public ReadOnly Property Balances As IReadOnlyDictionary(Of String, Decimal)
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances*
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get(System.String)
+  commentId: M:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get(System.String)
+  id: Get(System.String)
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: Get(string)
+  nameWithType: MultiCurrencyCashBalance.Get(string)
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Get
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Gets the balance for <code class="paramref">currency</code>; returns <code>0</code> when not present.
+  example: []
+  syntax:
+    content: public decimal Get(string currency)
+    parameters:
+    - id: currency
+      type: System.String
+    return:
+      type: System.Decimal
+    content.vb: Public Function [Get](currency As String) As Decimal
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get*
+  nameWithType.vb: MultiCurrencyCashBalance.Get(String)
+  fullName.vb: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get(String)
+  name.vb: Get(String)
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add(System.String,System.Decimal)
+  commentId: M:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add(System.String,System.Decimal)
+  id: Add(System.String,System.Decimal)
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: Add(string, decimal)
+  nameWithType: MultiCurrencyCashBalance.Add(string, decimal)
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add(string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Add
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Adds <code class="paramref">amount</code> to the balance for <code class="paramref">currency</code>.
+  example: []
+  syntax:
+    content: public void Add(string currency, decimal amount)
+    parameters:
+    - id: currency
+      type: System.String
+    - id: amount
+      type: System.Decimal
+    content.vb: Public Sub Add(currency As String, amount As Decimal)
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add*
+  nameWithType.vb: MultiCurrencyCashBalance.Add(String, Decimal)
+  fullName.vb: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add(String, Decimal)
+  name.vb: Add(String, Decimal)
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract(System.String,System.Decimal)
+  commentId: M:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract(System.String,System.Decimal)
+  id: Subtract(System.String,System.Decimal)
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: Subtract(string, decimal)
+  nameWithType: MultiCurrencyCashBalance.Subtract(string, decimal)
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract(string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subtract
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Subtracts <code class="paramref">amount</code> from the balance for <code class="paramref">currency</code>.
+  example: []
+  syntax:
+    content: public void Subtract(string currency, decimal amount)
+    parameters:
+    - id: currency
+      type: System.String
+    - id: amount
+      type: System.Decimal
+    content.vb: Public Sub Subtract(currency As String, amount As Decimal)
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract*
+  nameWithType.vb: MultiCurrencyCashBalance.Subtract(String, Decimal)
+  fullName.vb: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract(String, Decimal)
+  name.vb: Subtract(String, Decimal)
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  commentId: M:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  id: ToBaseCurrency(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: ToBaseCurrency(IReadOnlyDictionary<string, decimal>)
+  nameWithType: MultiCurrencyCashBalance.ToBaseCurrency(IReadOnlyDictionary<string, decimal>)
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency(System.Collections.Generic.IReadOnlyDictionary<string, decimal>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToBaseCurrency
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: >-
+    Converts all currency balances to a single base-currency total using the provided
+
+    <code class="paramref">fxRates</code> dictionary (keyed by currency, valued as rate to base).
+
+    Currencies with no rate are treated as 1:1 with the base currency (a safe fallback
+
+    for the base currency itself).
+  example: []
+  syntax:
+    content: public decimal ToBaseCurrency(IReadOnlyDictionary<string, decimal> fxRates)
+    parameters:
+    - id: fxRates
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    return:
+      type: System.Decimal
+    content.vb: Public Function ToBaseCurrency(fxRates As IReadOnlyDictionary(Of String, Decimal)) As Decimal
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency*
+  nameWithType.vb: MultiCurrencyCashBalance.ToBaseCurrency(IReadOnlyDictionary(Of String, Decimal))
+  fullName.vb: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency(System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal))
+  name.vb: ToBaseCurrency(IReadOnlyDictionary(Of String, Decimal))
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot
+  commentId: M:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot
+  id: Snapshot
+  parent: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: Snapshot()
+  nameWithType: MultiCurrencyCashBalance.Snapshot()
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snapshot
+    path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Returns a snapshot copy of the current balances.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, decimal> Snapshot()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public Function Snapshot() As IReadOnlyDictionary(Of String, Decimal)
+  overload: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot*
+references:
+- uid: Meridian.Execution.MultiCurrency
+  commentId: N:Meridian.Execution.MultiCurrency
+  href: Meridian.html
+  name: Meridian.Execution.MultiCurrency
+  nameWithType: Meridian.Execution.MultiCurrency
+  fullName: Meridian.Execution.MultiCurrency
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor*
+  commentId: Overload:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.#ctor
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html#Meridian_Execution_MultiCurrency_MultiCurrencyCashBalance__ctor
+  name: MultiCurrencyCashBalance
+  nameWithType: MultiCurrencyCashBalance.MultiCurrencyCashBalance
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.MultiCurrencyCashBalance
+  nameWithType.vb: MultiCurrencyCashBalance.New
+  fullName.vb: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, decimal>
+  nameWithType: IReadOnlyDictionary<string, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal)
+  name.vb: IReadOnlyDictionary(Of String, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances*
+  commentId: Overload:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html#Meridian_Execution_MultiCurrency_MultiCurrencyCashBalance_Balances
+  name: Balances
+  nameWithType: MultiCurrencyCashBalance.Balances
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Balances
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get*
+  commentId: Overload:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html#Meridian_Execution_MultiCurrency_MultiCurrencyCashBalance_Get_System_String_
+  name: Get
+  nameWithType: MultiCurrencyCashBalance.Get
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Get
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add*
+  commentId: Overload:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html#Meridian_Execution_MultiCurrency_MultiCurrencyCashBalance_Add_System_String_System_Decimal_
+  name: Add
+  nameWithType: MultiCurrencyCashBalance.Add
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Add
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract*
+  commentId: Overload:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html#Meridian_Execution_MultiCurrency_MultiCurrencyCashBalance_Subtract_System_String_System_Decimal_
+  name: Subtract
+  nameWithType: MultiCurrencyCashBalance.Subtract
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Subtract
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency*
+  commentId: Overload:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html#Meridian_Execution_MultiCurrency_MultiCurrencyCashBalance_ToBaseCurrency_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__
+  name: ToBaseCurrency
+  nameWithType: MultiCurrencyCashBalance.ToBaseCurrency
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.ToBaseCurrency
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot*
+  commentId: Overload:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html#Meridian_Execution_MultiCurrency_MultiCurrencyCashBalance_Snapshot
+  name: Snapshot
+  nameWithType: MultiCurrencyCashBalance.Snapshot
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.Snapshot

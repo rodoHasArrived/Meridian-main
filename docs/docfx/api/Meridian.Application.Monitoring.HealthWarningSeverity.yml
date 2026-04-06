@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.HealthWarningSeverity
+  commentId: T:Meridian.Application.Monitoring.HealthWarningSeverity
+  id: HealthWarningSeverity
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.HealthWarningSeverity.Critical
+  - Meridian.Application.Monitoring.HealthWarningSeverity.Info
+  - Meridian.Application.Monitoring.HealthWarningSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: HealthWarningSeverity
+  nameWithType: HealthWarningSeverity
+  fullName: Meridian.Application.Monitoring.HealthWarningSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthWarningSeverity
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Severity of health warning.
+  example: []
+  syntax:
+    content: 'public enum HealthWarningSeverity : byte'
+    content.vb: Public Enum HealthWarningSeverity As Byte
+- uid: Meridian.Application.Monitoring.HealthWarningSeverity.Info
+  commentId: F:Meridian.Application.Monitoring.HealthWarningSeverity.Info
+  id: Info
+  parent: Meridian.Application.Monitoring.HealthWarningSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: HealthWarningSeverity.Info
+  fullName: Meridian.Application.Monitoring.HealthWarningSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 394
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningSeverity
+- uid: Meridian.Application.Monitoring.HealthWarningSeverity.Warning
+  commentId: F:Meridian.Application.Monitoring.HealthWarningSeverity.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.HealthWarningSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: HealthWarningSeverity.Warning
+  fullName: Meridian.Application.Monitoring.HealthWarningSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningSeverity
+- uid: Meridian.Application.Monitoring.HealthWarningSeverity.Critical
+  commentId: F:Meridian.Application.Monitoring.HealthWarningSeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.HealthWarningSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: HealthWarningSeverity.Critical
+  fullName: Meridian.Application.Monitoring.HealthWarningSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 396
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Critical = 2
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningSeverity
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.HealthWarningSeverity
+  commentId: T:Meridian.Application.Monitoring.HealthWarningSeverity
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.HealthWarningSeverity.html
+  name: HealthWarningSeverity
+  nameWithType: HealthWarningSeverity
+  fullName: Meridian.Application.Monitoring.HealthWarningSeverity

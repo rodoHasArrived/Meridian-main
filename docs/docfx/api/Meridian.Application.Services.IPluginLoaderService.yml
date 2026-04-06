@@ -1,0 +1,504 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.IPluginLoaderService
+  commentId: T:Meridian.Application.Services.IPluginLoaderService
+  id: IPluginLoaderService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Services.IPluginLoaderService.LoadedPlugins
+  langs:
+  - csharp
+  - vb
+  name: IPluginLoaderService
+  nameWithType: IPluginLoaderService
+  fullName: Meridian.Application.Services.IPluginLoaderService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PluginLoaderService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPluginLoaderService
+    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Service for loading and registering data source plugins from external assemblies.
+
+    Supports dynamic plugin discovery via reflection of [DataSource] attributes (ADR-005).
+  example: []
+  syntax:
+    content: public interface IPluginLoaderService
+    content.vb: Public Interface IPluginLoaderService
+  derivedClasses:
+  - Meridian.Application.Services.PluginLoaderService
+- uid: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+  id: LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.IPluginLoaderService
+  langs:
+  - csharp
+  - vb
+  name: LoadPluginsAsync(string, CancellationToken)
+  nameWithType: IPluginLoaderService.LoadPluginsAsync(string, CancellationToken)
+  fullName: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PluginLoaderService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadPluginsAsync
+    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Loads all <code>*.dll</code> files (non-recursive) in <code class="paramref">pluginsDirectory</code>,
+
+    discovers <code>[DataSource]</code>-decorated types, and registers them with the
+
+    <xref href="Meridian.Infrastructure.DataSources.DataSourceRegistry" data-throw-if-not-resolved="false"></xref>. Assemblies that fail to load are skipped with a warning.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<PluginLoadResult>> LoadPluginsAsync(string pluginsDirectory, CancellationToken ct)
+    parameters:
+    - id: pluginsDirectory
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PluginLoadResult}}
+    content.vb: Function LoadPluginsAsync(pluginsDirectory As String, ct As CancellationToken) As Task(Of IReadOnlyList(Of PluginLoadResult))
+  overload: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync*
+  nameWithType.vb: IPluginLoaderService.LoadPluginsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadPluginsAsync(String, CancellationToken)
+- uid: Meridian.Application.Services.IPluginLoaderService.LoadedPlugins
+  commentId: P:Meridian.Application.Services.IPluginLoaderService.LoadedPlugins
+  id: LoadedPlugins
+  parent: Meridian.Application.Services.IPluginLoaderService
+  langs:
+  - csharp
+  - vb
+  name: LoadedPlugins
+  nameWithType: IPluginLoaderService.LoadedPlugins
+  fullName: Meridian.Application.Services.IPluginLoaderService.LoadedPlugins
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PluginLoaderService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadedPlugins
+    path: ../../src/Meridian.Application/Services/PluginLoaderService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the results from the most recent <xref href="Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> call.
+  example: []
+  syntax:
+    content: IReadOnlyList<PluginLoadResult> LoadedPlugins { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PluginLoadResult}
+    content.vb: ReadOnly Property LoadedPlugins As IReadOnlyList(Of PluginLoadResult)
+  overload: Meridian.Application.Services.IPluginLoaderService.LoadedPlugins*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceRegistry
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html
+  name: DataSourceRegistry
+  nameWithType: DataSourceRegistry
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry
+- uid: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync*
+  commentId: Overload:Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync
+  href: Meridian.Application.Services.IPluginLoaderService.html#Meridian_Application_Services_IPluginLoaderService_LoadPluginsAsync_System_String_System_Threading_CancellationToken_
+  name: LoadPluginsAsync
+  nameWithType: IPluginLoaderService.LoadPluginsAsync
+  fullName: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PluginLoadResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PluginLoadResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<PluginLoadResult>>
+  nameWithType: Task<IReadOnlyList<PluginLoadResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.PluginLoadResult>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of PluginLoadResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.PluginLoadResult))
+  name.vb: Task(Of IReadOnlyList(Of PluginLoadResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.PluginLoadResult
+    name: PluginLoadResult
+    href: Meridian.Application.Services.PluginLoadResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.PluginLoadResult
+    name: PluginLoadResult
+    href: Meridian.Application.Services.PluginLoadResult.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.IPluginLoaderService
+  isExternal: true
+  href: Meridian.Application.Services.IPluginLoaderService.html#Meridian_Application_Services_IPluginLoaderService_LoadPluginsAsync_System_String_System_Threading_CancellationToken_
+  name: LoadPluginsAsync(string, CancellationToken)
+  nameWithType: IPluginLoaderService.LoadPluginsAsync(string, CancellationToken)
+  fullName: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IPluginLoaderService.LoadPluginsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadPluginsAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+    name: LoadPluginsAsync
+    href: Meridian.Application.Services.IPluginLoaderService.html#Meridian_Application_Services_IPluginLoaderService_LoadPluginsAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Services.IPluginLoaderService.LoadPluginsAsync(System.String,System.Threading.CancellationToken)
+    name: LoadPluginsAsync
+    href: Meridian.Application.Services.IPluginLoaderService.html#Meridian_Application_Services_IPluginLoaderService_LoadPluginsAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Services.IPluginLoaderService.LoadedPlugins*
+  commentId: Overload:Meridian.Application.Services.IPluginLoaderService.LoadedPlugins
+  href: Meridian.Application.Services.IPluginLoaderService.html#Meridian_Application_Services_IPluginLoaderService_LoadedPlugins
+  name: LoadedPlugins
+  nameWithType: IPluginLoaderService.LoadedPlugins
+  fullName: Meridian.Application.Services.IPluginLoaderService.LoadedPlugins
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PluginLoadResult}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PluginLoadResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PluginLoadResult>
+  nameWithType: IReadOnlyList<PluginLoadResult>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.PluginLoadResult>
+  nameWithType.vb: IReadOnlyList(Of PluginLoadResult)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.PluginLoadResult)
+  name.vb: IReadOnlyList(Of PluginLoadResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.PluginLoadResult
+    name: PluginLoadResult
+    href: Meridian.Application.Services.PluginLoadResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.PluginLoadResult
+    name: PluginLoadResult
+    href: Meridian.Application.Services.PluginLoadResult.html
+  - name: )
+- uid: Meridian.Application.Services.IPluginLoaderService
+  commentId: T:Meridian.Application.Services.IPluginLoaderService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IPluginLoaderService.html
+  name: IPluginLoaderService
+  nameWithType: IPluginLoaderService
+  fullName: Meridian.Application.Services.IPluginLoaderService
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

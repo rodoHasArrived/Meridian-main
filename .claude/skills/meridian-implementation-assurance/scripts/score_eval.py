@@ -56,19 +56,7 @@ def validate_scores(raw: dict[str, object]) -> dict[str, int]:
     for k in CATEGORIES:
         try:
             val = int(raw[k])
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< Updated upstream
-        except (ValueError, TypeError) as exc:  # noqa: BLE001
-=======
         except Exception as exc:  # noqa: BLE001
->>>>>>> Stashed changes
-=======
-        except Exception as exc:  # noqa: BLE001
->>>>>>> theirs
-=======
-        except Exception as exc:  # noqa: BLE001
->>>>>>> theirs
             raise ValueError(f"Score for '{k}' is not an integer: {raw[k]!r}") from exc
         if val < 0 or val > 2:
             raise ValueError(f"Score for '{k}' must be between 0 and 2. Got {val}.")
@@ -85,19 +73,7 @@ def to_markdown(result: EvalResult) -> str:
         "traceable_summary": "Traceable Summary",
     }
     rows = "\n".join(
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< Updated upstream
-        f"| {pretty[k]} | {v} |  |" for k, v in result.scores.items()
-=======
         f"| {pretty[k]} | {v} |" for k, v in result.scores.items()
->>>>>>> Stashed changes
-=======
-        f"| {pretty[k]} | {v} |" for k, v in result.scores.items()
->>>>>>> theirs
-=======
-        f"| {pretty[k]} | {v} |" for k, v in result.scores.items()
->>>>>>> theirs
     )
 
     failed_lines = "\n".join(f"  - {x}" for x in (result.failed_checks or ["none"]))
@@ -108,23 +84,8 @@ def to_markdown(result: EvalResult) -> str:
         f"- Scenario: {result.scenario}\n"
         f"- Total Score: {result.total}/10\n"
         f"- Outcome: {result.outcome}\n\n"
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< Updated upstream
-        "| Category | Score (0-2) | Evidence |\n"
-        "|---|---:|---|\n"
-=======
         "| Category | Score (0-2) |\n"
         "|---|---:|\n"
->>>>>>> Stashed changes
-=======
-        "| Category | Score (0-2) |\n"
-        "|---|---:|\n"
->>>>>>> theirs
-=======
-        "| Category | Score (0-2) |\n"
-        "|---|---:|\n"
->>>>>>> theirs
         f"{rows}\n\n"
         "- Failed checks:\n"
         f"{failed_lines}\n"

@@ -1,0 +1,84 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Translation
+  commentId: N:Meridian.Infrastructure.CppTrader.Translation
+  id: Meridian.Infrastructure.CppTrader.Translation
+  children:
+  - Meridian.Infrastructure.CppTrader.Translation.CppTraderExecutionTranslator
+  - Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Translation
+  nameWithType: Meridian.Infrastructure.CppTrader.Translation
+  fullName: Meridian.Infrastructure.CppTrader.Translation
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Translation.CppTraderExecutionTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.CppTraderExecutionTranslator
+  href: Meridian.Infrastructure.CppTrader.Translation.CppTraderExecutionTranslator.html
+  name: CppTraderExecutionTranslator
+  nameWithType: CppTraderExecutionTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.CppTraderExecutionTranslator
+- uid: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+  href: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator.html
+  name: CppTraderSnapshotTranslator
+  nameWithType: CppTraderSnapshotTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  parent: Meridian.Infrastructure.CppTrader.Translation
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.html
+  name: ICppTraderExecutionTranslator
+  nameWithType: ICppTraderExecutionTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  parent: Meridian.Infrastructure.CppTrader.Translation
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.html
+  name: ICppTraderSnapshotTranslator
+  nameWithType: ICppTraderSnapshotTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+- uid: Meridian.Infrastructure.CppTrader.Translation
+  commentId: N:Meridian.Infrastructure.CppTrader.Translation
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Translation
+  nameWithType: Meridian.Infrastructure.CppTrader.Translation
+  fullName: Meridian.Infrastructure.CppTrader.Translation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html

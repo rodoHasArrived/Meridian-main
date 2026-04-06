@@ -101,6 +101,14 @@ Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `con
 The full Windows workstation shell. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
 
 ```bash
+pwsh ./scripts/dev/run-desktop.ps1
+```
+
+The launcher starts the local Meridian host on `http://localhost:8080` if needed, waits for `/healthz`, opens the desktop shell, and shuts down the host when the desktop app exits.
+
+Manual fallback:
+
+```bash
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
 ```
 
@@ -108,6 +116,7 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=
 
 ```bash
 make help           # List all task targets
+make desktop-run    # WPF desktop + local host (Windows)
 make run            # Collector with config hot-reload (--mode desktop)
 make run-ui         # Web dashboard (--mode web, port 8080)
 make run-backfill   # Historical backfill

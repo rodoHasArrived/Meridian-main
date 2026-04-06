@@ -1,0 +1,954 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  commentId: T:Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  id: OrderFlowStatistics
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.#ctor(System.DateTimeOffset,System.String,System.Int64,System.Int64,System.Int64,System.Decimal,System.Decimal,System.UInt16,System.Int64,System.String,System.String)
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue
+  langs:
+  - csharp
+  - vb
+  name: OrderFlowStatistics
+  nameWithType: OrderFlowStatistics
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderFlowStatistics
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Rolling order-flow statistics derived from recent trades.
+  example: []
+  syntax:
+    content: 'public sealed record OrderFlowStatistics : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<OrderFlowStatistics>'
+    content.vb: Public NotInheritable Class OrderFlowStatistics Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of OrderFlowStatistics)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Models.OrderFlowStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.#ctor(System.DateTimeOffset,System.String,System.Int64,System.Int64,System.Int64,System.Decimal,System.Decimal,System.UInt16,System.Int64,System.String,System.String)
+  commentId: M:Meridian.Contracts.Domain.Models.OrderFlowStatistics.#ctor(System.DateTimeOffset,System.String,System.Int64,System.Int64,System.Int64,System.Decimal,System.Decimal,System.UInt16,System.Int64,System.String,System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,System.Int64,System.Int64,System.Int64,System.Decimal,System.Decimal,System.UInt16,System.Int64,System.String,System.String)'
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: OrderFlowStatistics(DateTimeOffset, string, long, long, long, decimal, decimal, ushort, long, string?, string?)
+  nameWithType: OrderFlowStatistics.OrderFlowStatistics(DateTimeOffset, string, long, long, long, decimal, decimal, ushort, long, string?, string?)
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.OrderFlowStatistics(System.DateTimeOffset, string, long, long, long, decimal, decimal, ushort, long, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Rolling order-flow statistics derived from recent trades.
+  example: []
+  syntax:
+    content: public OrderFlowStatistics(DateTimeOffset Timestamp, string Symbol, long BuyVolume, long SellVolume, long UnknownVolume, decimal VWAP, decimal Imbalance, ushort TradeCount, long SequenceNumber, string? StreamId = null, string? Venue = null)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Symbol
+      type: System.String
+    - id: BuyVolume
+      type: System.Int64
+    - id: SellVolume
+      type: System.Int64
+    - id: UnknownVolume
+      type: System.Int64
+    - id: VWAP
+      type: System.Decimal
+    - id: Imbalance
+      type: System.Decimal
+    - id: TradeCount
+      type: System.UInt16
+    - id: SequenceNumber
+      type: System.Int64
+    - id: StreamId
+      type: System.String
+    - id: Venue
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Symbol As String, BuyVolume As Long, SellVolume As Long, UnknownVolume As Long, VWAP As Decimal, Imbalance As Decimal, TradeCount As UShort, SequenceNumber As Long, StreamId As String = Nothing, Venue As String = Nothing)
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.#ctor*
+  nameWithType.vb: OrderFlowStatistics.New(DateTimeOffset, String, Long, Long, Long, Decimal, Decimal, UShort, Long, String, String)
+  fullName.vb: Meridian.Contracts.Domain.Models.OrderFlowStatistics.New(System.DateTimeOffset, String, Long, Long, Long, Decimal, Decimal, UShort, Long, String, String)
+  name.vb: New(DateTimeOffset, String, Long, Long, Long, Decimal, Decimal, UShort, Long, String, String)
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OrderFlowStatistics.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OrderFlowStatistics.Symbol
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume
+  id: BuyVolume
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: BuyVolume
+  nameWithType: OrderFlowStatistics.BuyVolume
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuyVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long BuyVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BuyVolume As Long
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume
+  id: SellVolume
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: SellVolume
+  nameWithType: OrderFlowStatistics.SellVolume
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SellVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long SellVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SellVolume As Long
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume
+  id: UnknownVolume
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: UnknownVolume
+  nameWithType: OrderFlowStatistics.UnknownVolume
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnknownVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long UnknownVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property UnknownVolume As Long
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP
+  id: VWAP
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: VWAP
+  nameWithType: OrderFlowStatistics.VWAP
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VWAP
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal VWAP { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property VWAP As Decimal
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance
+  id: Imbalance
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: Imbalance
+  nameWithType: OrderFlowStatistics.Imbalance
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Imbalance
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal Imbalance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Imbalance As Decimal
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount
+  id: TradeCount
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: TradeCount
+  nameWithType: OrderFlowStatistics.TradeCount
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeCount
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public ushort TradeCount { get; init; }
+    parameters: []
+    return:
+      type: System.UInt16
+    content.vb: Public Property TradeCount As UShort
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: OrderFlowStatistics.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId
+  id: StreamId
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: StreamId
+  nameWithType: OrderFlowStatistics.StreamId
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamId
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string? StreamId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StreamId As String
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId*
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue
+  commentId: P:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue
+  id: Venue
+  parent: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  langs:
+  - csharp
+  - vb
+  name: Venue
+  nameWithType: OrderFlowStatistics.Venue
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Venue
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string? Venue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Venue As String
+  overload: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue*
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.OrderFlowStatistics}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.OrderFlowStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrderFlowStatistics>
+  nameWithType: IEquatable<OrderFlowStatistics>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.OrderFlowStatistics>
+  nameWithType.vb: IEquatable(Of OrderFlowStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.OrderFlowStatistics)
+  name.vb: IEquatable(Of OrderFlowStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+    name: OrderFlowStatistics
+    href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics
+    name: OrderFlowStatistics
+    href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.#ctor
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics__ctor_System_DateTimeOffset_System_String_System_Int64_System_Int64_System_Int64_System_Decimal_System_Decimal_System_UInt16_System_Int64_System_String_System_String_
+  name: OrderFlowStatistics
+  nameWithType: OrderFlowStatistics.OrderFlowStatistics
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.OrderFlowStatistics
+  nameWithType.vb: OrderFlowStatistics.New
+  fullName.vb: Meridian.Contracts.Domain.Models.OrderFlowStatistics.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_Timestamp
+  name: Timestamp
+  nameWithType: OrderFlowStatistics.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Timestamp
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_Symbol
+  name: Symbol
+  nameWithType: OrderFlowStatistics.Symbol
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Symbol
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_BuyVolume
+  name: BuyVolume
+  nameWithType: OrderFlowStatistics.BuyVolume
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.BuyVolume
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_SellVolume
+  name: SellVolume
+  nameWithType: OrderFlowStatistics.SellVolume
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SellVolume
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_UnknownVolume
+  name: UnknownVolume
+  nameWithType: OrderFlowStatistics.UnknownVolume
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.UnknownVolume
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_VWAP
+  name: VWAP
+  nameWithType: OrderFlowStatistics.VWAP
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.VWAP
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_Imbalance
+  name: Imbalance
+  nameWithType: OrderFlowStatistics.Imbalance
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Imbalance
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_TradeCount
+  name: TradeCount
+  nameWithType: OrderFlowStatistics.TradeCount
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.TradeCount
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_SequenceNumber
+  name: SequenceNumber
+  nameWithType: OrderFlowStatistics.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.SequenceNumber
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_StreamId
+  name: StreamId
+  nameWithType: OrderFlowStatistics.StreamId
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.StreamId
+- uid: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue
+  href: Meridian.Contracts.Domain.Models.OrderFlowStatistics.html#Meridian_Contracts_Domain_Models_OrderFlowStatistics_Venue
+  name: Venue
+  nameWithType: OrderFlowStatistics.Venue
+  fullName: Meridian.Contracts.Domain.Models.OrderFlowStatistics.Venue

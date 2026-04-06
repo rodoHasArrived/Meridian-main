@@ -1,0 +1,307 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Auth.UserRole
+  commentId: T:Meridian.Contracts.Auth.UserRole
+  id: UserRole
+  parent: Meridian.Contracts.Auth
+  children:
+  - Meridian.Contracts.Auth.UserRole.Accounting
+  - Meridian.Contracts.Auth.UserRole.Admin
+  - Meridian.Contracts.Auth.UserRole.Analysis
+  - Meridian.Contracts.Auth.UserRole.Developer
+  - Meridian.Contracts.Auth.UserRole.Executive
+  - Meridian.Contracts.Auth.UserRole.ReadOnly
+  - Meridian.Contracts.Auth.UserRole.TradeDesk
+  langs:
+  - csharp
+  - vb
+  name: UserRole
+  nameWithType: UserRole
+  fullName: Meridian.Contracts.Auth.UserRole
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UserRole
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Defines the built-in user roles for profile-based access control.
+
+    Each role maps to a fixed set of <xref href="Meridian.Contracts.Auth.UserPermission" data-throw-if-not-resolved="false"></xref> flags via
+
+    <xref href="Meridian.Contracts.Auth.RolePermissions" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public enum UserRole
+    content.vb: Public Enum UserRole
+- uid: Meridian.Contracts.Auth.UserRole.Admin
+  commentId: F:Meridian.Contracts.Auth.UserRole.Admin
+  id: Admin
+  parent: Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: Admin
+  nameWithType: UserRole.Admin
+  fullName: Meridian.Contracts.Auth.UserRole.Admin
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Admin
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Platform administrator. Full access to all features including user management,
+
+    configuration, and system diagnostics.
+  example: []
+  syntax:
+    content: Admin = 0
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth.UserRole.Developer
+  commentId: F:Meridian.Contracts.Auth.UserRole.Developer
+  id: Developer
+  parent: Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: Developer
+  nameWithType: UserRole.Developer
+  fullName: Meridian.Contracts.Auth.UserRole.Developer
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Developer
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Software developer / platform engineer. Broad access for development and
+
+    debugging purposes; cannot manage users.
+  example: []
+  syntax:
+    content: Developer = 1
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth.UserRole.TradeDesk
+  commentId: F:Meridian.Contracts.Auth.UserRole.TradeDesk
+  id: TradeDesk
+  parent: Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: TradeDesk
+  nameWithType: UserRole.TradeDesk
+  fullName: Meridian.Contracts.Auth.UserRole.TradeDesk
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeDesk
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Trading desk operator. Access to market data, trade execution, strategy
+
+    management, and analytics.
+  example: []
+  syntax:
+    content: TradeDesk = 2
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth.UserRole.Analysis
+  commentId: F:Meridian.Contracts.Auth.UserRole.Analysis
+  id: Analysis
+  parent: Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: Analysis
+  nameWithType: UserRole.Analysis
+  fullName: Meridian.Contracts.Auth.UserRole.Analysis
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Analysis
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Quant / research analyst. Read-only access to market and historical data,
+
+    analytics, and strategy results.
+  example: []
+  syntax:
+    content: Analysis = 3
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth.UserRole.Accounting
+  commentId: F:Meridian.Contracts.Auth.UserRole.Accounting
+  id: Accounting
+  parent: Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: Accounting
+  nameWithType: UserRole.Accounting
+  fullName: Meridian.Contracts.Auth.UserRole.Accounting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounting
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Accounting / finance team. Access to trade records, P&amp;L, direct lending,
+
+    and export functionality.
+  example: []
+  syntax:
+    content: Accounting = 4
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth.UserRole.Executive
+  commentId: F:Meridian.Contracts.Auth.UserRole.Executive
+  id: Executive
+  parent: Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: Executive
+  nameWithType: UserRole.Executive
+  fullName: Meridian.Contracts.Auth.UserRole.Executive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Executive
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Executive / management view. Read-only dashboard access across all
+
+    business domains.
+  example: []
+  syntax:
+    content: Executive = 5
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth.UserRole.ReadOnly
+  commentId: F:Meridian.Contracts.Auth.UserRole.ReadOnly
+  id: ReadOnly
+  parent: Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: ReadOnly
+  nameWithType: UserRole.ReadOnly
+  fullName: Meridian.Contracts.Auth.UserRole.ReadOnly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserRole.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadOnly
+    path: ../../src/Meridian.Contracts/Auth/UserRole.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Read-only guest access to market data and analytics dashboards only.
+  example: []
+  syntax:
+    content: ReadOnly = 6
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+references:
+- uid: Meridian.Contracts.Auth.UserPermission
+  commentId: T:Meridian.Contracts.Auth.UserPermission
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserPermission.html
+  name: UserPermission
+  nameWithType: UserPermission
+  fullName: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.RolePermissions
+  commentId: T:Meridian.Contracts.Auth.RolePermissions
+  href: Meridian.Contracts.Auth.RolePermissions.html
+  name: RolePermissions
+  nameWithType: RolePermissions
+  fullName: Meridian.Contracts.Auth.RolePermissions
+- uid: Meridian.Contracts.Auth
+  commentId: N:Meridian.Contracts.Auth
+  href: Meridian.html
+  name: Meridian.Contracts.Auth
+  nameWithType: Meridian.Contracts.Auth
+  fullName: Meridian.Contracts.Auth
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+- uid: Meridian.Contracts.Auth.UserRole
+  commentId: T:Meridian.Contracts.Auth.UserRole
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserRole.html
+  name: UserRole
+  nameWithType: UserRole
+  fullName: Meridian.Contracts.Auth.UserRole

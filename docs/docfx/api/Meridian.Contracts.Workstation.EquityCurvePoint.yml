@@ -1,0 +1,635 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint
+  commentId: T:Meridian.Contracts.Workstation.EquityCurvePoint
+  id: EquityCurvePoint
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.EquityCurvePoint.#ctor(System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  - Meridian.Contracts.Workstation.EquityCurvePoint.Cash
+  - Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn
+  - Meridian.Contracts.Workstation.EquityCurvePoint.Date
+  - Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak
+  - Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent
+  - Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity
+  langs:
+  - csharp
+  - vb
+  name: EquityCurvePoint
+  nameWithType: EquityCurvePoint
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EquityCurvePoint
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: A single point on the portfolio equity curve.
+  example: []
+  syntax:
+    content: 'public sealed record EquityCurvePoint : IEquatable<EquityCurvePoint>'
+    content.vb: Public NotInheritable Class EquityCurvePoint Implements IEquatable(Of EquityCurvePoint)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.EquityCurvePoint}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.#ctor(System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Contracts.Workstation.EquityCurvePoint.#ctor(System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  id: '#ctor(System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)'
+  parent: Meridian.Contracts.Workstation.EquityCurvePoint
+  langs:
+  - csharp
+  - vb
+  name: EquityCurvePoint(DateOnly, decimal, decimal, decimal, decimal, decimal)
+  nameWithType: EquityCurvePoint.EquityCurvePoint(DateOnly, decimal, decimal, decimal, decimal, decimal)
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.EquityCurvePoint(System.DateOnly, decimal, decimal, decimal, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: A single point on the portfolio equity curve.
+  example: []
+  syntax:
+    content: public EquityCurvePoint(DateOnly Date, decimal TotalEquity, decimal Cash, decimal DailyReturn, decimal DrawdownFromPeak, decimal DrawdownFromPeakPercent)
+    parameters:
+    - id: Date
+      type: System.DateOnly
+    - id: TotalEquity
+      type: System.Decimal
+    - id: Cash
+      type: System.Decimal
+    - id: DailyReturn
+      type: System.Decimal
+    - id: DrawdownFromPeak
+      type: System.Decimal
+    - id: DrawdownFromPeakPercent
+      type: System.Decimal
+    content.vb: Public Sub New([Date] As DateOnly, TotalEquity As Decimal, Cash As Decimal, DailyReturn As Decimal, DrawdownFromPeak As Decimal, DrawdownFromPeakPercent As Decimal)
+  overload: Meridian.Contracts.Workstation.EquityCurvePoint.#ctor*
+  nameWithType.vb: EquityCurvePoint.New(DateOnly, Decimal, Decimal, Decimal, Decimal, Decimal)
+  fullName.vb: Meridian.Contracts.Workstation.EquityCurvePoint.New(System.DateOnly, Decimal, Decimal, Decimal, Decimal, Decimal)
+  name.vb: New(DateOnly, Decimal, Decimal, Decimal, Decimal, Decimal)
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.Date
+  commentId: P:Meridian.Contracts.Workstation.EquityCurvePoint.Date
+  id: Date
+  parent: Meridian.Contracts.Workstation.EquityCurvePoint
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: EquityCurvePoint.Date
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.Date
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateOnly Date { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property [Date] As DateOnly
+  overload: Meridian.Contracts.Workstation.EquityCurvePoint.Date*
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity
+  commentId: P:Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity
+  id: TotalEquity
+  parent: Meridian.Contracts.Workstation.EquityCurvePoint
+  langs:
+  - csharp
+  - vb
+  name: TotalEquity
+  nameWithType: EquityCurvePoint.TotalEquity
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEquity
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalEquity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalEquity As Decimal
+  overload: Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity*
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.Cash
+  commentId: P:Meridian.Contracts.Workstation.EquityCurvePoint.Cash
+  id: Cash
+  parent: Meridian.Contracts.Workstation.EquityCurvePoint
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: EquityCurvePoint.Cash
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Cash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Cash As Decimal
+  overload: Meridian.Contracts.Workstation.EquityCurvePoint.Cash*
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn
+  commentId: P:Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn
+  id: DailyReturn
+  parent: Meridian.Contracts.Workstation.EquityCurvePoint
+  langs:
+  - csharp
+  - vb
+  name: DailyReturn
+  nameWithType: EquityCurvePoint.DailyReturn
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DailyReturn
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal DailyReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property DailyReturn As Decimal
+  overload: Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn*
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak
+  commentId: P:Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak
+  id: DrawdownFromPeak
+  parent: Meridian.Contracts.Workstation.EquityCurvePoint
+  langs:
+  - csharp
+  - vb
+  name: DrawdownFromPeak
+  nameWithType: EquityCurvePoint.DrawdownFromPeak
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrawdownFromPeak
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal DrawdownFromPeak { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property DrawdownFromPeak As Decimal
+  overload: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak*
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent
+  commentId: P:Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent
+  id: DrawdownFromPeakPercent
+  parent: Meridian.Contracts.Workstation.EquityCurvePoint
+  langs:
+  - csharp
+  - vb
+  name: DrawdownFromPeakPercent
+  nameWithType: EquityCurvePoint.DrawdownFromPeakPercent
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrawdownFromPeakPercent
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal DrawdownFromPeakPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property DrawdownFromPeakPercent As Decimal
+  overload: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.EquityCurvePoint}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.EquityCurvePoint}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<EquityCurvePoint>
+  nameWithType: IEquatable<EquityCurvePoint>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.EquityCurvePoint>
+  nameWithType.vb: IEquatable(Of EquityCurvePoint)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.EquityCurvePoint)
+  name.vb: IEquatable(Of EquityCurvePoint)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.EquityCurvePoint
+    name: EquityCurvePoint
+    href: Meridian.Contracts.Workstation.EquityCurvePoint.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.EquityCurvePoint
+    name: EquityCurvePoint
+    href: Meridian.Contracts.Workstation.EquityCurvePoint.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.EquityCurvePoint.#ctor
+  href: Meridian.Contracts.Workstation.EquityCurvePoint.html#Meridian_Contracts_Workstation_EquityCurvePoint__ctor_System_DateOnly_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_
+  name: EquityCurvePoint
+  nameWithType: EquityCurvePoint.EquityCurvePoint
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.EquityCurvePoint
+  nameWithType.vb: EquityCurvePoint.New
+  fullName.vb: Meridian.Contracts.Workstation.EquityCurvePoint.New
+  name.vb: New
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.Date*
+  commentId: Overload:Meridian.Contracts.Workstation.EquityCurvePoint.Date
+  href: Meridian.Contracts.Workstation.EquityCurvePoint.html#Meridian_Contracts_Workstation_EquityCurvePoint_Date
+  name: Date
+  nameWithType: EquityCurvePoint.Date
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.Date
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity*
+  commentId: Overload:Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity
+  href: Meridian.Contracts.Workstation.EquityCurvePoint.html#Meridian_Contracts_Workstation_EquityCurvePoint_TotalEquity
+  name: TotalEquity
+  nameWithType: EquityCurvePoint.TotalEquity
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.TotalEquity
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.Cash*
+  commentId: Overload:Meridian.Contracts.Workstation.EquityCurvePoint.Cash
+  href: Meridian.Contracts.Workstation.EquityCurvePoint.html#Meridian_Contracts_Workstation_EquityCurvePoint_Cash
+  name: Cash
+  nameWithType: EquityCurvePoint.Cash
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.Cash
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn*
+  commentId: Overload:Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn
+  href: Meridian.Contracts.Workstation.EquityCurvePoint.html#Meridian_Contracts_Workstation_EquityCurvePoint_DailyReturn
+  name: DailyReturn
+  nameWithType: EquityCurvePoint.DailyReturn
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.DailyReturn
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak*
+  commentId: Overload:Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak
+  href: Meridian.Contracts.Workstation.EquityCurvePoint.html#Meridian_Contracts_Workstation_EquityCurvePoint_DrawdownFromPeak
+  name: DrawdownFromPeak
+  nameWithType: EquityCurvePoint.DrawdownFromPeak
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeak
+- uid: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent*
+  commentId: Overload:Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent
+  href: Meridian.Contracts.Workstation.EquityCurvePoint.html#Meridian_Contracts_Workstation_EquityCurvePoint_DrawdownFromPeakPercent
+  name: DrawdownFromPeakPercent
+  nameWithType: EquityCurvePoint.DrawdownFromPeakPercent
+  fullName: Meridian.Contracts.Workstation.EquityCurvePoint.DrawdownFromPeakPercent

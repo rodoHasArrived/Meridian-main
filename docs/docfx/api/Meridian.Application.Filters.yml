@@ -1,0 +1,54 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Filters
+  commentId: N:Meridian.Application.Filters
+  id: Meridian.Application.Filters
+  children:
+  - Meridian.Application.Filters.MarketEventFilter
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Filters
+  nameWithType: Meridian.Application.Filters
+  fullName: Meridian.Application.Filters
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Filters.MarketEventFilter
+  commentId: T:Meridian.Application.Filters.MarketEventFilter
+  parent: Meridian.Application.Filters
+  href: Meridian.Application.Filters.MarketEventFilter.html
+  name: MarketEventFilter
+  nameWithType: MarketEventFilter
+  fullName: Meridian.Application.Filters.MarketEventFilter
+- uid: Meridian.Application.Filters
+  commentId: N:Meridian.Application.Filters
+  href: Meridian.html
+  name: Meridian.Application.Filters
+  nameWithType: Meridian.Application.Filters
+  fullName: Meridian.Application.Filters
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Filters
+    name: Filters
+    href: Meridian.Application.Filters.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Filters
+    name: Filters
+    href: Meridian.Application.Filters.html

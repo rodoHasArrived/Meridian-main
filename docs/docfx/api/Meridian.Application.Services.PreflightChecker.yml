@@ -1,0 +1,724 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.PreflightChecker
+  commentId: T:Meridian.Application.Services.PreflightChecker
+  id: PreflightChecker
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.PreflightChecker.#ctor(Meridian.Application.Services.PreflightConfig)
+  - Meridian.Application.Services.PreflightChecker.EnsureReadyAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  - Meridian.Application.Services.PreflightChecker.RunChecksAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Services.PreflightChecker.RunChecksAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  - Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials(System.String)
+  langs:
+  - csharp
+  - vb
+  name: PreflightChecker
+  nameWithType: PreflightChecker
+  fullName: Meridian.Application.Services.PreflightChecker
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreflightChecker
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Performs comprehensive pre-flight checks before starting data collection.
+
+    Verifies disk space, network connectivity, file permissions, and system resources
+
+    to catch issues early and provide actionable error messages.
+  example: []
+  syntax:
+    content: public sealed class PreflightChecker
+    content.vb: Public NotInheritable Class PreflightChecker
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.PreflightChecker.#ctor(Meridian.Application.Services.PreflightConfig)
+  commentId: M:Meridian.Application.Services.PreflightChecker.#ctor(Meridian.Application.Services.PreflightConfig)
+  id: '#ctor(Meridian.Application.Services.PreflightConfig)'
+  parent: Meridian.Application.Services.PreflightChecker
+  langs:
+  - csharp
+  - vb
+  name: PreflightChecker(PreflightConfig?)
+  nameWithType: PreflightChecker.PreflightChecker(PreflightConfig?)
+  fullName: Meridian.Application.Services.PreflightChecker.PreflightChecker(Meridian.Application.Services.PreflightConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public PreflightChecker(PreflightConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Services.PreflightConfig
+    content.vb: Public Sub New(config As PreflightConfig = Nothing)
+  overload: Meridian.Application.Services.PreflightChecker.#ctor*
+  nameWithType.vb: PreflightChecker.New(PreflightConfig)
+  fullName.vb: Meridian.Application.Services.PreflightChecker.New(Meridian.Application.Services.PreflightConfig)
+  name.vb: New(PreflightConfig)
+- uid: Meridian.Application.Services.PreflightChecker.RunChecksAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  commentId: M:Meridian.Application.Services.PreflightChecker.RunChecksAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  id: RunChecksAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  parent: Meridian.Application.Services.PreflightChecker
+  langs:
+  - csharp
+  - vb
+  name: RunChecksAsync(string, CancellationToken, DataSourceKind?)
+  nameWithType: PreflightChecker.RunChecksAsync(string, CancellationToken, DataSourceKind?)
+  fullName: Meridian.Application.Services.PreflightChecker.RunChecksAsync(string, System.Threading.CancellationToken, Meridian.Application.Config.DataSourceKind?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunChecksAsync
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Runs all pre-flight checks and returns a comprehensive result.
+  example: []
+  syntax:
+    content: public Task<PreflightResult> RunChecksAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null)
+    parameters:
+    - id: dataRoot
+      type: System.String
+      description: The data directory path to check.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    - id: activeDataSource
+      type: System.Nullable{Meridian.Application.Config.DataSourceKind}
+      description: Active data source to validate credentials for.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.PreflightResult}
+      description: Pre-flight check results with pass/fail status and details.
+    content.vb: Public Function RunChecksAsync(dataRoot As String, ct As CancellationToken = Nothing, activeDataSource As DataSourceKind? = Nothing) As Task(Of PreflightResult)
+  overload: Meridian.Application.Services.PreflightChecker.RunChecksAsync*
+  nameWithType.vb: PreflightChecker.RunChecksAsync(String, CancellationToken, DataSourceKind?)
+  fullName.vb: Meridian.Application.Services.PreflightChecker.RunChecksAsync(String, System.Threading.CancellationToken, Meridian.Application.Config.DataSourceKind?)
+  name.vb: RunChecksAsync(String, CancellationToken, DataSourceKind?)
+- uid: Meridian.Application.Services.PreflightChecker.RunChecksAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.PreflightChecker.RunChecksAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: RunChecksAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.PreflightChecker
+  langs:
+  - csharp
+  - vb
+  name: RunChecksAsync(string, string?, CancellationToken)
+  nameWithType: PreflightChecker.RunChecksAsync(string, string?, CancellationToken)
+  fullName: Meridian.Application.Services.PreflightChecker.RunChecksAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunChecksAsync
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Runs all pre-flight checks including provider credential validation.
+  example: []
+  syntax:
+    content: public Task<PreflightResult> RunChecksAsync(string dataRoot, string? activeDataSource, CancellationToken ct = default)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    - id: activeDataSource
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.PreflightResult}
+    content.vb: Public Function RunChecksAsync(dataRoot As String, activeDataSource As String, ct As CancellationToken = Nothing) As Task(Of PreflightResult)
+  overload: Meridian.Application.Services.PreflightChecker.RunChecksAsync*
+  nameWithType.vb: PreflightChecker.RunChecksAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Services.PreflightChecker.RunChecksAsync(String, String, System.Threading.CancellationToken)
+  name.vb: RunChecksAsync(String, String, CancellationToken)
+- uid: Meridian.Application.Services.PreflightChecker.EnsureReadyAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  commentId: M:Meridian.Application.Services.PreflightChecker.EnsureReadyAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  id: EnsureReadyAsync(System.String,System.Threading.CancellationToken,System.Nullable{Meridian.Application.Config.DataSourceKind})
+  parent: Meridian.Application.Services.PreflightChecker
+  langs:
+  - csharp
+  - vb
+  name: EnsureReadyAsync(string, CancellationToken, DataSourceKind?)
+  nameWithType: PreflightChecker.EnsureReadyAsync(string, CancellationToken, DataSourceKind?)
+  fullName: Meridian.Application.Services.PreflightChecker.EnsureReadyAsync(string, System.Threading.CancellationToken, Meridian.Application.Config.DataSourceKind?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnsureReadyAsync
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Runs checks and throws if any critical check fails.
+  example: []
+  syntax:
+    content: public Task EnsureReadyAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    - id: activeDataSource
+      type: System.Nullable{Meridian.Application.Config.DataSourceKind}
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function EnsureReadyAsync(dataRoot As String, ct As CancellationToken = Nothing, activeDataSource As DataSourceKind? = Nothing) As Task
+  overload: Meridian.Application.Services.PreflightChecker.EnsureReadyAsync*
+  nameWithType.vb: PreflightChecker.EnsureReadyAsync(String, CancellationToken, DataSourceKind?)
+  fullName.vb: Meridian.Application.Services.PreflightChecker.EnsureReadyAsync(String, System.Threading.CancellationToken, Meridian.Application.Config.DataSourceKind?)
+  name.vb: EnsureReadyAsync(String, CancellationToken, DataSourceKind?)
+- uid: Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials(System.String)
+  commentId: M:Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials(System.String)
+  id: ValidateProviderCredentials(System.String)
+  parent: Meridian.Application.Services.PreflightChecker
+  langs:
+  - csharp
+  - vb
+  name: ValidateProviderCredentials(string)
+  nameWithType: PreflightChecker.ValidateProviderCredentials(string)
+  fullName: Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateProviderCredentials
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 548
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Validates that all enabled providers have their required credentials configured.
+
+    Returns a detailed table of missing credentials with the exact env var names to set.
+  example: []
+  syntax:
+    content: public PreflightCheckResult ValidateProviderCredentials(string activeDataSource)
+    parameters:
+    - id: activeDataSource
+      type: System.String
+    return:
+      type: Meridian.Application.Services.PreflightCheckResult
+    content.vb: Public Function ValidateProviderCredentials(activeDataSource As String) As PreflightCheckResult
+  overload: Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials*
+  nameWithType.vb: PreflightChecker.ValidateProviderCredentials(String)
+  fullName.vb: Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials(String)
+  name.vb: ValidateProviderCredentials(String)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.PreflightChecker.#ctor*
+  commentId: Overload:Meridian.Application.Services.PreflightChecker.#ctor
+  href: Meridian.Application.Services.PreflightChecker.html#Meridian_Application_Services_PreflightChecker__ctor_Meridian_Application_Services_PreflightConfig_
+  name: PreflightChecker
+  nameWithType: PreflightChecker.PreflightChecker
+  fullName: Meridian.Application.Services.PreflightChecker.PreflightChecker
+  nameWithType.vb: PreflightChecker.New
+  fullName.vb: Meridian.Application.Services.PreflightChecker.New
+  name.vb: New
+- uid: Meridian.Application.Services.PreflightConfig
+  commentId: T:Meridian.Application.Services.PreflightConfig
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.PreflightConfig.html
+  name: PreflightConfig
+  nameWithType: PreflightConfig
+  fullName: Meridian.Application.Services.PreflightConfig
+- uid: Meridian.Application.Services.PreflightChecker.RunChecksAsync*
+  commentId: Overload:Meridian.Application.Services.PreflightChecker.RunChecksAsync
+  href: Meridian.Application.Services.PreflightChecker.html#Meridian_Application_Services_PreflightChecker_RunChecksAsync_System_String_System_Threading_CancellationToken_System_Nullable_Meridian_Application_Config_DataSourceKind__
+  name: RunChecksAsync
+  nameWithType: PreflightChecker.RunChecksAsync
+  fullName: Meridian.Application.Services.PreflightChecker.RunChecksAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Nullable{Meridian.Application.Config.DataSourceKind}
+  commentId: T:System.Nullable{Meridian.Application.Config.DataSourceKind}
+  parent: System
+  definition: System.Nullable`1
+  name: DataSourceKind?
+  nameWithType: DataSourceKind?
+  fullName: Meridian.Application.Config.DataSourceKind?
+  spec.csharp:
+  - uid: Meridian.Application.Config.DataSourceKind
+    name: DataSourceKind
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.Config.DataSourceKind
+    name: DataSourceKind
+  - name: '?'
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.PreflightResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.PreflightResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PreflightResult>
+  nameWithType: Task<PreflightResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.PreflightResult>
+  nameWithType.vb: Task(Of PreflightResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.PreflightResult)
+  name.vb: Task(Of PreflightResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.PreflightResult
+    name: PreflightResult
+    href: Meridian.Application.Services.PreflightResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.PreflightResult
+    name: PreflightResult
+    href: Meridian.Application.Services.PreflightResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.PreflightChecker.EnsureReadyAsync*
+  commentId: Overload:Meridian.Application.Services.PreflightChecker.EnsureReadyAsync
+  href: Meridian.Application.Services.PreflightChecker.html#Meridian_Application_Services_PreflightChecker_EnsureReadyAsync_System_String_System_Threading_CancellationToken_System_Nullable_Meridian_Application_Config_DataSourceKind__
+  name: EnsureReadyAsync
+  nameWithType: PreflightChecker.EnsureReadyAsync
+  fullName: Meridian.Application.Services.PreflightChecker.EnsureReadyAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials*
+  commentId: Overload:Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials
+  href: Meridian.Application.Services.PreflightChecker.html#Meridian_Application_Services_PreflightChecker_ValidateProviderCredentials_System_String_
+  name: ValidateProviderCredentials
+  nameWithType: PreflightChecker.ValidateProviderCredentials
+  fullName: Meridian.Application.Services.PreflightChecker.ValidateProviderCredentials
+- uid: Meridian.Application.Services.PreflightCheckResult
+  commentId: T:Meridian.Application.Services.PreflightCheckResult
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.PreflightCheckResult.html
+  name: PreflightCheckResult
+  nameWithType: PreflightCheckResult
+  fullName: Meridian.Application.Services.PreflightCheckResult

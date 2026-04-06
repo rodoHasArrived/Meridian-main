@@ -1,0 +1,594 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolCoverageData
+  commentId: T:Meridian.Ui.Services.SymbolCoverageData
+  id: SymbolCoverageData
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolCoverageData.DayCoverage
+  - Meridian.Ui.Services.SymbolCoverageData.DaysWithData
+  - Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness
+  - Meridian.Ui.Services.SymbolCoverageData.Symbol
+  - Meridian.Ui.Services.SymbolCoverageData.TotalDays
+  langs:
+  - csharp
+  - vb
+  name: SymbolCoverageData
+  nameWithType: SymbolCoverageData
+  fullName: Meridian.Ui.Services.SymbolCoverageData
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCoverageData
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 575
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Symbol coverage data.
+  example: []
+  syntax:
+    content: public sealed class SymbolCoverageData
+    content.vb: Public NotInheritable Class SymbolCoverageData
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SymbolCoverageData.Symbol
+  commentId: P:Meridian.Ui.Services.SymbolCoverageData.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.SymbolCoverageData
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolCoverageData.Symbol
+  fullName: Meridian.Ui.Services.SymbolCoverageData.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 577
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.SymbolCoverageData.Symbol*
+- uid: Meridian.Ui.Services.SymbolCoverageData.DayCoverage
+  commentId: P:Meridian.Ui.Services.SymbolCoverageData.DayCoverage
+  id: DayCoverage
+  parent: Meridian.Ui.Services.SymbolCoverageData
+  langs:
+  - csharp
+  - vb
+  name: DayCoverage
+  nameWithType: SymbolCoverageData.DayCoverage
+  fullName: Meridian.Ui.Services.SymbolCoverageData.DayCoverage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DayCoverage
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 578
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<DayCoverageInfo> DayCoverage { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.DayCoverageInfo}
+    content.vb: Public ReadOnly Property DayCoverage As List(Of DayCoverageInfo)
+  overload: Meridian.Ui.Services.SymbolCoverageData.DayCoverage*
+- uid: Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness
+  commentId: P:Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness
+  id: OverallCompleteness
+  parent: Meridian.Ui.Services.SymbolCoverageData
+  langs:
+  - csharp
+  - vb
+  name: OverallCompleteness
+  nameWithType: SymbolCoverageData.OverallCompleteness
+  fullName: Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallCompleteness
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 579
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double OverallCompleteness { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property OverallCompleteness As Double
+  overload: Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness*
+- uid: Meridian.Ui.Services.SymbolCoverageData.DaysWithData
+  commentId: P:Meridian.Ui.Services.SymbolCoverageData.DaysWithData
+  id: DaysWithData
+  parent: Meridian.Ui.Services.SymbolCoverageData
+  langs:
+  - csharp
+  - vb
+  name: DaysWithData
+  nameWithType: SymbolCoverageData.DaysWithData
+  fullName: Meridian.Ui.Services.SymbolCoverageData.DaysWithData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DaysWithData
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 580
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int DaysWithData { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DaysWithData As Integer
+  overload: Meridian.Ui.Services.SymbolCoverageData.DaysWithData*
+- uid: Meridian.Ui.Services.SymbolCoverageData.TotalDays
+  commentId: P:Meridian.Ui.Services.SymbolCoverageData.TotalDays
+  id: TotalDays
+  parent: Meridian.Ui.Services.SymbolCoverageData
+  langs:
+  - csharp
+  - vb
+  name: TotalDays
+  nameWithType: SymbolCoverageData.TotalDays
+  fullName: Meridian.Ui.Services.SymbolCoverageData.TotalDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDays
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 581
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalDays As Integer
+  overload: Meridian.Ui.Services.SymbolCoverageData.TotalDays*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SymbolCoverageData.Symbol*
+  commentId: Overload:Meridian.Ui.Services.SymbolCoverageData.Symbol
+  href: Meridian.Ui.Services.SymbolCoverageData.html#Meridian_Ui_Services_SymbolCoverageData_Symbol
+  name: Symbol
+  nameWithType: SymbolCoverageData.Symbol
+  fullName: Meridian.Ui.Services.SymbolCoverageData.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SymbolCoverageData.DayCoverage*
+  commentId: Overload:Meridian.Ui.Services.SymbolCoverageData.DayCoverage
+  href: Meridian.Ui.Services.SymbolCoverageData.html#Meridian_Ui_Services_SymbolCoverageData_DayCoverage
+  name: DayCoverage
+  nameWithType: SymbolCoverageData.DayCoverage
+  fullName: Meridian.Ui.Services.SymbolCoverageData.DayCoverage
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.DayCoverageInfo}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.DayCoverageInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<DayCoverageInfo>
+  nameWithType: List<DayCoverageInfo>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.DayCoverageInfo>
+  nameWithType.vb: List(Of DayCoverageInfo)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.DayCoverageInfo)
+  name.vb: List(Of DayCoverageInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.DayCoverageInfo
+    name: DayCoverageInfo
+    href: Meridian.Ui.Services.DayCoverageInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DayCoverageInfo
+    name: DayCoverageInfo
+    href: Meridian.Ui.Services.DayCoverageInfo.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness*
+  commentId: Overload:Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness
+  href: Meridian.Ui.Services.SymbolCoverageData.html#Meridian_Ui_Services_SymbolCoverageData_OverallCompleteness
+  name: OverallCompleteness
+  nameWithType: SymbolCoverageData.OverallCompleteness
+  fullName: Meridian.Ui.Services.SymbolCoverageData.OverallCompleteness
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.SymbolCoverageData.DaysWithData*
+  commentId: Overload:Meridian.Ui.Services.SymbolCoverageData.DaysWithData
+  href: Meridian.Ui.Services.SymbolCoverageData.html#Meridian_Ui_Services_SymbolCoverageData_DaysWithData
+  name: DaysWithData
+  nameWithType: SymbolCoverageData.DaysWithData
+  fullName: Meridian.Ui.Services.SymbolCoverageData.DaysWithData
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.SymbolCoverageData.TotalDays*
+  commentId: Overload:Meridian.Ui.Services.SymbolCoverageData.TotalDays
+  href: Meridian.Ui.Services.SymbolCoverageData.html#Meridian_Ui_Services_SymbolCoverageData_TotalDays
+  name: TotalDays
+  nameWithType: SymbolCoverageData.TotalDays
+  fullName: Meridian.Ui.Services.SymbolCoverageData.TotalDays

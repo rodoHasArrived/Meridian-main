@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigValidationSeverity
+  commentId: T:Meridian.Application.Config.ConfigValidationSeverity
+  id: ConfigValidationSeverity
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigValidationSeverity.Error
+  - Meridian.Application.Config.ConfigValidationSeverity.Info
+  - Meridian.Application.Config.ConfigValidationSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: ConfigValidationSeverity
+  nameWithType: ConfigValidationSeverity
+  fullName: Meridian.Application.Config.ConfigValidationSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Config/IConfigValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigValidationSeverity
+    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Severity level of a configuration validation finding.
+  example: []
+  syntax:
+    content: 'public enum ConfigValidationSeverity : byte'
+    content.vb: Public Enum ConfigValidationSeverity As Byte
+- uid: Meridian.Application.Config.ConfigValidationSeverity.Info
+  commentId: F:Meridian.Application.Config.ConfigValidationSeverity.Info
+  id: Info
+  parent: Meridian.Application.Config.ConfigValidationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: ConfigValidationSeverity.Info
+  fullName: Meridian.Application.Config.ConfigValidationSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/IConfigValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Application.Config.ConfigValidationSeverity
+- uid: Meridian.Application.Config.ConfigValidationSeverity.Warning
+  commentId: F:Meridian.Application.Config.ConfigValidationSeverity.Warning
+  id: Warning
+  parent: Meridian.Application.Config.ConfigValidationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: ConfigValidationSeverity.Warning
+  fullName: Meridian.Application.Config.ConfigValidationSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/IConfigValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Config.ConfigValidationSeverity
+- uid: Meridian.Application.Config.ConfigValidationSeverity.Error
+  commentId: F:Meridian.Application.Config.ConfigValidationSeverity.Error
+  id: Error
+  parent: Meridian.Application.Config.ConfigValidationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ConfigValidationSeverity.Error
+  fullName: Meridian.Application.Config.ConfigValidationSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/IConfigValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Config/IConfigValidator.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Application.Config.ConfigValidationSeverity
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.ConfigValidationSeverity
+  commentId: T:Meridian.Application.Config.ConfigValidationSeverity
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigValidationSeverity.html
+  name: ConfigValidationSeverity
+  nameWithType: ConfigValidationSeverity
+  fullName: Meridian.Application.Config.ConfigValidationSeverity

@@ -1,0 +1,336 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  id: ISftpFileEntry
+  parent: Meridian.Infrastructure.Etl.Sftp
+  children:
+  - Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName
+  - Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory
+  - Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink
+  - Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc
+  - Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length
+  - Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name
+  langs:
+  - csharp
+  - vb
+  name: ISftpFileEntry
+  nameWithType: ISftpFileEntry
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISftpFileEntry
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  summary: Abstraction over a remote SFTP file entry, independent of any SSH library type.
+  example: []
+  syntax:
+    content: public interface ISftpFileEntry
+    content.vb: Public Interface ISftpFileEntry
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name
+  commentId: P:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name
+  id: Name
+  parent: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ISftpFileEntry.Name
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  syntax:
+    content: string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Name As String
+  overload: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name*
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName
+  commentId: P:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName
+  id: FullName
+  parent: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  langs:
+  - csharp
+  - vb
+  name: FullName
+  nameWithType: ISftpFileEntry.FullName
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullName
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  syntax:
+    content: string FullName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property FullName As String
+  overload: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName*
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory
+  commentId: P:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory
+  id: IsDirectory
+  parent: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  langs:
+  - csharp
+  - vb
+  name: IsDirectory
+  nameWithType: ISftpFileEntry.IsDirectory
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsDirectory
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  syntax:
+    content: bool IsDirectory { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsDirectory As Boolean
+  overload: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory*
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink
+  commentId: P:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink
+  id: IsSymbolicLink
+  parent: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  langs:
+  - csharp
+  - vb
+  name: IsSymbolicLink
+  nameWithType: ISftpFileEntry.IsSymbolicLink
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSymbolicLink
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  syntax:
+    content: bool IsSymbolicLink { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsSymbolicLink As Boolean
+  overload: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink*
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length
+  commentId: P:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length
+  id: Length
+  parent: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  langs:
+  - csharp
+  - vb
+  name: Length
+  nameWithType: ISftpFileEntry.Length
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Length
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  syntax:
+    content: long Length { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: ReadOnly Property Length As Long
+  overload: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length*
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc
+  commentId: P:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc
+  id: LastWriteTimeUtc
+  parent: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  langs:
+  - csharp
+  - vb
+  name: LastWriteTimeUtc
+  nameWithType: ISftpFileEntry.LastWriteTimeUtc
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastWriteTimeUtc
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  syntax:
+    content: DateTime LastWriteTimeUtc { get; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: ReadOnly Property LastWriteTimeUtc As Date
+  overload: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc*
+references:
+- uid: Meridian.Infrastructure.Etl.Sftp
+  commentId: N:Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.html
+  name: Meridian.Infrastructure.Etl.Sftp
+  nameWithType: Meridian.Infrastructure.Etl.Sftp
+  fullName: Meridian.Infrastructure.Etl.Sftp
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name*
+  commentId: Overload:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.html#Meridian_Infrastructure_Etl_Sftp_ISftpFileEntry_Name
+  name: Name
+  nameWithType: ISftpFileEntry.Name
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName*
+  commentId: Overload:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.html#Meridian_Infrastructure_Etl_Sftp_ISftpFileEntry_FullName
+  name: FullName
+  nameWithType: ISftpFileEntry.FullName
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.FullName
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory*
+  commentId: Overload:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.html#Meridian_Infrastructure_Etl_Sftp_ISftpFileEntry_IsDirectory
+  name: IsDirectory
+  nameWithType: ISftpFileEntry.IsDirectory
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsDirectory
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink*
+  commentId: Overload:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.html#Meridian_Infrastructure_Etl_Sftp_ISftpFileEntry_IsSymbolicLink
+  name: IsSymbolicLink
+  nameWithType: ISftpFileEntry.IsSymbolicLink
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.IsSymbolicLink
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length*
+  commentId: Overload:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.html#Meridian_Infrastructure_Etl_Sftp_ISftpFileEntry_Length
+  name: Length
+  nameWithType: ISftpFileEntry.Length
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.Length
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc*
+  commentId: Overload:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.html#Meridian_Infrastructure_Etl_Sftp_ISftpFileEntry_LastWriteTimeUtc
+  name: LastWriteTimeUtc
+  nameWithType: ISftpFileEntry.LastWriteTimeUtc
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.LastWriteTimeUtc
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date

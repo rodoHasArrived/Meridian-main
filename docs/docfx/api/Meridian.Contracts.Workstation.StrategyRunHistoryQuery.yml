@@ -1,0 +1,706 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  id: StrategyRunHistoryQuery
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunHistoryQuery.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.Int32)
+  - Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit
+  - Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes
+  - Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status
+  - Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunHistoryQuery
+  nameWithType: StrategyRunHistoryQuery
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunHistoryQuery
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Filter options used for workstation run history retrieval.
+  example: []
+  syntax:
+    content: 'public sealed record StrategyRunHistoryQuery : IEquatable<StrategyRunHistoryQuery>'
+    content.vb: Public NotInheritable Class StrategyRunHistoryQuery Implements IEquatable(Of StrategyRunHistoryQuery)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.StrategyRunHistoryQuery}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.Int32)
+  commentId: M:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.Int32)
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.Int32)'
+  parent: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunHistoryQuery(IReadOnlyList<StrategyRunMode>?, StrategyRunStatus?, string?, int)
+  nameWithType: StrategyRunHistoryQuery.StrategyRunHistoryQuery(IReadOnlyList<StrategyRunMode>?, StrategyRunStatus?, string?, int)
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyRunHistoryQuery(System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.StrategyRunMode>?, Meridian.Contracts.Workstation.StrategyRunStatus?, string?, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Filter options used for workstation run history retrieval.
+  example: []
+  syntax:
+    content: public StrategyRunHistoryQuery(IReadOnlyList<StrategyRunMode>? Modes = null, StrategyRunStatus? Status = null, string? StrategyId = null, int Limit = 50)
+    parameters:
+    - id: Modes
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode}
+    - id: Status
+      type: System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+    - id: StrategyId
+      type: System.String
+    - id: Limit
+      type: System.Int32
+    content.vb: Public Sub New(Modes As IReadOnlyList(Of StrategyRunMode) = Nothing, Status As StrategyRunStatus? = Nothing, StrategyId As String = Nothing, Limit As Integer = 50)
+  overload: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.#ctor*
+  nameWithType.vb: StrategyRunHistoryQuery.New(IReadOnlyList(Of StrategyRunMode), StrategyRunStatus?, String, Integer)
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.New(System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.StrategyRunMode), Meridian.Contracts.Workstation.StrategyRunStatus?, String, Integer)
+  name.vb: New(IReadOnlyList(Of StrategyRunMode), StrategyRunStatus?, String, Integer)
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes
+  id: Modes
+  parent: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  langs:
+  - csharp
+  - vb
+  name: Modes
+  nameWithType: StrategyRunHistoryQuery.Modes
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Modes
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<StrategyRunMode>? Modes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode}
+    content.vb: Public Property Modes As IReadOnlyList(Of StrategyRunMode)
+  overload: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes*
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status
+  id: Status
+  parent: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: StrategyRunHistoryQuery.Status
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunStatus? Status { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+    content.vb: Public Property Status As StrategyRunStatus?
+  overload: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status*
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId
+  id: StrategyId
+  parent: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: StrategyRunHistoryQuery.StrategyId
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId*
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit
+  id: Limit
+  parent: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  langs:
+  - csharp
+  - vb
+  name: Limit
+  nameWithType: StrategyRunHistoryQuery.Limit
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Limit
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int Limit { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Limit As Integer
+  overload: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.StrategyRunHistoryQuery}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.StrategyRunHistoryQuery}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StrategyRunHistoryQuery>
+  nameWithType: IEquatable<StrategyRunHistoryQuery>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.StrategyRunHistoryQuery>
+  nameWithType.vb: IEquatable(Of StrategyRunHistoryQuery)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.StrategyRunHistoryQuery)
+  name.vb: IEquatable(Of StrategyRunHistoryQuery)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+    name: StrategyRunHistoryQuery
+    href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+    name: StrategyRunHistoryQuery
+    href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.#ctor
+  href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html#Meridian_Contracts_Workstation_StrategyRunHistoryQuery__ctor_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_StrategyRunMode__System_Nullable_Meridian_Contracts_Workstation_StrategyRunStatus__System_String_System_Int32_
+  name: StrategyRunHistoryQuery
+  nameWithType: StrategyRunHistoryQuery.StrategyRunHistoryQuery
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyRunHistoryQuery
+  nameWithType.vb: StrategyRunHistoryQuery.New
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunMode}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<StrategyRunMode>
+  nameWithType: IReadOnlyList<StrategyRunMode>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.StrategyRunMode>
+  nameWithType.vb: IReadOnlyList(Of StrategyRunMode)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.StrategyRunMode)
+  name.vb: IReadOnlyList(Of StrategyRunMode)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunMode
+    name: StrategyRunMode
+    href: Meridian.Contracts.Workstation.StrategyRunMode.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunMode
+    name: StrategyRunMode
+    href: Meridian.Contracts.Workstation.StrategyRunMode.html
+  - name: )
+- uid: System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+  commentId: T:System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  name: StrategyRunStatus?
+  nameWithType: StrategyRunStatus?
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus?
+  spec.csharp:
+  - uid: Meridian.Contracts.Workstation.StrategyRunStatus
+    name: StrategyRunStatus
+    href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Workstation.StrategyRunStatus
+    name: StrategyRunStatus
+    href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  - name: '?'
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes
+  href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html#Meridian_Contracts_Workstation_StrategyRunHistoryQuery_Modes
+  name: Modes
+  nameWithType: StrategyRunHistoryQuery.Modes
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Modes
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status
+  href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html#Meridian_Contracts_Workstation_StrategyRunHistoryQuery_Status
+  name: Status
+  nameWithType: StrategyRunHistoryQuery.Status
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Status
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId
+  href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html#Meridian_Contracts_Workstation_StrategyRunHistoryQuery_StrategyId
+  name: StrategyId
+  nameWithType: StrategyRunHistoryQuery.StrategyId
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.StrategyId
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit
+  href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html#Meridian_Contracts_Workstation_StrategyRunHistoryQuery_Limit
+  name: Limit
+  nameWithType: StrategyRunHistoryQuery.Limit
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.Limit

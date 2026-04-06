@@ -1,0 +1,251 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  commentId: T:Meridian.Contracts.Domain.Enums.LiquidityProfile
+  id: LiquidityProfile
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.LiquidityProfile.High
+  - Meridian.Contracts.Domain.Enums.LiquidityProfile.Low
+  - Meridian.Contracts.Domain.Enums.LiquidityProfile.Minimal
+  - Meridian.Contracts.Domain.Enums.LiquidityProfile.Normal
+  - Meridian.Contracts.Domain.Enums.LiquidityProfile.VeryLow
+  langs:
+  - csharp
+  - vb
+  name: LiquidityProfile
+  nameWithType: LiquidityProfile
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LiquidityProfile
+    path: ../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    Classification of expected trading activity for a symbol.
+
+    Determines monitoring thresholds for gap detection, completeness scoring,
+
+    SLA freshness, and anomaly detection.
+  example: []
+  syntax:
+    content: 'public enum LiquidityProfile : byte'
+    content.vb: Public Enum LiquidityProfile As Byte
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile.High
+  commentId: F:Meridian.Contracts.Domain.Enums.LiquidityProfile.High
+  id: High
+  parent: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: LiquidityProfile.High
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    High liquidity - large cap equities, major ETFs, FX majors.
+
+    Continuous quoting, hundreds of trades per minute.
+
+    Gap threshold ~60s, expected ~1000+ events/hour.
+  example: []
+  syntax:
+    content: High = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile.Normal
+  commentId: F:Meridian.Contracts.Domain.Enums.LiquidityProfile.Normal
+  id: Normal
+  parent: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  langs:
+  - csharp
+  - vb
+  name: Normal
+  nameWithType: LiquidityProfile.Normal
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile.Normal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normal
+    path: ../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    Normal liquidity - mid-cap equities, sector ETFs, active options.
+
+    Regular but not constant activity.
+
+    Gap threshold ~120s, expected ~200 events/hour.
+  example: []
+  syntax:
+    content: Normal = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile.Low
+  commentId: F:Meridian.Contracts.Domain.Enums.LiquidityProfile.Low
+  id: Low
+  parent: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: LiquidityProfile.Low
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    Low liquidity - small-cap stocks, less active options, single-stock futures.
+
+    Trades may be minutes apart during quiet periods.
+
+    Gap threshold ~600s, expected ~20 events/hour.
+  example: []
+  syntax:
+    content: Low = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile.VeryLow
+  commentId: F:Meridian.Contracts.Domain.Enums.LiquidityProfile.VeryLow
+  id: VeryLow
+  parent: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  langs:
+  - csharp
+  - vb
+  name: VeryLow
+  nameWithType: LiquidityProfile.VeryLow
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile.VeryLow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VeryLow
+    path: ../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    Very low liquidity - OTC stocks, thinly-traded options, illiquid bonds.
+
+    Trades may be 10+ minutes apart; wide spreads are normal.
+
+    Gap threshold ~1800s, expected ~5 events/hour.
+  example: []
+  syntax:
+    content: VeryLow = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile.Minimal
+  commentId: F:Meridian.Contracts.Domain.Enums.LiquidityProfile.Minimal
+  id: Minimal
+  parent: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  langs:
+  - csharp
+  - vb
+  name: Minimal
+  nameWithType: LiquidityProfile.Minimal
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile.Minimal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minimal
+    path: ../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    Minimal activity - deep OTC, far out-of-money options, exotic instruments.
+
+    May have fewer than a handful of trades per day.
+
+    Gap threshold ~3600s, expected ~1 event/hour.
+  example: []
+  syntax:
+    content: Minimal = 4
+    return:
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  commentId: T:Meridian.Contracts.Domain.Enums.LiquidityProfile
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  name: LiquidityProfile
+  nameWithType: LiquidityProfile
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile

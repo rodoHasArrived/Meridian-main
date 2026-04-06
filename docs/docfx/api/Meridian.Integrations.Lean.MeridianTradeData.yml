@@ -1,0 +1,1712 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Integrations.Lean.MeridianTradeData
+  commentId: T:Meridian.Integrations.Lean.MeridianTradeData
+  id: MeridianTradeData
+  parent: Meridian.Integrations.Lean
+  children:
+  - Meridian.Integrations.Lean.MeridianTradeData.AggressorSide
+  - Meridian.Integrations.Lean.MeridianTradeData.Clone
+  - Meridian.Integrations.Lean.MeridianTradeData.Conditions
+  - Meridian.Integrations.Lean.MeridianTradeData.Exchange
+  - Meridian.Integrations.Lean.MeridianTradeData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+  - Meridian.Integrations.Lean.MeridianTradeData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+  - Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber
+  - Meridian.Integrations.Lean.MeridianTradeData.TradePrice
+  - Meridian.Integrations.Lean.MeridianTradeData.TradeSize
+  langs:
+  - csharp
+  - vb
+  name: MeridianTradeData
+  nameWithType: MeridianTradeData
+  fullName: Meridian.Integrations.Lean.MeridianTradeData
+  type: Class
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MeridianTradeData
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 16
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: >-
+    Custom Lean BaseData implementation for Meridian trade events.
+
+    Allows Lean algorithms to consume tick-by-tick trade data collected by Meridian.
+  example: []
+  syntax:
+    content: 'public sealed class MeridianTradeData : BaseData, IBaseData, ISymbolProvider'
+    content.vb: Public NotInheritable Class MeridianTradeData Inherits BaseData Implements IBaseData, ISymbolProvider
+  inheritance:
+  - System.Object
+  - QuantConnect.Data.BaseData
+  implements:
+  - QuantConnect.Data.IBaseData
+  - QuantConnect.Data.ISymbolProvider
+  inheritedMembers:
+  - QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.IO.StreamReader,System.DateTime,System.Boolean)
+  - QuantConnect.Data.BaseData.RequiresMapping
+  - QuantConnect.Data.BaseData.IsSparseData
+  - QuantConnect.Data.BaseData.ShouldCacheToSecurity
+  - QuantConnect.Data.BaseData.DefaultResolution
+  - QuantConnect.Data.BaseData.SupportedResolutions
+  - QuantConnect.Data.BaseData.DataTimeZone
+  - QuantConnect.Data.BaseData.UpdateTrade(System.Decimal,System.Decimal)
+  - QuantConnect.Data.BaseData.UpdateQuote(System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  - QuantConnect.Data.BaseData.UpdateBid(System.Decimal,System.Decimal)
+  - QuantConnect.Data.BaseData.UpdateAsk(System.Decimal,System.Decimal)
+  - QuantConnect.Data.BaseData.Update(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  - QuantConnect.Data.BaseData.Clone(System.Boolean)
+  - QuantConnect.Data.BaseData.ToString
+  - QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,QuantConnect.DataFeedEndpoint)
+  - QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,QuantConnect.DataFeedEndpoint)
+  - QuantConnect.Data.BaseData.DeserializeMessage(System.String)
+  - QuantConnect.Data.BaseData.DataType
+  - QuantConnect.Data.BaseData.IsFillForward
+  - QuantConnect.Data.BaseData.Time
+  - QuantConnect.Data.BaseData.EndTime
+  - QuantConnect.Data.BaseData.Symbol
+  - QuantConnect.Data.BaseData.Value
+  - QuantConnect.Data.BaseData.Price
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Integrations.Lean.MeridianTradeData.TradePrice
+  commentId: P:Meridian.Integrations.Lean.MeridianTradeData.TradePrice
+  id: TradePrice
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: TradePrice
+  nameWithType: MeridianTradeData.TradePrice
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.TradePrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradePrice
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 31
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Trade price
+  example: []
+  syntax:
+    content: public decimal TradePrice { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TradePrice As Decimal
+  overload: Meridian.Integrations.Lean.MeridianTradeData.TradePrice*
+- uid: Meridian.Integrations.Lean.MeridianTradeData.TradeSize
+  commentId: P:Meridian.Integrations.Lean.MeridianTradeData.TradeSize
+  id: TradeSize
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: TradeSize
+  nameWithType: MeridianTradeData.TradeSize
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.TradeSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeSize
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 34
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Trade volume/size
+  example: []
+  syntax:
+    content: public decimal TradeSize { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TradeSize As Decimal
+  overload: Meridian.Integrations.Lean.MeridianTradeData.TradeSize*
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Exchange
+  commentId: P:Meridian.Integrations.Lean.MeridianTradeData.Exchange
+  id: Exchange
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: MeridianTradeData.Exchange
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 37
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Exchange where trade occurred
+  example: []
+  syntax:
+    content: public string Exchange { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Integrations.Lean.MeridianTradeData.Exchange*
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Conditions
+  commentId: P:Meridian.Integrations.Lean.MeridianTradeData.Conditions
+  id: Conditions
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: Conditions
+  nameWithType: MeridianTradeData.Conditions
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Conditions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Conditions
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 40
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Trade conditions/flags
+  example: []
+  syntax:
+    content: public List<string> Conditions { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Conditions As List(Of String)
+  overload: Meridian.Integrations.Lean.MeridianTradeData.Conditions*
+- uid: Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber
+  commentId: P:Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: MeridianTradeData.SequenceNumber
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 43
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Sequence number for ordering
+  example: []
+  syntax:
+    content: public long SequenceNumber { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber*
+- uid: Meridian.Integrations.Lean.MeridianTradeData.AggressorSide
+  commentId: P:Meridian.Integrations.Lean.MeridianTradeData.AggressorSide
+  id: AggressorSide
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: AggressorSide
+  nameWithType: MeridianTradeData.AggressorSide
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.AggressorSide
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggressorSide
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 46
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Aggressor side (buy/sell)
+  example: []
+  syntax:
+    content: public string AggressorSide { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AggressorSide As String
+  overload: Meridian.Integrations.Lean.MeridianTradeData.AggressorSide*
+- uid: Meridian.Integrations.Lean.MeridianTradeData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+  commentId: M:Meridian.Integrations.Lean.MeridianTradeData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+  id: GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: GetSource(SubscriptionDataConfig, DateTime, bool)
+  nameWithType: MeridianTradeData.GetSource(SubscriptionDataConfig, DateTime, bool)
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.GetSource(QuantConnect.Data.SubscriptionDataConfig, System.DateTime, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSource
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 51
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Return the URL string source of the file. This will be converted to a stream.
+  example: []
+  syntax:
+    content: public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
+    parameters:
+    - id: config
+      type: QuantConnect.Data.SubscriptionDataConfig
+    - id: date
+      type: System.DateTime
+    - id: isLiveMode
+      type: System.Boolean
+    return:
+      type: QuantConnect.Data.SubscriptionDataSource
+    content.vb: Public Overrides Function GetSource(config As SubscriptionDataConfig, [date] As Date, isLiveMode As Boolean) As SubscriptionDataSource
+  overridden: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+  overload: Meridian.Integrations.Lean.MeridianTradeData.GetSource*
+  nameWithType.vb: MeridianTradeData.GetSource(SubscriptionDataConfig, Date, Boolean)
+  fullName.vb: Meridian.Integrations.Lean.MeridianTradeData.GetSource(QuantConnect.Data.SubscriptionDataConfig, Date, Boolean)
+  name.vb: GetSource(SubscriptionDataConfig, Date, Boolean)
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+  commentId: M:Meridian.Integrations.Lean.MeridianTradeData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+  id: Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: Reader(SubscriptionDataConfig, string, DateTime, bool)
+  nameWithType: MeridianTradeData.Reader(SubscriptionDataConfig, string, DateTime, bool)
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Reader(QuantConnect.Data.SubscriptionDataConfig, string, System.DateTime, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reader
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 72
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Reader converts each line of the data source into a BaseData object.
+  example: []
+  syntax:
+    content: public override BaseData Reader(SubscriptionDataConfig config, string line, DateTime date, bool isLiveMode)
+    parameters:
+    - id: config
+      type: QuantConnect.Data.SubscriptionDataConfig
+    - id: line
+      type: System.String
+    - id: date
+      type: System.DateTime
+    - id: isLiveMode
+      type: System.Boolean
+    return:
+      type: QuantConnect.Data.BaseData
+    content.vb: Public Overrides Function Reader(config As SubscriptionDataConfig, line As String, [date] As Date, isLiveMode As Boolean) As BaseData
+  overridden: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+  overload: Meridian.Integrations.Lean.MeridianTradeData.Reader*
+  nameWithType.vb: MeridianTradeData.Reader(SubscriptionDataConfig, String, Date, Boolean)
+  fullName.vb: Meridian.Integrations.Lean.MeridianTradeData.Reader(QuantConnect.Data.SubscriptionDataConfig, String, Date, Boolean)
+  name.vb: Reader(SubscriptionDataConfig, String, Date, Boolean)
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Clone
+  commentId: M:Meridian.Integrations.Lean.MeridianTradeData.Clone
+  id: Clone
+  parent: Meridian.Integrations.Lean.MeridianTradeData
+  langs:
+  - csharp
+  - vb
+  name: Clone()
+  nameWithType: MeridianTradeData.Clone()
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Clone()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Clone
+    path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
+    startLine: 127
+  assemblies:
+  - Meridian
+  namespace: Meridian.Integrations.Lean
+  summary: Clone implementation required by Lean
+  example: []
+  syntax:
+    content: public override BaseData Clone()
+    return:
+      type: QuantConnect.Data.BaseData
+    content.vb: Public Overrides Function Clone() As BaseData
+  overridden: QuantConnect.Data.BaseData.Clone
+  overload: Meridian.Integrations.Lean.MeridianTradeData.Clone*
+references:
+- uid: Meridian.Integrations.Lean
+  commentId: N:Meridian.Integrations.Lean
+  href: Meridian.html
+  name: Meridian.Integrations.Lean
+  nameWithType: Meridian.Integrations.Lean
+  fullName: Meridian.Integrations.Lean
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Integrations
+    name: Integrations
+    href: Meridian.Integrations.html
+  - name: .
+  - uid: Meridian.Integrations.Lean
+    name: Lean
+    href: Meridian.Integrations.Lean.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Integrations
+    name: Integrations
+    href: Meridian.Integrations.html
+  - name: .
+  - uid: Meridian.Integrations.Lean
+    name: Lean
+    href: Meridian.Integrations.Lean.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: QuantConnect.Data.BaseData
+  commentId: T:QuantConnect.Data.BaseData
+  parent: QuantConnect.Data
+  isExternal: true
+  name: BaseData
+  nameWithType: BaseData
+  fullName: QuantConnect.Data.BaseData
+- uid: QuantConnect.Data.IBaseData
+  commentId: T:QuantConnect.Data.IBaseData
+  parent: QuantConnect.Data
+  isExternal: true
+  name: IBaseData
+  nameWithType: IBaseData
+  fullName: QuantConnect.Data.IBaseData
+- uid: QuantConnect.Data.ISymbolProvider
+  commentId: T:QuantConnect.Data.ISymbolProvider
+  parent: QuantConnect.Data
+  isExternal: true
+  name: ISymbolProvider
+  nameWithType: ISymbolProvider
+  fullName: QuantConnect.Data.ISymbolProvider
+- uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.IO.StreamReader,System.DateTime,System.Boolean)
+  commentId: M:QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.IO.StreamReader,System.DateTime,System.Boolean)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.streamreader
+  name: Reader(SubscriptionDataConfig, StreamReader, DateTime, bool)
+  nameWithType: BaseData.Reader(SubscriptionDataConfig, StreamReader, DateTime, bool)
+  fullName: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig, System.IO.StreamReader, System.DateTime, bool)
+  nameWithType.vb: BaseData.Reader(SubscriptionDataConfig, StreamReader, Date, Boolean)
+  fullName.vb: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig, System.IO.StreamReader, Date, Boolean)
+  name.vb: Reader(SubscriptionDataConfig, StreamReader, Date, Boolean)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.IO.StreamReader,System.DateTime,System.Boolean)
+    name: Reader
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.IO.StreamReader
+    name: StreamReader
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io.streamreader
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.IO.StreamReader,System.DateTime,System.Boolean)
+    name: Reader
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.IO.StreamReader
+    name: StreamReader
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io.streamreader
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: QuantConnect.Data.BaseData.RequiresMapping
+  commentId: M:QuantConnect.Data.BaseData.RequiresMapping
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: RequiresMapping()
+  nameWithType: BaseData.RequiresMapping()
+  fullName: QuantConnect.Data.BaseData.RequiresMapping()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.RequiresMapping
+    name: RequiresMapping
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.RequiresMapping
+    name: RequiresMapping
+    isExternal: true
+  - name: (
+  - name: )
+- uid: QuantConnect.Data.BaseData.IsSparseData
+  commentId: M:QuantConnect.Data.BaseData.IsSparseData
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: IsSparseData()
+  nameWithType: BaseData.IsSparseData()
+  fullName: QuantConnect.Data.BaseData.IsSparseData()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.IsSparseData
+    name: IsSparseData
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.IsSparseData
+    name: IsSparseData
+    isExternal: true
+  - name: (
+  - name: )
+- uid: QuantConnect.Data.BaseData.ShouldCacheToSecurity
+  commentId: M:QuantConnect.Data.BaseData.ShouldCacheToSecurity
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: ShouldCacheToSecurity()
+  nameWithType: BaseData.ShouldCacheToSecurity()
+  fullName: QuantConnect.Data.BaseData.ShouldCacheToSecurity()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.ShouldCacheToSecurity
+    name: ShouldCacheToSecurity
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.ShouldCacheToSecurity
+    name: ShouldCacheToSecurity
+    isExternal: true
+  - name: (
+  - name: )
+- uid: QuantConnect.Data.BaseData.DefaultResolution
+  commentId: M:QuantConnect.Data.BaseData.DefaultResolution
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: DefaultResolution()
+  nameWithType: BaseData.DefaultResolution()
+  fullName: QuantConnect.Data.BaseData.DefaultResolution()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.DefaultResolution
+    name: DefaultResolution
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.DefaultResolution
+    name: DefaultResolution
+    isExternal: true
+  - name: (
+  - name: )
+- uid: QuantConnect.Data.BaseData.SupportedResolutions
+  commentId: M:QuantConnect.Data.BaseData.SupportedResolutions
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: SupportedResolutions()
+  nameWithType: BaseData.SupportedResolutions()
+  fullName: QuantConnect.Data.BaseData.SupportedResolutions()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.SupportedResolutions
+    name: SupportedResolutions
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.SupportedResolutions
+    name: SupportedResolutions
+    isExternal: true
+  - name: (
+  - name: )
+- uid: QuantConnect.Data.BaseData.DataTimeZone
+  commentId: M:QuantConnect.Data.BaseData.DataTimeZone
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: DataTimeZone()
+  nameWithType: BaseData.DataTimeZone()
+  fullName: QuantConnect.Data.BaseData.DataTimeZone()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.DataTimeZone
+    name: DataTimeZone
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.DataTimeZone
+    name: DataTimeZone
+    isExternal: true
+  - name: (
+  - name: )
+- uid: QuantConnect.Data.BaseData.UpdateTrade(System.Decimal,System.Decimal)
+  commentId: M:QuantConnect.Data.BaseData.UpdateTrade(System.Decimal,System.Decimal)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: UpdateTrade(decimal, decimal)
+  nameWithType: BaseData.UpdateTrade(decimal, decimal)
+  fullName: QuantConnect.Data.BaseData.UpdateTrade(decimal, decimal)
+  nameWithType.vb: BaseData.UpdateTrade(Decimal, Decimal)
+  fullName.vb: QuantConnect.Data.BaseData.UpdateTrade(Decimal, Decimal)
+  name.vb: UpdateTrade(Decimal, Decimal)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.UpdateTrade(System.Decimal,System.Decimal)
+    name: UpdateTrade
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.UpdateTrade(System.Decimal,System.Decimal)
+    name: UpdateTrade
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: QuantConnect.Data.BaseData.UpdateQuote(System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  commentId: M:QuantConnect.Data.BaseData.UpdateQuote(System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: UpdateQuote(decimal, decimal, decimal, decimal)
+  nameWithType: BaseData.UpdateQuote(decimal, decimal, decimal, decimal)
+  fullName: QuantConnect.Data.BaseData.UpdateQuote(decimal, decimal, decimal, decimal)
+  nameWithType.vb: BaseData.UpdateQuote(Decimal, Decimal, Decimal, Decimal)
+  fullName.vb: QuantConnect.Data.BaseData.UpdateQuote(Decimal, Decimal, Decimal, Decimal)
+  name.vb: UpdateQuote(Decimal, Decimal, Decimal, Decimal)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.UpdateQuote(System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+    name: UpdateQuote
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.UpdateQuote(System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+    name: UpdateQuote
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: QuantConnect.Data.BaseData.UpdateBid(System.Decimal,System.Decimal)
+  commentId: M:QuantConnect.Data.BaseData.UpdateBid(System.Decimal,System.Decimal)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: UpdateBid(decimal, decimal)
+  nameWithType: BaseData.UpdateBid(decimal, decimal)
+  fullName: QuantConnect.Data.BaseData.UpdateBid(decimal, decimal)
+  nameWithType.vb: BaseData.UpdateBid(Decimal, Decimal)
+  fullName.vb: QuantConnect.Data.BaseData.UpdateBid(Decimal, Decimal)
+  name.vb: UpdateBid(Decimal, Decimal)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.UpdateBid(System.Decimal,System.Decimal)
+    name: UpdateBid
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.UpdateBid(System.Decimal,System.Decimal)
+    name: UpdateBid
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: QuantConnect.Data.BaseData.UpdateAsk(System.Decimal,System.Decimal)
+  commentId: M:QuantConnect.Data.BaseData.UpdateAsk(System.Decimal,System.Decimal)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: UpdateAsk(decimal, decimal)
+  nameWithType: BaseData.UpdateAsk(decimal, decimal)
+  fullName: QuantConnect.Data.BaseData.UpdateAsk(decimal, decimal)
+  nameWithType.vb: BaseData.UpdateAsk(Decimal, Decimal)
+  fullName.vb: QuantConnect.Data.BaseData.UpdateAsk(Decimal, Decimal)
+  name.vb: UpdateAsk(Decimal, Decimal)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.UpdateAsk(System.Decimal,System.Decimal)
+    name: UpdateAsk
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.UpdateAsk(System.Decimal,System.Decimal)
+    name: UpdateAsk
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: QuantConnect.Data.BaseData.Update(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  commentId: M:QuantConnect.Data.BaseData.Update(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: Update(decimal, decimal, decimal, decimal, decimal, decimal)
+  nameWithType: BaseData.Update(decimal, decimal, decimal, decimal, decimal, decimal)
+  fullName: QuantConnect.Data.BaseData.Update(decimal, decimal, decimal, decimal, decimal, decimal)
+  nameWithType.vb: BaseData.Update(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal)
+  fullName.vb: QuantConnect.Data.BaseData.Update(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal)
+  name.vb: Update(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.Update(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+    name: Update
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.Update(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+    name: Update
+    isExternal: true
+  - name: (
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: QuantConnect.Data.BaseData.Clone(System.Boolean)
+  commentId: M:QuantConnect.Data.BaseData.Clone(System.Boolean)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: Clone(bool)
+  nameWithType: BaseData.Clone(bool)
+  fullName: QuantConnect.Data.BaseData.Clone(bool)
+  nameWithType.vb: BaseData.Clone(Boolean)
+  fullName.vb: QuantConnect.Data.BaseData.Clone(Boolean)
+  name.vb: Clone(Boolean)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.Clone(System.Boolean)
+    name: Clone
+    isExternal: true
+  - name: (
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.Clone(System.Boolean)
+    name: Clone
+    isExternal: true
+  - name: (
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: QuantConnect.Data.BaseData.ToString
+  commentId: M:QuantConnect.Data.BaseData.ToString
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: ToString()
+  nameWithType: BaseData.ToString()
+  fullName: QuantConnect.Data.BaseData.ToString()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.ToString
+    name: ToString
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.ToString
+    name: ToString
+    isExternal: true
+  - name: (
+  - name: )
+- uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,QuantConnect.DataFeedEndpoint)
+  commentId: M:QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,QuantConnect.DataFeedEndpoint)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: Reader(SubscriptionDataConfig, string, DateTime, DataFeedEndpoint)
+  nameWithType: BaseData.Reader(SubscriptionDataConfig, string, DateTime, DataFeedEndpoint)
+  fullName: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig, string, System.DateTime, QuantConnect.DataFeedEndpoint)
+  nameWithType.vb: BaseData.Reader(SubscriptionDataConfig, String, Date, DataFeedEndpoint)
+  fullName.vb: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig, String, Date, QuantConnect.DataFeedEndpoint)
+  name.vb: Reader(SubscriptionDataConfig, String, Date, DataFeedEndpoint)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,QuantConnect.DataFeedEndpoint)
+    name: Reader
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: QuantConnect.DataFeedEndpoint
+    name: DataFeedEndpoint
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,QuantConnect.DataFeedEndpoint)
+    name: Reader
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: QuantConnect.DataFeedEndpoint
+    name: DataFeedEndpoint
+    isExternal: true
+  - name: )
+- uid: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,QuantConnect.DataFeedEndpoint)
+  commentId: M:QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,QuantConnect.DataFeedEndpoint)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: GetSource(SubscriptionDataConfig, DateTime, DataFeedEndpoint)
+  nameWithType: BaseData.GetSource(SubscriptionDataConfig, DateTime, DataFeedEndpoint)
+  fullName: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig, System.DateTime, QuantConnect.DataFeedEndpoint)
+  nameWithType.vb: BaseData.GetSource(SubscriptionDataConfig, Date, DataFeedEndpoint)
+  fullName.vb: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig, Date, QuantConnect.DataFeedEndpoint)
+  name.vb: GetSource(SubscriptionDataConfig, Date, DataFeedEndpoint)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,QuantConnect.DataFeedEndpoint)
+    name: GetSource
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: QuantConnect.DataFeedEndpoint
+    name: DataFeedEndpoint
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,QuantConnect.DataFeedEndpoint)
+    name: GetSource
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: QuantConnect.DataFeedEndpoint
+    name: DataFeedEndpoint
+    isExternal: true
+  - name: )
+- uid: QuantConnect.Data.BaseData.DeserializeMessage(System.String)
+  commentId: M:QuantConnect.Data.BaseData.DeserializeMessage(System.String)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: DeserializeMessage(string)
+  nameWithType: BaseData.DeserializeMessage(string)
+  fullName: QuantConnect.Data.BaseData.DeserializeMessage(string)
+  nameWithType.vb: BaseData.DeserializeMessage(String)
+  fullName.vb: QuantConnect.Data.BaseData.DeserializeMessage(String)
+  name.vb: DeserializeMessage(String)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.DeserializeMessage(System.String)
+    name: DeserializeMessage
+    isExternal: true
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.DeserializeMessage(System.String)
+    name: DeserializeMessage
+    isExternal: true
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: QuantConnect.Data.BaseData.DataType
+  commentId: P:QuantConnect.Data.BaseData.DataType
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: DataType
+  nameWithType: BaseData.DataType
+  fullName: QuantConnect.Data.BaseData.DataType
+- uid: QuantConnect.Data.BaseData.IsFillForward
+  commentId: P:QuantConnect.Data.BaseData.IsFillForward
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: IsFillForward
+  nameWithType: BaseData.IsFillForward
+  fullName: QuantConnect.Data.BaseData.IsFillForward
+- uid: QuantConnect.Data.BaseData.Time
+  commentId: P:QuantConnect.Data.BaseData.Time
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: Time
+  nameWithType: BaseData.Time
+  fullName: QuantConnect.Data.BaseData.Time
+- uid: QuantConnect.Data.BaseData.EndTime
+  commentId: P:QuantConnect.Data.BaseData.EndTime
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: EndTime
+  nameWithType: BaseData.EndTime
+  fullName: QuantConnect.Data.BaseData.EndTime
+- uid: QuantConnect.Data.BaseData.Symbol
+  commentId: P:QuantConnect.Data.BaseData.Symbol
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: Symbol
+  nameWithType: BaseData.Symbol
+  fullName: QuantConnect.Data.BaseData.Symbol
+- uid: QuantConnect.Data.BaseData.Value
+  commentId: P:QuantConnect.Data.BaseData.Value
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: Value
+  nameWithType: BaseData.Value
+  fullName: QuantConnect.Data.BaseData.Value
+- uid: QuantConnect.Data.BaseData.Price
+  commentId: P:QuantConnect.Data.BaseData.Price
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: Price
+  nameWithType: BaseData.Price
+  fullName: QuantConnect.Data.BaseData.Price
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: QuantConnect.Data
+  commentId: N:QuantConnect.Data
+  isExternal: true
+  name: QuantConnect.Data
+  nameWithType: QuantConnect.Data
+  fullName: QuantConnect.Data
+  spec.csharp:
+  - uid: QuantConnect
+    name: QuantConnect
+    isExternal: true
+  - name: .
+  - uid: QuantConnect.Data
+    name: Data
+    isExternal: true
+  spec.vb:
+  - uid: QuantConnect
+    name: QuantConnect
+    isExternal: true
+  - name: .
+  - uid: QuantConnect.Data
+    name: Data
+    isExternal: true
+- uid: Meridian.Integrations.Lean.MeridianTradeData.TradePrice*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.TradePrice
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_TradePrice
+  name: TradePrice
+  nameWithType: MeridianTradeData.TradePrice
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.TradePrice
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Integrations.Lean.MeridianTradeData.TradeSize*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.TradeSize
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_TradeSize
+  name: TradeSize
+  nameWithType: MeridianTradeData.TradeSize
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.TradeSize
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Exchange*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.Exchange
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_Exchange
+  name: Exchange
+  nameWithType: MeridianTradeData.Exchange
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Exchange
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Conditions*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.Conditions
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_Conditions
+  name: Conditions
+  nameWithType: MeridianTradeData.Conditions
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Conditions
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_SequenceNumber
+  name: SequenceNumber
+  nameWithType: MeridianTradeData.SequenceNumber
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.SequenceNumber
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Integrations.Lean.MeridianTradeData.AggressorSide*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.AggressorSide
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_AggressorSide
+  name: AggressorSide
+  nameWithType: MeridianTradeData.AggressorSide
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.AggressorSide
+- uid: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+  commentId: M:QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: GetSource(SubscriptionDataConfig, DateTime, bool)
+  nameWithType: BaseData.GetSource(SubscriptionDataConfig, DateTime, bool)
+  fullName: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig, System.DateTime, bool)
+  nameWithType.vb: BaseData.GetSource(SubscriptionDataConfig, Date, Boolean)
+  fullName.vb: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig, Date, Boolean)
+  name.vb: GetSource(SubscriptionDataConfig, Date, Boolean)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+    name: GetSource
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.GetSource(QuantConnect.Data.SubscriptionDataConfig,System.DateTime,System.Boolean)
+    name: GetSource
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Integrations.Lean.MeridianTradeData.GetSource*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.GetSource
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_GetSource_QuantConnect_Data_SubscriptionDataConfig_System_DateTime_System_Boolean_
+  name: GetSource
+  nameWithType: MeridianTradeData.GetSource
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.GetSource
+- uid: QuantConnect.Data.SubscriptionDataConfig
+  commentId: T:QuantConnect.Data.SubscriptionDataConfig
+  parent: QuantConnect.Data
+  isExternal: true
+  name: SubscriptionDataConfig
+  nameWithType: SubscriptionDataConfig
+  fullName: QuantConnect.Data.SubscriptionDataConfig
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: QuantConnect.Data.SubscriptionDataSource
+  commentId: T:QuantConnect.Data.SubscriptionDataSource
+  parent: QuantConnect.Data
+  isExternal: true
+  name: SubscriptionDataSource
+  nameWithType: SubscriptionDataSource
+  fullName: QuantConnect.Data.SubscriptionDataSource
+- uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+  commentId: M:QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: Reader(SubscriptionDataConfig, string, DateTime, bool)
+  nameWithType: BaseData.Reader(SubscriptionDataConfig, string, DateTime, bool)
+  fullName: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig, string, System.DateTime, bool)
+  nameWithType.vb: BaseData.Reader(SubscriptionDataConfig, String, Date, Boolean)
+  fullName.vb: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig, String, Date, Boolean)
+  name.vb: Reader(SubscriptionDataConfig, String, Date, Boolean)
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+    name: Reader
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.Reader(QuantConnect.Data.SubscriptionDataConfig,System.String,System.DateTime,System.Boolean)
+    name: Reader
+    isExternal: true
+  - name: (
+  - uid: QuantConnect.Data.SubscriptionDataConfig
+    name: SubscriptionDataConfig
+    isExternal: true
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Reader*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.Reader
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_Reader_QuantConnect_Data_SubscriptionDataConfig_System_String_System_DateTime_System_Boolean_
+  name: Reader
+  nameWithType: MeridianTradeData.Reader
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Reader
+- uid: QuantConnect.Data.BaseData.Clone
+  commentId: M:QuantConnect.Data.BaseData.Clone
+  parent: QuantConnect.Data.BaseData
+  isExternal: true
+  name: Clone()
+  nameWithType: BaseData.Clone()
+  fullName: QuantConnect.Data.BaseData.Clone()
+  spec.csharp:
+  - uid: QuantConnect.Data.BaseData.Clone
+    name: Clone
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: QuantConnect.Data.BaseData.Clone
+    name: Clone
+    isExternal: true
+  - name: (
+  - name: )
+- uid: Meridian.Integrations.Lean.MeridianTradeData.Clone*
+  commentId: Overload:Meridian.Integrations.Lean.MeridianTradeData.Clone
+  href: Meridian.Integrations.Lean.MeridianTradeData.html#Meridian_Integrations_Lean_MeridianTradeData_Clone
+  name: Clone
+  nameWithType: MeridianTradeData.Clone
+  fullName: Meridian.Integrations.Lean.MeridianTradeData.Clone

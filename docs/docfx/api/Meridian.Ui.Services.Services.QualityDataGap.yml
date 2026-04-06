@@ -1,0 +1,510 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.QualityDataGap
+  commentId: T:Meridian.Ui.Services.Services.QualityDataGap
+  id: QualityDataGap
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.QualityDataGap.DataType
+  - Meridian.Ui.Services.Services.QualityDataGap.Duration
+  - Meridian.Ui.Services.Services.QualityDataGap.End
+  - Meridian.Ui.Services.Services.QualityDataGap.MissingRecords
+  - Meridian.Ui.Services.Services.QualityDataGap.Start
+  langs:
+  - csharp
+  - vb
+  name: QualityDataGap
+  nameWithType: QualityDataGap
+  fullName: Meridian.Ui.Services.Services.QualityDataGap
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityDataGap
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public sealed class QualityDataGap
+    content.vb: Public NotInheritable Class QualityDataGap
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.QualityDataGap.Start
+  commentId: P:Meridian.Ui.Services.Services.QualityDataGap.Start
+  id: Start
+  parent: Meridian.Ui.Services.Services.QualityDataGap
+  langs:
+  - csharp
+  - vb
+  name: Start
+  nameWithType: QualityDataGap.Start
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.Start
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime Start { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property Start As Date
+  overload: Meridian.Ui.Services.Services.QualityDataGap.Start*
+- uid: Meridian.Ui.Services.Services.QualityDataGap.End
+  commentId: P:Meridian.Ui.Services.Services.QualityDataGap.End
+  id: End
+  parent: Meridian.Ui.Services.Services.QualityDataGap
+  langs:
+  - csharp
+  - vb
+  name: End
+  nameWithType: QualityDataGap.End
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.End
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: End
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime End { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property [End] As Date
+  overload: Meridian.Ui.Services.Services.QualityDataGap.End*
+- uid: Meridian.Ui.Services.Services.QualityDataGap.Duration
+  commentId: P:Meridian.Ui.Services.Services.QualityDataGap.Duration
+  id: Duration
+  parent: Meridian.Ui.Services.Services.QualityDataGap
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: QualityDataGap.Duration
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public TimeSpan Duration { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Duration As TimeSpan
+  overload: Meridian.Ui.Services.Services.QualityDataGap.Duration*
+- uid: Meridian.Ui.Services.Services.QualityDataGap.DataType
+  commentId: P:Meridian.Ui.Services.Services.QualityDataGap.DataType
+  id: DataType
+  parent: Meridian.Ui.Services.Services.QualityDataGap
+  langs:
+  - csharp
+  - vb
+  name: DataType
+  nameWithType: QualityDataGap.DataType
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.DataType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataType
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string DataType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataType As String
+  overload: Meridian.Ui.Services.Services.QualityDataGap.DataType*
+- uid: Meridian.Ui.Services.Services.QualityDataGap.MissingRecords
+  commentId: P:Meridian.Ui.Services.Services.QualityDataGap.MissingRecords
+  id: MissingRecords
+  parent: Meridian.Ui.Services.Services.QualityDataGap
+  langs:
+  - csharp
+  - vb
+  name: MissingRecords
+  nameWithType: QualityDataGap.MissingRecords
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.MissingRecords
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingRecords
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int MissingRecords { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MissingRecords As Integer
+  overload: Meridian.Ui.Services.Services.QualityDataGap.MissingRecords*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.QualityDataGap.Start*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityDataGap.Start
+  href: Meridian.Ui.Services.Services.QualityDataGap.html#Meridian_Ui_Services_Services_QualityDataGap_Start
+  name: Start
+  nameWithType: QualityDataGap.Start
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.Start
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.Services.QualityDataGap.End*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityDataGap.End
+  href: Meridian.Ui.Services.Services.QualityDataGap.html#Meridian_Ui_Services_Services_QualityDataGap_End
+  name: End
+  nameWithType: QualityDataGap.End
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.End
+- uid: Meridian.Ui.Services.Services.QualityDataGap.Duration*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityDataGap.Duration
+  href: Meridian.Ui.Services.Services.QualityDataGap.html#Meridian_Ui_Services_Services_QualityDataGap_Duration
+  name: Duration
+  nameWithType: QualityDataGap.Duration
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.Duration
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Ui.Services.Services.QualityDataGap.DataType*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityDataGap.DataType
+  href: Meridian.Ui.Services.Services.QualityDataGap.html#Meridian_Ui_Services_Services_QualityDataGap_DataType
+  name: DataType
+  nameWithType: QualityDataGap.DataType
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.DataType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.QualityDataGap.MissingRecords*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityDataGap.MissingRecords
+  href: Meridian.Ui.Services.Services.QualityDataGap.html#Meridian_Ui_Services_Services_QualityDataGap_MissingRecords
+  name: MissingRecords
+  nameWithType: QualityDataGap.MissingRecords
+  fullName: Meridian.Ui.Services.Services.QualityDataGap.MissingRecords
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

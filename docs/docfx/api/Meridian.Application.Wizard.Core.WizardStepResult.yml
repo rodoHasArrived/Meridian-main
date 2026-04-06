@@ -1,0 +1,833 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Core.WizardStepResult
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepResult
+  id: WizardStepResult
+  parent: Meridian.Application.Wizard.Core
+  children:
+  - Meridian.Application.Wizard.Core.WizardStepResult.#ctor(Meridian.Application.Wizard.Core.WizardStepStatus,System.Nullable{Meridian.Application.Wizard.Core.WizardStepId},System.String)
+  - Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)
+  - Meridian.Application.Wizard.Core.WizardStepResult.Failed(System.String)
+  - Meridian.Application.Wizard.Core.WizardStepResult.JumpTo(Meridian.Application.Wizard.Core.WizardStepId,System.String)
+  - Meridian.Application.Wizard.Core.WizardStepResult.Message
+  - Meridian.Application.Wizard.Core.WizardStepResult.NextStep
+  - Meridian.Application.Wizard.Core.WizardStepResult.Skipped(System.String)
+  - Meridian.Application.Wizard.Core.WizardStepResult.Status
+  - Meridian.Application.Wizard.Core.WizardStepResult.Succeeded(System.String)
+  langs:
+  - csharp
+  - vb
+  name: WizardStepResult
+  nameWithType: WizardStepResult
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WizardStepResult
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: >-
+    Returned by an <xref href="Meridian.Application.Wizard.Core.IWizardStep" data-throw-if-not-resolved="false"></xref> after execution.
+
+    Carries the outcome, an optional message, and an optional override for the next step.
+  example: []
+  syntax:
+    content: 'public sealed record WizardStepResult : IEquatable<WizardStepResult>'
+    content.vb: Public NotInheritable Class WizardStepResult Implements IEquatable(Of WizardStepResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Wizard.Core.WizardStepResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.#ctor(Meridian.Application.Wizard.Core.WizardStepStatus,System.Nullable{Meridian.Application.Wizard.Core.WizardStepId},System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardStepResult.#ctor(Meridian.Application.Wizard.Core.WizardStepStatus,System.Nullable{Meridian.Application.Wizard.Core.WizardStepId},System.String)
+  id: '#ctor(Meridian.Application.Wizard.Core.WizardStepStatus,System.Nullable{Meridian.Application.Wizard.Core.WizardStepId},System.String)'
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: WizardStepResult(WizardStepStatus, WizardStepId?, string?)
+  nameWithType: WizardStepResult.WizardStepResult(WizardStepStatus, WizardStepId?, string?)
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.WizardStepResult(Meridian.Application.Wizard.Core.WizardStepStatus, Meridian.Application.Wizard.Core.WizardStepId?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: >-
+    Returned by an <xref href="Meridian.Application.Wizard.Core.IWizardStep" data-throw-if-not-resolved="false"></xref> after execution.
+
+    Carries the outcome, an optional message, and an optional override for the next step.
+  example: []
+  syntax:
+    content: public WizardStepResult(WizardStepStatus Status, WizardStepId? NextStep = null, string? Message = null)
+    parameters:
+    - id: Status
+      type: Meridian.Application.Wizard.Core.WizardStepStatus
+      description: Step execution outcome.
+    - id: NextStep
+      type: System.Nullable{Meridian.Application.Wizard.Core.WizardStepId}
+      description: >-
+        When not <code>null</code>, overrides the default transition in the graph.
+
+        Useful for steps that branch based on user input.
+    - id: Message
+      type: System.String
+      description: Human-readable message for logging or display.
+    content.vb: Public Sub New(Status As WizardStepStatus, NextStep As WizardStepId? = Nothing, Message As String = Nothing)
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.#ctor*
+  nameWithType.vb: WizardStepResult.New(WizardStepStatus, WizardStepId?, String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.New(Meridian.Application.Wizard.Core.WizardStepStatus, Meridian.Application.Wizard.Core.WizardStepId?, String)
+  name.vb: New(WizardStepStatus, WizardStepId?, String)
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Status
+  commentId: P:Meridian.Application.Wizard.Core.WizardStepResult.Status
+  id: Status
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: WizardStepResult.Status
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Step execution outcome.
+  example: []
+  syntax:
+    content: public WizardStepStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepStatus
+    content.vb: Public Property Status As WizardStepStatus
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.Status*
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.NextStep
+  commentId: P:Meridian.Application.Wizard.Core.WizardStepResult.NextStep
+  id: NextStep
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: NextStep
+  nameWithType: WizardStepResult.NextStep
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.NextStep
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextStep
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: >-
+    When not <code>null</code>, overrides the default transition in the graph.
+
+    Useful for steps that branch based on user input.
+  example: []
+  syntax:
+    content: public WizardStepId? NextStep { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Application.Wizard.Core.WizardStepId}
+    content.vb: Public Property NextStep As WizardStepId?
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.NextStep*
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Message
+  commentId: P:Meridian.Application.Wizard.Core.WizardStepResult.Message
+  id: Message
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: WizardStepResult.Message
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Human-readable message for logging or display.
+  example: []
+  syntax:
+    content: public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.Message*
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Succeeded(System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardStepResult.Succeeded(System.String)
+  id: Succeeded(System.String)
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: Succeeded(string?)
+  nameWithType: WizardStepResult.Succeeded(string?)
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Succeeded(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Succeeded
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Creates a successful result with the default next step.
+  example: []
+  syntax:
+    content: public static WizardStepResult Succeeded(string? message = null)
+    parameters:
+    - id: message
+      type: System.String
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepResult
+    content.vb: Public Shared Function Succeeded(message As String = Nothing) As WizardStepResult
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.Succeeded*
+  nameWithType.vb: WizardStepResult.Succeeded(String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.Succeeded(String)
+  name.vb: Succeeded(String)
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.JumpTo(Meridian.Application.Wizard.Core.WizardStepId,System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardStepResult.JumpTo(Meridian.Application.Wizard.Core.WizardStepId,System.String)
+  id: JumpTo(Meridian.Application.Wizard.Core.WizardStepId,System.String)
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: JumpTo(WizardStepId, string?)
+  nameWithType: WizardStepResult.JumpTo(WizardStepId, string?)
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.JumpTo(Meridian.Application.Wizard.Core.WizardStepId, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JumpTo
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Creates a successful result that jumps to a specific step.
+  example: []
+  syntax:
+    content: public static WizardStepResult JumpTo(WizardStepId next, string? message = null)
+    parameters:
+    - id: next
+      type: Meridian.Application.Wizard.Core.WizardStepId
+    - id: message
+      type: System.String
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepResult
+    content.vb: Public Shared Function JumpTo([next] As WizardStepId, message As String = Nothing) As WizardStepResult
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.JumpTo*
+  nameWithType.vb: WizardStepResult.JumpTo(WizardStepId, String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.JumpTo(Meridian.Application.Wizard.Core.WizardStepId, String)
+  name.vb: JumpTo(WizardStepId, String)
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Skipped(System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardStepResult.Skipped(System.String)
+  id: Skipped(System.String)
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: Skipped(string?)
+  nameWithType: WizardStepResult.Skipped(string?)
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Skipped(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skipped
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Creates a skip result with the default next step.
+  example: []
+  syntax:
+    content: public static WizardStepResult Skipped(string? message = null)
+    parameters:
+    - id: message
+      type: System.String
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepResult
+    content.vb: Public Shared Function Skipped(message As String = Nothing) As WizardStepResult
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.Skipped*
+  nameWithType.vb: WizardStepResult.Skipped(String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.Skipped(String)
+  name.vb: Skipped(String)
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Failed(System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardStepResult.Failed(System.String)
+  id: Failed(System.String)
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: Failed(string)
+  nameWithType: WizardStepResult.Failed(string)
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Failed(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Creates a failure result.
+  example: []
+  syntax:
+    content: public static WizardStepResult Failed(string message)
+    parameters:
+    - id: message
+      type: System.String
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepResult
+    content.vb: Public Shared Function Failed(message As String) As WizardStepResult
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.Failed*
+  nameWithType.vb: WizardStepResult.Failed(String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.Failed(String)
+  name.vb: Failed(String)
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)
+  id: Cancelled(System.String)
+  parent: Meridian.Application.Wizard.Core.WizardStepResult
+  langs:
+  - csharp
+  - vb
+  name: Cancelled(string?)
+  nameWithType: WizardStepResult.Cancelled(string?)
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Creates a cancellation result.
+  example: []
+  syntax:
+    content: public static WizardStepResult Cancelled(string? message = null)
+    parameters:
+    - id: message
+      type: System.String
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepResult
+    content.vb: Public Shared Function Cancelled(message As String = Nothing) As WizardStepResult
+  overload: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled*
+  nameWithType.vb: WizardStepResult.Cancelled(String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(String)
+  name.vb: Cancelled(String)
+references:
+- uid: Meridian.Application.Wizard.Core.IWizardStep
+  commentId: T:Meridian.Application.Wizard.Core.IWizardStep
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.IWizardStep.html
+  name: IWizardStep
+  nameWithType: IWizardStep
+  fullName: Meridian.Application.Wizard.Core.IWizardStep
+- uid: Meridian.Application.Wizard.Core
+  commentId: N:Meridian.Application.Wizard.Core
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Core
+  nameWithType: Meridian.Application.Wizard.Core
+  fullName: Meridian.Application.Wizard.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Wizard.Core.WizardStepResult}
+  commentId: T:System.IEquatable{Meridian.Application.Wizard.Core.WizardStepResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<WizardStepResult>
+  nameWithType: IEquatable<WizardStepResult>
+  fullName: System.IEquatable<Meridian.Application.Wizard.Core.WizardStepResult>
+  nameWithType.vb: IEquatable(Of WizardStepResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Wizard.Core.WizardStepResult)
+  name.vb: IEquatable(Of WizardStepResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Wizard.Core.WizardStepResult
+    name: WizardStepResult
+    href: Meridian.Application.Wizard.Core.WizardStepResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Wizard.Core.WizardStepResult
+    name: WizardStepResult
+    href: Meridian.Application.Wizard.Core.WizardStepResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.#ctor*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.#ctor
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult__ctor_Meridian_Application_Wizard_Core_WizardStepStatus_System_Nullable_Meridian_Application_Wizard_Core_WizardStepId__System_String_
+  name: WizardStepResult
+  nameWithType: WizardStepResult.WizardStepResult
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.WizardStepResult
+  nameWithType.vb: WizardStepResult.New
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.New
+  name.vb: New
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepStatus
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepStatus.html
+  name: WizardStepStatus
+  nameWithType: WizardStepStatus
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus
+- uid: System.Nullable{Meridian.Application.Wizard.Core.WizardStepId}
+  commentId: T:System.Nullable{Meridian.Application.Wizard.Core.WizardStepId}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Application.Wizard.Core.WizardStepId.html
+  name: WizardStepId?
+  nameWithType: WizardStepId?
+  fullName: Meridian.Application.Wizard.Core.WizardStepId?
+  spec.csharp:
+  - uid: Meridian.Application.Wizard.Core.WizardStepId
+    name: WizardStepId
+    href: Meridian.Application.Wizard.Core.WizardStepId.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.Wizard.Core.WizardStepId
+    name: WizardStepId
+    href: Meridian.Application.Wizard.Core.WizardStepId.html
+  - name: '?'
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Status*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.Status
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Status
+  name: Status
+  nameWithType: WizardStepResult.Status
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Status
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.NextStep*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.NextStep
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_NextStep
+  name: NextStep
+  nameWithType: WizardStepResult.NextStep
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.NextStep
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Message*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.Message
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Message
+  name: Message
+  nameWithType: WizardStepResult.Message
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Message
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Succeeded*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.Succeeded
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Succeeded_System_String_
+  name: Succeeded
+  nameWithType: WizardStepResult.Succeeded
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Succeeded
+- uid: Meridian.Application.Wizard.Core.WizardStepResult
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepResult
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html
+  name: WizardStepResult
+  nameWithType: WizardStepResult
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.JumpTo*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.JumpTo
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_JumpTo_Meridian_Application_Wizard_Core_WizardStepId_System_String_
+  name: JumpTo
+  nameWithType: WizardStepResult.JumpTo
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.JumpTo
+- uid: Meridian.Application.Wizard.Core.WizardStepId
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepId
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepId.html
+  name: WizardStepId
+  nameWithType: WizardStepId
+  fullName: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Skipped*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.Skipped
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Skipped_System_String_
+  name: Skipped
+  nameWithType: WizardStepResult.Skipped
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Skipped
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Failed*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.Failed
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Failed_System_String_
+  name: Failed
+  nameWithType: WizardStepResult.Failed
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Failed
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardStepResult.Cancelled
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Cancelled_System_String_
+  name: Cancelled
+  nameWithType: WizardStepResult.Cancelled
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled

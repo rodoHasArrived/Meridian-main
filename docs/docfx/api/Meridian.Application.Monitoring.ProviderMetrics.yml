@@ -1,0 +1,1048 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderMetrics
+  commentId: T:Meridian.Application.Monitoring.ProviderMetrics
+  id: ProviderMetrics
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderMetrics.#ctor(System.String,System.String,System.Boolean,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions
+  - Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs
+  - Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts
+  - Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures
+  - Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate
+  - Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore
+  - Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived
+  - Meridian.Application.Monitoring.ProviderMetrics.IsConnected
+  - Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs
+  - Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped
+  - Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs
+  - Meridian.Application.Monitoring.ProviderMetrics.ProviderId
+  - Meridian.Application.Monitoring.ProviderMetrics.ProviderType
+  - Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived
+  - Meridian.Application.Monitoring.ProviderMetrics.Timestamp
+  - Meridian.Application.Monitoring.ProviderMetrics.TradesReceived
+  langs:
+  - csharp
+  - vb
+  name: ProviderMetrics
+  nameWithType: ProviderMetrics
+  fullName: Meridian.Application.Monitoring.ProviderMetrics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderMetrics
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Represents metrics for a single provider.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderMetrics : IEquatable<ProviderMetrics>'
+    content.vb: Public NotInheritable Class ProviderMetrics Implements IEquatable(Of ProviderMetrics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ProviderMetrics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ProviderMetrics.#ctor(System.String,System.String,System.Boolean,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.ProviderMetrics.#ctor(System.String,System.String,System.Boolean,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.Boolean,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: ProviderMetrics(string, string, bool, long, long, long, long, long, long, long, double, double, double, double, double, DateTimeOffset)
+  nameWithType: ProviderMetrics.ProviderMetrics(string, string, bool, long, long, long, long, long, long, long, double, double, double, double, double, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ProviderMetrics(string, string, bool, long, long, long, long, long, long, long, double, double, double, double, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Represents metrics for a single provider.
+  example: []
+  syntax:
+    content: public ProviderMetrics(string ProviderId, string ProviderType, bool IsConnected, long TradesReceived, long DepthUpdatesReceived, long QuotesReceived, long ConnectionAttempts, long ConnectionFailures, long MessagesDropped, long ActiveSubscriptions, double AverageLatencyMs, double MinLatencyMs, double MaxLatencyMs, double DataQualityScore, double ConnectionSuccessRate, DateTimeOffset Timestamp)
+    parameters:
+    - id: ProviderId
+      type: System.String
+    - id: ProviderType
+      type: System.String
+    - id: IsConnected
+      type: System.Boolean
+    - id: TradesReceived
+      type: System.Int64
+    - id: DepthUpdatesReceived
+      type: System.Int64
+    - id: QuotesReceived
+      type: System.Int64
+    - id: ConnectionAttempts
+      type: System.Int64
+    - id: ConnectionFailures
+      type: System.Int64
+    - id: MessagesDropped
+      type: System.Int64
+    - id: ActiveSubscriptions
+      type: System.Int64
+    - id: AverageLatencyMs
+      type: System.Double
+    - id: MinLatencyMs
+      type: System.Double
+    - id: MaxLatencyMs
+      type: System.Double
+    - id: DataQualityScore
+      type: System.Double
+    - id: ConnectionSuccessRate
+      type: System.Double
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(ProviderId As String, ProviderType As String, IsConnected As Boolean, TradesReceived As Long, DepthUpdatesReceived As Long, QuotesReceived As Long, ConnectionAttempts As Long, ConnectionFailures As Long, MessagesDropped As Long, ActiveSubscriptions As Long, AverageLatencyMs As Double, MinLatencyMs As Double, MaxLatencyMs As Double, DataQualityScore As Double, ConnectionSuccessRate As Double, Timestamp As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.ProviderMetrics.#ctor*
+  nameWithType.vb: ProviderMetrics.New(String, String, Boolean, Long, Long, Long, Long, Long, Long, Long, Double, Double, Double, Double, Double, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.ProviderMetrics.New(String, String, Boolean, Long, Long, Long, Long, Long, Long, Long, Double, Double, Double, Double, Double, System.DateTimeOffset)
+  name.vb: New(String, String, Boolean, Long, Long, Long, Long, Long, Long, Long, Double, Double, Double, Double, Double, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ProviderId
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.ProviderId
+  id: ProviderId
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: ProviderMetrics.ProviderId
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string ProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderId As String
+  overload: Meridian.Application.Monitoring.ProviderMetrics.ProviderId*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ProviderType
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.ProviderType
+  id: ProviderType
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: ProviderType
+  nameWithType: ProviderMetrics.ProviderType
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ProviderType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderType
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string ProviderType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderType As String
+  overload: Meridian.Application.Monitoring.ProviderMetrics.ProviderType*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.IsConnected
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.IsConnected
+  id: IsConnected
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: ProviderMetrics.IsConnected
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public bool IsConnected { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsConnected As Boolean
+  overload: Meridian.Application.Monitoring.ProviderMetrics.IsConnected*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.TradesReceived
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.TradesReceived
+  id: TradesReceived
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: TradesReceived
+  nameWithType: ProviderMetrics.TradesReceived
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.TradesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradesReceived
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TradesReceived { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TradesReceived As Long
+  overload: Meridian.Application.Monitoring.ProviderMetrics.TradesReceived*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived
+  id: DepthUpdatesReceived
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdatesReceived
+  nameWithType: ProviderMetrics.DepthUpdatesReceived
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdatesReceived
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long DepthUpdatesReceived { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DepthUpdatesReceived As Long
+  overload: Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived
+  id: QuotesReceived
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: QuotesReceived
+  nameWithType: ProviderMetrics.QuotesReceived
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotesReceived
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long QuotesReceived { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property QuotesReceived As Long
+  overload: Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts
+  id: ConnectionAttempts
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: ConnectionAttempts
+  nameWithType: ProviderMetrics.ConnectionAttempts
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionAttempts
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long ConnectionAttempts { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ConnectionAttempts As Long
+  overload: Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures
+  id: ConnectionFailures
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: ConnectionFailures
+  nameWithType: ProviderMetrics.ConnectionFailures
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionFailures
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long ConnectionFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ConnectionFailures As Long
+  overload: Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped
+  id: MessagesDropped
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: MessagesDropped
+  nameWithType: ProviderMetrics.MessagesDropped
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessagesDropped
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long MessagesDropped { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MessagesDropped As Long
+  overload: Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions
+  id: ActiveSubscriptions
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: ActiveSubscriptions
+  nameWithType: ProviderMetrics.ActiveSubscriptions
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveSubscriptions
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long ActiveSubscriptions { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ActiveSubscriptions As Long
+  overload: Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs
+  id: AverageLatencyMs
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: AverageLatencyMs
+  nameWithType: ProviderMetrics.AverageLatencyMs
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageLatencyMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double AverageLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageLatencyMs As Double
+  overload: Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs
+  id: MinLatencyMs
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: MinLatencyMs
+  nameWithType: ProviderMetrics.MinLatencyMs
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinLatencyMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double MinLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MinLatencyMs As Double
+  overload: Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs
+  id: MaxLatencyMs
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: MaxLatencyMs
+  nameWithType: ProviderMetrics.MaxLatencyMs
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxLatencyMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double MaxLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxLatencyMs As Double
+  overload: Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore
+  id: DataQualityScore
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: DataQualityScore
+  nameWithType: ProviderMetrics.DataQualityScore
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityScore
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double DataQualityScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DataQualityScore As Double
+  overload: Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate
+  id: ConnectionSuccessRate
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: ConnectionSuccessRate
+  nameWithType: ProviderMetrics.ConnectionSuccessRate
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionSuccessRate
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double ConnectionSuccessRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ConnectionSuccessRate As Double
+  overload: Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate*
+- uid: Meridian.Application.Monitoring.ProviderMetrics.Timestamp
+  commentId: P:Meridian.Application.Monitoring.ProviderMetrics.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.ProviderMetrics
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ProviderMetrics.Timestamp
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.ProviderMetrics.Timestamp*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.ProviderMetrics}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ProviderMetrics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderMetrics>
+  nameWithType: IEquatable<ProviderMetrics>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ProviderMetrics>
+  nameWithType.vb: IEquatable(Of ProviderMetrics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ProviderMetrics)
+  name.vb: IEquatable(Of ProviderMetrics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderMetrics
+    name: ProviderMetrics
+    href: Meridian.Application.Monitoring.ProviderMetrics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderMetrics
+    name: ProviderMetrics
+    href: Meridian.Application.Monitoring.ProviderMetrics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.ProviderMetrics.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.#ctor
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics__ctor_System_String_System_String_System_Boolean_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Double_System_Double_System_Double_System_Double_System_Double_System_DateTimeOffset_
+  name: ProviderMetrics
+  nameWithType: ProviderMetrics.ProviderMetrics
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ProviderMetrics
+  nameWithType.vb: ProviderMetrics.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderMetrics.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ProviderId*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.ProviderId
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_ProviderId
+  name: ProviderId
+  nameWithType: ProviderMetrics.ProviderId
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ProviderId
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ProviderType*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.ProviderType
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_ProviderType
+  name: ProviderType
+  nameWithType: ProviderMetrics.ProviderType
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ProviderType
+- uid: Meridian.Application.Monitoring.ProviderMetrics.IsConnected*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.IsConnected
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_IsConnected
+  name: IsConnected
+  nameWithType: ProviderMetrics.IsConnected
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.IsConnected
+- uid: Meridian.Application.Monitoring.ProviderMetrics.TradesReceived*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.TradesReceived
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_TradesReceived
+  name: TradesReceived
+  nameWithType: ProviderMetrics.TradesReceived
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.TradesReceived
+- uid: Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_DepthUpdatesReceived
+  name: DepthUpdatesReceived
+  nameWithType: ProviderMetrics.DepthUpdatesReceived
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.DepthUpdatesReceived
+- uid: Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_QuotesReceived
+  name: QuotesReceived
+  nameWithType: ProviderMetrics.QuotesReceived
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.QuotesReceived
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_ConnectionAttempts
+  name: ConnectionAttempts
+  nameWithType: ProviderMetrics.ConnectionAttempts
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ConnectionAttempts
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_ConnectionFailures
+  name: ConnectionFailures
+  nameWithType: ProviderMetrics.ConnectionFailures
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ConnectionFailures
+- uid: Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_MessagesDropped
+  name: MessagesDropped
+  nameWithType: ProviderMetrics.MessagesDropped
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.MessagesDropped
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_ActiveSubscriptions
+  name: ActiveSubscriptions
+  nameWithType: ProviderMetrics.ActiveSubscriptions
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ActiveSubscriptions
+- uid: Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_AverageLatencyMs
+  name: AverageLatencyMs
+  nameWithType: ProviderMetrics.AverageLatencyMs
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.AverageLatencyMs
+- uid: Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_MinLatencyMs
+  name: MinLatencyMs
+  nameWithType: ProviderMetrics.MinLatencyMs
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.MinLatencyMs
+- uid: Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_MaxLatencyMs
+  name: MaxLatencyMs
+  nameWithType: ProviderMetrics.MaxLatencyMs
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.MaxLatencyMs
+- uid: Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_DataQualityScore
+  name: DataQualityScore
+  nameWithType: ProviderMetrics.DataQualityScore
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.DataQualityScore
+- uid: Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_ConnectionSuccessRate
+  name: ConnectionSuccessRate
+  nameWithType: ProviderMetrics.ConnectionSuccessRate
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.ConnectionSuccessRate
+- uid: Meridian.Application.Monitoring.ProviderMetrics.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderMetrics.Timestamp
+  href: Meridian.Application.Monitoring.ProviderMetrics.html#Meridian_Application_Monitoring_ProviderMetrics_Timestamp
+  name: Timestamp
+  nameWithType: ProviderMetrics.Timestamp
+  fullName: Meridian.Application.Monitoring.ProviderMetrics.Timestamp

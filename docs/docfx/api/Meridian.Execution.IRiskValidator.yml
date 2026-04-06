@@ -1,0 +1,267 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.IRiskValidator
+  commentId: T:Meridian.Execution.IRiskValidator
+  id: IRiskValidator
+  parent: Meridian.Execution
+  children:
+  - Meridian.Execution.IRiskValidator.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IRiskValidator
+  nameWithType: IRiskValidator
+  fullName: Meridian.Execution.IRiskValidator
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/IRiskValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IRiskValidator
+    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Pre-trade risk validation. Called by the OMS before routing orders to the gateway.
+  example: []
+  syntax:
+    content: public interface IRiskValidator
+    content.vb: Public Interface IRiskValidator
+  derivedClasses:
+  - Meridian.Risk.CompositeRiskValidator
+- uid: Meridian.Execution.IRiskValidator.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.IRiskValidator.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  id: ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Execution.IRiskValidator
+  langs:
+  - csharp
+  - vb
+  name: ValidateOrderAsync(OrderRequest, CancellationToken)
+  nameWithType: IRiskValidator.ValidateOrderAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Execution.IRiskValidator.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/IRiskValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateOrderAsync
+    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Validates an order against risk rules.
+  example: []
+  syntax:
+    content: Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Execution.Sdk.OrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.RiskValidationResult}
+    content.vb: Function ValidateOrderAsync(request As OrderRequest, ct As CancellationToken = Nothing) As Task(Of RiskValidationResult)
+  overload: Meridian.Execution.IRiskValidator.ValidateOrderAsync*
+references:
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  href: Meridian.html
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+- uid: Meridian.Execution.IRiskValidator.ValidateOrderAsync*
+  commentId: Overload:Meridian.Execution.IRiskValidator.ValidateOrderAsync
+  href: Meridian.Execution.IRiskValidator.html#Meridian_Execution_IRiskValidator_ValidateOrderAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: ValidateOrderAsync
+  nameWithType: IRiskValidator.ValidateOrderAsync
+  fullName: Meridian.Execution.IRiskValidator.ValidateOrderAsync
+- uid: Meridian.Execution.Sdk.OrderRequest
+  commentId: T:Meridian.Execution.Sdk.OrderRequest
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderRequest.html
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Execution.Sdk.OrderRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Execution.RiskValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.RiskValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RiskValidationResult>
+  nameWithType: Task<RiskValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.RiskValidationResult>
+  nameWithType.vb: Task(Of RiskValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.RiskValidationResult)
+  name.vb: Task(Of RiskValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.RiskValidationResult
+    name: RiskValidationResult
+    href: Meridian.Execution.RiskValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.RiskValidationResult
+    name: RiskValidationResult
+    href: Meridian.Execution.RiskValidationResult.html
+  - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -1,0 +1,1241 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+  commentId: T:Meridian.Ui.Services.Collections.CircularBuffer`1
+  id: CircularBuffer`1
+  parent: Meridian.Ui.Services.Collections
+  children:
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.#ctor(System.Int32)
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.Add(`0)
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.Capacity
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.Clear
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.Count
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.GetEnumerator
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.GetNewest
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.GetOldest
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.IsEmpty
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.IsFull
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.Item(System.Int32)
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.ToArray
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetFromNewest(System.Int32,`0@)
+  - Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetNewest(`0@)
+  langs:
+  - csharp
+  - vb
+  name: CircularBuffer<T>
+  nameWithType: CircularBuffer<T>
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircularBuffer
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    A fixed-size circular buffer (ring buffer) that provides O(1) operations
+
+    for adding elements and O(n) operations for computing statistics. When the buffer is full,
+
+    new elements overwrite the oldest elements.
+  example: []
+  syntax:
+    content: 'public sealed class CircularBuffer<T> : IEnumerable<T>, IEnumerable'
+    typeParameters:
+    - id: T
+      description: The type of elements in the buffer.
+    content.vb: Public NotInheritable Class CircularBuffer(Of T) Implements IEnumerable(Of T), IEnumerable
+  inheritance:
+  - System.Object
+  implements:
+  - System.Collections.Generic.IEnumerable{{T}}
+  - System.Collections.IEnumerable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  nameWithType.vb: CircularBuffer(Of T)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T)
+  name.vb: CircularBuffer(Of T)
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.#ctor(System.Int32)
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.#ctor(System.Int32)
+  id: '#ctor(System.Int32)'
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: CircularBuffer(int)
+  nameWithType: CircularBuffer<T>.CircularBuffer(int)
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.CircularBuffer(int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Initializes a new circular buffer with the specified capacity.
+  example: []
+  syntax:
+    content: public CircularBuffer(int capacity)
+    parameters:
+    - id: capacity
+      type: System.Int32
+      description: The maximum number of elements the buffer can hold.
+    content.vb: Public Sub New(capacity As Integer)
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.#ctor*
+  exceptions:
+  - type: System.ArgumentOutOfRangeException
+    commentId: T:System.ArgumentOutOfRangeException
+    description: Thrown when capacity is less than 1.
+  nameWithType.vb: CircularBuffer(Of T).New(Integer)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).New(Integer)
+  name.vb: New(Integer)
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Capacity
+  commentId: P:Meridian.Ui.Services.Collections.CircularBuffer`1.Capacity
+  id: Capacity
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: Capacity
+  nameWithType: CircularBuffer<T>.Capacity
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Capacity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capacity
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets the maximum capacity of the buffer.
+  example: []
+  syntax:
+    content: public int Capacity { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Capacity As Integer
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.Capacity*
+  nameWithType.vb: CircularBuffer(Of T).Capacity
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Capacity
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Count
+  commentId: P:Meridian.Ui.Services.Collections.CircularBuffer`1.Count
+  id: Count
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: CircularBuffer<T>.Count
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets the current number of elements in the buffer.
+  example: []
+  syntax:
+    content: public int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Count As Integer
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.Count*
+  nameWithType.vb: CircularBuffer(Of T).Count
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Count
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.IsEmpty
+  commentId: P:Meridian.Ui.Services.Collections.CircularBuffer`1.IsEmpty
+  id: IsEmpty
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: IsEmpty
+  nameWithType: CircularBuffer<T>.IsEmpty
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.IsEmpty
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEmpty
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets a value indicating whether the buffer is empty.
+  example: []
+  syntax:
+    content: public bool IsEmpty { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsEmpty As Boolean
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.IsEmpty*
+  nameWithType.vb: CircularBuffer(Of T).IsEmpty
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).IsEmpty
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.IsFull
+  commentId: P:Meridian.Ui.Services.Collections.CircularBuffer`1.IsFull
+  id: IsFull
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: IsFull
+  nameWithType: CircularBuffer<T>.IsFull
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.IsFull
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsFull
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets a value indicating whether the buffer is full.
+  example: []
+  syntax:
+    content: public bool IsFull { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsFull As Boolean
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.IsFull*
+  nameWithType.vb: CircularBuffer(Of T).IsFull
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).IsFull
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Add(`0)
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.Add(`0)
+  id: Add(`0)
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: Add(T)
+  nameWithType: CircularBuffer<T>.Add(T)
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Add(T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Add
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    Adds an element to the buffer. If the buffer is full,
+
+    the oldest element is overwritten.
+  example: []
+  syntax:
+    content: public void Add(T item)
+    parameters:
+    - id: item
+      type: '{T}'
+      description: The element to add.
+    content.vb: Public Sub Add(item As T)
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.Add*
+  nameWithType.vb: CircularBuffer(Of T).Add(T)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Add(T)
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Item(System.Int32)
+  commentId: P:Meridian.Ui.Services.Collections.CircularBuffer`1.Item(System.Int32)
+  id: Item(System.Int32)
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: this[int]
+  nameWithType: CircularBuffer<T>.this[int]
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.this[int]
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: this[]
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    Gets the element at the specified index, where index 0 is the oldest
+
+    element and index Count-1 is the newest element.
+  example: []
+  syntax:
+    content: public T this[int index] { get; }
+    parameters:
+    - id: index
+      type: System.Int32
+      description: The zero-based index of the element to get.
+    return:
+      type: '{T}'
+      description: The element at the specified index.
+    content.vb: Public ReadOnly Default Property this[](index As Integer) As T
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.Item*
+  exceptions:
+  - type: System.ArgumentOutOfRangeException
+    commentId: T:System.ArgumentOutOfRangeException
+    description: Thrown when index is out of range.
+  nameWithType.vb: CircularBuffer(Of T).this[](Integer)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).this[](Integer)
+  name.vb: this[](Integer)
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.GetNewest
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.GetNewest
+  id: GetNewest
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: GetNewest()
+  nameWithType: CircularBuffer<T>.GetNewest()
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.GetNewest()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNewest
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets the most recently added element.
+  example: []
+  syntax:
+    content: public T GetNewest()
+    return:
+      type: '{T}'
+      description: The newest element.
+    content.vb: Public Function GetNewest() As T
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.GetNewest*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when buffer is empty.
+  nameWithType.vb: CircularBuffer(Of T).GetNewest()
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).GetNewest()
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.GetOldest
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.GetOldest
+  id: GetOldest
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: GetOldest()
+  nameWithType: CircularBuffer<T>.GetOldest()
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.GetOldest()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOldest
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets the oldest element in the buffer.
+  example: []
+  syntax:
+    content: public T GetOldest()
+    return:
+      type: '{T}'
+      description: The oldest element.
+    content.vb: Public Function GetOldest() As T
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.GetOldest*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when buffer is empty.
+  nameWithType.vb: CircularBuffer(Of T).GetOldest()
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).GetOldest()
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetNewest(`0@)
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetNewest(`0@)
+  id: TryGetNewest(`0@)
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: TryGetNewest(out T?)
+  nameWithType: CircularBuffer<T>.TryGetNewest(out T?)
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.TryGetNewest(out T?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGetNewest
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Tries to get the most recently added element.
+  example: []
+  syntax:
+    content: public bool TryGetNewest(out T? value)
+    parameters:
+    - id: value
+      type: '{T}'
+      description: When this method returns, contains the newest element if successful.
+    return:
+      type: System.Boolean
+      description: True if the buffer is not empty; otherwise, false.
+    content.vb: Public Function TryGetNewest(value As T) As Boolean
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetNewest*
+  nameWithType.vb: CircularBuffer(Of T).TryGetNewest(T)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).TryGetNewest(T)
+  name.vb: TryGetNewest(T)
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetFromNewest(System.Int32,`0@)
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetFromNewest(System.Int32,`0@)
+  id: TryGetFromNewest(System.Int32,`0@)
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: TryGetFromNewest(int, out T)
+  nameWithType: CircularBuffer<T>.TryGetFromNewest(int, out T)
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.TryGetFromNewest(int, out T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGetFromNewest
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    Tries to get the element at the specified offset from the newest element.
+
+    Offset 0 returns the newest, offset 1 returns the second newest, etc.
+  example: []
+  syntax:
+    content: public bool TryGetFromNewest(int offsetFromNewest, out T value)
+    parameters:
+    - id: offsetFromNewest
+      type: System.Int32
+      description: Offset from the newest element (0 = newest).
+    - id: value
+      type: '{T}'
+      description: When this method returns, contains the element if successful; otherwise, the default value for the type.
+      attributes:
+      - type: System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute
+        ctor: System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.#ctor(System.Boolean)
+        arguments:
+        - type: System.Boolean
+          value: false
+    return:
+      type: System.Boolean
+      description: True if the element exists at the specified offset; otherwise, false.
+    content.vb: Public Function TryGetFromNewest(offsetFromNewest As Integer, value As T) As Boolean
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetFromNewest*
+  nameWithType.vb: CircularBuffer(Of T).TryGetFromNewest(Integer, T)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).TryGetFromNewest(Integer, T)
+  name.vb: TryGetFromNewest(Integer, T)
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Clear
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.Clear
+  id: Clear
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: Clear()
+  nameWithType: CircularBuffer<T>.Clear()
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Clear()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Clear
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Clears all elements from the buffer.
+  example: []
+  syntax:
+    content: public void Clear()
+    content.vb: Public Sub Clear()
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.Clear*
+  nameWithType.vb: CircularBuffer(Of T).Clear()
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Clear()
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.ToArray
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.ToArray
+  id: ToArray
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: ToArray()
+  nameWithType: CircularBuffer<T>.ToArray()
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.ToArray()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToArray
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Copies all elements to an array, ordered from oldest to newest.
+  example: []
+  syntax:
+    content: public T[] ToArray()
+    return:
+      type: '{T}[]'
+      description: An array containing all elements.
+    content.vb: Public Function ToArray() As T()
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.ToArray*
+  nameWithType.vb: CircularBuffer(Of T).ToArray()
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).ToArray()
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.GetEnumerator
+  commentId: M:Meridian.Ui.Services.Collections.CircularBuffer`1.GetEnumerator
+  id: GetEnumerator
+  parent: Meridian.Ui.Services.Collections.CircularBuffer`1
+  langs:
+  - csharp
+  - vb
+  name: GetEnumerator()
+  nameWithType: CircularBuffer<T>.GetEnumerator()
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.GetEnumerator()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEnumerator
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Returns an enumerator that iterates through the buffer from oldest to newest.
+  example: []
+  syntax:
+    content: public IEnumerator<T> GetEnumerator()
+    return:
+      type: System.Collections.Generic.IEnumerator{{T}}
+    content.vb: Public Function GetEnumerator() As IEnumerator(Of T)
+  overload: Meridian.Ui.Services.Collections.CircularBuffer`1.GetEnumerator*
+  implements:
+  - System.Collections.Generic.IEnumerable{{T}}.GetEnumerator
+  nameWithType.vb: CircularBuffer(Of T).GetEnumerator()
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).GetEnumerator()
+references:
+- uid: Meridian.Ui.Services.Collections
+  commentId: N:Meridian.Ui.Services.Collections
+  href: Meridian.html
+  name: Meridian.Ui.Services.Collections
+  nameWithType: Meridian.Ui.Services.Collections
+  fullName: Meridian.Ui.Services.Collections
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Collections.Generic.IEnumerable{{T}}
+  commentId: T:System.Collections.Generic.IEnumerable{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.IEnumerable
+  commentId: T:System.Collections.IEnumerable
+  parent: System.Collections
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.ienumerable
+  name: IEnumerable
+  nameWithType: IEnumerable
+  fullName: System.Collections.IEnumerable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections
+  commentId: N:System.Collections
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections
+  nameWithType: System.Collections
+  fullName: System.Collections
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+- uid: System.ArgumentOutOfRangeException
+  commentId: T:System.ArgumentOutOfRangeException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception
+  name: ArgumentOutOfRangeException
+  nameWithType: ArgumentOutOfRangeException
+  fullName: System.ArgumentOutOfRangeException
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.#ctor
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1__ctor_System_Int32_
+  name: CircularBuffer
+  nameWithType: CircularBuffer<T>.CircularBuffer
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.CircularBuffer
+  nameWithType.vb: CircularBuffer(Of T).New
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Capacity*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.Capacity
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_Capacity
+  name: Capacity
+  nameWithType: CircularBuffer<T>.Capacity
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Capacity
+  nameWithType.vb: CircularBuffer(Of T).Capacity
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Capacity
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Count*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.Count
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_Count
+  name: Count
+  nameWithType: CircularBuffer<T>.Count
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Count
+  nameWithType.vb: CircularBuffer(Of T).Count
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Count
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.IsEmpty*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.IsEmpty
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_IsEmpty
+  name: IsEmpty
+  nameWithType: CircularBuffer<T>.IsEmpty
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.IsEmpty
+  nameWithType.vb: CircularBuffer(Of T).IsEmpty
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).IsEmpty
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.IsFull*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.IsFull
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_IsFull
+  name: IsFull
+  nameWithType: CircularBuffer<T>.IsFull
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.IsFull
+  nameWithType.vb: CircularBuffer(Of T).IsFull
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).IsFull
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Add*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.Add
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_Add__0_
+  name: Add
+  nameWithType: CircularBuffer<T>.Add
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Add
+  nameWithType.vb: CircularBuffer(Of T).Add
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Add
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Item*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.Item
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_Item_System_Int32_
+  name: this
+  nameWithType: CircularBuffer<T>.this
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.this
+  nameWithType.vb: CircularBuffer(Of T).this[]
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).this[]
+  name.vb: this[]
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.GetNewest*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.GetNewest
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_GetNewest
+  name: GetNewest
+  nameWithType: CircularBuffer<T>.GetNewest
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.GetNewest
+  nameWithType.vb: CircularBuffer(Of T).GetNewest
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).GetNewest
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.GetOldest*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.GetOldest
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_GetOldest
+  name: GetOldest
+  nameWithType: CircularBuffer<T>.GetOldest
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.GetOldest
+  nameWithType.vb: CircularBuffer(Of T).GetOldest
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).GetOldest
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetNewest*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetNewest
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_TryGetNewest__0__
+  name: TryGetNewest
+  nameWithType: CircularBuffer<T>.TryGetNewest
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.TryGetNewest
+  nameWithType.vb: CircularBuffer(Of T).TryGetNewest
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).TryGetNewest
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetFromNewest*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.TryGetFromNewest
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_TryGetFromNewest_System_Int32__0__
+  name: TryGetFromNewest
+  nameWithType: CircularBuffer<T>.TryGetFromNewest
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.TryGetFromNewest
+  nameWithType.vb: CircularBuffer(Of T).TryGetFromNewest
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).TryGetFromNewest
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.Clear*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.Clear
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_Clear
+  name: Clear
+  nameWithType: CircularBuffer<T>.Clear
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.Clear
+  nameWithType.vb: CircularBuffer(Of T).Clear
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).Clear
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.ToArray*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.ToArray
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_ToArray
+  name: ToArray
+  nameWithType: CircularBuffer<T>.ToArray
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.ToArray
+  nameWithType.vb: CircularBuffer(Of T).ToArray
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).ToArray
+- uid: '{T}[]'
+  isExternal: true
+  name: T[]
+  nameWithType: T[]
+  fullName: T[]
+  nameWithType.vb: T()
+  fullName.vb: T()
+  name.vb: T()
+  spec.csharp:
+  - name: T
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - name: T
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1.GetEnumerator*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBuffer`1.GetEnumerator
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html#Meridian_Ui_Services_Collections_CircularBuffer_1_GetEnumerator
+  name: GetEnumerator
+  nameWithType: CircularBuffer<T>.GetEnumerator
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>.GetEnumerator
+  nameWithType.vb: CircularBuffer(Of T).GetEnumerator
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T).GetEnumerator
+- uid: System.Collections.Generic.IEnumerable{{T}}.GetEnumerator
+  commentId: M:System.Collections.Generic.IEnumerable{`0}.GetEnumerator
+  parent: System.Collections.Generic.IEnumerable{{T}}
+  definition: System.Collections.Generic.IEnumerable`1.GetEnumerator
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  name: GetEnumerator()
+  nameWithType: IEnumerable<T>.GetEnumerator()
+  fullName: System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+  nameWithType.vb: IEnumerable(Of T).GetEnumerator()
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T).GetEnumerator()
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable{`0}.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable{`0}.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IEnumerator{{T}}
+  commentId: T:System.Collections.Generic.IEnumerator{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerator`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  name: IEnumerator<T>
+  nameWithType: IEnumerator<T>
+  fullName: System.Collections.Generic.IEnumerator<T>
+  nameWithType.vb: IEnumerator(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerator(Of T)
+  name.vb: IEnumerator(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1.GetEnumerator
+  commentId: M:System.Collections.Generic.IEnumerable`1.GetEnumerator
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  name: GetEnumerator()
+  nameWithType: IEnumerable<T>.GetEnumerator()
+  fullName: System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+  nameWithType.vb: IEnumerable(Of T).GetEnumerator()
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T).GetEnumerator()
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IEnumerator`1
+  commentId: T:System.Collections.Generic.IEnumerator`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  name: IEnumerator<T>
+  nameWithType: IEnumerator<T>
+  fullName: System.Collections.Generic.IEnumerator<T>
+  nameWithType.vb: IEnumerator(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerator(Of T)
+  name.vb: IEnumerator(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

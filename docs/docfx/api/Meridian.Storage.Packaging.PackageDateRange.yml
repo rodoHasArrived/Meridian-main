@@ -1,0 +1,497 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageDateRange
+  commentId: T:Meridian.Storage.Packaging.PackageDateRange
+  id: PackageDateRange
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageDateRange.CalendarDays
+  - Meridian.Storage.Packaging.PackageDateRange.End
+  - Meridian.Storage.Packaging.PackageDateRange.Start
+  - Meridian.Storage.Packaging.PackageDateRange.TradingDays
+  langs:
+  - csharp
+  - vb
+  name: PackageDateRange
+  nameWithType: PackageDateRange
+  fullName: Meridian.Storage.Packaging.PackageDateRange
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageDateRange
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Date range information for the package.
+  example: []
+  syntax:
+    content: public sealed class PackageDateRange
+    content.vb: Public NotInheritable Class PackageDateRange
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Packaging.PackageDateRange.Start
+  commentId: P:Meridian.Storage.Packaging.PackageDateRange.Start
+  id: Start
+  parent: Meridian.Storage.Packaging.PackageDateRange
+  langs:
+  - csharp
+  - vb
+  name: Start
+  nameWithType: PackageDateRange.Start
+  fullName: Meridian.Storage.Packaging.PackageDateRange.Start
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("start")]
+
+      public DateTime Start { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("start")>
+
+      Public Property Start As Date
+  overload: Meridian.Storage.Packaging.PackageDateRange.Start*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: start
+- uid: Meridian.Storage.Packaging.PackageDateRange.End
+  commentId: P:Meridian.Storage.Packaging.PackageDateRange.End
+  id: End
+  parent: Meridian.Storage.Packaging.PackageDateRange
+  langs:
+  - csharp
+  - vb
+  name: End
+  nameWithType: PackageDateRange.End
+  fullName: Meridian.Storage.Packaging.PackageDateRange.End
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: End
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("end")]
+
+      public DateTime End { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("end")>
+
+      Public Property [End] As Date
+  overload: Meridian.Storage.Packaging.PackageDateRange.End*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: end
+- uid: Meridian.Storage.Packaging.PackageDateRange.TradingDays
+  commentId: P:Meridian.Storage.Packaging.PackageDateRange.TradingDays
+  id: TradingDays
+  parent: Meridian.Storage.Packaging.PackageDateRange
+  langs:
+  - csharp
+  - vb
+  name: TradingDays
+  nameWithType: PackageDateRange.TradingDays
+  fullName: Meridian.Storage.Packaging.PackageDateRange.TradingDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingDays
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("tradingDays")]
+
+      public int TradingDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("tradingDays")>
+
+      Public Property TradingDays As Integer
+  overload: Meridian.Storage.Packaging.PackageDateRange.TradingDays*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tradingDays
+- uid: Meridian.Storage.Packaging.PackageDateRange.CalendarDays
+  commentId: P:Meridian.Storage.Packaging.PackageDateRange.CalendarDays
+  id: CalendarDays
+  parent: Meridian.Storage.Packaging.PackageDateRange
+  langs:
+  - csharp
+  - vb
+  name: CalendarDays
+  nameWithType: PackageDateRange.CalendarDays
+  fullName: Meridian.Storage.Packaging.PackageDateRange.CalendarDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalendarDays
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("calendarDays")]
+
+      public int CalendarDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("calendarDays")>
+
+      Public Property CalendarDays As Integer
+  overload: Meridian.Storage.Packaging.PackageDateRange.CalendarDays*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: calendarDays
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Packaging.PackageDateRange.Start*
+  commentId: Overload:Meridian.Storage.Packaging.PackageDateRange.Start
+  href: Meridian.Storage.Packaging.PackageDateRange.html#Meridian_Storage_Packaging_PackageDateRange_Start
+  name: Start
+  nameWithType: PackageDateRange.Start
+  fullName: Meridian.Storage.Packaging.PackageDateRange.Start
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Storage.Packaging.PackageDateRange.End*
+  commentId: Overload:Meridian.Storage.Packaging.PackageDateRange.End
+  href: Meridian.Storage.Packaging.PackageDateRange.html#Meridian_Storage_Packaging_PackageDateRange_End
+  name: End
+  nameWithType: PackageDateRange.End
+  fullName: Meridian.Storage.Packaging.PackageDateRange.End
+- uid: Meridian.Storage.Packaging.PackageDateRange.TradingDays*
+  commentId: Overload:Meridian.Storage.Packaging.PackageDateRange.TradingDays
+  href: Meridian.Storage.Packaging.PackageDateRange.html#Meridian_Storage_Packaging_PackageDateRange_TradingDays
+  name: TradingDays
+  nameWithType: PackageDateRange.TradingDays
+  fullName: Meridian.Storage.Packaging.PackageDateRange.TradingDays
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Packaging.PackageDateRange.CalendarDays*
+  commentId: Overload:Meridian.Storage.Packaging.PackageDateRange.CalendarDays
+  href: Meridian.Storage.Packaging.PackageDateRange.html#Meridian_Storage_Packaging_PackageDateRange_CalendarDays
+  name: CalendarDays
+  nameWithType: PackageDateRange.CalendarDays
+  fullName: Meridian.Storage.Packaging.PackageDateRange.CalendarDays

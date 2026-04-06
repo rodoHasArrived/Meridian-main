@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Replay
+  commentId: N:Meridian.Storage.Replay
+  id: Meridian.Storage.Replay
+  children:
+  - Meridian.Storage.Replay.FileStatistics
+  - Meridian.Storage.Replay.JsonlReplayer
+  - Meridian.Storage.Replay.MemoryMappedJsonlReader
+  - Meridian.Storage.Replay.MemoryMappedReaderOptions
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.Replay
+  nameWithType: Meridian.Storage.Replay
+  fullName: Meridian.Storage.Replay
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.Replay.JsonlReplayer
+  commentId: T:Meridian.Storage.Replay.JsonlReplayer
+  href: Meridian.Storage.Replay.JsonlReplayer.html
+  name: JsonlReplayer
+  nameWithType: JsonlReplayer
+  fullName: Meridian.Storage.Replay.JsonlReplayer
+- uid: Meridian.Storage.Replay.MemoryMappedReaderOptions
+  commentId: T:Meridian.Storage.Replay.MemoryMappedReaderOptions
+  parent: Meridian.Storage.Replay
+  href: Meridian.Storage.Replay.MemoryMappedReaderOptions.html
+  name: MemoryMappedReaderOptions
+  nameWithType: MemoryMappedReaderOptions
+  fullName: Meridian.Storage.Replay.MemoryMappedReaderOptions
+- uid: Meridian.Storage.Replay.MemoryMappedJsonlReader
+  commentId: T:Meridian.Storage.Replay.MemoryMappedJsonlReader
+  href: Meridian.Storage.Replay.MemoryMappedJsonlReader.html
+  name: MemoryMappedJsonlReader
+  nameWithType: MemoryMappedJsonlReader
+  fullName: Meridian.Storage.Replay.MemoryMappedJsonlReader
+- uid: Meridian.Storage.Replay.FileStatistics
+  commentId: T:Meridian.Storage.Replay.FileStatistics
+  parent: Meridian.Storage.Replay
+  href: Meridian.Storage.Replay.FileStatistics.html
+  name: FileStatistics
+  nameWithType: FileStatistics
+  fullName: Meridian.Storage.Replay.FileStatistics
+- uid: Meridian.Storage.Replay
+  commentId: N:Meridian.Storage.Replay
+  href: Meridian.html
+  name: Meridian.Storage.Replay
+  nameWithType: Meridian.Storage.Replay
+  fullName: Meridian.Storage.Replay
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Replay
+    name: Replay
+    href: Meridian.Storage.Replay.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Replay
+    name: Replay
+    href: Meridian.Storage.Replay.html

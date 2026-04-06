@@ -1,0 +1,109 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  id: Meridian.Domain.Collectors
+  children:
+  - Meridian.Domain.Collectors.IQuoteStateStore
+  - Meridian.Domain.Collectors.L3OrderBookCollector
+  - Meridian.Domain.Collectors.MarketDepthCollector
+  - Meridian.Domain.Collectors.OptionDataCollector
+  - Meridian.Domain.Collectors.OptionDataSummary
+  - Meridian.Domain.Collectors.QuoteCollector
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  - Meridian.Domain.Collectors.TradeDataCollector
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  type: Namespace
+  assemblies:
+  - Meridian.Domain
+references:
+- uid: Meridian.Domain.Collectors.IQuoteStateStore
+  commentId: T:Meridian.Domain.Collectors.IQuoteStateStore
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.IQuoteStateStore.html
+  name: IQuoteStateStore
+  nameWithType: IQuoteStateStore
+  fullName: Meridian.Domain.Collectors.IQuoteStateStore
+- uid: Meridian.Domain.Collectors.L3OrderBookCollector
+  commentId: T:Meridian.Domain.Collectors.L3OrderBookCollector
+  href: Meridian.Domain.Collectors.L3OrderBookCollector.html
+  name: L3OrderBookCollector
+  nameWithType: L3OrderBookCollector
+  fullName: Meridian.Domain.Collectors.L3OrderBookCollector
+- uid: Meridian.Domain.Collectors.MarketDepthCollector
+  commentId: T:Meridian.Domain.Collectors.MarketDepthCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.MarketDepthCollector.html
+  name: MarketDepthCollector
+  nameWithType: MarketDepthCollector
+  fullName: Meridian.Domain.Collectors.MarketDepthCollector
+- uid: Meridian.Domain.Collectors.OptionDataCollector
+  commentId: T:Meridian.Domain.Collectors.OptionDataCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.OptionDataCollector.html
+  name: OptionDataCollector
+  nameWithType: OptionDataCollector
+  fullName: Meridian.Domain.Collectors.OptionDataCollector
+- uid: Meridian.Domain.Collectors.OptionDataSummary
+  commentId: T:Meridian.Domain.Collectors.OptionDataSummary
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.OptionDataSummary.html
+  name: OptionDataSummary
+  nameWithType: OptionDataSummary
+  fullName: Meridian.Domain.Collectors.OptionDataSummary
+- uid: Meridian.Domain.Collectors.QuoteCollector
+  commentId: T:Meridian.Domain.Collectors.QuoteCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.QuoteCollector.html
+  name: QuoteCollector
+  nameWithType: QuoteCollector
+  fullName: Meridian.Domain.Collectors.QuoteCollector
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  commentId: T:Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html
+  name: SymbolSubscriptionTracker
+  nameWithType: SymbolSubscriptionTracker
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+- uid: Meridian.Domain.Collectors.TradeDataCollector
+  commentId: T:Meridian.Domain.Collectors.TradeDataCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.TradeDataCollector.html
+  name: TradeDataCollector
+  nameWithType: TradeDataCollector
+  fullName: Meridian.Domain.Collectors.TradeDataCollector
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html

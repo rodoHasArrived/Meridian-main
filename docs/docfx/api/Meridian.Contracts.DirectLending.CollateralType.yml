@@ -1,0 +1,228 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.CollateralType
+  commentId: T:Meridian.Contracts.DirectLending.CollateralType
+  id: CollateralType
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.CollateralType.AccountsReceivable
+  - Meridian.Contracts.DirectLending.CollateralType.Equipment
+  - Meridian.Contracts.DirectLending.CollateralType.FinancialInstrument
+  - Meridian.Contracts.DirectLending.CollateralType.Inventory
+  - Meridian.Contracts.DirectLending.CollateralType.Other
+  - Meridian.Contracts.DirectLending.CollateralType.RealEstate
+  langs:
+  - csharp
+  - vb
+  name: CollateralType
+  nameWithType: CollateralType
+  fullName: Meridian.Contracts.DirectLending.CollateralType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollateralType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum CollateralType : byte'
+    content.vb: Public Enum CollateralType As Byte
+- uid: Meridian.Contracts.DirectLending.CollateralType.RealEstate
+  commentId: F:Meridian.Contracts.DirectLending.CollateralType.RealEstate
+  id: RealEstate
+  parent: Meridian.Contracts.DirectLending.CollateralType
+  langs:
+  - csharp
+  - vb
+  name: RealEstate
+  nameWithType: CollateralType.RealEstate
+  fullName: Meridian.Contracts.DirectLending.CollateralType.RealEstate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealEstate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: RealEstate = 0
+    return:
+      type: Meridian.Contracts.DirectLending.CollateralType
+- uid: Meridian.Contracts.DirectLending.CollateralType.Equipment
+  commentId: F:Meridian.Contracts.DirectLending.CollateralType.Equipment
+  id: Equipment
+  parent: Meridian.Contracts.DirectLending.CollateralType
+  langs:
+  - csharp
+  - vb
+  name: Equipment
+  nameWithType: CollateralType.Equipment
+  fullName: Meridian.Contracts.DirectLending.CollateralType.Equipment
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Equipment
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Equipment = 1
+    return:
+      type: Meridian.Contracts.DirectLending.CollateralType
+- uid: Meridian.Contracts.DirectLending.CollateralType.Inventory
+  commentId: F:Meridian.Contracts.DirectLending.CollateralType.Inventory
+  id: Inventory
+  parent: Meridian.Contracts.DirectLending.CollateralType
+  langs:
+  - csharp
+  - vb
+  name: Inventory
+  nameWithType: CollateralType.Inventory
+  fullName: Meridian.Contracts.DirectLending.CollateralType.Inventory
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Inventory
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Inventory = 2
+    return:
+      type: Meridian.Contracts.DirectLending.CollateralType
+- uid: Meridian.Contracts.DirectLending.CollateralType.AccountsReceivable
+  commentId: F:Meridian.Contracts.DirectLending.CollateralType.AccountsReceivable
+  id: AccountsReceivable
+  parent: Meridian.Contracts.DirectLending.CollateralType
+  langs:
+  - csharp
+  - vb
+  name: AccountsReceivable
+  nameWithType: CollateralType.AccountsReceivable
+  fullName: Meridian.Contracts.DirectLending.CollateralType.AccountsReceivable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountsReceivable
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: AccountsReceivable = 3
+    return:
+      type: Meridian.Contracts.DirectLending.CollateralType
+- uid: Meridian.Contracts.DirectLending.CollateralType.FinancialInstrument
+  commentId: F:Meridian.Contracts.DirectLending.CollateralType.FinancialInstrument
+  id: FinancialInstrument
+  parent: Meridian.Contracts.DirectLending.CollateralType
+  langs:
+  - csharp
+  - vb
+  name: FinancialInstrument
+  nameWithType: CollateralType.FinancialInstrument
+  fullName: Meridian.Contracts.DirectLending.CollateralType.FinancialInstrument
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialInstrument
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: FinancialInstrument = 4
+    return:
+      type: Meridian.Contracts.DirectLending.CollateralType
+- uid: Meridian.Contracts.DirectLending.CollateralType.Other
+  commentId: F:Meridian.Contracts.DirectLending.CollateralType.Other
+  id: Other
+  parent: Meridian.Contracts.DirectLending.CollateralType
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: CollateralType.Other
+  fullName: Meridian.Contracts.DirectLending.CollateralType.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Other = 5
+    return:
+      type: Meridian.Contracts.DirectLending.CollateralType
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.CollateralType
+  commentId: T:Meridian.Contracts.DirectLending.CollateralType
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.CollateralType.html
+  name: CollateralType
+  nameWithType: CollateralType
+  fullName: Meridian.Contracts.DirectLending.CollateralType

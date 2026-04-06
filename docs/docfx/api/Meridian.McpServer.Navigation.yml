@@ -1,0 +1,112 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Navigation
+  commentId: N:Meridian.McpServer.Navigation
+  id: Meridian.McpServer.Navigation
+  children:
+  - Meridian.McpServer.Navigation.RepoNavigationCatalog
+  - Meridian.McpServer.Navigation.RepoNavigationData
+  - Meridian.McpServer.Navigation.RepoNavigationDependency
+  - Meridian.McpServer.Navigation.RepoNavigationDocument
+  - Meridian.McpServer.Navigation.RepoNavigationProject
+  - Meridian.McpServer.Navigation.RepoNavigationRoute
+  - Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  - Meridian.McpServer.Navigation.RepoNavigationSubsystem
+  - Meridian.McpServer.Navigation.RepoNavigationSymbol
+  langs:
+  - csharp
+  - vb
+  name: Meridian.McpServer.Navigation
+  nameWithType: Meridian.McpServer.Navigation
+  fullName: Meridian.McpServer.Navigation
+  type: Namespace
+  assemblies:
+  - Meridian.McpServer
+references:
+- uid: Meridian.McpServer.Navigation.RepoNavigationCatalog
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationCatalog
+  parent: Meridian.McpServer.Navigation
+  href: Meridian.McpServer.Navigation.RepoNavigationCatalog.html
+  name: RepoNavigationCatalog
+  nameWithType: RepoNavigationCatalog
+  fullName: Meridian.McpServer.Navigation.RepoNavigationCatalog
+- uid: Meridian.McpServer.Navigation.RepoNavigationData
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationData
+  parent: Meridian.McpServer.Navigation
+  href: Meridian.McpServer.Navigation.RepoNavigationData.html
+  name: RepoNavigationData
+  nameWithType: RepoNavigationData
+  fullName: Meridian.McpServer.Navigation.RepoNavigationData
+- uid: Meridian.McpServer.Navigation.RepoNavigationSubsystem
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationSubsystem
+  parent: Meridian.McpServer.Navigation
+  href: Meridian.McpServer.Navigation.RepoNavigationSubsystem.html
+  name: RepoNavigationSubsystem
+  nameWithType: RepoNavigationSubsystem
+  fullName: Meridian.McpServer.Navigation.RepoNavigationSubsystem
+- uid: Meridian.McpServer.Navigation.RepoNavigationProject
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationProject
+  href: Meridian.McpServer.Navigation.RepoNavigationProject.html
+  name: RepoNavigationProject
+  nameWithType: RepoNavigationProject
+  fullName: Meridian.McpServer.Navigation.RepoNavigationProject
+- uid: Meridian.McpServer.Navigation.RepoNavigationDocument
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationDocument
+  href: Meridian.McpServer.Navigation.RepoNavigationDocument.html
+  name: RepoNavigationDocument
+  nameWithType: RepoNavigationDocument
+  fullName: Meridian.McpServer.Navigation.RepoNavigationDocument
+- uid: Meridian.McpServer.Navigation.RepoNavigationSymbol
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationSymbol
+  href: Meridian.McpServer.Navigation.RepoNavigationSymbol.html
+  name: RepoNavigationSymbol
+  nameWithType: RepoNavigationSymbol
+  fullName: Meridian.McpServer.Navigation.RepoNavigationSymbol
+- uid: Meridian.McpServer.Navigation.RepoNavigationRoute
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationRoute
+  href: Meridian.McpServer.Navigation.RepoNavigationRoute.html
+  name: RepoNavigationRoute
+  nameWithType: RepoNavigationRoute
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRoute
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  href: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.html
+  name: RepoNavigationRouteSymbol
+  nameWithType: RepoNavigationRouteSymbol
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+- uid: Meridian.McpServer.Navigation.RepoNavigationDependency
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationDependency
+  href: Meridian.McpServer.Navigation.RepoNavigationDependency.html
+  name: RepoNavigationDependency
+  nameWithType: RepoNavigationDependency
+  fullName: Meridian.McpServer.Navigation.RepoNavigationDependency
+- uid: Meridian.McpServer.Navigation
+  commentId: N:Meridian.McpServer.Navigation
+  href: Meridian.html
+  name: Meridian.McpServer.Navigation
+  nameWithType: Meridian.McpServer.Navigation
+  fullName: Meridian.McpServer.Navigation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html

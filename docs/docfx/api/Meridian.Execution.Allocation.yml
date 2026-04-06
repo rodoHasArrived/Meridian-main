@@ -1,0 +1,91 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Allocation
+  commentId: N:Meridian.Execution.Allocation
+  id: Meridian.Execution.Allocation
+  children:
+  - Meridian.Execution.Allocation.AllocationResult
+  - Meridian.Execution.Allocation.AllocationRule
+  - Meridian.Execution.Allocation.AllocationSlice
+  - Meridian.Execution.Allocation.BlockTradeAllocator
+  - Meridian.Execution.Allocation.IAllocationEngine
+  - Meridian.Execution.Allocation.ProportionalAllocationEngine
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Allocation
+  nameWithType: Meridian.Execution.Allocation
+  fullName: Meridian.Execution.Allocation
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Allocation.AllocationSlice
+  commentId: T:Meridian.Execution.Allocation.AllocationSlice
+  href: Meridian.Execution.Allocation.AllocationSlice.html
+  name: AllocationSlice
+  nameWithType: AllocationSlice
+  fullName: Meridian.Execution.Allocation.AllocationSlice
+- uid: Meridian.Execution.Allocation.AllocationResult
+  commentId: T:Meridian.Execution.Allocation.AllocationResult
+  parent: Meridian.Execution.Allocation
+  href: Meridian.Execution.Allocation.AllocationResult.html
+  name: AllocationResult
+  nameWithType: AllocationResult
+  fullName: Meridian.Execution.Allocation.AllocationResult
+- uid: Meridian.Execution.Allocation.AllocationRule
+  commentId: T:Meridian.Execution.Allocation.AllocationRule
+  parent: Meridian.Execution.Allocation
+  href: Meridian.Execution.Allocation.AllocationRule.html
+  name: AllocationRule
+  nameWithType: AllocationRule
+  fullName: Meridian.Execution.Allocation.AllocationRule
+- uid: Meridian.Execution.Allocation.BlockTradeAllocator
+  commentId: T:Meridian.Execution.Allocation.BlockTradeAllocator
+  href: Meridian.Execution.Allocation.BlockTradeAllocator.html
+  name: BlockTradeAllocator
+  nameWithType: BlockTradeAllocator
+  fullName: Meridian.Execution.Allocation.BlockTradeAllocator
+- uid: Meridian.Execution.Allocation.IAllocationEngine
+  commentId: T:Meridian.Execution.Allocation.IAllocationEngine
+  parent: Meridian.Execution.Allocation
+  href: Meridian.Execution.Allocation.IAllocationEngine.html
+  name: IAllocationEngine
+  nameWithType: IAllocationEngine
+  fullName: Meridian.Execution.Allocation.IAllocationEngine
+- uid: Meridian.Execution.Allocation.ProportionalAllocationEngine
+  commentId: T:Meridian.Execution.Allocation.ProportionalAllocationEngine
+  href: Meridian.Execution.Allocation.ProportionalAllocationEngine.html
+  name: ProportionalAllocationEngine
+  nameWithType: ProportionalAllocationEngine
+  fullName: Meridian.Execution.Allocation.ProportionalAllocationEngine
+- uid: Meridian.Execution.Allocation
+  commentId: N:Meridian.Execution.Allocation
+  href: Meridian.html
+  name: Meridian.Execution.Allocation
+  nameWithType: Meridian.Execution.Allocation
+  fullName: Meridian.Execution.Allocation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html

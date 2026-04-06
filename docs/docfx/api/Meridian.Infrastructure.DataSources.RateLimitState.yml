@@ -1,0 +1,808 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.RateLimitState
+  commentId: T:Meridian.Infrastructure.DataSources.RateLimitState
+  id: RateLimitState
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.RateLimitState.#ctor(System.Boolean,System.Int32,System.Int32,System.Nullable{System.TimeSpan},System.Nullable{System.DateTimeOffset})
+  - Meridian.Infrastructure.DataSources.RateLimitState.Available
+  - Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest
+  - Meridian.Infrastructure.DataSources.RateLimitState.Limited(System.Int32,System.Int32,System.Nullable{System.TimeSpan})
+  - Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests
+  - Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests
+  - Meridian.Infrastructure.DataSources.RateLimitState.ResetAt
+  - Meridian.Infrastructure.DataSources.RateLimitState.ResetIn
+  - Meridian.Infrastructure.DataSources.RateLimitState.Throttled(System.TimeSpan)
+  langs:
+  - csharp
+  - vb
+  name: RateLimitState
+  nameWithType: RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitState
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 373
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Current rate limit state for a data source.
+  example: []
+  syntax:
+    content: 'public sealed record RateLimitState : IEquatable<RateLimitState>'
+    content.vb: Public NotInheritable Class RateLimitState Implements IEquatable(Of RateLimitState)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.RateLimitState}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.#ctor(System.Boolean,System.Int32,System.Int32,System.Nullable{System.TimeSpan},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Infrastructure.DataSources.RateLimitState.#ctor(System.Boolean,System.Int32,System.Int32,System.Nullable{System.TimeSpan},System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.Boolean,System.Int32,System.Int32,System.Nullable{System.TimeSpan},System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: RateLimitState(bool, int, int, TimeSpan?, DateTimeOffset?)
+  nameWithType: RateLimitState.RateLimitState(bool, int, int, TimeSpan?, DateTimeOffset?)
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.RateLimitState(bool, int, int, System.TimeSpan?, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 373
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Current rate limit state for a data source.
+  example: []
+  syntax:
+    content: public RateLimitState(bool CanMakeRequest, int RemainingRequests, int MaxRequests, TimeSpan? ResetIn = null, DateTimeOffset? ResetAt = null)
+    parameters:
+    - id: CanMakeRequest
+      type: System.Boolean
+    - id: RemainingRequests
+      type: System.Int32
+    - id: MaxRequests
+      type: System.Int32
+    - id: ResetIn
+      type: System.Nullable{System.TimeSpan}
+    - id: ResetAt
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(CanMakeRequest As Boolean, RemainingRequests As Integer, MaxRequests As Integer, ResetIn As TimeSpan? = Nothing, ResetAt As DateTimeOffset? = Nothing)
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.#ctor*
+  nameWithType.vb: RateLimitState.New(Boolean, Integer, Integer, TimeSpan?, DateTimeOffset?)
+  fullName.vb: Meridian.Infrastructure.DataSources.RateLimitState.New(Boolean, Integer, Integer, System.TimeSpan?, System.DateTimeOffset?)
+  name.vb: New(Boolean, Integer, Integer, TimeSpan?, DateTimeOffset?)
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest
+  id: CanMakeRequest
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: CanMakeRequest
+  nameWithType: RateLimitState.CanMakeRequest
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanMakeRequest
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 374
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public bool CanMakeRequest { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property CanMakeRequest As Boolean
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest*
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests
+  id: RemainingRequests
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: RemainingRequests
+  nameWithType: RateLimitState.RemainingRequests
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemainingRequests
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 375
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public int RemainingRequests { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RemainingRequests As Integer
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests*
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests
+  id: MaxRequests
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: MaxRequests
+  nameWithType: RateLimitState.MaxRequests
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequests
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 376
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public int MaxRequests { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRequests As Integer
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests*
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.ResetIn
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitState.ResetIn
+  id: ResetIn
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: ResetIn
+  nameWithType: RateLimitState.ResetIn
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.ResetIn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetIn
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 377
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public TimeSpan? ResetIn { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property ResetIn As TimeSpan?
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.ResetIn*
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.ResetAt
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitState.ResetAt
+  id: ResetAt
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: ResetAt
+  nameWithType: RateLimitState.ResetAt
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.ResetAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetAt
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 378
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateTimeOffset? ResetAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ResetAt As DateTimeOffset?
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.ResetAt*
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.Available
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitState.Available
+  id: Available
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: Available
+  nameWithType: RateLimitState.Available
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.Available
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Available
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 382
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Available with unlimited requests.
+  example: []
+  syntax:
+    content: public static RateLimitState Available { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.RateLimitState
+    content.vb: Public Shared ReadOnly Property Available As RateLimitState
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.Available*
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.Throttled(System.TimeSpan)
+  commentId: M:Meridian.Infrastructure.DataSources.RateLimitState.Throttled(System.TimeSpan)
+  id: Throttled(System.TimeSpan)
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: Throttled(TimeSpan)
+  nameWithType: RateLimitState.Throttled(TimeSpan)
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.Throttled(System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Throttled
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 385
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Throttled, cannot make requests.
+  example: []
+  syntax:
+    content: public static RateLimitState Throttled(TimeSpan resetIn)
+    parameters:
+    - id: resetIn
+      type: System.TimeSpan
+    return:
+      type: Meridian.Infrastructure.DataSources.RateLimitState
+    content.vb: Public Shared Function Throttled(resetIn As TimeSpan) As RateLimitState
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.Throttled*
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.Limited(System.Int32,System.Int32,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Infrastructure.DataSources.RateLimitState.Limited(System.Int32,System.Int32,System.Nullable{System.TimeSpan})
+  id: Limited(System.Int32,System.Int32,System.Nullable{System.TimeSpan})
+  parent: Meridian.Infrastructure.DataSources.RateLimitState
+  langs:
+  - csharp
+  - vb
+  name: Limited(int, int, TimeSpan?)
+  nameWithType: RateLimitState.Limited(int, int, TimeSpan?)
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.Limited(int, int, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Limited
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 389
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Available with limited remaining requests.
+  example: []
+  syntax:
+    content: public static RateLimitState Limited(int remaining, int max, TimeSpan? resetIn = null)
+    parameters:
+    - id: remaining
+      type: System.Int32
+    - id: max
+      type: System.Int32
+    - id: resetIn
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: Meridian.Infrastructure.DataSources.RateLimitState
+    content.vb: Public Shared Function Limited(remaining As Integer, max As Integer, resetIn As TimeSpan? = Nothing) As RateLimitState
+  overload: Meridian.Infrastructure.DataSources.RateLimitState.Limited*
+  nameWithType.vb: RateLimitState.Limited(Integer, Integer, TimeSpan?)
+  fullName.vb: Meridian.Infrastructure.DataSources.RateLimitState.Limited(Integer, Integer, System.TimeSpan?)
+  name.vb: Limited(Integer, Integer, TimeSpan?)
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.RateLimitState}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.RateLimitState}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RateLimitState>
+  nameWithType: IEquatable<RateLimitState>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.RateLimitState>
+  nameWithType.vb: IEquatable(Of RateLimitState)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.RateLimitState)
+  name.vb: IEquatable(Of RateLimitState)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RateLimitState
+    name: RateLimitState
+    href: Meridian.Infrastructure.DataSources.RateLimitState.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RateLimitState
+    name: RateLimitState
+    href: Meridian.Infrastructure.DataSources.RateLimitState.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.#ctor
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState__ctor_System_Boolean_System_Int32_System_Int32_System_Nullable_System_TimeSpan__System_Nullable_System_DateTimeOffset__
+  name: RateLimitState
+  nameWithType: RateLimitState.RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.RateLimitState
+  nameWithType.vb: RateLimitState.New
+  fullName.vb: Meridian.Infrastructure.DataSources.RateLimitState.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_CanMakeRequest
+  name: CanMakeRequest
+  nameWithType: RateLimitState.CanMakeRequest
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.CanMakeRequest
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_RemainingRequests
+  name: RemainingRequests
+  nameWithType: RateLimitState.RemainingRequests
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.RemainingRequests
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_MaxRequests
+  name: MaxRequests
+  nameWithType: RateLimitState.MaxRequests
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.MaxRequests
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.ResetIn*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.ResetIn
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_ResetIn
+  name: ResetIn
+  nameWithType: RateLimitState.ResetIn
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.ResetIn
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.ResetAt*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.ResetAt
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_ResetAt
+  name: ResetAt
+  nameWithType: RateLimitState.ResetAt
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.ResetAt
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.Available*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.Available
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_Available
+  name: Available
+  nameWithType: RateLimitState.Available
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.Available
+- uid: Meridian.Infrastructure.DataSources.RateLimitState
+  commentId: T:Meridian.Infrastructure.DataSources.RateLimitState
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html
+  name: RateLimitState
+  nameWithType: RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.Throttled*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.Throttled
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_Throttled_System_TimeSpan_
+  name: Throttled
+  nameWithType: RateLimitState.Throttled
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.Throttled
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.DataSources.RateLimitState.Limited*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitState.Limited
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html#Meridian_Infrastructure_DataSources_RateLimitState_Limited_System_Int32_System_Int32_System_Nullable_System_TimeSpan__
+  name: Limited
+  nameWithType: RateLimitState.Limited
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState.Limited

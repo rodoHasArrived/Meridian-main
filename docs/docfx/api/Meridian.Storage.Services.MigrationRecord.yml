@@ -1,0 +1,683 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.MigrationRecord
+  commentId: T:Meridian.Storage.Services.MigrationRecord
+  id: MigrationRecord
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.MigrationRecord.#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.Int64,System.Int64)
+  - Meridian.Storage.Services.MigrationRecord.BytesAfter
+  - Meridian.Storage.Services.MigrationRecord.BytesBefore
+  - Meridian.Storage.Services.MigrationRecord.CompressionChange
+  - Meridian.Storage.Services.MigrationRecord.FormatChange
+  - Meridian.Storage.Services.MigrationRecord.SourceTier
+  - Meridian.Storage.Services.MigrationRecord.TargetTier
+  - Meridian.Storage.Services.MigrationRecord.TimestampUtc
+  langs:
+  - csharp
+  - vb
+  name: MigrationRecord
+  nameWithType: MigrationRecord
+  fullName: Meridian.Storage.Services.MigrationRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MigrationRecord
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record MigrationRecord : IEquatable<MigrationRecord>'
+    content.vb: Public NotInheritable Class MigrationRecord Implements IEquatable(Of MigrationRecord)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.MigrationRecord}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.MigrationRecord.#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.Int64,System.Int64)
+  commentId: M:Meridian.Storage.Services.MigrationRecord.#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.Int64,System.Int64)
+  id: '#ctor(System.DateTime,System.String,System.String,System.String,System.String,System.Int64,System.Int64)'
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: MigrationRecord(DateTime, string, string, string?, string?, long, long)
+  nameWithType: MigrationRecord.MigrationRecord(DateTime, string, string, string?, string?, long, long)
+  fullName: Meridian.Storage.Services.MigrationRecord.MigrationRecord(System.DateTime, string, string, string?, string?, long, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MigrationRecord(DateTime TimestampUtc, string SourceTier, string TargetTier, string? CompressionChange = null, string? FormatChange = null, long BytesBefore = 0, long BytesAfter = 0)
+    parameters:
+    - id: TimestampUtc
+      type: System.DateTime
+    - id: SourceTier
+      type: System.String
+    - id: TargetTier
+      type: System.String
+    - id: CompressionChange
+      type: System.String
+    - id: FormatChange
+      type: System.String
+    - id: BytesBefore
+      type: System.Int64
+    - id: BytesAfter
+      type: System.Int64
+    content.vb: Public Sub New(TimestampUtc As Date, SourceTier As String, TargetTier As String, CompressionChange As String = Nothing, FormatChange As String = Nothing, BytesBefore As Long = 0, BytesAfter As Long = 0)
+  overload: Meridian.Storage.Services.MigrationRecord.#ctor*
+  nameWithType.vb: MigrationRecord.New(Date, String, String, String, String, Long, Long)
+  fullName.vb: Meridian.Storage.Services.MigrationRecord.New(Date, String, String, String, String, Long, Long)
+  name.vb: New(Date, String, String, String, String, Long, Long)
+- uid: Meridian.Storage.Services.MigrationRecord.TimestampUtc
+  commentId: P:Meridian.Storage.Services.MigrationRecord.TimestampUtc
+  id: TimestampUtc
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: TimestampUtc
+  nameWithType: MigrationRecord.TimestampUtc
+  fullName: Meridian.Storage.Services.MigrationRecord.TimestampUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampUtc
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTime TimestampUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property TimestampUtc As Date
+  overload: Meridian.Storage.Services.MigrationRecord.TimestampUtc*
+- uid: Meridian.Storage.Services.MigrationRecord.SourceTier
+  commentId: P:Meridian.Storage.Services.MigrationRecord.SourceTier
+  id: SourceTier
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: SourceTier
+  nameWithType: MigrationRecord.SourceTier
+  fullName: Meridian.Storage.Services.MigrationRecord.SourceTier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceTier
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string SourceTier { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceTier As String
+  overload: Meridian.Storage.Services.MigrationRecord.SourceTier*
+- uid: Meridian.Storage.Services.MigrationRecord.TargetTier
+  commentId: P:Meridian.Storage.Services.MigrationRecord.TargetTier
+  id: TargetTier
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: TargetTier
+  nameWithType: MigrationRecord.TargetTier
+  fullName: Meridian.Storage.Services.MigrationRecord.TargetTier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetTier
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string TargetTier { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetTier As String
+  overload: Meridian.Storage.Services.MigrationRecord.TargetTier*
+- uid: Meridian.Storage.Services.MigrationRecord.CompressionChange
+  commentId: P:Meridian.Storage.Services.MigrationRecord.CompressionChange
+  id: CompressionChange
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: CompressionChange
+  nameWithType: MigrationRecord.CompressionChange
+  fullName: Meridian.Storage.Services.MigrationRecord.CompressionChange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionChange
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 293
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? CompressionChange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CompressionChange As String
+  overload: Meridian.Storage.Services.MigrationRecord.CompressionChange*
+- uid: Meridian.Storage.Services.MigrationRecord.FormatChange
+  commentId: P:Meridian.Storage.Services.MigrationRecord.FormatChange
+  id: FormatChange
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: FormatChange
+  nameWithType: MigrationRecord.FormatChange
+  fullName: Meridian.Storage.Services.MigrationRecord.FormatChange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FormatChange
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 294
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? FormatChange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FormatChange As String
+  overload: Meridian.Storage.Services.MigrationRecord.FormatChange*
+- uid: Meridian.Storage.Services.MigrationRecord.BytesBefore
+  commentId: P:Meridian.Storage.Services.MigrationRecord.BytesBefore
+  id: BytesBefore
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: BytesBefore
+  nameWithType: MigrationRecord.BytesBefore
+  fullName: Meridian.Storage.Services.MigrationRecord.BytesBefore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BytesBefore
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long BytesBefore { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BytesBefore As Long
+  overload: Meridian.Storage.Services.MigrationRecord.BytesBefore*
+- uid: Meridian.Storage.Services.MigrationRecord.BytesAfter
+  commentId: P:Meridian.Storage.Services.MigrationRecord.BytesAfter
+  id: BytesAfter
+  parent: Meridian.Storage.Services.MigrationRecord
+  langs:
+  - csharp
+  - vb
+  name: BytesAfter
+  nameWithType: MigrationRecord.BytesAfter
+  fullName: Meridian.Storage.Services.MigrationRecord.BytesAfter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BytesAfter
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long BytesAfter { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BytesAfter As Long
+  overload: Meridian.Storage.Services.MigrationRecord.BytesAfter*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.MigrationRecord}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.MigrationRecord}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MigrationRecord>
+  nameWithType: IEquatable<MigrationRecord>
+  fullName: System.IEquatable<Meridian.Storage.Services.MigrationRecord>
+  nameWithType.vb: IEquatable(Of MigrationRecord)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.MigrationRecord)
+  name.vb: IEquatable(Of MigrationRecord)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.MigrationRecord
+    name: MigrationRecord
+    href: Meridian.Storage.Services.MigrationRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.MigrationRecord
+    name: MigrationRecord
+    href: Meridian.Storage.Services.MigrationRecord.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.MigrationRecord.#ctor*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.#ctor
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord__ctor_System_DateTime_System_String_System_String_System_String_System_String_System_Int64_System_Int64_
+  name: MigrationRecord
+  nameWithType: MigrationRecord.MigrationRecord
+  fullName: Meridian.Storage.Services.MigrationRecord.MigrationRecord
+  nameWithType.vb: MigrationRecord.New
+  fullName.vb: Meridian.Storage.Services.MigrationRecord.New
+  name.vb: New
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Services.MigrationRecord.TimestampUtc*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.TimestampUtc
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord_TimestampUtc
+  name: TimestampUtc
+  nameWithType: MigrationRecord.TimestampUtc
+  fullName: Meridian.Storage.Services.MigrationRecord.TimestampUtc
+- uid: Meridian.Storage.Services.MigrationRecord.SourceTier*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.SourceTier
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord_SourceTier
+  name: SourceTier
+  nameWithType: MigrationRecord.SourceTier
+  fullName: Meridian.Storage.Services.MigrationRecord.SourceTier
+- uid: Meridian.Storage.Services.MigrationRecord.TargetTier*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.TargetTier
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord_TargetTier
+  name: TargetTier
+  nameWithType: MigrationRecord.TargetTier
+  fullName: Meridian.Storage.Services.MigrationRecord.TargetTier
+- uid: Meridian.Storage.Services.MigrationRecord.CompressionChange*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.CompressionChange
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord_CompressionChange
+  name: CompressionChange
+  nameWithType: MigrationRecord.CompressionChange
+  fullName: Meridian.Storage.Services.MigrationRecord.CompressionChange
+- uid: Meridian.Storage.Services.MigrationRecord.FormatChange*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.FormatChange
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord_FormatChange
+  name: FormatChange
+  nameWithType: MigrationRecord.FormatChange
+  fullName: Meridian.Storage.Services.MigrationRecord.FormatChange
+- uid: Meridian.Storage.Services.MigrationRecord.BytesBefore*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.BytesBefore
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord_BytesBefore
+  name: BytesBefore
+  nameWithType: MigrationRecord.BytesBefore
+  fullName: Meridian.Storage.Services.MigrationRecord.BytesBefore
+- uid: Meridian.Storage.Services.MigrationRecord.BytesAfter*
+  commentId: Overload:Meridian.Storage.Services.MigrationRecord.BytesAfter
+  href: Meridian.Storage.Services.MigrationRecord.html#Meridian_Storage_Services_MigrationRecord_BytesAfter
+  name: BytesAfter
+  nameWithType: MigrationRecord.BytesAfter
+  fullName: Meridian.Storage.Services.MigrationRecord.BytesAfter

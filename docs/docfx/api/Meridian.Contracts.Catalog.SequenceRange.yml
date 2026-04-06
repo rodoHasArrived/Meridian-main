@@ -1,0 +1,555 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.SequenceRange
+  commentId: T:Meridian.Contracts.Catalog.SequenceRange
+  id: SequenceRange
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.SequenceRange.ActualCount
+  - Meridian.Contracts.Catalog.SequenceRange.ExpectedCount
+  - Meridian.Contracts.Catalog.SequenceRange.FirstSequence
+  - Meridian.Contracts.Catalog.SequenceRange.GapsDetected
+  - Meridian.Contracts.Catalog.SequenceRange.LastSequence
+  langs:
+  - csharp
+  - vb
+  name: SequenceRange
+  nameWithType: SequenceRange
+  fullName: Meridian.Contracts.Catalog.SequenceRange
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceRange
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Sequence range for data ordering verification.
+  example: []
+  syntax:
+    content: public sealed class SequenceRange
+    content.vb: Public NotInheritable Class SequenceRange
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.SequenceRange.FirstSequence
+  commentId: P:Meridian.Contracts.Catalog.SequenceRange.FirstSequence
+  id: FirstSequence
+  parent: Meridian.Contracts.Catalog.SequenceRange
+  langs:
+  - csharp
+  - vb
+  name: FirstSequence
+  nameWithType: SequenceRange.FirstSequence
+  fullName: Meridian.Contracts.Catalog.SequenceRange.FirstSequence
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstSequence
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 265
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: First sequence number observed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("firstSequence")]
+
+      public long FirstSequence { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("firstSequence")>
+
+      Public Property FirstSequence As Long
+  overload: Meridian.Contracts.Catalog.SequenceRange.FirstSequence*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: firstSequence
+- uid: Meridian.Contracts.Catalog.SequenceRange.LastSequence
+  commentId: P:Meridian.Contracts.Catalog.SequenceRange.LastSequence
+  id: LastSequence
+  parent: Meridian.Contracts.Catalog.SequenceRange
+  langs:
+  - csharp
+  - vb
+  name: LastSequence
+  nameWithType: SequenceRange.LastSequence
+  fullName: Meridian.Contracts.Catalog.SequenceRange.LastSequence
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastSequence
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Last sequence number observed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastSequence")]
+
+      public long LastSequence { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("lastSequence")>
+
+      Public Property LastSequence As Long
+  overload: Meridian.Contracts.Catalog.SequenceRange.LastSequence*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastSequence
+- uid: Meridian.Contracts.Catalog.SequenceRange.GapsDetected
+  commentId: P:Meridian.Contracts.Catalog.SequenceRange.GapsDetected
+  id: GapsDetected
+  parent: Meridian.Contracts.Catalog.SequenceRange
+  langs:
+  - csharp
+  - vb
+  name: GapsDetected
+  nameWithType: SequenceRange.GapsDetected
+  fullName: Meridian.Contracts.Catalog.SequenceRange.GapsDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsDetected
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Number of gaps detected in sequence.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("gapsDetected")]
+
+      public int GapsDetected { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("gapsDetected")>
+
+      Public Property GapsDetected As Integer
+  overload: Meridian.Contracts.Catalog.SequenceRange.GapsDetected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: gapsDetected
+- uid: Meridian.Contracts.Catalog.SequenceRange.ExpectedCount
+  commentId: P:Meridian.Contracts.Catalog.SequenceRange.ExpectedCount
+  id: ExpectedCount
+  parent: Meridian.Contracts.Catalog.SequenceRange
+  langs:
+  - csharp
+  - vb
+  name: ExpectedCount
+  nameWithType: SequenceRange.ExpectedCount
+  fullName: Meridian.Contracts.Catalog.SequenceRange.ExpectedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedCount
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Expected total based on sequence range.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("expectedCount")]
+
+      public long ExpectedCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("expectedCount")>
+
+      Public Property ExpectedCount As Long
+  overload: Meridian.Contracts.Catalog.SequenceRange.ExpectedCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: expectedCount
+- uid: Meridian.Contracts.Catalog.SequenceRange.ActualCount
+  commentId: P:Meridian.Contracts.Catalog.SequenceRange.ActualCount
+  id: ActualCount
+  parent: Meridian.Contracts.Catalog.SequenceRange
+  langs:
+  - csharp
+  - vb
+  name: ActualCount
+  nameWithType: SequenceRange.ActualCount
+  fullName: Meridian.Contracts.Catalog.SequenceRange.ActualCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActualCount
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Actual count recorded.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("actualCount")]
+
+      public long ActualCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("actualCount")>
+
+      Public Property ActualCount As Long
+  overload: Meridian.Contracts.Catalog.SequenceRange.ActualCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: actualCount
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.SequenceRange.FirstSequence*
+  commentId: Overload:Meridian.Contracts.Catalog.SequenceRange.FirstSequence
+  href: Meridian.Contracts.Catalog.SequenceRange.html#Meridian_Contracts_Catalog_SequenceRange_FirstSequence
+  name: FirstSequence
+  nameWithType: SequenceRange.FirstSequence
+  fullName: Meridian.Contracts.Catalog.SequenceRange.FirstSequence
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Catalog.SequenceRange.LastSequence*
+  commentId: Overload:Meridian.Contracts.Catalog.SequenceRange.LastSequence
+  href: Meridian.Contracts.Catalog.SequenceRange.html#Meridian_Contracts_Catalog_SequenceRange_LastSequence
+  name: LastSequence
+  nameWithType: SequenceRange.LastSequence
+  fullName: Meridian.Contracts.Catalog.SequenceRange.LastSequence
+- uid: Meridian.Contracts.Catalog.SequenceRange.GapsDetected*
+  commentId: Overload:Meridian.Contracts.Catalog.SequenceRange.GapsDetected
+  href: Meridian.Contracts.Catalog.SequenceRange.html#Meridian_Contracts_Catalog_SequenceRange_GapsDetected
+  name: GapsDetected
+  nameWithType: SequenceRange.GapsDetected
+  fullName: Meridian.Contracts.Catalog.SequenceRange.GapsDetected
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Catalog.SequenceRange.ExpectedCount*
+  commentId: Overload:Meridian.Contracts.Catalog.SequenceRange.ExpectedCount
+  href: Meridian.Contracts.Catalog.SequenceRange.html#Meridian_Contracts_Catalog_SequenceRange_ExpectedCount
+  name: ExpectedCount
+  nameWithType: SequenceRange.ExpectedCount
+  fullName: Meridian.Contracts.Catalog.SequenceRange.ExpectedCount
+- uid: Meridian.Contracts.Catalog.SequenceRange.ActualCount*
+  commentId: Overload:Meridian.Contracts.Catalog.SequenceRange.ActualCount
+  href: Meridian.Contracts.Catalog.SequenceRange.html#Meridian_Contracts_Catalog_SequenceRange_ActualCount
+  name: ActualCount
+  nameWithType: SequenceRange.ActualCount
+  fullName: Meridian.Contracts.Catalog.SequenceRange.ActualCount

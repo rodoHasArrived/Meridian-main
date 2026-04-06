@@ -1,0 +1,604 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.BatchBacktestRun
+  commentId: T:Meridian.Backtesting.BatchBacktestRun
+  id: BatchBacktestRun
+  parent: Meridian.Backtesting
+  children:
+  - Meridian.Backtesting.BatchBacktestRun.DurationMs
+  - Meridian.Backtesting.BatchBacktestRun.ErrorMessage
+  - Meridian.Backtesting.BatchBacktestRun.Parameters
+  - Meridian.Backtesting.BatchBacktestRun.Result
+  langs:
+  - csharp
+  - vb
+  name: BatchBacktestRun
+  nameWithType: BatchBacktestRun
+  fullName: Meridian.Backtesting.BatchBacktestRun
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchBacktestRun
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Single run within a batch backtest sweep.
+  example: []
+  syntax:
+    content: public sealed class BatchBacktestRun
+    content.vb: Public NotInheritable Class BatchBacktestRun
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.BatchBacktestRun.Parameters
+  commentId: P:Meridian.Backtesting.BatchBacktestRun.Parameters
+  id: Parameters
+  parent: Meridian.Backtesting.BatchBacktestRun
+  langs:
+  - csharp
+  - vb
+  name: Parameters
+  nameWithType: BatchBacktestRun.Parameters
+  fullName: Meridian.Backtesting.BatchBacktestRun.Parameters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parameters
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Parameter values used in this run.
+  example: []
+  syntax:
+    content: public required Dictionary<string, object> Parameters { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+    content.vb: Public Property Parameters As Dictionary(Of String, Object)
+  overload: Meridian.Backtesting.BatchBacktestRun.Parameters*
+- uid: Meridian.Backtesting.BatchBacktestRun.Result
+  commentId: P:Meridian.Backtesting.BatchBacktestRun.Result
+  id: Result
+  parent: Meridian.Backtesting.BatchBacktestRun
+  langs:
+  - csharp
+  - vb
+  name: Result
+  nameWithType: BatchBacktestRun.Result
+  fullName: Meridian.Backtesting.BatchBacktestRun.Result
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Result
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Backtest result, or null if the run failed.
+  example: []
+  syntax:
+    content: public BacktestResult? Result { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestResult
+    content.vb: Public Property Result As BacktestResult
+  overload: Meridian.Backtesting.BatchBacktestRun.Result*
+- uid: Meridian.Backtesting.BatchBacktestRun.DurationMs
+  commentId: P:Meridian.Backtesting.BatchBacktestRun.DurationMs
+  id: DurationMs
+  parent: Meridian.Backtesting.BatchBacktestRun
+  langs:
+  - csharp
+  - vb
+  name: DurationMs
+  nameWithType: BatchBacktestRun.DurationMs
+  fullName: Meridian.Backtesting.BatchBacktestRun.DurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DurationMs
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Duration in milliseconds.
+  example: []
+  syntax:
+    content: public long DurationMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DurationMs As Long
+  overload: Meridian.Backtesting.BatchBacktestRun.DurationMs*
+- uid: Meridian.Backtesting.BatchBacktestRun.ErrorMessage
+  commentId: P:Meridian.Backtesting.BatchBacktestRun.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Backtesting.BatchBacktestRun
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: BatchBacktestRun.ErrorMessage
+  fullName: Meridian.Backtesting.BatchBacktestRun.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Error message if the run failed, null otherwise.
+  example: []
+  syntax:
+    content: public string? ErrorMessage { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Meridian.Backtesting.BatchBacktestRun.ErrorMessage*
+references:
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  href: Meridian.html
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.BatchBacktestRun.Parameters*
+  commentId: Overload:Meridian.Backtesting.BatchBacktestRun.Parameters
+  href: Meridian.Backtesting.BatchBacktestRun.html#Meridian_Backtesting_BatchBacktestRun_Parameters
+  name: Parameters
+  nameWithType: BatchBacktestRun.Parameters
+  fullName: Meridian.Backtesting.BatchBacktestRun.Parameters
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.BatchBacktestRun.Result*
+  commentId: Overload:Meridian.Backtesting.BatchBacktestRun.Result
+  href: Meridian.Backtesting.BatchBacktestRun.html#Meridian_Backtesting_BatchBacktestRun_Result
+  name: Result
+  nameWithType: BatchBacktestRun.Result
+  fullName: Meridian.Backtesting.BatchBacktestRun.Result
+- uid: Meridian.Backtesting.Sdk.BacktestResult
+  commentId: T:Meridian.Backtesting.Sdk.BacktestResult
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestResult.html
+  name: BacktestResult
+  nameWithType: BacktestResult
+  fullName: Meridian.Backtesting.Sdk.BacktestResult
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.BatchBacktestRun.DurationMs*
+  commentId: Overload:Meridian.Backtesting.BatchBacktestRun.DurationMs
+  href: Meridian.Backtesting.BatchBacktestRun.html#Meridian_Backtesting_BatchBacktestRun_DurationMs
+  name: DurationMs
+  nameWithType: BatchBacktestRun.DurationMs
+  fullName: Meridian.Backtesting.BatchBacktestRun.DurationMs
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Backtesting.BatchBacktestRun.ErrorMessage*
+  commentId: Overload:Meridian.Backtesting.BatchBacktestRun.ErrorMessage
+  href: Meridian.Backtesting.BatchBacktestRun.html#Meridian_Backtesting_BatchBacktestRun_ErrorMessage
+  name: ErrorMessage
+  nameWithType: BatchBacktestRun.ErrorMessage
+  fullName: Meridian.Backtesting.BatchBacktestRun.ErrorMessage
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

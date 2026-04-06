@@ -1,0 +1,457 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync
+  commentId: T:Meridian.Execution.Sdk.IBrokeragePositionSync
+  id: IBrokeragePositionSync
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync(System.Threading.CancellationToken)
+  - Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IBrokeragePositionSync
+  nameWithType: IBrokeragePositionSync
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBrokeragePositionSync
+    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: >-
+    Provides read-only access to live positions and account summaries from a connected brokerage.
+
+    Implement this interface on each <xref href="Meridian.Execution.Sdk.IBrokerageGateway" data-throw-if-not-resolved="false"></xref> that supports position queries.
+
+
+    <p>
+
+    Return types use primitive/value representations so that <code>Meridian.Execution.Sdk</code>
+
+    has no dependency on <code>Meridian.Execution.Models</code> types.
+
+    </p>
+  example: []
+  syntax:
+    content: public interface IBrokeragePositionSync
+    content.vb: Public Interface IBrokeragePositionSync
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync(System.String,System.Threading.CancellationToken)
+  id: GetCurrentPositionsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Sdk.IBrokeragePositionSync
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentPositionsAsync(string, CancellationToken)
+  nameWithType: IBrokeragePositionSync.GetCurrentPositionsAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentPositionsAsync
+    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Returns all open positions for the given <code class="paramref">accountId</code> as raw DTOs.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<BrokeragePositionDto>> GetCurrentPositionsAsync(string accountId, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.BrokeragePositionDto}}
+    content.vb: Function GetCurrentPositionsAsync(accountId As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of BrokeragePositionDto))
+  overload: Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync*
+  nameWithType.vb: IBrokeragePositionSync.GetCurrentPositionsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetCurrentPositionsAsync(String, CancellationToken)
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync(System.String,System.Threading.CancellationToken)
+  id: GetAccountSummaryAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Sdk.IBrokeragePositionSync
+  langs:
+  - csharp
+  - vb
+  name: GetAccountSummaryAsync(string, CancellationToken)
+  nameWithType: IBrokeragePositionSync.GetAccountSummaryAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAccountSummaryAsync
+    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Returns a lightweight account summary for the given account.
+  example: []
+  syntax:
+    content: Task<BrokerageAccountSummaryDto> GetAccountSummaryAsync(string accountId, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Sdk.BrokerageAccountSummaryDto}
+    content.vb: Function GetAccountSummaryAsync(accountId As String, ct As CancellationToken = Nothing) As Task(Of BrokerageAccountSummaryDto)
+  overload: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync*
+  nameWithType.vb: IBrokeragePositionSync.GetAccountSummaryAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync(String, System.Threading.CancellationToken)
+  name.vb: GetAccountSummaryAsync(String, CancellationToken)
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync(System.Threading.CancellationToken)
+  id: GetAllAccountsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Sdk.IBrokeragePositionSync
+  langs:
+  - csharp
+  - vb
+  name: GetAllAccountsAsync(CancellationToken)
+  nameWithType: IBrokeragePositionSync.GetAllAccountsAsync(CancellationToken)
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllAccountsAsync
+    path: ../../src/Meridian.Execution.Sdk/IBrokeragePositionSync.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Lists all account IDs accessible via this brokerage connection.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<string>> GetAllAccountsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+    content.vb: Function GetAllAccountsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of String))
+  overload: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync*
+references:
+- uid: Meridian.Execution.Sdk.IBrokerageGateway
+  commentId: T:Meridian.Execution.Sdk.IBrokerageGateway
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IBrokerageGateway.html
+  name: IBrokerageGateway
+  nameWithType: IBrokerageGateway
+  fullName: Meridian.Execution.Sdk.IBrokerageGateway
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync*
+  commentId: Overload:Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync
+  href: Meridian.Execution.Sdk.IBrokeragePositionSync.html#Meridian_Execution_Sdk_IBrokeragePositionSync_GetCurrentPositionsAsync_System_String_System_Threading_CancellationToken_
+  name: GetCurrentPositionsAsync
+  nameWithType: IBrokeragePositionSync.GetCurrentPositionsAsync
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync.GetCurrentPositionsAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.BrokeragePositionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.BrokeragePositionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<BrokeragePositionDto>>
+  nameWithType: Task<IReadOnlyList<BrokeragePositionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.BrokeragePositionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of BrokeragePositionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.BrokeragePositionDto))
+  name.vb: Task(Of IReadOnlyList(Of BrokeragePositionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.BrokeragePositionDto
+    name: BrokeragePositionDto
+    href: Meridian.Execution.Sdk.BrokeragePositionDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.BrokeragePositionDto
+    name: BrokeragePositionDto
+    href: Meridian.Execution.Sdk.BrokeragePositionDto.html
+  - name: )
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync*
+  commentId: Overload:Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync
+  href: Meridian.Execution.Sdk.IBrokeragePositionSync.html#Meridian_Execution_Sdk_IBrokeragePositionSync_GetAccountSummaryAsync_System_String_System_Threading_CancellationToken_
+  name: GetAccountSummaryAsync
+  nameWithType: IBrokeragePositionSync.GetAccountSummaryAsync
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAccountSummaryAsync
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Sdk.BrokerageAccountSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Sdk.BrokerageAccountSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BrokerageAccountSummaryDto>
+  nameWithType: Task<BrokerageAccountSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Sdk.BrokerageAccountSummaryDto>
+  nameWithType.vb: Task(Of BrokerageAccountSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Sdk.BrokerageAccountSummaryDto)
+  name.vb: Task(Of BrokerageAccountSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.BrokerageAccountSummaryDto
+    name: BrokerageAccountSummaryDto
+    href: Meridian.Execution.Sdk.BrokerageAccountSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.BrokerageAccountSummaryDto
+    name: BrokerageAccountSummaryDto
+    href: Meridian.Execution.Sdk.BrokerageAccountSummaryDto.html
+  - name: )
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync*
+  commentId: Overload:Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync
+  href: Meridian.Execution.Sdk.IBrokeragePositionSync.html#Meridian_Execution_Sdk_IBrokeragePositionSync_GetAllAccountsAsync_System_Threading_CancellationToken_
+  name: GetAllAccountsAsync
+  nameWithType: IBrokeragePositionSync.GetAllAccountsAsync
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync.GetAllAccountsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<string>>
+  nameWithType: Task<IReadOnlyList<string>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of String))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: Task(Of IReadOnlyList(Of String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )

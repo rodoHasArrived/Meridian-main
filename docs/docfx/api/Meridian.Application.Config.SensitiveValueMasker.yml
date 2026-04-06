@@ -1,0 +1,1125 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.SensitiveValueMasker
+  commentId: T:Meridian.Application.Config.SensitiveValueMasker
+  id: SensitiveValueMasker
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.SensitiveValueMasker.DefaultPrefixLength
+  - Meridian.Application.Config.SensitiveValueMasker.DefaultSuffixLength
+  - Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential(System.String,System.String)
+  - Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables(System.String)
+  - Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar(System.String)
+  - Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty(System.String)
+  - Meridian.Application.Config.SensitiveValueMasker.Mask(System.String,System.Int32,System.Int32)
+  - Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions(System.String,System.String,System.String,System.Boolean)
+  - Meridian.Application.Config.SensitiveValueMasker.MaskChar
+  - Meridian.Application.Config.SensitiveValueMasker.MaskCompletely(System.String)
+  - Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString(System.String)
+  - Meridian.Application.Config.SensitiveValueMasker.MaskDictionary(System.Collections.Generic.IDictionary{System.String,System.String})
+  - Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive(System.String,System.String)
+  - Meridian.Application.Config.SensitiveValueMasker.MinLengthForPartialMask
+  langs:
+  - csharp
+  - vb
+  name: SensitiveValueMasker
+  nameWithType: SensitiveValueMasker
+  fullName: Meridian.Application.Config.SensitiveValueMasker
+  type: Class
+  source:
+    id: SensitiveValueMasker
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Application\obj\Release\net9.0\System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: >-
+    Utility for masking sensitive values in logs, diagnostics, and configuration displays.
+
+    Part of the data quality framework (QW-78) to prevent accidental exposure of credentials.
+  remarks: >-
+    Masks API keys, secret keys, passwords, tokens, and other sensitive values
+
+    while preserving enough information for debugging (first/last few characters).
+  example: []
+  syntax:
+    content: public static class SensitiveValueMasker
+    content.vb: Public Module SensitiveValueMasker
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.SensitiveValueMasker.DefaultPrefixLength
+  commentId: F:Meridian.Application.Config.SensitiveValueMasker.DefaultPrefixLength
+  id: DefaultPrefixLength
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: DefaultPrefixLength
+  nameWithType: SensitiveValueMasker.DefaultPrefixLength
+  fullName: Meridian.Application.Config.SensitiveValueMasker.DefaultPrefixLength
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultPrefixLength
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Default number of characters to show at the start of a masked value.
+  example: []
+  syntax:
+    content: public const int DefaultPrefixLength = 4
+    return:
+      type: System.Int32
+    content.vb: Public Const DefaultPrefixLength As Integer = 4
+- uid: Meridian.Application.Config.SensitiveValueMasker.DefaultSuffixLength
+  commentId: F:Meridian.Application.Config.SensitiveValueMasker.DefaultSuffixLength
+  id: DefaultSuffixLength
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: DefaultSuffixLength
+  nameWithType: SensitiveValueMasker.DefaultSuffixLength
+  fullName: Meridian.Application.Config.SensitiveValueMasker.DefaultSuffixLength
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultSuffixLength
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Default number of characters to show at the end of a masked value.
+  example: []
+  syntax:
+    content: public const int DefaultSuffixLength = 4
+    return:
+      type: System.Int32
+    content.vb: Public Const DefaultSuffixLength As Integer = 4
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskChar
+  commentId: F:Meridian.Application.Config.SensitiveValueMasker.MaskChar
+  id: MaskChar
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: MaskChar
+  nameWithType: SensitiveValueMasker.MaskChar
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskChar
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaskChar
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: The mask character used to replace hidden characters.
+  example: []
+  syntax:
+    content: public const char MaskChar = '*'
+    return:
+      type: System.Char
+    content.vb: Public Const MaskChar As Char = "*"c
+- uid: Meridian.Application.Config.SensitiveValueMasker.MinLengthForPartialMask
+  commentId: F:Meridian.Application.Config.SensitiveValueMasker.MinLengthForPartialMask
+  id: MinLengthForPartialMask
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: MinLengthForPartialMask
+  nameWithType: SensitiveValueMasker.MinLengthForPartialMask
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MinLengthForPartialMask
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinLengthForPartialMask
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Minimum length for partial masking. Values shorter than this are fully masked.
+  example: []
+  syntax:
+    content: public const int MinLengthForPartialMask = 12
+    return:
+      type: System.Int32
+    content.vb: Public Const MinLengthForPartialMask As Integer = 12
+- uid: Meridian.Application.Config.SensitiveValueMasker.Mask(System.String,System.Int32,System.Int32)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.Mask(System.String,System.Int32,System.Int32)
+  id: Mask(System.String,System.Int32,System.Int32)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: Mask(string?, int, int)
+  nameWithType: SensitiveValueMasker.Mask(string?, int, int)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.Mask(string?, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mask
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Masks a sensitive value, showing only the first and last few characters.
+  example: []
+  syntax:
+    content: public static string Mask(string? value, int prefixLength = 4, int suffixLength = 4)
+    parameters:
+    - id: value
+      type: System.String
+      description: The value to mask.
+    - id: prefixLength
+      type: System.Int32
+      description: Number of characters to show at the start.
+    - id: suffixLength
+      type: System.Int32
+      description: Number of characters to show at the end.
+    return:
+      type: System.String
+      description: The masked value.
+    content.vb: Public Shared Function Mask(value As String, prefixLength As Integer = 4, suffixLength As Integer = 4) As String
+  overload: Meridian.Application.Config.SensitiveValueMasker.Mask*
+  nameWithType.vb: SensitiveValueMasker.Mask(String, Integer, Integer)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.Mask(String, Integer, Integer)
+  name.vb: Mask(String, Integer, Integer)
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskCompletely(System.String)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.MaskCompletely(System.String)
+  id: MaskCompletely(System.String)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: MaskCompletely(string?)
+  nameWithType: SensitiveValueMasker.MaskCompletely(string?)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskCompletely(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaskCompletely
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Masks a value completely, showing only the length.
+  example: []
+  syntax:
+    content: public static string MaskCompletely(string? value)
+    parameters:
+    - id: value
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function MaskCompletely(value As String) As String
+  overload: Meridian.Application.Config.SensitiveValueMasker.MaskCompletely*
+  nameWithType.vb: SensitiveValueMasker.MaskCompletely(String)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.MaskCompletely(String)
+  name.vb: MaskCompletely(String)
+- uid: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty(System.String)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty(System.String)
+  id: IsSensitiveProperty(System.String)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: IsSensitiveProperty(string)
+  nameWithType: SensitiveValueMasker.IsSensitiveProperty(string)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSensitiveProperty
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Checks if a property name is considered sensitive.
+  example: []
+  syntax:
+    content: public static bool IsSensitiveProperty(string propertyName)
+    parameters:
+    - id: propertyName
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function IsSensitiveProperty(propertyName As String) As Boolean
+  overload: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty*
+  nameWithType.vb: SensitiveValueMasker.IsSensitiveProperty(String)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty(String)
+  name.vb: IsSensitiveProperty(String)
+- uid: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar(System.String)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar(System.String)
+  id: IsSensitiveEnvVar(System.String)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: IsSensitiveEnvVar(string)
+  nameWithType: SensitiveValueMasker.IsSensitiveEnvVar(string)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSensitiveEnvVar
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Checks if an environment variable name is considered sensitive.
+  example: []
+  syntax:
+    content: public static bool IsSensitiveEnvVar(string envVarName)
+    parameters:
+    - id: envVarName
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function IsSensitiveEnvVar(envVarName As String) As Boolean
+  overload: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar*
+  nameWithType.vb: SensitiveValueMasker.IsSensitiveEnvVar(String)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar(String)
+  name.vb: IsSensitiveEnvVar(String)
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive(System.String,System.String)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive(System.String,System.String)
+  id: MaskIfSensitive(System.String,System.String)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: MaskIfSensitive(string, string?)
+  nameWithType: SensitiveValueMasker.MaskIfSensitive(string, string?)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaskIfSensitive
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Masks a value if the property name is sensitive.
+  example: []
+  syntax:
+    content: public static string MaskIfSensitive(string propertyName, string? value)
+    parameters:
+    - id: propertyName
+      type: System.String
+      description: The property name.
+    - id: value
+      type: System.String
+      description: The value to potentially mask.
+    return:
+      type: System.String
+      description: The original or masked value.
+    content.vb: Public Shared Function MaskIfSensitive(propertyName As String, value As String) As String
+  overload: Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive*
+  nameWithType.vb: SensitiveValueMasker.MaskIfSensitive(String, String)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive(String, String)
+  name.vb: MaskIfSensitive(String, String)
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskDictionary(System.Collections.Generic.IDictionary{System.String,System.String})
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.MaskDictionary(System.Collections.Generic.IDictionary{System.String,System.String})
+  id: MaskDictionary(System.Collections.Generic.IDictionary{System.String,System.String})
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: MaskDictionary(IDictionary<string, string?>)
+  nameWithType: SensitiveValueMasker.MaskDictionary(IDictionary<string, string?>)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskDictionary(System.Collections.Generic.IDictionary<string, string?>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaskDictionary
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Masks sensitive values in a dictionary.
+  example: []
+  syntax:
+    content: public static Dictionary<string, string> MaskDictionary(IDictionary<string, string?> values)
+    parameters:
+    - id: values
+      type: System.Collections.Generic.IDictionary{System.String,System.String}
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Shared Function MaskDictionary(values As IDictionary(Of String, String)) As Dictionary(Of String, String)
+  overload: Meridian.Application.Config.SensitiveValueMasker.MaskDictionary*
+  nameWithType.vb: SensitiveValueMasker.MaskDictionary(IDictionary(Of String, String))
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.MaskDictionary(System.Collections.Generic.IDictionary(Of String, String))
+  name.vb: MaskDictionary(IDictionary(Of String, String))
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString(System.String)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString(System.String)
+  id: MaskConnectionString(System.String)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: MaskConnectionString(string?)
+  nameWithType: SensitiveValueMasker.MaskConnectionString(string?)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaskConnectionString
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Masks sensitive values in a connection string.
+  example: []
+  syntax:
+    content: public static string MaskConnectionString(string? connectionString)
+    parameters:
+    - id: connectionString
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function MaskConnectionString(connectionString As String) As String
+  overload: Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString*
+  nameWithType.vb: SensitiveValueMasker.MaskConnectionString(String)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString(String)
+  name.vb: MaskConnectionString(String)
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions(System.String,System.String,System.String,System.Boolean)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions(System.String,System.String,System.String,System.Boolean)
+  id: MaskAlpacaOptions(System.String,System.String,System.String,System.Boolean)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: MaskAlpacaOptions(string?, string?, string?, bool)
+  nameWithType: SensitiveValueMasker.MaskAlpacaOptions(string?, string?, string?, bool)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions(string?, string?, string?, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaskAlpacaOptions
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Creates a masked summary of AlpacaOptions for display.
+  example: []
+  syntax:
+    content: public static object MaskAlpacaOptions(string? keyId, string? secretKey, string? feed, bool useSandbox)
+    parameters:
+    - id: keyId
+      type: System.String
+    - id: secretKey
+      type: System.String
+    - id: feed
+      type: System.String
+    - id: useSandbox
+      type: System.Boolean
+    return:
+      type: System.Object
+    content.vb: Public Shared Function MaskAlpacaOptions(keyId As String, secretKey As String, feed As String, useSandbox As Boolean) As Object
+  overload: Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions*
+  nameWithType.vb: SensitiveValueMasker.MaskAlpacaOptions(String, String, String, Boolean)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions(String, String, String, Boolean)
+  name.vb: MaskAlpacaOptions(String, String, String, Boolean)
+- uid: Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential(System.String,System.String)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential(System.String,System.String)
+  id: FormatMaskedCredential(System.String,System.String)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: FormatMaskedCredential(string, string?)
+  nameWithType: SensitiveValueMasker.FormatMaskedCredential(string, string?)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FormatMaskedCredential
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Creates a masked summary of provider credentials for logging.
+  example: []
+  syntax:
+    content: public static string FormatMaskedCredential(string providerName, string? credential)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: credential
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function FormatMaskedCredential(providerName As String, credential As String) As String
+  overload: Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential*
+  nameWithType.vb: SensitiveValueMasker.FormatMaskedCredential(String, String)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential(String, String)
+  name.vb: FormatMaskedCredential(String, String)
+- uid: Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables(System.String)
+  commentId: M:Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables(System.String)
+  id: GetMaskedEnvironmentVariables(System.String)
+  parent: Meridian.Application.Config.SensitiveValueMasker
+  langs:
+  - csharp
+  - vb
+  name: GetMaskedEnvironmentVariables(string)
+  nameWithType: SensitiveValueMasker.GetMaskedEnvironmentVariables(string)
+  fullName: Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/SensitiveValueMasker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMaskedEnvironmentVariables
+    path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Gets all environment variables with sensitive values masked.
+  example: []
+  syntax:
+    content: public static Dictionary<string, string> GetMaskedEnvironmentVariables(string prefix = "MDC_")
+    parameters:
+    - id: prefix
+      type: System.String
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Shared Function GetMaskedEnvironmentVariables(prefix As String = "MDC_") As Dictionary(Of String, String)
+  overload: Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables*
+  nameWithType.vb: SensitiveValueMasker.GetMaskedEnvironmentVariables(String)
+  fullName.vb: Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables(String)
+  name.vb: GetMaskedEnvironmentVariables(String)
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Char
+  commentId: T:System.Char
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.char
+  name: char
+  nameWithType: char
+  fullName: char
+  nameWithType.vb: Char
+  fullName.vb: Char
+  name.vb: Char
+- uid: Meridian.Application.Config.SensitiveValueMasker.Mask*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.Mask
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_Mask_System_String_System_Int32_System_Int32_
+  name: Mask
+  nameWithType: SensitiveValueMasker.Mask
+  fullName: Meridian.Application.Config.SensitiveValueMasker.Mask
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskCompletely*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.MaskCompletely
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_MaskCompletely_System_String_
+  name: MaskCompletely
+  nameWithType: SensitiveValueMasker.MaskCompletely
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskCompletely
+- uid: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_IsSensitiveProperty_System_String_
+  name: IsSensitiveProperty
+  nameWithType: SensitiveValueMasker.IsSensitiveProperty
+  fullName: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveProperty
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_IsSensitiveEnvVar_System_String_
+  name: IsSensitiveEnvVar
+  nameWithType: SensitiveValueMasker.IsSensitiveEnvVar
+  fullName: Meridian.Application.Config.SensitiveValueMasker.IsSensitiveEnvVar
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_MaskIfSensitive_System_String_System_String_
+  name: MaskIfSensitive
+  nameWithType: SensitiveValueMasker.MaskIfSensitive
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskIfSensitive
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskDictionary*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.MaskDictionary
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_MaskDictionary_System_Collections_Generic_IDictionary_System_String_System_String__
+  name: MaskDictionary
+  nameWithType: SensitiveValueMasker.MaskDictionary
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskDictionary
+- uid: System.Collections.Generic.IDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.idictionary-2
+  name: IDictionary<string, string>
+  nameWithType: IDictionary<string, string>
+  fullName: System.Collections.Generic.IDictionary<string, string>
+  nameWithType.vb: IDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IDictionary(Of String, String)
+  name.vb: IDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IDictionary`2
+    name: IDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.idictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IDictionary`2
+    name: IDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.idictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IDictionary`2
+  commentId: T:System.Collections.Generic.IDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.idictionary-2
+  name: IDictionary<TKey, TValue>
+  nameWithType: IDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IDictionary<TKey, TValue>
+  nameWithType.vb: IDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IDictionary(Of TKey, TValue)
+  name.vb: IDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IDictionary`2
+    name: IDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.idictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IDictionary`2
+    name: IDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.idictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_MaskConnectionString_System_String_
+  name: MaskConnectionString
+  nameWithType: SensitiveValueMasker.MaskConnectionString
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskConnectionString
+- uid: Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_MaskAlpacaOptions_System_String_System_String_System_String_System_Boolean_
+  name: MaskAlpacaOptions
+  nameWithType: SensitiveValueMasker.MaskAlpacaOptions
+  fullName: Meridian.Application.Config.SensitiveValueMasker.MaskAlpacaOptions
+- uid: Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_FormatMaskedCredential_System_String_System_String_
+  name: FormatMaskedCredential
+  nameWithType: SensitiveValueMasker.FormatMaskedCredential
+  fullName: Meridian.Application.Config.SensitiveValueMasker.FormatMaskedCredential
+- uid: Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables*
+  commentId: Overload:Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables
+  href: Meridian.Application.Config.SensitiveValueMasker.html#Meridian_Application_Config_SensitiveValueMasker_GetMaskedEnvironmentVariables_System_String_
+  name: GetMaskedEnvironmentVariables
+  nameWithType: SensitiveValueMasker.GetMaskedEnvironmentVariables
+  fullName: Meridian.Application.Config.SensitiveValueMasker.GetMaskedEnvironmentVariables

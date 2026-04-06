@@ -1,0 +1,765 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry
+  commentId: T:Meridian.Ui.Services.Services.QualityScoreEntry
+  id: QualityScoreEntry
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount
+  - Meridian.Ui.Services.Services.QualityScoreEntry.DataType
+  - Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom
+  - Meridian.Ui.Services.Services.QualityScoreEntry.DateTo
+  - Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount
+  - Meridian.Ui.Services.Services.QualityScoreEntry.Grade
+  - Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed
+  - Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount
+  - Meridian.Ui.Services.Services.QualityScoreEntry.Path
+  - Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount
+  - Meridian.Ui.Services.Services.QualityScoreEntry.Score
+  - Meridian.Ui.Services.Services.QualityScoreEntry.Symbol
+  langs:
+  - csharp
+  - vb
+  name: QualityScoreEntry
+  nameWithType: QualityScoreEntry
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityScoreEntry
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public sealed class QualityScoreEntry
+    content.vb: Public NotInheritable Class QualityScoreEntry
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Path
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.Path
+  id: Path
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: QualityScoreEntry.Path
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Path { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.Path*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Symbol
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: QualityScoreEntry.Symbol
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.Symbol*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DataType
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.DataType
+  id: DataType
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: DataType
+  nameWithType: QualityScoreEntry.DataType
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DataType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataType
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string DataType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataType As String
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.DataType*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Score
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.Score
+  id: Score
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: QualityScoreEntry.Score
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public double Score { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Score As Double
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.Score*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Grade
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.Grade
+  id: Grade
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: Grade
+  nameWithType: QualityScoreEntry.Grade
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Grade
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Grade
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Grade { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Grade As String
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.Grade*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount
+  id: RecordCount
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: RecordCount
+  nameWithType: QualityScoreEntry.RecordCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordCount
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int RecordCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RecordCount As Integer
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount
+  id: MissingCount
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: MissingCount
+  nameWithType: QualityScoreEntry.MissingCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingCount
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int MissingCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MissingCount As Integer
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount
+  id: DuplicateCount
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: DuplicateCount
+  nameWithType: QualityScoreEntry.DuplicateCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuplicateCount
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int DuplicateCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DuplicateCount As Integer
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount
+  id: AnomalyCount
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: AnomalyCount
+  nameWithType: QualityScoreEntry.AnomalyCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyCount
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int AnomalyCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AnomalyCount As Integer
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom
+  id: DateFrom
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: DateFrom
+  nameWithType: QualityScoreEntry.DateFrom
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateFrom
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime DateFrom { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property DateFrom As Date
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DateTo
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.DateTo
+  id: DateTo
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: DateTo
+  nameWithType: QualityScoreEntry.DateTo
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DateTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateTo
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime DateTo { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property DateTo As Date
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.DateTo*
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed
+  commentId: P:Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed
+  id: LastAnalyzed
+  parent: Meridian.Ui.Services.Services.QualityScoreEntry
+  langs:
+  - csharp
+  - vb
+  name: LastAnalyzed
+  nameWithType: QualityScoreEntry.LastAnalyzed
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastAnalyzed
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime LastAnalyzed { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property LastAnalyzed As Date
+  overload: Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Path*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.Path
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_Path
+  name: Path
+  nameWithType: QualityScoreEntry.Path
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Path
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Symbol*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.Symbol
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_Symbol
+  name: Symbol
+  nameWithType: QualityScoreEntry.Symbol
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Symbol
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DataType*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.DataType
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_DataType
+  name: DataType
+  nameWithType: QualityScoreEntry.DataType
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DataType
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Score*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.Score
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_Score
+  name: Score
+  nameWithType: QualityScoreEntry.Score
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Score
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.Grade*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.Grade
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_Grade
+  name: Grade
+  nameWithType: QualityScoreEntry.Grade
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.Grade
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_RecordCount
+  name: RecordCount
+  nameWithType: QualityScoreEntry.RecordCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.RecordCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_MissingCount
+  name: MissingCount
+  nameWithType: QualityScoreEntry.MissingCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.MissingCount
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_DuplicateCount
+  name: DuplicateCount
+  nameWithType: QualityScoreEntry.DuplicateCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DuplicateCount
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_AnomalyCount
+  name: AnomalyCount
+  nameWithType: QualityScoreEntry.AnomalyCount
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.AnomalyCount
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_DateFrom
+  name: DateFrom
+  nameWithType: QualityScoreEntry.DateFrom
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DateFrom
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.DateTo*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.DateTo
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_DateTo
+  name: DateTo
+  nameWithType: QualityScoreEntry.DateTo
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.DateTo
+- uid: Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed
+  href: Meridian.Ui.Services.Services.QualityScoreEntry.html#Meridian_Ui_Services_Services_QualityScoreEntry_LastAnalyzed
+  name: LastAnalyzed
+  nameWithType: QualityScoreEntry.LastAnalyzed
+  fullName: Meridian.Ui.Services.Services.QualityScoreEntry.LastAnalyzed

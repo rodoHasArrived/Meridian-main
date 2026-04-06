@@ -1,0 +1,1192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService
+  commentId: T:Meridian.Application.Coordination.ClusterCoordinatorService
+  id: ClusterCoordinatorService
+  parent: Meridian.Application.Coordination
+  children:
+  - Meridian.Application.Coordination.ClusterCoordinatorService.#ctor(Meridian.Application.Coordination.ILeaseManager,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Coordination.ClusterCoordinatorService})
+  - Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId
+  - Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader
+  - Meridian.Application.Coordination.ClusterCoordinatorService.LeadershipChanged
+  - Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ClusterCoordinatorService
+  nameWithType: ClusterCoordinatorService
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClusterCoordinatorService
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: >-
+    Background service that maintains a single cluster coordinator via shared-storage lease competition.
+
+    Acquires the <code>leader/cluster-coordinator</code> lease on startup and renews it while running.
+
+    When the lease cannot be acquired or renewed, leadership is relinquished and the instance
+
+    transitions to follower mode.
+  remarks: >-
+    Registered as both <xref href="Meridian.Application.Coordination.IClusterCoordinator" data-throw-if-not-resolved="false"></xref> (singleton) and a hosted service
+
+    so that the election loop starts automatically with the application lifetime.
+  example: []
+  syntax:
+    content: 'public sealed class ClusterCoordinatorService : BackgroundService, IHostedService, IDisposable, IClusterCoordinator'
+    content.vb: Public NotInheritable Class ClusterCoordinatorService Inherits BackgroundService Implements IHostedService, IDisposable, IClusterCoordinator
+  inheritance:
+  - System.Object
+  - Microsoft.Extensions.Hosting.BackgroundService
+  implements:
+  - Microsoft.Extensions.Hosting.IHostedService
+  - System.IDisposable
+  - Meridian.Application.Coordination.IClusterCoordinator
+  inheritedMembers:
+  - Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  - Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  - Microsoft.Extensions.Hosting.BackgroundService.Dispose
+  - Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader
+  commentId: P:Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader
+  id: IsLeader
+  parent: Meridian.Application.Coordination.ClusterCoordinatorService
+  langs:
+  - csharp
+  - vb
+  name: IsLeader
+  nameWithType: ClusterCoordinatorService.IsLeader
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsLeader
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Gets whether this instance currently holds the coordinator lease.
+  example: []
+  syntax:
+    content: public bool IsLeader { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsLeader As Boolean
+  overload: Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader*
+  implements:
+  - Meridian.Application.Coordination.IClusterCoordinator.IsLeader
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId
+  commentId: P:Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId
+  id: InstanceId
+  parent: Meridian.Application.Coordination.ClusterCoordinatorService
+  langs:
+  - csharp
+  - vb
+  name: InstanceId
+  nameWithType: ClusterCoordinatorService.InstanceId
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstanceId
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Gets the stable instance identifier for this node.
+  example: []
+  syntax:
+    content: public string InstanceId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property InstanceId As String
+  overload: Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId*
+  implements:
+  - Meridian.Application.Coordination.IClusterCoordinator.InstanceId
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.LeadershipChanged
+  commentId: E:Meridian.Application.Coordination.ClusterCoordinatorService.LeadershipChanged
+  id: LeadershipChanged
+  parent: Meridian.Application.Coordination.ClusterCoordinatorService
+  langs:
+  - csharp
+  - vb
+  name: LeadershipChanged
+  nameWithType: ClusterCoordinatorService.LeadershipChanged
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.LeadershipChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeadershipChanged
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Fires when this instance gains or loses the coordinator role.
+  example: []
+  syntax:
+    content: public event EventHandler<LeadershipChangedEventArgs>? LeadershipChanged
+    return:
+      type: System.EventHandler{Meridian.Application.Coordination.LeadershipChangedEventArgs}
+    content.vb: Public Event LeadershipChanged As EventHandler(Of LeadershipChangedEventArgs)
+  implements:
+  - Meridian.Application.Coordination.IClusterCoordinator.LeadershipChanged
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.#ctor(Meridian.Application.Coordination.ILeaseManager,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Coordination.ClusterCoordinatorService})
+  commentId: M:Meridian.Application.Coordination.ClusterCoordinatorService.#ctor(Meridian.Application.Coordination.ILeaseManager,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Coordination.ClusterCoordinatorService})
+  id: '#ctor(Meridian.Application.Coordination.ILeaseManager,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Coordination.ClusterCoordinatorService})'
+  parent: Meridian.Application.Coordination.ClusterCoordinatorService
+  langs:
+  - csharp
+  - vb
+  name: ClusterCoordinatorService(ILeaseManager, ILogger<ClusterCoordinatorService>)
+  nameWithType: ClusterCoordinatorService.ClusterCoordinatorService(ILeaseManager, ILogger<ClusterCoordinatorService>)
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.ClusterCoordinatorService(Meridian.Application.Coordination.ILeaseManager, Microsoft.Extensions.Logging.ILogger<Meridian.Application.Coordination.ClusterCoordinatorService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public ClusterCoordinatorService(ILeaseManager leaseManager, ILogger<ClusterCoordinatorService> logger)
+    parameters:
+    - id: leaseManager
+      type: Meridian.Application.Coordination.ILeaseManager
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Coordination.ClusterCoordinatorService}
+    content.vb: Public Sub New(leaseManager As ILeaseManager, logger As ILogger(Of ClusterCoordinatorService))
+  overload: Meridian.Application.Coordination.ClusterCoordinatorService.#ctor*
+  nameWithType.vb: ClusterCoordinatorService.New(ILeaseManager, ILogger(Of ClusterCoordinatorService))
+  fullName.vb: Meridian.Application.Coordination.ClusterCoordinatorService.New(Meridian.Application.Coordination.ILeaseManager, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Coordination.ClusterCoordinatorService))
+  name.vb: New(ILeaseManager, ILogger(Of ClusterCoordinatorService))
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync(System.Threading.CancellationToken)
+  id: ExecuteAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ClusterCoordinatorService
+  langs:
+  - csharp
+  - vb
+  name: ExecuteAsync(CancellationToken)
+  nameWithType: ClusterCoordinatorService.ExecuteAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteAsync
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: 'Runs the election loop: attempts to become leader every 5 seconds while coordination is enabled.'
+  example: []
+  syntax:
+    content: protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    parameters:
+    - id: stoppingToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Overrides Function ExecuteAsync(stoppingToken As CancellationToken) As Task
+  overridden: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  overload: Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync*
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  id: TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ClusterCoordinatorService
+  langs:
+  - csharp
+  - vb
+  name: TryBecomeLeaderAsync(CancellationToken)
+  nameWithType: ClusterCoordinatorService.TryBecomeLeaderAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryBecomeLeaderAsync
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: >-
+    Attempts to acquire (or confirm) the coordinator lease.
+
+    Safe to call repeatedly; returns <code>false</code> if another healthy instance is already the leader.
+  example: []
+  syntax:
+    content: public Task<bool> TryBecomeLeaderAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function TryBecomeLeaderAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync*
+  implements:
+  - Meridian.Application.Coordination.IClusterCoordinator.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync(System.Threading.CancellationToken)
+  id: StepDownAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ClusterCoordinatorService
+  langs:
+  - csharp
+  - vb
+  name: StepDownAsync(CancellationToken)
+  nameWithType: ClusterCoordinatorService.StepDownAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StepDownAsync
+    path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: >-
+    Voluntarily yields coordinator leadership so that another instance may take over.
+
+    Used by <xref href="Meridian.Application.Coordination.SplitBrainDetector" data-throw-if-not-resolved="false"></xref> and rolling-upgrade orchestration.
+  example: []
+  syntax:
+    content: public Task StepDownAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StepDownAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync*
+  implements:
+  - Meridian.Application.Coordination.IClusterCoordinator.StepDownAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.Coordination.IClusterCoordinator
+  commentId: T:Meridian.Application.Coordination.IClusterCoordinator
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.IClusterCoordinator.html
+  name: IClusterCoordinator
+  nameWithType: IClusterCoordinator
+  fullName: Meridian.Application.Coordination.IClusterCoordinator
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Microsoft.Extensions.Hosting.BackgroundService
+  commentId: T:Microsoft.Extensions.Hosting.BackgroundService
+  parent: Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice
+  name: BackgroundService
+  nameWithType: BackgroundService
+  fullName: Microsoft.Extensions.Hosting.BackgroundService
+- uid: Microsoft.Extensions.Hosting.IHostedService
+  commentId: T:Microsoft.Extensions.Hosting.IHostedService
+  parent: Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.ihostedservice
+  name: IHostedService
+  nameWithType: IHostedService
+  fullName: Microsoft.Extensions.Hosting.IHostedService
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.startasync
+  name: StartAsync(CancellationToken)
+  nameWithType: BackgroundService.StartAsync(CancellationToken)
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+    name: StartAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.startasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+    name: StartAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.startasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.stopasync
+  name: StopAsync(CancellationToken)
+  nameWithType: BackgroundService.StopAsync(CancellationToken)
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.stopasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.stopasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Microsoft.Extensions.Hosting.BackgroundService.Dispose
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.Dispose
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.dispose
+  name: Dispose()
+  nameWithType: BackgroundService.Dispose()
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.Dispose()
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.dispose
+  - name: (
+  - name: )
+- uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+  commentId: P:Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executetask
+  name: ExecuteTask
+  nameWithType: BackgroundService.ExecuteTask
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Microsoft.Extensions.Hosting
+  commentId: N:Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Hosting
+  nameWithType: Microsoft.Extensions.Hosting
+  fullName: Microsoft.Extensions.Hosting
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Hosting
+    name: Hosting
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Hosting
+    name: Hosting
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader*
+  commentId: Overload:Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader
+  href: Meridian.Application.Coordination.ClusterCoordinatorService.html#Meridian_Application_Coordination_ClusterCoordinatorService_IsLeader
+  name: IsLeader
+  nameWithType: ClusterCoordinatorService.IsLeader
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.IsLeader
+- uid: Meridian.Application.Coordination.IClusterCoordinator.IsLeader
+  commentId: P:Meridian.Application.Coordination.IClusterCoordinator.IsLeader
+  parent: Meridian.Application.Coordination.IClusterCoordinator
+  href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_IsLeader
+  name: IsLeader
+  nameWithType: IClusterCoordinator.IsLeader
+  fullName: Meridian.Application.Coordination.IClusterCoordinator.IsLeader
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId*
+  commentId: Overload:Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId
+  href: Meridian.Application.Coordination.ClusterCoordinatorService.html#Meridian_Application_Coordination_ClusterCoordinatorService_InstanceId
+  name: InstanceId
+  nameWithType: ClusterCoordinatorService.InstanceId
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.InstanceId
+- uid: Meridian.Application.Coordination.IClusterCoordinator.InstanceId
+  commentId: P:Meridian.Application.Coordination.IClusterCoordinator.InstanceId
+  parent: Meridian.Application.Coordination.IClusterCoordinator
+  href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_InstanceId
+  name: InstanceId
+  nameWithType: IClusterCoordinator.InstanceId
+  fullName: Meridian.Application.Coordination.IClusterCoordinator.InstanceId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Coordination.IClusterCoordinator.LeadershipChanged
+  commentId: E:Meridian.Application.Coordination.IClusterCoordinator.LeadershipChanged
+  parent: Meridian.Application.Coordination.IClusterCoordinator
+  href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_LeadershipChanged
+  name: LeadershipChanged
+  nameWithType: IClusterCoordinator.LeadershipChanged
+  fullName: Meridian.Application.Coordination.IClusterCoordinator.LeadershipChanged
+- uid: System.EventHandler{Meridian.Application.Coordination.LeadershipChangedEventArgs}
+  commentId: T:System.EventHandler{Meridian.Application.Coordination.LeadershipChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<LeadershipChangedEventArgs>
+  nameWithType: EventHandler<LeadershipChangedEventArgs>
+  fullName: System.EventHandler<Meridian.Application.Coordination.LeadershipChangedEventArgs>
+  nameWithType.vb: EventHandler(Of LeadershipChangedEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Application.Coordination.LeadershipChangedEventArgs)
+  name.vb: EventHandler(Of LeadershipChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Application.Coordination.LeadershipChangedEventArgs
+    name: LeadershipChangedEventArgs
+    href: Meridian.Application.Coordination.LeadershipChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Coordination.LeadershipChangedEventArgs
+    name: LeadershipChangedEventArgs
+    href: Meridian.Application.Coordination.LeadershipChangedEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.#ctor*
+  commentId: Overload:Meridian.Application.Coordination.ClusterCoordinatorService.#ctor
+  href: Meridian.Application.Coordination.ClusterCoordinatorService.html#Meridian_Application_Coordination_ClusterCoordinatorService__ctor_Meridian_Application_Coordination_ILeaseManager_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Coordination_ClusterCoordinatorService__
+  name: ClusterCoordinatorService
+  nameWithType: ClusterCoordinatorService.ClusterCoordinatorService
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.ClusterCoordinatorService
+  nameWithType.vb: ClusterCoordinatorService.New
+  fullName.vb: Meridian.Application.Coordination.ClusterCoordinatorService.New
+  name.vb: New
+- uid: Meridian.Application.Coordination.ILeaseManager
+  commentId: T:Meridian.Application.Coordination.ILeaseManager
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ILeaseManager.html
+  name: ILeaseManager
+  nameWithType: ILeaseManager
+  fullName: Meridian.Application.Coordination.ILeaseManager
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Coordination.ClusterCoordinatorService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Coordination.ClusterCoordinatorService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<ClusterCoordinatorService>
+  nameWithType: ILogger<ClusterCoordinatorService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Coordination.ClusterCoordinatorService>
+  nameWithType.vb: ILogger(Of ClusterCoordinatorService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Coordination.ClusterCoordinatorService)
+  name.vb: ILogger(Of ClusterCoordinatorService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Coordination.ClusterCoordinatorService
+    name: ClusterCoordinatorService
+    href: Meridian.Application.Coordination.ClusterCoordinatorService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Coordination.ClusterCoordinatorService
+    name: ClusterCoordinatorService
+    href: Meridian.Application.Coordination.ClusterCoordinatorService.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executeasync
+  name: ExecuteAsync(CancellationToken)
+  nameWithType: BackgroundService.ExecuteAsync(CancellationToken)
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+    name: ExecuteAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executeasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+    name: ExecuteAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executeasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync*
+  commentId: Overload:Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync
+  href: Meridian.Application.Coordination.ClusterCoordinatorService.html#Meridian_Application_Coordination_ClusterCoordinatorService_ExecuteAsync_System_Threading_CancellationToken_
+  name: ExecuteAsync
+  nameWithType: ClusterCoordinatorService.ExecuteAsync
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.ExecuteAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync*
+  commentId: Overload:Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync
+  href: Meridian.Application.Coordination.ClusterCoordinatorService.html#Meridian_Application_Coordination_ClusterCoordinatorService_TryBecomeLeaderAsync_System_Threading_CancellationToken_
+  name: TryBecomeLeaderAsync
+  nameWithType: ClusterCoordinatorService.TryBecomeLeaderAsync
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.TryBecomeLeaderAsync
+- uid: Meridian.Application.Coordination.IClusterCoordinator.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.IClusterCoordinator.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.IClusterCoordinator
+  isExternal: true
+  href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_TryBecomeLeaderAsync_System_Threading_CancellationToken_
+  name: TryBecomeLeaderAsync(CancellationToken)
+  nameWithType: IClusterCoordinator.TryBecomeLeaderAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.IClusterCoordinator.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.IClusterCoordinator.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+    name: TryBecomeLeaderAsync
+    href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_TryBecomeLeaderAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.IClusterCoordinator.TryBecomeLeaderAsync(System.Threading.CancellationToken)
+    name: TryBecomeLeaderAsync
+    href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_TryBecomeLeaderAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Coordination.SplitBrainDetector
+  commentId: T:Meridian.Application.Coordination.SplitBrainDetector
+  href: Meridian.Application.Coordination.SplitBrainDetector.html
+  name: SplitBrainDetector
+  nameWithType: SplitBrainDetector
+  fullName: Meridian.Application.Coordination.SplitBrainDetector
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync*
+  commentId: Overload:Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync
+  href: Meridian.Application.Coordination.ClusterCoordinatorService.html#Meridian_Application_Coordination_ClusterCoordinatorService_StepDownAsync_System_Threading_CancellationToken_
+  name: StepDownAsync
+  nameWithType: ClusterCoordinatorService.StepDownAsync
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService.StepDownAsync
+- uid: Meridian.Application.Coordination.IClusterCoordinator.StepDownAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.IClusterCoordinator.StepDownAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.IClusterCoordinator
+  isExternal: true
+  href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_StepDownAsync_System_Threading_CancellationToken_
+  name: StepDownAsync(CancellationToken)
+  nameWithType: IClusterCoordinator.StepDownAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.IClusterCoordinator.StepDownAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.IClusterCoordinator.StepDownAsync(System.Threading.CancellationToken)
+    name: StepDownAsync
+    href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_StepDownAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.IClusterCoordinator.StepDownAsync(System.Threading.CancellationToken)
+    name: StepDownAsync
+    href: Meridian.Application.Coordination.IClusterCoordinator.html#Meridian_Application_Coordination_IClusterCoordinator_StepDownAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )

@@ -1,0 +1,1723 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.BacktestRequest
+  commentId: T:Meridian.Backtesting.Sdk.BacktestRequest
+  id: BacktestRequest
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.BacktestRequest.#ctor(System.DateOnly,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.String},System.Decimal,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount},System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent},Meridian.Backtesting.Sdk.BacktestEngineMode,Meridian.Backtesting.Sdk.ExecutionModel,System.Decimal,Meridian.Backtesting.Sdk.BacktestCommissionKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Boolean,System.Double,System.Decimal,System.Boolean)
+  - Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+  - Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions
+  - Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate
+  - Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate
+  - Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents
+  - Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+  - Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum
+  - Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum
+  - Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate
+  - Meridian.Backtesting.Sdk.BacktestRequest.DataRoot
+  - Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId
+  - Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel
+  - Meridian.Backtesting.Sdk.BacktestRequest.EngineMode
+  - Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols
+  - Meridian.Backtesting.Sdk.BacktestRequest.From
+  - Meridian.Backtesting.Sdk.BacktestRequest.InitialCash
+  - Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient
+  - Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate
+  - Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts
+  - Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate
+  - Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints
+  - Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+  - Meridian.Backtesting.Sdk.BacktestRequest.Symbols
+  - Meridian.Backtesting.Sdk.BacktestRequest.To
+  langs:
+  - csharp
+  - vb
+  name: BacktestRequest
+  nameWithType: BacktestRequest
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestRequest
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Parameters for a single backtest run.
+  example: []
+  syntax:
+    content: 'public sealed record BacktestRequest : IEquatable<BacktestRequest>'
+    content.vb: Public NotInheritable Class BacktestRequest Implements IEquatable(Of BacktestRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.BacktestRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.#ctor(System.DateOnly,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.String},System.Decimal,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount},System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent},Meridian.Backtesting.Sdk.BacktestEngineMode,Meridian.Backtesting.Sdk.ExecutionModel,System.Decimal,Meridian.Backtesting.Sdk.BacktestCommissionKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Boolean,System.Double,System.Decimal,System.Boolean)
+  commentId: M:Meridian.Backtesting.Sdk.BacktestRequest.#ctor(System.DateOnly,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.String},System.Decimal,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount},System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent},Meridian.Backtesting.Sdk.BacktestEngineMode,Meridian.Backtesting.Sdk.ExecutionModel,System.Decimal,Meridian.Backtesting.Sdk.BacktestCommissionKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Boolean,System.Double,System.Decimal,System.Boolean)
+  id: '#ctor(System.DateOnly,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.String},System.Decimal,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount},System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent},Meridian.Backtesting.Sdk.BacktestEngineMode,Meridian.Backtesting.Sdk.ExecutionModel,System.Decimal,Meridian.Backtesting.Sdk.BacktestCommissionKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Boolean,System.Double,System.Decimal,System.Boolean)'
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: BacktestRequest(DateOnly, DateOnly, IReadOnlyList<string>?, decimal, double, double, IReadOnlyList<FinancialAccount>?, string, string, string?, IReadOnlyList<AssetEvent>?, BacktestEngineMode, ExecutionModel, decimal, BacktestCommissionKind, decimal, decimal, decimal, decimal, bool, double, decimal, bool)
+  nameWithType: BacktestRequest.BacktestRequest(DateOnly, DateOnly, IReadOnlyList<string>?, decimal, double, double, IReadOnlyList<FinancialAccount>?, string, string, string?, IReadOnlyList<AssetEvent>?, BacktestEngineMode, ExecutionModel, decimal, BacktestCommissionKind, decimal, decimal, decimal, decimal, bool, double, decimal, bool)
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.BacktestRequest(System.DateOnly, System.DateOnly, System.Collections.Generic.IReadOnlyList<string>?, decimal, double, double, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.FinancialAccount>?, string, string, string?, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.AssetEvent>?, Meridian.Backtesting.Sdk.BacktestEngineMode, Meridian.Backtesting.Sdk.ExecutionModel, decimal, Meridian.Backtesting.Sdk.BacktestCommissionKind, decimal, decimal, decimal, decimal, bool, double, decimal, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Parameters for a single backtest run.
+  example: []
+  syntax:
+    content: public BacktestRequest(DateOnly From, DateOnly To, IReadOnlyList<string>? Symbols = null, decimal InitialCash = 100000, double AnnualMarginRate = 0.05, double AnnualShortRebateRate = 0.02, IReadOnlyList<FinancialAccount>? Accounts = null, string DefaultBrokerageAccountId = "primary-brokerage", string DataRoot = "./data", string? StrategyAssemblyPath = null, IReadOnlyList<AssetEvent>? AssetEvents = null, BacktestEngineMode EngineMode = BacktestEngineMode.Managed, ExecutionModel DefaultExecutionModel = ExecutionModel.Auto, decimal SlippageBasisPoints = 5, BacktestCommissionKind CommissionKind = BacktestCommissionKind.PerShare, decimal CommissionRate = 0.005, decimal CommissionMinimum = 1.00, decimal CommissionMaximum = 79228162514264337593543950335, decimal MarketImpactCoefficient = 0.1, bool AdjustForCorporateActions = true, double RiskFreeRate = 0.04, decimal MaxParticipationRate = 0, bool FailOnUnknownSymbols = false)
+    parameters:
+    - id: From
+      type: System.DateOnly
+      description: Inclusive start date.
+    - id: To
+      type: System.DateOnly
+      description: Inclusive end date.
+    - id: Symbols
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+      description: Symbols to restrict to; <code>null</code> means use the entire discovered universe.
+    - id: InitialCash
+      type: System.Decimal
+      description: Legacy starting cash balance in USD, used when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.Accounts" data-throw-if-not-resolved="false"></xref> is omitted.
+    - id: AnnualMarginRate
+      type: System.Double
+      description: Legacy annual margin interest rate, used when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.Accounts" data-throw-if-not-resolved="false"></xref> is omitted.
+    - id: AnnualShortRebateRate
+      type: System.Double
+      description: Legacy annual short rebate rate, used when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.Accounts" data-throw-if-not-resolved="false"></xref> is omitted.
+    - id: Accounts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount}
+      description: Optional explicit account definitions for multi-bank / multi-brokerage simulations.
+    - id: DefaultBrokerageAccountId
+      type: System.String
+      description: Account used when an order does not explicitly name an account. Must reference a brokerage account.
+    - id: DataRoot
+      type: System.String
+      description: Root directory of the locally-collected JSONL data.
+    - id: StrategyAssemblyPath
+      type: System.String
+      description: >-
+        Optional path to a compiled strategy .dll; <code>null</code> means the strategy instance is supplied
+
+        directly to <code>BacktestEngine.RunAsync</code>.
+    - id: AssetEvents
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent}
+      description: Optional sequence of asset events (dividends, splits) to apply during the simulation.
+    - id: EngineMode
+      type: Meridian.Backtesting.Sdk.BacktestEngineMode
+      description: Selects the managed or CppTrader-backed replay engine.
+    - id: DefaultExecutionModel
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+      description: >-
+        Fallback fill model used when an order's own <xref href="Meridian.Backtesting.Sdk.ExecutionModel" data-throw-if-not-resolved="false"></xref> is <xref href="Meridian.Backtesting.Sdk.ExecutionModel.Auto" data-throw-if-not-resolved="false"></xref>.
+
+        Defaults to <xref href="Meridian.Backtesting.Sdk.ExecutionModel.Auto" data-throw-if-not-resolved="false"></xref>, which lets the engine pick the most detailed model available.
+    - id: SlippageBasisPoints
+      type: System.Decimal
+      description: >-
+        Bid-ask slippage applied by the <xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare" data-throw-if-not-resolved="false"></xref> and
+
+        <xref href="Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint" data-throw-if-not-resolved="false"></xref> fill models. Expressed in basis points (default: 5 = 0.05%).
+    - id: CommissionKind
+      type: Meridian.Backtesting.Sdk.BacktestCommissionKind
+      description: Selects how execution commissions are calculated. Defaults to per-share.
+    - id: CommissionRate
+      type: System.Decimal
+      description: >-
+        Interpretation depends on <xref href="Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind" data-throw-if-not-resolved="false"></xref>:
+
+
+        <ul><li><xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare" data-throw-if-not-resolved="false"></xref> — dollar amount per share (default: $0.005).</li><li><xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage" data-throw-if-not-resolved="false"></xref> — commission in basis points (default: 5 = 0.05%).</li><li><xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.Free" data-throw-if-not-resolved="false"></xref> — ignored.</li></ul>
+    - id: CommissionMinimum
+      type: System.Decimal
+      description: 'Minimum commission charge per order (default: $1.00). Ignored when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind" data-throw-if-not-resolved="false"></xref> is <xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.Free" data-throw-if-not-resolved="false"></xref>.'
+    - id: CommissionMaximum
+      type: System.Decimal
+      description: 'Maximum commission charge per order (default: uncapped). Ignored when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind" data-throw-if-not-resolved="false"></xref> is not <xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare" data-throw-if-not-resolved="false"></xref>.'
+    - id: MarketImpactCoefficient
+      type: System.Decimal
+      description: >-
+        Scales the square-root market-impact formula used by the <xref href="Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact" data-throw-if-not-resolved="false"></xref> fill model.
+
+        Higher values simulate stronger price impact from large orders (default: 0.1).
+    - id: AdjustForCorporateActions
+      type: System.Boolean
+      description: 'When true, adjusts historical bar prices for splits and dividends using Security Master data (default: true).'
+    - id: RiskFreeRate
+      type: System.Double
+      description: >-
+        Annualised risk-free rate used by <xref href="Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio" data-throw-if-not-resolved="false"></xref> and
+
+        <xref href="Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio" data-throw-if-not-resolved="false"></xref> calculations (e.g. 0.04 for 4%). Defaults to 0.04.
+    - id: MaxParticipationRate
+      type: System.Decimal
+      description: >-
+        Maximum fraction of a bar's traded volume that the <xref href="Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint" data-throw-if-not-resolved="false"></xref> fill
+
+        model is allowed to fill in a single bar. When set to a value greater than zero (e.g. 0.05 for
+
+        5 % participation), large orders will receive partial fills across multiple bars, improving
+
+        fill-realism for strategies that trade illiquid names or hold large positions. Set to zero
+
+        (default) to use the original unconstrained behaviour.
+    - id: FailOnUnknownSymbols
+      type: System.Boolean
+    content.vb: Public Sub New(From As DateOnly, [To] As DateOnly, Symbols As IReadOnlyList(Of String) = Nothing, InitialCash As Decimal = 100000, AnnualMarginRate As Double = 0.05, AnnualShortRebateRate As Double = 0.02, Accounts As IReadOnlyList(Of FinancialAccount) = Nothing, DefaultBrokerageAccountId As String = "primary-brokerage", DataRoot As String = "./data", StrategyAssemblyPath As String = Nothing, AssetEvents As IReadOnlyList(Of AssetEvent) = Nothing, EngineMode As BacktestEngineMode = BacktestEngineMode.Managed, DefaultExecutionModel As ExecutionModel = ExecutionModel.Auto, SlippageBasisPoints As Decimal = 5, CommissionKind As BacktestCommissionKind = BacktestCommissionKind.PerShare, CommissionRate As Decimal = 0.005, CommissionMinimum As Decimal = 1.00, CommissionMaximum As Decimal = 79228162514264337593543950335, MarketImpactCoefficient As Decimal = 0.1, AdjustForCorporateActions As Boolean = True, RiskFreeRate As Double = 0.04, MaxParticipationRate As Decimal = 0, FailOnUnknownSymbols As Boolean = False)
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.#ctor*
+  nameWithType.vb: BacktestRequest.New(DateOnly, DateOnly, IReadOnlyList(Of String), Decimal, Double, Double, IReadOnlyList(Of FinancialAccount), String, String, String, IReadOnlyList(Of AssetEvent), BacktestEngineMode, ExecutionModel, Decimal, BacktestCommissionKind, Decimal, Decimal, Decimal, Decimal, Boolean, Double, Decimal, Boolean)
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestRequest.New(System.DateOnly, System.DateOnly, System.Collections.Generic.IReadOnlyList(Of String), Decimal, Double, Double, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.FinancialAccount), String, String, String, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.AssetEvent), Meridian.Backtesting.Sdk.BacktestEngineMode, Meridian.Backtesting.Sdk.ExecutionModel, Decimal, Meridian.Backtesting.Sdk.BacktestCommissionKind, Decimal, Decimal, Decimal, Decimal, Boolean, Double, Decimal, Boolean)
+  name.vb: New(DateOnly, DateOnly, IReadOnlyList(Of String), Decimal, Double, Double, IReadOnlyList(Of FinancialAccount), String, String, String, IReadOnlyList(Of AssetEvent), BacktestEngineMode, ExecutionModel, Decimal, BacktestCommissionKind, Decimal, Decimal, Decimal, Decimal, Boolean, Double, Decimal, Boolean)
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.From
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.From
+  id: From
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: BacktestRequest.From
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Inclusive start date.
+  example: []
+  syntax:
+    content: public DateOnly From { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property From As DateOnly
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.From*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.To
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.To
+  id: To
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: BacktestRequest.To
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Inclusive end date.
+  example: []
+  syntax:
+    content: public DateOnly To { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property [To] As DateOnly
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.To*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.Symbols
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.Symbols
+  id: Symbols
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: BacktestRequest.Symbols
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Symbols to restrict to; <code>null</code> means use the entire discovered universe.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string>? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Symbols As IReadOnlyList(Of String)
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.Symbols*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.InitialCash
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.InitialCash
+  id: InitialCash
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: InitialCash
+  nameWithType: BacktestRequest.InitialCash
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.InitialCash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialCash
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Legacy starting cash balance in USD, used when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.Accounts" data-throw-if-not-resolved="false"></xref> is omitted.
+  example: []
+  syntax:
+    content: public decimal InitialCash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property InitialCash As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.InitialCash*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate
+  id: AnnualMarginRate
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: AnnualMarginRate
+  nameWithType: BacktestRequest.AnnualMarginRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualMarginRate
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Legacy annual margin interest rate, used when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.Accounts" data-throw-if-not-resolved="false"></xref> is omitted.
+  example: []
+  syntax:
+    content: public double AnnualMarginRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualMarginRate As Double
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate
+  id: AnnualShortRebateRate
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: AnnualShortRebateRate
+  nameWithType: BacktestRequest.AnnualShortRebateRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualShortRebateRate
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Legacy annual short rebate rate, used when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.Accounts" data-throw-if-not-resolved="false"></xref> is omitted.
+  example: []
+  syntax:
+    content: public double AnnualShortRebateRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualShortRebateRate As Double
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+  id: Accounts
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: BacktestRequest.Accounts
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Optional explicit account definitions for multi-bank / multi-brokerage simulations.
+  example: []
+  syntax:
+    content: public IReadOnlyList<FinancialAccount>? Accounts { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount}
+    content.vb: Public Property Accounts As IReadOnlyList(Of FinancialAccount)
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.Accounts*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId
+  id: DefaultBrokerageAccountId
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: DefaultBrokerageAccountId
+  nameWithType: BacktestRequest.DefaultBrokerageAccountId
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultBrokerageAccountId
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Account used when an order does not explicitly name an account. Must reference a brokerage account.
+  example: []
+  syntax:
+    content: public string DefaultBrokerageAccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DefaultBrokerageAccountId As String
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.DataRoot
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.DataRoot
+  id: DataRoot
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: DataRoot
+  nameWithType: BacktestRequest.DataRoot
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.DataRoot
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataRoot
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Root directory of the locally-collected JSONL data.
+  example: []
+  syntax:
+    content: public string DataRoot { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataRoot As String
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.DataRoot*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+  id: StrategyAssemblyPath
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: StrategyAssemblyPath
+  nameWithType: BacktestRequest.StrategyAssemblyPath
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyAssemblyPath
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Optional path to a compiled strategy .dll; <code>null</code> means the strategy instance is supplied
+
+    directly to <code>BacktestEngine.RunAsync</code>.
+  example: []
+  syntax:
+    content: public string? StrategyAssemblyPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyAssemblyPath As String
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents
+  id: AssetEvents
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: AssetEvents
+  nameWithType: BacktestRequest.AssetEvents
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetEvents
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Optional sequence of asset events (dividends, splits) to apply during the simulation.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AssetEvent>? AssetEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent}
+    content.vb: Public Property AssetEvents As IReadOnlyList(Of AssetEvent)
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.EngineMode
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.EngineMode
+  id: EngineMode
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: EngineMode
+  nameWithType: BacktestRequest.EngineMode
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.EngineMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EngineMode
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Selects the managed or CppTrader-backed replay engine.
+  example: []
+  syntax:
+    content: public BacktestEngineMode EngineMode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestEngineMode
+    content.vb: Public Property EngineMode As BacktestEngineMode
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.EngineMode*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel
+  id: DefaultExecutionModel
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: DefaultExecutionModel
+  nameWithType: BacktestRequest.DefaultExecutionModel
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultExecutionModel
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Fallback fill model used when an order's own <xref href="Meridian.Backtesting.Sdk.ExecutionModel" data-throw-if-not-resolved="false"></xref> is <xref href="Meridian.Backtesting.Sdk.ExecutionModel.Auto" data-throw-if-not-resolved="false"></xref>.
+
+    Defaults to <xref href="Meridian.Backtesting.Sdk.ExecutionModel.Auto" data-throw-if-not-resolved="false"></xref>, which lets the engine pick the most detailed model available.
+  example: []
+  syntax:
+    content: public ExecutionModel DefaultExecutionModel { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+    content.vb: Public Property DefaultExecutionModel As ExecutionModel
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints
+  id: SlippageBasisPoints
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: SlippageBasisPoints
+  nameWithType: BacktestRequest.SlippageBasisPoints
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SlippageBasisPoints
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Bid-ask slippage applied by the <xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare" data-throw-if-not-resolved="false"></xref> and
+
+    <xref href="Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint" data-throw-if-not-resolved="false"></xref> fill models. Expressed in basis points (default: 5 = 0.05%).
+  example: []
+  syntax:
+    content: public decimal SlippageBasisPoints { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property SlippageBasisPoints As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+  id: CommissionKind
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: CommissionKind
+  nameWithType: BacktestRequest.CommissionKind
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionKind
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Selects how execution commissions are calculated. Defaults to per-share.
+  example: []
+  syntax:
+    content: public BacktestCommissionKind CommissionKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestCommissionKind
+    content.vb: Public Property CommissionKind As BacktestCommissionKind
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate
+  id: CommissionRate
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: CommissionRate
+  nameWithType: BacktestRequest.CommissionRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionRate
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Interpretation depends on <xref href="Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind" data-throw-if-not-resolved="false"></xref>:
+
+
+    <ul><li><xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare" data-throw-if-not-resolved="false"></xref> — dollar amount per share (default: $0.005).</li><li><xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage" data-throw-if-not-resolved="false"></xref> — commission in basis points (default: 5 = 0.05%).</li><li><xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.Free" data-throw-if-not-resolved="false"></xref> — ignored.</li></ul>
+  example: []
+  syntax:
+    content: public decimal CommissionRate { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CommissionRate As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum
+  id: CommissionMinimum
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: CommissionMinimum
+  nameWithType: BacktestRequest.CommissionMinimum
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionMinimum
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: 'Minimum commission charge per order (default: $1.00). Ignored when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind" data-throw-if-not-resolved="false"></xref> is <xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.Free" data-throw-if-not-resolved="false"></xref>.'
+  example: []
+  syntax:
+    content: public decimal CommissionMinimum { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CommissionMinimum As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum
+  id: CommissionMaximum
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: CommissionMaximum
+  nameWithType: BacktestRequest.CommissionMaximum
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionMaximum
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: 'Maximum commission charge per order (default: uncapped). Ignored when <xref href="Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind" data-throw-if-not-resolved="false"></xref> is not <xref href="Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare" data-throw-if-not-resolved="false"></xref>.'
+  example: []
+  syntax:
+    content: public decimal CommissionMaximum { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CommissionMaximum As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient
+  id: MarketImpactCoefficient
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: MarketImpactCoefficient
+  nameWithType: BacktestRequest.MarketImpactCoefficient
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketImpactCoefficient
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Scales the square-root market-impact formula used by the <xref href="Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact" data-throw-if-not-resolved="false"></xref> fill model.
+
+    Higher values simulate stronger price impact from large orders (default: 0.1).
+  example: []
+  syntax:
+    content: public decimal MarketImpactCoefficient { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarketImpactCoefficient As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions
+  id: AdjustForCorporateActions
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: AdjustForCorporateActions
+  nameWithType: BacktestRequest.AdjustForCorporateActions
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustForCorporateActions
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: 'When true, adjusts historical bar prices for splits and dividends using Security Master data (default: true).'
+  example: []
+  syntax:
+    content: public bool AdjustForCorporateActions { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AdjustForCorporateActions As Boolean
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate
+  id: RiskFreeRate
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: RiskFreeRate
+  nameWithType: BacktestRequest.RiskFreeRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RiskFreeRate
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Annualised risk-free rate used by <xref href="Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio" data-throw-if-not-resolved="false"></xref> and
+
+    <xref href="Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio" data-throw-if-not-resolved="false"></xref> calculations (e.g. 0.04 for 4%). Defaults to 0.04.
+  example: []
+  syntax:
+    content: public double RiskFreeRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property RiskFreeRate As Double
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate
+  id: MaxParticipationRate
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: MaxParticipationRate
+  nameWithType: BacktestRequest.MaxParticipationRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxParticipationRate
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Maximum fraction of a bar's traded volume that the <xref href="Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint" data-throw-if-not-resolved="false"></xref> fill
+
+    model is allowed to fill in a single bar. When set to a value greater than zero (e.g. 0.05 for
+
+    5 % participation), large orders will receive partial fills across multiple bars, improving
+
+    fill-realism for strategies that trade illiquid names or hold large positions. Set to zero
+
+    (default) to use the original unconstrained behaviour.
+  example: []
+  syntax:
+    content: public decimal MaxParticipationRate { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MaxParticipationRate As Decimal
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols
+  id: FailOnUnknownSymbols
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: FailOnUnknownSymbols
+  nameWithType: BacktestRequest.FailOnUnknownSymbols
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailOnUnknownSymbols
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public bool FailOnUnknownSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property FailOnUnknownSymbols As Boolean
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols*
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts
+  commentId: M:Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts
+  id: ResolveAccounts
+  parent: Meridian.Backtesting.Sdk.BacktestRequest
+  langs:
+  - csharp
+  - vb
+  name: ResolveAccounts()
+  nameWithType: BacktestRequest.ResolveAccounts()
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveAccounts
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Returns the normalized account list, falling back to a single default brokerage account for
+
+    backward compatibility with older callers.
+  example: []
+  syntax:
+    content: public IReadOnlyList<FinancialAccount> ResolveAccounts()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount}
+    content.vb: Public Function ResolveAccounts() As IReadOnlyList(Of FinancialAccount)
+  overload: Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts*
+references:
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_Accounts
+  name: Accounts
+  nameWithType: BacktestRequest.Accounts
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+- uid: Meridian.Backtesting.Sdk.ExecutionModel
+  commentId: T:Meridian.Backtesting.Sdk.ExecutionModel
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.ExecutionModel.html
+  name: ExecutionModel
+  nameWithType: ExecutionModel
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  href: Meridian.Backtesting.Sdk.ExecutionModel.html#Meridian_Backtesting_Sdk_ExecutionModel_Auto
+  name: Auto
+  nameWithType: ExecutionModel.Auto
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.Auto
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare
+  commentId: F:Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare
+  href: Meridian.Backtesting.Sdk.BacktestCommissionKind.html#Meridian_Backtesting_Sdk_BacktestCommissionKind_PerShare
+  name: PerShare
+  nameWithType: BacktestCommissionKind.PerShare
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint
+  href: Meridian.Backtesting.Sdk.ExecutionModel.html#Meridian_Backtesting_Sdk_ExecutionModel_BarMidpoint
+  name: BarMidpoint
+  nameWithType: ExecutionModel.BarMidpoint
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_CommissionKind
+  name: CommissionKind
+  nameWithType: BacktestRequest.CommissionKind
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage
+  commentId: F:Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage
+  href: Meridian.Backtesting.Sdk.BacktestCommissionKind.html#Meridian_Backtesting_Sdk_BacktestCommissionKind_Percentage
+  name: Percentage
+  nameWithType: BacktestCommissionKind.Percentage
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind.Free
+  commentId: F:Meridian.Backtesting.Sdk.BacktestCommissionKind.Free
+  href: Meridian.Backtesting.Sdk.BacktestCommissionKind.html#Meridian_Backtesting_Sdk_BacktestCommissionKind_Free
+  name: Free
+  nameWithType: BacktestCommissionKind.Free
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind.Free
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact
+  href: Meridian.Backtesting.Sdk.ExecutionModel.html#Meridian_Backtesting_Sdk_ExecutionModel_MarketImpact
+  name: MarketImpact
+  nameWithType: ExecutionModel.MarketImpact
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_SharpeRatio
+  name: SharpeRatio
+  nameWithType: BacktestMetrics.SharpeRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SharpeRatio
+- uid: Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+  commentId: P:Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+  href: Meridian.Backtesting.Sdk.BacktestMetrics.html#Meridian_Backtesting_Sdk_BacktestMetrics_SortinoRatio
+  name: SortinoRatio
+  nameWithType: BacktestMetrics.SortinoRatio
+  fullName: Meridian.Backtesting.Sdk.BacktestMetrics.SortinoRatio
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.BacktestRequest}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.BacktestRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BacktestRequest>
+  nameWithType: IEquatable<BacktestRequest>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.BacktestRequest>
+  nameWithType.vb: IEquatable(Of BacktestRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.BacktestRequest)
+  name.vb: IEquatable(Of BacktestRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.BacktestRequest
+    name: BacktestRequest
+    href: Meridian.Backtesting.Sdk.BacktestRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.BacktestRequest
+    name: BacktestRequest
+    href: Meridian.Backtesting.Sdk.BacktestRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.#ctor
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest__ctor_System_DateOnly_System_DateOnly_System_Collections_Generic_IReadOnlyList_System_String__System_Decimal_System_Double_System_Double_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_FinancialAccount__System_String_System_String_System_String_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_AssetEvent__Meridian_Backtesting_Sdk_BacktestEngineMode_Meridian_Backtesting_Sdk_ExecutionModel_System_Decimal_Meridian_Backtesting_Sdk_BacktestCommissionKind_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Boolean_System_Double_System_Decimal_System_Boolean_
+  name: BacktestRequest
+  nameWithType: BacktestRequest.BacktestRequest
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.BacktestRequest
+  nameWithType.vb: BacktestRequest.New
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestRequest.New
+  name.vb: New
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FinancialAccount}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<FinancialAccount>
+  nameWithType: IReadOnlyList<FinancialAccount>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.FinancialAccount>
+  nameWithType.vb: IReadOnlyList(Of FinancialAccount)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.FinancialAccount)
+  name.vb: IReadOnlyList(Of FinancialAccount)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.FinancialAccount
+    name: FinancialAccount
+    href: Meridian.Backtesting.Sdk.FinancialAccount.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.FinancialAccount
+    name: FinancialAccount
+    href: Meridian.Backtesting.Sdk.FinancialAccount.html
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.AssetEvent}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AssetEvent>
+  nameWithType: IReadOnlyList<AssetEvent>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.AssetEvent>
+  nameWithType.vb: IReadOnlyList(Of AssetEvent)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.AssetEvent)
+  name.vb: IReadOnlyList(Of AssetEvent)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.AssetEvent
+    name: AssetEvent
+    href: Meridian.Backtesting.Sdk.AssetEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.AssetEvent
+    name: AssetEvent
+    href: Meridian.Backtesting.Sdk.AssetEvent.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMode
+  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMode
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestEngineMode.html
+  name: BacktestEngineMode
+  nameWithType: BacktestEngineMode
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMode
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind
+  commentId: T:Meridian.Backtesting.Sdk.BacktestCommissionKind
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestCommissionKind.html
+  name: BacktestCommissionKind
+  nameWithType: BacktestCommissionKind
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.From*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.From
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_From
+  name: From
+  nameWithType: BacktestRequest.From
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.From
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.To*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.To
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_To
+  name: To
+  nameWithType: BacktestRequest.To
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.To
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.Symbols*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.Symbols
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_Symbols
+  name: Symbols
+  nameWithType: BacktestRequest.Symbols
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.Symbols
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.InitialCash*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.InitialCash
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_InitialCash
+  name: InitialCash
+  nameWithType: BacktestRequest.InitialCash
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.InitialCash
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_AnnualMarginRate
+  name: AnnualMarginRate
+  nameWithType: BacktestRequest.AnnualMarginRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AnnualMarginRate
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_AnnualShortRebateRate
+  name: AnnualShortRebateRate
+  nameWithType: BacktestRequest.AnnualShortRebateRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AnnualShortRebateRate
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.Accounts*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_Accounts
+  name: Accounts
+  nameWithType: BacktestRequest.Accounts
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.Accounts
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_DefaultBrokerageAccountId
+  name: DefaultBrokerageAccountId
+  nameWithType: BacktestRequest.DefaultBrokerageAccountId
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.DefaultBrokerageAccountId
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.DataRoot*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.DataRoot
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_DataRoot
+  name: DataRoot
+  nameWithType: BacktestRequest.DataRoot
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.DataRoot
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_StrategyAssemblyPath
+  name: StrategyAssemblyPath
+  nameWithType: BacktestRequest.StrategyAssemblyPath
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_AssetEvents
+  name: AssetEvents
+  nameWithType: BacktestRequest.AssetEvents
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AssetEvents
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.EngineMode*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.EngineMode
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_EngineMode
+  name: EngineMode
+  nameWithType: BacktestRequest.EngineMode
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.EngineMode
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_DefaultExecutionModel
+  name: DefaultExecutionModel
+  nameWithType: BacktestRequest.DefaultExecutionModel
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.DefaultExecutionModel
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_SlippageBasisPoints
+  name: SlippageBasisPoints
+  nameWithType: BacktestRequest.SlippageBasisPoints
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.SlippageBasisPoints
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_CommissionKind
+  name: CommissionKind
+  nameWithType: BacktestRequest.CommissionKind
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionKind
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_CommissionRate
+  name: CommissionRate
+  nameWithType: BacktestRequest.CommissionRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionRate
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_CommissionMinimum
+  name: CommissionMinimum
+  nameWithType: BacktestRequest.CommissionMinimum
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMinimum
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_CommissionMaximum
+  name: CommissionMaximum
+  nameWithType: BacktestRequest.CommissionMaximum
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.CommissionMaximum
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_MarketImpactCoefficient
+  name: MarketImpactCoefficient
+  nameWithType: BacktestRequest.MarketImpactCoefficient
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.MarketImpactCoefficient
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_AdjustForCorporateActions
+  name: AdjustForCorporateActions
+  nameWithType: BacktestRequest.AdjustForCorporateActions
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.AdjustForCorporateActions
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_RiskFreeRate
+  name: RiskFreeRate
+  nameWithType: BacktestRequest.RiskFreeRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.RiskFreeRate
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_MaxParticipationRate
+  name: MaxParticipationRate
+  nameWithType: BacktestRequest.MaxParticipationRate
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.MaxParticipationRate
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_FailOnUnknownSymbols
+  name: FailOnUnknownSymbols
+  nameWithType: BacktestRequest.FailOnUnknownSymbols
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.FailOnUnknownSymbols
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_ResolveAccounts
+  name: ResolveAccounts
+  nameWithType: BacktestRequest.ResolveAccounts
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.ResolveAccounts

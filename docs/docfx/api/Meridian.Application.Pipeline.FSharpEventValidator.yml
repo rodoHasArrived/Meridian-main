@@ -1,0 +1,651 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.FSharpEventValidator
+  commentId: T:Meridian.Application.Pipeline.FSharpEventValidator
+  id: FSharpEventValidator
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.FSharpEventValidator.#ctor(Meridian.Contracts.Configuration.SymbolConfig[],System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.FSharpEventValidator})
+  - Meridian.Application.Pipeline.FSharpEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  langs:
+  - csharp
+  - vb
+  name: FSharpEventValidator
+  nameWithType: FSharpEventValidator
+  fullName: Meridian.Application.Pipeline.FSharpEventValidator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/FSharpEventValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FSharpEventValidator
+    path: ../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Validates <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> instances by delegating to the F# Railway-Oriented
+
+    validation pipeline (<code>Meridian.FSharp.Validation</code>).
+  remarks: >-
+    <p>Trade and BBO-quote events are validated against the F# validators.
+
+    All other event types (L2 snapshots, order-flow, integrity, heartbeat, historical bars, etc.)
+
+    pass through unconditionally — only data that was produced in real-time from a provider
+
+    carries the invariants the validators check.</p>
+
+
+    <p>Per-symbol relaxation is opt-in: add <code>"UseRelaxedValidation": true</code> to a symbol's
+
+    entry in <code>appsettings.json</code> to apply the historical (lenient) F# preset — useful for
+
+    illiquid instruments, preferreds, or wide-spread options where the default 5-minute timestamp
+
+    window or strict spread check would produce excessive false positives.</p>
+
+
+    <p>Validation outcomes are tracked by <xref href="Meridian.Application.Monitoring.ValidationMetrics" data-throw-if-not-resolved="false"></xref> and exported to
+
+    Prometheus via <xref href="Meridian.Application.Monitoring.PrometheusMetrics" data-throw-if-not-resolved="false"></xref> on the periodic update cycle.</p>
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-007", "F# validation gate before WAL/sink persistence")]
+
+      public sealed class FSharpEventValidator : IEventValidator
+    content.vb: >-
+      <ImplementsAdr("ADR-007", "F# validation gate before WAL/sink persistence")>
+
+      Public NotInheritable Class FSharpEventValidator Implements IEventValidator
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Pipeline.IEventValidator
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-007
+    - type: System.String
+      value: F# validation gate before WAL/sink persistence
+- uid: Meridian.Application.Pipeline.FSharpEventValidator.#ctor(Meridian.Contracts.Configuration.SymbolConfig[],System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.FSharpEventValidator})
+  commentId: M:Meridian.Application.Pipeline.FSharpEventValidator.#ctor(Meridian.Contracts.Configuration.SymbolConfig[],System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.FSharpEventValidator})
+  id: '#ctor(Meridian.Contracts.Configuration.SymbolConfig[],System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.FSharpEventValidator})'
+  parent: Meridian.Application.Pipeline.FSharpEventValidator
+  langs:
+  - csharp
+  - vb
+  name: FSharpEventValidator(SymbolConfig[]?, bool, ILogger<FSharpEventValidator>?)
+  nameWithType: FSharpEventValidator.FSharpEventValidator(SymbolConfig[]?, bool, ILogger<FSharpEventValidator>?)
+  fullName: Meridian.Application.Pipeline.FSharpEventValidator.FSharpEventValidator(Meridian.Contracts.Configuration.SymbolConfig[]?, bool, Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.FSharpEventValidator>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/FSharpEventValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Initialises the validator.
+  example: []
+  syntax:
+    content: public FSharpEventValidator(SymbolConfig[]? symbolConfigs = null, bool useRealTimeMode = false, ILogger<FSharpEventValidator>? logger = null)
+    parameters:
+    - id: symbolConfigs
+      type: Meridian.Contracts.Configuration.SymbolConfig[]
+      description: >-
+        Optional array of configured symbols. Symbols with <code>UseRelaxedValidation = true</code>
+
+        are validated with the lenient historical preset instead of the default preset.
+    - id: useRealTimeMode
+      type: System.Boolean
+      description: >-
+        When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the strict real-time preset is applied for non-relaxed symbols
+
+        (5-second max timestamp age). When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> (default), the standard default
+
+        preset is used (5-minute max timestamp age).
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.FSharpEventValidator}
+      description: Optional logger.
+    content.vb: Public Sub New(symbolConfigs As SymbolConfig() = Nothing, useRealTimeMode As Boolean = False, logger As ILogger(Of FSharpEventValidator) = Nothing)
+  overload: Meridian.Application.Pipeline.FSharpEventValidator.#ctor*
+  nameWithType.vb: FSharpEventValidator.New(SymbolConfig(), Boolean, ILogger(Of FSharpEventValidator))
+  fullName.vb: Meridian.Application.Pipeline.FSharpEventValidator.New(Meridian.Contracts.Configuration.SymbolConfig(), Boolean, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.FSharpEventValidator))
+  name.vb: New(SymbolConfig(), Boolean, ILogger(Of FSharpEventValidator))
+- uid: Meridian.Application.Pipeline.FSharpEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Pipeline.FSharpEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  id: Validate(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Application.Pipeline.FSharpEventValidator
+  langs:
+  - csharp
+  - vb
+  name: Validate(in MarketEvent)
+  nameWithType: FSharpEventValidator.Validate(in MarketEvent)
+  fullName: Meridian.Application.Pipeline.FSharpEventValidator.Validate(in Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/FSharpEventValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validate
+    path: ../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Validates a market event and returns a result indicating whether the event is
+
+    acceptable for persistence. Invalid events should be routed to a dead-letter sink.
+  example: []
+  syntax:
+    content: public ValidationResult Validate(in MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+      description: The market event to validate (passed by readonly reference for zero-copy).
+    return:
+      type: Meridian.Application.Pipeline.ValidationResult
+      description: A <xref href="Meridian.Application.Pipeline.ValidationResult" data-throw-if-not-resolved="false"></xref> describing validity and any errors.
+    content.vb: Public Function Validate(evt As MarketEvent) As ValidationResult
+  overload: Meridian.Application.Pipeline.FSharpEventValidator.Validate*
+  implements:
+  - Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  nameWithType.vb: FSharpEventValidator.Validate(MarketEvent)
+  fullName.vb: Meridian.Application.Pipeline.FSharpEventValidator.Validate(Meridian.Domain.Events.MarketEvent)
+  name.vb: Validate(MarketEvent)
+references:
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Application.Monitoring.ValidationMetrics
+  commentId: T:Meridian.Application.Monitoring.ValidationMetrics
+  href: Meridian.Application.Monitoring.ValidationMetrics.html
+  name: ValidationMetrics
+  nameWithType: ValidationMetrics
+  fullName: Meridian.Application.Monitoring.ValidationMetrics
+- uid: Meridian.Application.Monitoring.PrometheusMetrics
+  commentId: T:Meridian.Application.Monitoring.PrometheusMetrics
+  href: Meridian.Application.Monitoring.PrometheusMetrics.html
+  name: PrometheusMetrics
+  nameWithType: PrometheusMetrics
+  fullName: Meridian.Application.Monitoring.PrometheusMetrics
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Pipeline.IEventValidator
+  commentId: T:Meridian.Application.Pipeline.IEventValidator
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IEventValidator.html
+  name: IEventValidator
+  nameWithType: IEventValidator
+  fullName: Meridian.Application.Pipeline.IEventValidator
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Pipeline.FSharpEventValidator.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.FSharpEventValidator.#ctor
+  href: Meridian.Application.Pipeline.FSharpEventValidator.html#Meridian_Application_Pipeline_FSharpEventValidator__ctor_Meridian_Contracts_Configuration_SymbolConfig___System_Boolean_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Pipeline_FSharpEventValidator__
+  name: FSharpEventValidator
+  nameWithType: FSharpEventValidator.FSharpEventValidator
+  fullName: Meridian.Application.Pipeline.FSharpEventValidator.FSharpEventValidator
+  nameWithType.vb: FSharpEventValidator.New
+  fullName.vb: Meridian.Application.Pipeline.FSharpEventValidator.New
+  name.vb: New
+- uid: Meridian.Contracts.Configuration.SymbolConfig[]
+  isExternal: true
+  name: SymbolConfig[]
+  nameWithType: SymbolConfig[]
+  fullName: Meridian.Contracts.Configuration.SymbolConfig[]
+  nameWithType.vb: SymbolConfig()
+  fullName.vb: Meridian.Contracts.Configuration.SymbolConfig()
+  name.vb: SymbolConfig()
+  spec.csharp:
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: (
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.FSharpEventValidator}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.FSharpEventValidator}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<FSharpEventValidator>
+  nameWithType: ILogger<FSharpEventValidator>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.FSharpEventValidator>
+  nameWithType.vb: ILogger(Of FSharpEventValidator)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.FSharpEventValidator)
+  name.vb: ILogger(Of FSharpEventValidator)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.FSharpEventValidator
+    name: FSharpEventValidator
+    href: Meridian.Application.Pipeline.FSharpEventValidator.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.FSharpEventValidator
+    name: FSharpEventValidator
+    href: Meridian.Application.Pipeline.FSharpEventValidator.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.Pipeline.ValidationResult
+  commentId: T:Meridian.Application.Pipeline.ValidationResult
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.ValidationResult.html
+  name: ValidationResult
+  nameWithType: ValidationResult
+  fullName: Meridian.Application.Pipeline.ValidationResult
+- uid: Meridian.Application.Pipeline.FSharpEventValidator.Validate*
+  commentId: Overload:Meridian.Application.Pipeline.FSharpEventValidator.Validate
+  href: Meridian.Application.Pipeline.FSharpEventValidator.html#Meridian_Application_Pipeline_FSharpEventValidator_Validate_Meridian_Domain_Events_MarketEvent__
+  name: Validate
+  nameWithType: FSharpEventValidator.Validate
+  fullName: Meridian.Application.Pipeline.FSharpEventValidator.Validate
+- uid: Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Application.Pipeline.IEventValidator
+  href: Meridian.Application.Pipeline.IEventValidator.html#Meridian_Application_Pipeline_IEventValidator_Validate_Meridian_Domain_Events_MarketEvent__
+  name: Validate(in MarketEvent)
+  nameWithType: IEventValidator.Validate(in MarketEvent)
+  fullName: Meridian.Application.Pipeline.IEventValidator.Validate(in Meridian.Domain.Events.MarketEvent)
+  nameWithType.vb: IEventValidator.Validate(MarketEvent)
+  fullName.vb: Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent)
+  name.vb: Validate(MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+    name: Validate
+    href: Meridian.Application.Pipeline.IEventValidator.html#Meridian_Application_Pipeline_IEventValidator_Validate_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+    name: Validate
+    href: Meridian.Application.Pipeline.IEventValidator.html#Meridian_Application_Pipeline_IEventValidator_Validate_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )

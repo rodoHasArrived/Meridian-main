@@ -1,0 +1,284 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.TickSizePriceType
+  commentId: T:Meridian.Application.Monitoring.TickSizePriceType
+  id: TickSizePriceType
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.TickSizePriceType.Ask
+  - Meridian.Application.Monitoring.TickSizePriceType.Bid
+  - Meridian.Application.Monitoring.TickSizePriceType.Close
+  - Meridian.Application.Monitoring.TickSizePriceType.High
+  - Meridian.Application.Monitoring.TickSizePriceType.Low
+  - Meridian.Application.Monitoring.TickSizePriceType.Mid
+  - Meridian.Application.Monitoring.TickSizePriceType.Open
+  - Meridian.Application.Monitoring.TickSizePriceType.Trade
+  langs:
+  - csharp
+  - vb
+  name: TickSizePriceType
+  nameWithType: TickSizePriceType
+  fullName: Meridian.Application.Monitoring.TickSizePriceType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TickSizePriceType
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Type of price being validated.
+  example: []
+  syntax:
+    content: 'public enum TickSizePriceType : byte'
+    content.vb: Public Enum TickSizePriceType As Byte
+- uid: Meridian.Application.Monitoring.TickSizePriceType.Trade
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.Trade
+  id: Trade
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: Trade
+  nameWithType: TickSizePriceType.Trade
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.Trade
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trade
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Trade = 0
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+- uid: Meridian.Application.Monitoring.TickSizePriceType.Bid
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.Bid
+  id: Bid
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: Bid
+  nameWithType: TickSizePriceType.Bid
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.Bid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bid
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Bid = 1
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+- uid: Meridian.Application.Monitoring.TickSizePriceType.Ask
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.Ask
+  id: Ask
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: Ask
+  nameWithType: TickSizePriceType.Ask
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.Ask
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ask
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Ask = 2
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+- uid: Meridian.Application.Monitoring.TickSizePriceType.Open
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.Open
+  id: Open
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: TickSizePriceType.Open
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.Open
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Open = 3
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+- uid: Meridian.Application.Monitoring.TickSizePriceType.High
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.High
+  id: High
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: TickSizePriceType.High
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 349
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: High = 4
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+- uid: Meridian.Application.Monitoring.TickSizePriceType.Low
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.Low
+  id: Low
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: TickSizePriceType.Low
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Low = 5
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+- uid: Meridian.Application.Monitoring.TickSizePriceType.Close
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.Close
+  id: Close
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: Close
+  nameWithType: TickSizePriceType.Close
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.Close
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Close
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Close = 6
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+- uid: Meridian.Application.Monitoring.TickSizePriceType.Mid
+  commentId: F:Meridian.Application.Monitoring.TickSizePriceType.Mid
+  id: Mid
+  parent: Meridian.Application.Monitoring.TickSizePriceType
+  langs:
+  - csharp
+  - vb
+  name: Mid
+  nameWithType: TickSizePriceType.Mid
+  fullName: Meridian.Application.Monitoring.TickSizePriceType.Mid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mid
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Mid = 7
+    return:
+      type: Meridian.Application.Monitoring.TickSizePriceType
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.TickSizePriceType
+  commentId: T:Meridian.Application.Monitoring.TickSizePriceType
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.TickSizePriceType.html
+  name: TickSizePriceType
+  nameWithType: TickSizePriceType
+  fullName: Meridian.Application.Monitoring.TickSizePriceType

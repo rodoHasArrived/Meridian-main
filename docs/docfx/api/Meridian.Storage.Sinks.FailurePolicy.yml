@@ -1,0 +1,126 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Sinks.FailurePolicy
+  commentId: T:Meridian.Storage.Sinks.FailurePolicy
+  id: FailurePolicy
+  parent: Meridian.Storage.Sinks
+  children:
+  - Meridian.Storage.Sinks.FailurePolicy.ContinueOnPartialFailure
+  - Meridian.Storage.Sinks.FailurePolicy.FailOnAnyFailure
+  langs:
+  - csharp
+  - vb
+  name: FailurePolicy
+  nameWithType: FailurePolicy
+  fullName: Meridian.Storage.Sinks.FailurePolicy
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailurePolicy
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Determines how the composite sink behaves when one or more child sinks fail.
+  example: []
+  syntax:
+    content: 'public enum FailurePolicy : byte'
+    content.vb: Public Enum FailurePolicy As Byte
+- uid: Meridian.Storage.Sinks.FailurePolicy.ContinueOnPartialFailure
+  commentId: F:Meridian.Storage.Sinks.FailurePolicy.ContinueOnPartialFailure
+  id: ContinueOnPartialFailure
+  parent: Meridian.Storage.Sinks.FailurePolicy
+  langs:
+  - csharp
+  - vb
+  name: ContinueOnPartialFailure
+  nameWithType: FailurePolicy.ContinueOnPartialFailure
+  fullName: Meridian.Storage.Sinks.FailurePolicy.ContinueOnPartialFailure
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContinueOnPartialFailure
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Continue writing to remaining healthy sinks when one fails (default).
+  example: []
+  syntax:
+    content: ContinueOnPartialFailure = 0
+    return:
+      type: Meridian.Storage.Sinks.FailurePolicy
+- uid: Meridian.Storage.Sinks.FailurePolicy.FailOnAnyFailure
+  commentId: F:Meridian.Storage.Sinks.FailurePolicy.FailOnAnyFailure
+  id: FailOnAnyFailure
+  parent: Meridian.Storage.Sinks.FailurePolicy
+  langs:
+  - csharp
+  - vb
+  name: FailOnAnyFailure
+  nameWithType: FailurePolicy.FailOnAnyFailure
+  fullName: Meridian.Storage.Sinks.FailurePolicy.FailOnAnyFailure
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailOnAnyFailure
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Throw immediately if any sink fails.
+  example: []
+  syntax:
+    content: FailOnAnyFailure = 1
+    return:
+      type: Meridian.Storage.Sinks.FailurePolicy
+references:
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  href: Meridian.html
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+- uid: Meridian.Storage.Sinks.FailurePolicy
+  commentId: T:Meridian.Storage.Sinks.FailurePolicy
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.FailurePolicy.html
+  name: FailurePolicy
+  nameWithType: FailurePolicy
+  fullName: Meridian.Storage.Sinks.FailurePolicy

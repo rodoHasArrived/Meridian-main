@@ -1,0 +1,1422 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DiagnosticsService
+  commentId: T:Meridian.Ui.Services.DiagnosticsService
+  id: DiagnosticsService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync(Meridian.Ui.Services.DiagnosticBundleOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.Instance
+  - Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.TestProviderAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: DiagnosticsService
+  nameWithType: DiagnosticsService
+  fullName: Meridian.Ui.Services.DiagnosticsService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiagnosticsService
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for system diagnostics including dry-run, preflight checks, and diagnostic bundles.
+
+    Provides comprehensive system validation and troubleshooting capabilities.
+  example: []
+  syntax:
+    content: public sealed class DiagnosticsService
+    content.vb: Public NotInheritable Class DiagnosticsService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DiagnosticsService.Instance
+  commentId: P:Meridian.Ui.Services.DiagnosticsService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: DiagnosticsService.Instance
+  fullName: Meridian.Ui.Services.DiagnosticsService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static DiagnosticsService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.DiagnosticsService
+    content.vb: Public Shared ReadOnly Property Instance As DiagnosticsService
+  overload: Meridian.Ui.Services.DiagnosticsService.Instance*
+- uid: Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync(System.Threading.CancellationToken)
+  id: RunDryRunAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: RunDryRunAsync(CancellationToken)
+  nameWithType: DiagnosticsService.RunDryRunAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunDryRunAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs a dry-run validation of the configuration without starting data collection.
+  example: []
+  syntax:
+    content: public Task<DryRunResult> RunDryRunAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DryRunResult}
+    content.vb: Public Function RunDryRunAsync(ct As CancellationToken = Nothing) As Task(Of DryRunResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync(System.Threading.CancellationToken)
+  id: RunPreflightCheckAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: RunPreflightCheckAsync(CancellationToken)
+  nameWithType: DiagnosticsService.RunPreflightCheckAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunPreflightCheckAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs preflight checks to verify system readiness.
+  example: []
+  syntax:
+    content: public Task<PreflightResult> RunPreflightCheckAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PreflightResult}
+    content.vb: Public Function RunPreflightCheckAsync(ct As CancellationToken = Nothing) As Task(Of PreflightResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync(Meridian.Ui.Services.DiagnosticBundleOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync(Meridian.Ui.Services.DiagnosticBundleOptions,System.Threading.CancellationToken)
+  id: GenerateDiagnosticBundleAsync(Meridian.Ui.Services.DiagnosticBundleOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: GenerateDiagnosticBundleAsync(DiagnosticBundleOptions, CancellationToken)
+  nameWithType: DiagnosticsService.GenerateDiagnosticBundleAsync(DiagnosticBundleOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync(Meridian.Ui.Services.DiagnosticBundleOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateDiagnosticBundleAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Generates a diagnostic bundle for troubleshooting.
+  example: []
+  syntax:
+    content: public Task<DiagnosticBundleResult> GenerateDiagnosticBundleAsync(DiagnosticBundleOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.DiagnosticBundleOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticBundleResult}
+    content.vb: Public Function GenerateDiagnosticBundleAsync(options As DiagnosticBundleOptions, ct As CancellationToken = Nothing) As Task(Of DiagnosticBundleResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync(System.Threading.CancellationToken)
+  id: GetDiagnosticSystemMetricsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: GetDiagnosticSystemMetricsAsync(CancellationToken)
+  nameWithType: DiagnosticsService.GetDiagnosticSystemMetricsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDiagnosticSystemMetricsAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the current system metrics.
+  example: []
+  syntax:
+    content: public Task<DiagnosticSystemMetrics> GetDiagnosticSystemMetricsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticSystemMetrics}
+    content.vb: Public Function GetDiagnosticSystemMetricsAsync(ct As CancellationToken = Nothing) As Task(Of DiagnosticSystemMetrics)
+  overload: Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: ValidateConfigurationAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: ValidateConfigurationAsync(string, string, CancellationToken)
+  nameWithType: DiagnosticsService.ValidateConfigurationAsync(string, string, CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateConfigurationAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Validates a specific configuration setting.
+  example: []
+  syntax:
+    content: public Task<ValidationResult> ValidateConfigurationAsync(string settingName, string value, CancellationToken ct = default)
+    parameters:
+    - id: settingName
+      type: System.String
+    - id: value
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ValidationResult}
+    content.vb: Public Function ValidateConfigurationAsync(settingName As String, value As String, ct As CancellationToken = Nothing) As Task(Of ValidationResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync*
+  nameWithType.vb: DiagnosticsService.ValidateConfigurationAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync(String, String, System.Threading.CancellationToken)
+  name.vb: ValidateConfigurationAsync(String, String, CancellationToken)
+- uid: Meridian.Ui.Services.DiagnosticsService.TestProviderAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.TestProviderAsync(System.String,System.Threading.CancellationToken)
+  id: TestProviderAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: TestProviderAsync(string, CancellationToken)
+  nameWithType: DiagnosticsService.TestProviderAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.TestProviderAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestProviderAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Tests connectivity to a specific provider.
+  example: []
+  syntax:
+    content: public Task<DiagnosticProviderTestResult> TestProviderAsync(string providerName, CancellationToken ct = default)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticProviderTestResult}
+    content.vb: Public Function TestProviderAsync(providerName As String, ct As CancellationToken = Nothing) As Task(Of DiagnosticProviderTestResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.TestProviderAsync*
+  nameWithType.vb: DiagnosticsService.TestProviderAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DiagnosticsService.TestProviderAsync(String, System.Threading.CancellationToken)
+  name.vb: TestProviderAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  id: RunQuickCheckAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: RunQuickCheckAsync(CancellationToken)
+  nameWithType: DiagnosticsService.RunQuickCheckAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunQuickCheckAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs a quick health check (equivalent to --quick-check CLI command).
+  example: []
+  syntax:
+    content: public Task<QuickCheckResult> RunQuickCheckAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.QuickCheckResult}
+    content.vb: Public Function RunQuickCheckAsync(ct As CancellationToken = Nothing) As Task(Of QuickCheckResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync(System.Threading.CancellationToken)
+  id: ShowConfigAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: ShowConfigAsync(CancellationToken)
+  nameWithType: DiagnosticsService.ShowConfigAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShowConfigAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets current configuration in human-readable format (equivalent to --show-config CLI command).
+  example: []
+  syntax:
+    content: public Task<ShowConfigResult> ShowConfigAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ShowConfigResult}
+    content.vb: Public Function ShowConfigAsync(ct As CancellationToken = Nothing) As Task(Of ShowConfigResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  id: GetErrorCodesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: GetErrorCodesAsync(CancellationToken)
+  nameWithType: DiagnosticsService.GetErrorCodesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetErrorCodesAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets list of available error codes and their descriptions (equivalent to --error-codes CLI command).
+  example: []
+  syntax:
+    content: public Task<ErrorCodesResult> GetErrorCodesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ErrorCodesResult}
+    content.vb: Public Function GetErrorCodesAsync(ct As CancellationToken = Nothing) As Task(Of ErrorCodesResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  id: RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: RunSelfTestAsync(SelfTestOptions?, CancellationToken)
+  nameWithType: DiagnosticsService.RunSelfTestAsync(SelfTestOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunSelfTestAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs system self-tests (equivalent to --selftest CLI command).
+  example: []
+  syntax:
+    content: public Task<SelfTestResult> RunSelfTestAsync(SelfTestOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.SelfTestOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SelfTestResult}
+    content.vb: Public Function RunSelfTestAsync(options As SelfTestOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of SelfTestResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync*
+  nameWithType.vb: DiagnosticsService.RunSelfTestAsync(SelfTestOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions, System.Threading.CancellationToken)
+  name.vb: RunSelfTestAsync(SelfTestOptions, CancellationToken)
+- uid: Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  id: ValidateCredentialsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: ValidateCredentialsAsync(CancellationToken)
+  nameWithType: DiagnosticsService.ValidateCredentialsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateCredentialsAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 367
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Validates all configured credentials.
+  example: []
+  syntax:
+    content: public Task<CredentialValidationResult> ValidateCredentialsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.CredentialValidationResult}
+    content.vb: Public Function ValidateCredentialsAsync(ct As CancellationToken = Nothing) As Task(Of CredentialValidationResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync(System.Threading.CancellationToken)
+  id: TestAllProvidersAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: TestAllProvidersAsync(CancellationToken)
+  nameWithType: DiagnosticsService.TestAllProvidersAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestAllProvidersAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Tests connectivity to all configured providers.
+  example: []
+  syntax:
+    content: public Task<AllProvidersTestResult> TestAllProvidersAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.AllProvidersTestResult}
+    content.vb: Public Function TestAllProvidersAsync(ct As CancellationToken = Nothing) As Task(Of AllProvidersTestResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync*
+- uid: Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync(System.Threading.CancellationToken)
+  id: ValidateFullConfigAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DiagnosticsService
+  langs:
+  - csharp
+  - vb
+  name: ValidateFullConfigAsync(CancellationToken)
+  nameWithType: DiagnosticsService.ValidateFullConfigAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateFullConfigAsync
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 419
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Validates the full configuration file.
+  example: []
+  syntax:
+    content: public Task<DiagnosticConfigValidationResult> ValidateFullConfigAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticConfigValidationResult}
+    content.vb: Public Function ValidateFullConfigAsync(ct As CancellationToken = Nothing) As Task(Of DiagnosticConfigValidationResult)
+  overload: Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DiagnosticsService.Instance*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.Instance
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_Instance
+  name: Instance
+  nameWithType: DiagnosticsService.Instance
+  fullName: Meridian.Ui.Services.DiagnosticsService.Instance
+- uid: Meridian.Ui.Services.DiagnosticsService
+  commentId: T:Meridian.Ui.Services.DiagnosticsService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.DiagnosticsService.html
+  name: DiagnosticsService
+  nameWithType: DiagnosticsService
+  fullName: Meridian.Ui.Services.DiagnosticsService
+- uid: Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_RunDryRunAsync_System_Threading_CancellationToken_
+  name: RunDryRunAsync
+  nameWithType: DiagnosticsService.RunDryRunAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunDryRunAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DryRunResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DryRunResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DryRunResult>
+  nameWithType: Task<DryRunResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DryRunResult>
+  nameWithType.vb: Task(Of DryRunResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DryRunResult)
+  name.vb: Task(Of DryRunResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DryRunResult
+    name: DryRunResult
+    href: Meridian.Ui.Services.DryRunResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DryRunResult
+    name: DryRunResult
+    href: Meridian.Ui.Services.DryRunResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_RunPreflightCheckAsync_System_Threading_CancellationToken_
+  name: RunPreflightCheckAsync
+  nameWithType: DiagnosticsService.RunPreflightCheckAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunPreflightCheckAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PreflightResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PreflightResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PreflightResult>
+  nameWithType: Task<PreflightResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PreflightResult>
+  nameWithType.vb: Task(Of PreflightResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PreflightResult)
+  name.vb: Task(Of PreflightResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PreflightResult
+    name: PreflightResult
+    href: Meridian.Ui.Services.PreflightResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PreflightResult
+    name: PreflightResult
+    href: Meridian.Ui.Services.PreflightResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_GenerateDiagnosticBundleAsync_Meridian_Ui_Services_DiagnosticBundleOptions_System_Threading_CancellationToken_
+  name: GenerateDiagnosticBundleAsync
+  nameWithType: DiagnosticsService.GenerateDiagnosticBundleAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.GenerateDiagnosticBundleAsync
+- uid: Meridian.Ui.Services.DiagnosticBundleOptions
+  commentId: T:Meridian.Ui.Services.DiagnosticBundleOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.DiagnosticBundleOptions.html
+  name: DiagnosticBundleOptions
+  nameWithType: DiagnosticBundleOptions
+  fullName: Meridian.Ui.Services.DiagnosticBundleOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticBundleResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticBundleResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DiagnosticBundleResult>
+  nameWithType: Task<DiagnosticBundleResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DiagnosticBundleResult>
+  nameWithType.vb: Task(Of DiagnosticBundleResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DiagnosticBundleResult)
+  name.vb: Task(Of DiagnosticBundleResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DiagnosticBundleResult
+    name: DiagnosticBundleResult
+    href: Meridian.Ui.Services.DiagnosticBundleResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DiagnosticBundleResult
+    name: DiagnosticBundleResult
+    href: Meridian.Ui.Services.DiagnosticBundleResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_GetDiagnosticSystemMetricsAsync_System_Threading_CancellationToken_
+  name: GetDiagnosticSystemMetricsAsync
+  nameWithType: DiagnosticsService.GetDiagnosticSystemMetricsAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.GetDiagnosticSystemMetricsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticSystemMetrics}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticSystemMetrics}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DiagnosticSystemMetrics>
+  nameWithType: Task<DiagnosticSystemMetrics>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DiagnosticSystemMetrics>
+  nameWithType.vb: Task(Of DiagnosticSystemMetrics)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DiagnosticSystemMetrics)
+  name.vb: Task(Of DiagnosticSystemMetrics)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DiagnosticSystemMetrics
+    name: DiagnosticSystemMetrics
+    href: Meridian.Ui.Services.DiagnosticSystemMetrics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DiagnosticSystemMetrics
+    name: DiagnosticSystemMetrics
+    href: Meridian.Ui.Services.DiagnosticSystemMetrics.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_ValidateConfigurationAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: ValidateConfigurationAsync
+  nameWithType: DiagnosticsService.ValidateConfigurationAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.ValidateConfigurationAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ValidationResult>
+  nameWithType: Task<ValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ValidationResult>
+  nameWithType.vb: Task(Of ValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ValidationResult)
+  name.vb: Task(Of ValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ValidationResult
+    name: ValidationResult
+    href: Meridian.Ui.Services.ValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ValidationResult
+    name: ValidationResult
+    href: Meridian.Ui.Services.ValidationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.TestProviderAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.TestProviderAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_TestProviderAsync_System_String_System_Threading_CancellationToken_
+  name: TestProviderAsync
+  nameWithType: DiagnosticsService.TestProviderAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.TestProviderAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticProviderTestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticProviderTestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DiagnosticProviderTestResult>
+  nameWithType: Task<DiagnosticProviderTestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DiagnosticProviderTestResult>
+  nameWithType.vb: Task(Of DiagnosticProviderTestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DiagnosticProviderTestResult)
+  name.vb: Task(Of DiagnosticProviderTestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DiagnosticProviderTestResult
+    name: DiagnosticProviderTestResult
+    href: Meridian.Ui.Services.DiagnosticProviderTestResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DiagnosticProviderTestResult
+    name: DiagnosticProviderTestResult
+    href: Meridian.Ui.Services.DiagnosticProviderTestResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_RunQuickCheckAsync_System_Threading_CancellationToken_
+  name: RunQuickCheckAsync
+  nameWithType: DiagnosticsService.RunQuickCheckAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunQuickCheckAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.QuickCheckResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.QuickCheckResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QuickCheckResult>
+  nameWithType: Task<QuickCheckResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.QuickCheckResult>
+  nameWithType.vb: Task(Of QuickCheckResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.QuickCheckResult)
+  name.vb: Task(Of QuickCheckResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.QuickCheckResult
+    name: QuickCheckResult
+    href: Meridian.Ui.Services.QuickCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.QuickCheckResult
+    name: QuickCheckResult
+    href: Meridian.Ui.Services.QuickCheckResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_ShowConfigAsync_System_Threading_CancellationToken_
+  name: ShowConfigAsync
+  nameWithType: DiagnosticsService.ShowConfigAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.ShowConfigAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ShowConfigResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ShowConfigResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ShowConfigResult>
+  nameWithType: Task<ShowConfigResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ShowConfigResult>
+  nameWithType.vb: Task(Of ShowConfigResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ShowConfigResult)
+  name.vb: Task(Of ShowConfigResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ShowConfigResult
+    name: ShowConfigResult
+    href: Meridian.Ui.Services.ShowConfigResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ShowConfigResult
+    name: ShowConfigResult
+    href: Meridian.Ui.Services.ShowConfigResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_GetErrorCodesAsync_System_Threading_CancellationToken_
+  name: GetErrorCodesAsync
+  nameWithType: DiagnosticsService.GetErrorCodesAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.GetErrorCodesAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ErrorCodesResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ErrorCodesResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ErrorCodesResult>
+  nameWithType: Task<ErrorCodesResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ErrorCodesResult>
+  nameWithType.vb: Task(Of ErrorCodesResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ErrorCodesResult)
+  name.vb: Task(Of ErrorCodesResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ErrorCodesResult
+    name: ErrorCodesResult
+    href: Meridian.Ui.Services.ErrorCodesResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ErrorCodesResult
+    name: ErrorCodesResult
+    href: Meridian.Ui.Services.ErrorCodesResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_RunSelfTestAsync_Meridian_Ui_Services_SelfTestOptions_System_Threading_CancellationToken_
+  name: RunSelfTestAsync
+  nameWithType: DiagnosticsService.RunSelfTestAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.RunSelfTestAsync
+- uid: Meridian.Ui.Services.SelfTestOptions
+  commentId: T:Meridian.Ui.Services.SelfTestOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SelfTestOptions.html
+  name: SelfTestOptions
+  nameWithType: SelfTestOptions
+  fullName: Meridian.Ui.Services.SelfTestOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SelfTestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SelfTestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SelfTestResult>
+  nameWithType: Task<SelfTestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SelfTestResult>
+  nameWithType.vb: Task(Of SelfTestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SelfTestResult)
+  name.vb: Task(Of SelfTestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SelfTestResult
+    name: SelfTestResult
+    href: Meridian.Ui.Services.SelfTestResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SelfTestResult
+    name: SelfTestResult
+    href: Meridian.Ui.Services.SelfTestResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync
+  nameWithType: DiagnosticsService.ValidateCredentialsAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.ValidateCredentialsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.CredentialValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.CredentialValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CredentialValidationResult>
+  nameWithType: Task<CredentialValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.CredentialValidationResult>
+  nameWithType.vb: Task(Of CredentialValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.CredentialValidationResult)
+  name.vb: Task(Of CredentialValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.CredentialValidationResult
+    name: CredentialValidationResult
+    href: Meridian.Ui.Services.CredentialValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.CredentialValidationResult
+    name: CredentialValidationResult
+    href: Meridian.Ui.Services.CredentialValidationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_TestAllProvidersAsync_System_Threading_CancellationToken_
+  name: TestAllProvidersAsync
+  nameWithType: DiagnosticsService.TestAllProvidersAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.TestAllProvidersAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.AllProvidersTestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.AllProvidersTestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AllProvidersTestResult>
+  nameWithType: Task<AllProvidersTestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.AllProvidersTestResult>
+  nameWithType.vb: Task(Of AllProvidersTestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.AllProvidersTestResult)
+  name.vb: Task(Of AllProvidersTestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.AllProvidersTestResult
+    name: AllProvidersTestResult
+    href: Meridian.Ui.Services.AllProvidersTestResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AllProvidersTestResult
+    name: AllProvidersTestResult
+    href: Meridian.Ui.Services.AllProvidersTestResult.html
+  - name: )
+- uid: Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync
+  href: Meridian.Ui.Services.DiagnosticsService.html#Meridian_Ui_Services_DiagnosticsService_ValidateFullConfigAsync_System_Threading_CancellationToken_
+  name: ValidateFullConfigAsync
+  nameWithType: DiagnosticsService.ValidateFullConfigAsync
+  fullName: Meridian.Ui.Services.DiagnosticsService.ValidateFullConfigAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticConfigValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DiagnosticConfigValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DiagnosticConfigValidationResult>
+  nameWithType: Task<DiagnosticConfigValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DiagnosticConfigValidationResult>
+  nameWithType.vb: Task(Of DiagnosticConfigValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DiagnosticConfigValidationResult)
+  name.vb: Task(Of DiagnosticConfigValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DiagnosticConfigValidationResult
+    name: DiagnosticConfigValidationResult
+    href: Meridian.Ui.Services.DiagnosticConfigValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DiagnosticConfigValidationResult
+    name: DiagnosticConfigValidationResult
+    href: Meridian.Ui.Services.DiagnosticConfigValidationResult.html
+  - name: )

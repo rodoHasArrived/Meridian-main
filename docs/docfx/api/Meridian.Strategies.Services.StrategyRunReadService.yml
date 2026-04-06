@@ -1,0 +1,1444 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.StrategyRunReadService
+  commentId: T:Meridian.Strategies.Services.StrategyRunReadService
+  id: StrategyRunReadService
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)
+  - Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(System.String,System.Nullable{Meridian.Strategies.Models.RunType},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunReadService
+  nameWithType: StrategyRunReadService
+  fullName: Meridian.Strategies.Services.StrategyRunReadService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunReadService
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Provides the shared Phase 12 run browser/read model for backtest, paper, and live history.
+  example: []
+  syntax:
+    content: public sealed class StrategyRunReadService
+    content.vb: Public NotInheritable Class StrategyRunReadService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)
+  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Services.PortfolioReadService,Meridian.Strategies.Services.LedgerReadService)'
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunReadService(IStrategyRepository, PortfolioReadService, LedgerReadService)
+  nameWithType: StrategyRunReadService.StrategyRunReadService(IStrategyRepository, PortfolioReadService, LedgerReadService)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.StrategyRunReadService(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Services.PortfolioReadService, Meridian.Strategies.Services.LedgerReadService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public StrategyRunReadService(IStrategyRepository repository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService)
+    parameters:
+    - id: repository
+      type: Meridian.Strategies.Interfaces.IStrategyRepository
+    - id: portfolioReadService
+      type: Meridian.Strategies.Services.PortfolioReadService
+    - id: ledgerReadService
+      type: Meridian.Strategies.Services.LedgerReadService
+    content.vb: Public Sub New(repository As IStrategyRepository, portfolioReadService As PortfolioReadService, ledgerReadService As LedgerReadService)
+  overload: Meridian.Strategies.Services.StrategyRunReadService.#ctor*
+  nameWithType.vb: StrategyRunReadService.New(IStrategyRepository, PortfolioReadService, LedgerReadService)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.New(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Services.PortfolioReadService, Meridian.Strategies.Services.LedgerReadService)
+  name.vb: New(IStrategyRepository, PortfolioReadService, LedgerReadService)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(System.String,System.Nullable{Meridian.Strategies.Models.RunType},System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(System.String,System.Nullable{Meridian.Strategies.Models.RunType},System.Threading.CancellationToken)
+  id: GetRunsAsync(System.String,System.Nullable{Meridian.Strategies.Models.RunType},System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetRunsAsync(string?, RunType?, CancellationToken)
+  nameWithType: StrategyRunReadService.GetRunsAsync(string?, RunType?, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(string?, Meridian.Strategies.Models.RunType?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunsAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, RunType? runType = null, CancellationToken ct = default)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: runType
+      type: System.Nullable{Meridian.Strategies.Models.RunType}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunSummary}}
+    content.vb: Public Function GetRunsAsync(strategyId As String = Nothing, runType As RunType? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of StrategyRunSummary))
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync*
+  nameWithType.vb: StrategyRunReadService.GetRunsAsync(String, RunType?, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(String, Meridian.Strategies.Models.RunType?, System.Threading.CancellationToken)
+  name.vb: GetRunsAsync(String, RunType?, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  id: GetRunsAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetRunsAsync(StrategyRunHistoryQuery, CancellationToken)
+  nameWithType: StrategyRunReadService.GetRunsAsync(StrategyRunHistoryQuery, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunsAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(StrategyRunHistoryQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunSummary}}
+    content.vb: Public Function GetRunsAsync(query As StrategyRunHistoryQuery, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of StrategyRunSummary))
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync*
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  id: GetMergedTimelineAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetMergedTimelineAsync(StrategyRunHistoryQuery, CancellationToken)
+  nameWithType: StrategyRunReadService.GetMergedTimelineAsync(StrategyRunHistoryQuery, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync(Meridian.Contracts.Workstation.StrategyRunHistoryQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMergedTimelineAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<IReadOnlyList<StrategyRunTimelineEntry>> GetMergedTimelineAsync(StrategyRunHistoryQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunTimelineEntry}}
+    content.vb: Public Function GetMergedTimelineAsync(query As StrategyRunHistoryQuery, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of StrategyRunTimelineEntry))
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync*
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync(System.String,System.Threading.CancellationToken)
+  id: GetRunDetailAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetRunDetailAsync(string, CancellationToken)
+  nameWithType: StrategyRunReadService.GetRunDetailAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunDetailAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.StrategyRunDetail}
+    content.vb: Public Function GetRunDetailAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of StrategyRunDetail)
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync*
+  nameWithType.vb: StrategyRunReadService.GetRunDetailAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync(String, System.Threading.CancellationToken)
+  name.vb: GetRunDetailAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync(System.String,System.Threading.CancellationToken)
+  id: GetLedgerSummaryAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetLedgerSummaryAsync(string, CancellationToken)
+  nameWithType: StrategyRunReadService.GetLedgerSummaryAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLedgerSummaryAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.LedgerSummary}
+    content.vb: Public Function GetLedgerSummaryAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of LedgerSummary)
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync*
+  nameWithType.vb: StrategyRunReadService.GetLedgerSummaryAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync(String, System.Threading.CancellationToken)
+  name.vb: GetLedgerSummaryAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: CompareRunsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: CompareRunsAsync(IEnumerable<string>, CancellationToken)
+  nameWithType: StrategyRunReadService.CompareRunsAsync(IEnumerable<string>, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync(System.Collections.Generic.IEnumerable<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompareRunsAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(IEnumerable<string> runIds, CancellationToken ct = default)
+    parameters:
+    - id: runIds
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunComparison}}
+    content.vb: Public Function CompareRunsAsync(runIds As IEnumerable(Of String), ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of StrategyRunComparison))
+  overload: Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync*
+  nameWithType.vb: StrategyRunReadService.CompareRunsAsync(IEnumerable(Of String), CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync(System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: CompareRunsAsync(IEnumerable(Of String), CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: GetRunComparisonDtosAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetRunComparisonDtosAsync(IEnumerable<string>, CancellationToken)
+  nameWithType: StrategyRunReadService.GetRunComparisonDtosAsync(IEnumerable<string>, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync(System.Collections.Generic.IEnumerable<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunComparisonDtosAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<IReadOnlyList<RunComparisonDto>> GetRunComparisonDtosAsync(IEnumerable<string> runIds, CancellationToken ct = default)
+    parameters:
+    - id: runIds
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.RunComparisonDto}}
+    content.vb: Public Function GetRunComparisonDtosAsync(runIds As IEnumerable(Of String), ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of RunComparisonDto))
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync*
+  nameWithType.vb: StrategyRunReadService.GetRunComparisonDtosAsync(IEnumerable(Of String), CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync(System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: GetRunComparisonDtosAsync(IEnumerable(Of String), CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync(System.String,System.Threading.CancellationToken)
+  id: GetEquityCurveAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetEquityCurveAsync(string, CancellationToken)
+  nameWithType: StrategyRunReadService.GetEquityCurveAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEquityCurveAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 424
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Returns the equity curve with per-point drawdown for the given run.
+
+    Returns <code>null</code> when the run does not exist or has no snapshots recorded.
+  example: []
+  syntax:
+    content: public Task<EquityCurveSummary?> GetEquityCurveAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.EquityCurveSummary}
+    content.vb: Public Function GetEquityCurveAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of EquityCurveSummary)
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync*
+  nameWithType.vb: StrategyRunReadService.GetEquityCurveAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync(String, System.Threading.CancellationToken)
+  name.vb: GetEquityCurveAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync(System.String,System.Threading.CancellationToken)
+  id: GetFillsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetFillsAsync(string, CancellationToken)
+  nameWithType: StrategyRunReadService.GetFillsAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFillsAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Returns all executed fills for the given run, ordered by fill time.
+
+    Returns <code>null</code> when the run does not exist.
+  example: []
+  syntax:
+    content: public Task<RunFillSummary?> GetFillsAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.RunFillSummary}
+    content.vb: Public Function GetFillsAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of RunFillSummary)
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync*
+  nameWithType.vb: StrategyRunReadService.GetFillsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetFillsAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync(System.String,System.Threading.CancellationToken)
+  id: GetAttributionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunReadService
+  langs:
+  - csharp
+  - vb
+  name: GetAttributionAsync(string, CancellationToken)
+  nameWithType: StrategyRunReadService.GetAttributionAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAttributionAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Returns per-symbol P&amp;L attribution for the given run.
+
+    Returns <code>null</code> when the run does not exist or has no metrics.
+  example: []
+  syntax:
+    content: public Task<RunAttributionSummary?> GetAttributionAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.RunAttributionSummary}
+    content.vb: Public Function GetAttributionAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of RunAttributionSummary)
+  overload: Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync*
+  nameWithType.vb: StrategyRunReadService.GetAttributionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync(String, System.Threading.CancellationToken)
+  name.vb: GetAttributionAsync(String, CancellationToken)
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Services.StrategyRunReadService.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.#ctor
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_Meridian_Strategies_Services_PortfolioReadService_Meridian_Strategies_Services_LedgerReadService_
+  name: StrategyRunReadService
+  nameWithType: StrategyRunReadService.StrategyRunReadService
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.StrategyRunReadService
+  nameWithType.vb: StrategyRunReadService.New
+  fullName.vb: Meridian.Strategies.Services.StrategyRunReadService.New
+  name.vb: New
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyRepository
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html
+  name: IStrategyRepository
+  nameWithType: IStrategyRepository
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository
+- uid: Meridian.Strategies.Services.PortfolioReadService
+  commentId: T:Meridian.Strategies.Services.PortfolioReadService
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.PortfolioReadService.html
+  name: PortfolioReadService
+  nameWithType: PortfolioReadService
+  fullName: Meridian.Strategies.Services.PortfolioReadService
+- uid: Meridian.Strategies.Services.LedgerReadService
+  commentId: T:Meridian.Strategies.Services.LedgerReadService
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.LedgerReadService.html
+  name: LedgerReadService
+  nameWithType: LedgerReadService
+  fullName: Meridian.Strategies.Services.LedgerReadService
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetRunsAsync_System_String_System_Nullable_Meridian_Strategies_Models_RunType__System_Threading_CancellationToken_
+  name: GetRunsAsync
+  nameWithType: StrategyRunReadService.GetRunsAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetRunsAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{Meridian.Strategies.Models.RunType}
+  commentId: T:System.Nullable{Meridian.Strategies.Models.RunType}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Strategies.Models.RunType.html
+  name: RunType?
+  nameWithType: RunType?
+  fullName: Meridian.Strategies.Models.RunType?
+  spec.csharp:
+  - uid: Meridian.Strategies.Models.RunType
+    name: RunType
+    href: Meridian.Strategies.Models.RunType.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Strategies.Models.RunType
+    name: RunType
+    href: Meridian.Strategies.Models.RunType.html
+  - name: '?'
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunSummary}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunSummary}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<StrategyRunSummary>>
+  nameWithType: Task<IReadOnlyList<StrategyRunSummary>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.StrategyRunSummary>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of StrategyRunSummary))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.StrategyRunSummary))
+  name.vb: Task(Of IReadOnlyList(Of StrategyRunSummary))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunSummary
+    name: StrategyRunSummary
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunSummary
+    name: StrategyRunSummary
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunHistoryQuery.html
+  name: StrategyRunHistoryQuery
+  nameWithType: StrategyRunHistoryQuery
+  fullName: Meridian.Contracts.Workstation.StrategyRunHistoryQuery
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetMergedTimelineAsync_Meridian_Contracts_Workstation_StrategyRunHistoryQuery_System_Threading_CancellationToken_
+  name: GetMergedTimelineAsync
+  nameWithType: StrategyRunReadService.GetMergedTimelineAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetMergedTimelineAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunTimelineEntry}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunTimelineEntry}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<StrategyRunTimelineEntry>>
+  nameWithType: Task<IReadOnlyList<StrategyRunTimelineEntry>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.StrategyRunTimelineEntry>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of StrategyRunTimelineEntry))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.StrategyRunTimelineEntry))
+  name.vb: Task(Of IReadOnlyList(Of StrategyRunTimelineEntry))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunTimelineEntry
+    name: StrategyRunTimelineEntry
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunTimelineEntry
+    name: StrategyRunTimelineEntry
+  - name: )
+  - name: )
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetRunDetailAsync_System_String_System_Threading_CancellationToken_
+  name: GetRunDetailAsync
+  nameWithType: StrategyRunReadService.GetRunDetailAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetRunDetailAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.StrategyRunDetail}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.StrategyRunDetail}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StrategyRunDetail>
+  nameWithType: Task<StrategyRunDetail>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.StrategyRunDetail>
+  nameWithType.vb: Task(Of StrategyRunDetail)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.StrategyRunDetail)
+  name.vb: Task(Of StrategyRunDetail)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunDetail
+    name: StrategyRunDetail
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunDetail
+    name: StrategyRunDetail
+  - name: )
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetLedgerSummaryAsync_System_String_System_Threading_CancellationToken_
+  name: GetLedgerSummaryAsync
+  nameWithType: StrategyRunReadService.GetLedgerSummaryAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetLedgerSummaryAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.LedgerSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.LedgerSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LedgerSummary>
+  nameWithType: Task<LedgerSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.LedgerSummary>
+  nameWithType.vb: Task(Of LedgerSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.LedgerSummary)
+  name.vb: Task(Of LedgerSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.LedgerSummary
+    name: LedgerSummary
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.LedgerSummary
+    name: LedgerSummary
+  - name: )
+- uid: Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_CompareRunsAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: CompareRunsAsync
+  nameWithType: StrategyRunReadService.CompareRunsAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.CompareRunsAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunComparison}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.StrategyRunComparison}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<StrategyRunComparison>>
+  nameWithType: Task<IReadOnlyList<StrategyRunComparison>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.StrategyRunComparison>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of StrategyRunComparison))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.StrategyRunComparison))
+  name.vb: Task(Of IReadOnlyList(Of StrategyRunComparison))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunComparison
+    name: StrategyRunComparison
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunComparison
+    name: StrategyRunComparison
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetRunComparisonDtosAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: GetRunComparisonDtosAsync
+  nameWithType: StrategyRunReadService.GetRunComparisonDtosAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetRunComparisonDtosAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.RunComparisonDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.RunComparisonDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<RunComparisonDto>>
+  nameWithType: Task<IReadOnlyList<RunComparisonDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.RunComparisonDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of RunComparisonDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.RunComparisonDto))
+  name.vb: Task(Of IReadOnlyList(Of RunComparisonDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.RunComparisonDto
+    name: RunComparisonDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.RunComparisonDto
+    name: RunComparisonDto
+  - name: )
+  - name: )
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetEquityCurveAsync_System_String_System_Threading_CancellationToken_
+  name: GetEquityCurveAsync
+  nameWithType: StrategyRunReadService.GetEquityCurveAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetEquityCurveAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.EquityCurveSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.EquityCurveSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EquityCurveSummary>
+  nameWithType: Task<EquityCurveSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.EquityCurveSummary>
+  nameWithType.vb: Task(Of EquityCurveSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.EquityCurveSummary)
+  name.vb: Task(Of EquityCurveSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.EquityCurveSummary
+    name: EquityCurveSummary
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.EquityCurveSummary
+    name: EquityCurveSummary
+  - name: )
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetFillsAsync_System_String_System_Threading_CancellationToken_
+  name: GetFillsAsync
+  nameWithType: StrategyRunReadService.GetFillsAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetFillsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.RunFillSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.RunFillSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RunFillSummary>
+  nameWithType: Task<RunFillSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.RunFillSummary>
+  nameWithType.vb: Task(Of RunFillSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.RunFillSummary)
+  name.vb: Task(Of RunFillSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.RunFillSummary
+    name: RunFillSummary
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.RunFillSummary
+    name: RunFillSummary
+  - name: )
+- uid: Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync
+  href: Meridian.Strategies.Services.StrategyRunReadService.html#Meridian_Strategies_Services_StrategyRunReadService_GetAttributionAsync_System_String_System_Threading_CancellationToken_
+  name: GetAttributionAsync
+  nameWithType: StrategyRunReadService.GetAttributionAsync
+  fullName: Meridian.Strategies.Services.StrategyRunReadService.GetAttributionAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.RunAttributionSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.RunAttributionSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RunAttributionSummary>
+  nameWithType: Task<RunAttributionSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.RunAttributionSummary>
+  nameWithType.vb: Task(Of RunAttributionSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.RunAttributionSummary)
+  name.vb: Task(Of RunAttributionSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.RunAttributionSummary
+    name: RunAttributionSummary
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.RunAttributionSummary
+    name: RunAttributionSummary
+  - name: )

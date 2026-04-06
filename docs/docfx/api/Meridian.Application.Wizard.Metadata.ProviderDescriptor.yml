@@ -1,0 +1,873 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  commentId: T:Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  id: ProviderDescriptor
+  parent: Meridian.Application.Wizard.Metadata
+  children:
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.#ctor(System.String,System.String,System.String[],System.String[],System.String[],System.Int32,System.String,System.String,System.String)
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescriptor
+  nameWithType: ProviderDescriptor
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescriptor
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: >-
+    Immutable descriptor for a single data provider.
+
+    Centralises signup URLs, environment variable names, capabilities and priority
+
+    so that both <code>ConfigurationWizard</code> and <code>AutoConfigurationService</code>
+
+    can share the same source of truth.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderDescriptor : IEquatable<ProviderDescriptor>'
+    content.vb: Public NotInheritable Class ProviderDescriptor Implements IEquatable(Of ProviderDescriptor)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Wizard.Metadata.ProviderDescriptor}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.#ctor(System.String,System.String,System.String[],System.String[],System.String[],System.Int32,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Wizard.Metadata.ProviderDescriptor.#ctor(System.String,System.String,System.String[],System.String[],System.String[],System.Int32,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String[],System.String[],System.String[],System.Int32,System.String,System.String,System.String)'
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescriptor(string, string, string[], string[], string[], int, string, string, string)
+  nameWithType: ProviderDescriptor.ProviderDescriptor(string, string, string[], string[], string[], int, string, string, string)
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.ProviderDescriptor(string, string, string[], string[], string[], int, string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: >-
+    Immutable descriptor for a single data provider.
+
+    Centralises signup URLs, environment variable names, capabilities and priority
+
+    so that both <code>ConfigurationWizard</code> and <code>AutoConfigurationService</code>
+
+    can share the same source of truth.
+  example: []
+  syntax:
+    content: public ProviderDescriptor(string Name, string DisplayName, string[] RequiredEnvVars, string[] AlternativeEnvVars, string[] Capabilities, int Priority, string SignupUrl = "", string DocsUrl = "", string FreeTierDescription = "")
+    parameters:
+    - id: Name
+      type: System.String
+      description: Provider identifier (matches <xref href="Meridian.Application.Config.DataSourceKind" data-throw-if-not-resolved="false"></xref> names).
+    - id: DisplayName
+      type: System.String
+      description: Human-readable name shown in the wizard UI.
+    - id: RequiredEnvVars
+      type: System.String[]
+      description: >-
+        Env-vars that must all be set for the provider to be considered "configured".
+
+        Empty means no credentials required (e.g. Yahoo, Stooq).
+    - id: AlternativeEnvVars
+      type: System.String[]
+      description: Alternative env-var names accepted in place of <code class="paramref">RequiredEnvVars</code>.
+    - id: Capabilities
+      type: System.String[]
+      description: >-
+        Provider capability tags: <code>RealTime</code>, <code>Historical</code>, <code>Trades</code>,
+
+        <code>Quotes</code>, <code>L2Depth</code>, <code>Aggregates</code>, <code>Daily</code>, etc.
+    - id: Priority
+      type: System.Int32
+      description: Lower value = higher preference during auto-configuration ordering.
+    - id: SignupUrl
+      type: System.String
+      description: Where users sign up for a free or paid tier.
+    - id: DocsUrl
+      type: System.String
+      description: Provider API documentation.
+    - id: FreeTierDescription
+      type: System.String
+      description: Short description of the free plan limits.
+    content.vb: Public Sub New(Name As String, DisplayName As String, RequiredEnvVars As String(), AlternativeEnvVars As String(), Capabilities As String(), Priority As Integer, SignupUrl As String = "", DocsUrl As String = "", FreeTierDescription As String = "")
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.#ctor*
+  nameWithType.vb: ProviderDescriptor.New(String, String, String(), String(), String(), Integer, String, String, String)
+  fullName.vb: Meridian.Application.Wizard.Metadata.ProviderDescriptor.New(String, String, String(), String(), String(), Integer, String, String, String)
+  name.vb: New(String, String, String(), String(), String(), Integer, String, String, String)
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name
+  id: Name
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ProviderDescriptor.Name
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: Provider identifier (matches <xref href="Meridian.Application.Config.DataSourceKind" data-throw-if-not-resolved="false"></xref> names).
+  example: []
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName
+  id: DisplayName
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: ProviderDescriptor.DisplayName
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: Human-readable name shown in the wizard UI.
+  example: []
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars
+  id: RequiredEnvVars
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: RequiredEnvVars
+  nameWithType: ProviderDescriptor.RequiredEnvVars
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequiredEnvVars
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: >-
+    Env-vars that must all be set for the provider to be considered "configured".
+
+    Empty means no credentials required (e.g. Yahoo, Stooq).
+  example: []
+  syntax:
+    content: public string[] RequiredEnvVars { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property RequiredEnvVars As String()
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars
+  id: AlternativeEnvVars
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: AlternativeEnvVars
+  nameWithType: ProviderDescriptor.AlternativeEnvVars
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlternativeEnvVars
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: Alternative env-var names accepted in place of <code class="paramref">RequiredEnvVars</code>.
+  example: []
+  syntax:
+    content: public string[] AlternativeEnvVars { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property AlternativeEnvVars As String()
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities
+  id: Capabilities
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: ProviderDescriptor.Capabilities
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: >-
+    Provider capability tags: <code>RealTime</code>, <code>Historical</code>, <code>Trades</code>,
+
+    <code>Quotes</code>, <code>L2Depth</code>, <code>Aggregates</code>, <code>Daily</code>, etc.
+  example: []
+  syntax:
+    content: public string[] Capabilities { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Capabilities As String()
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority
+  id: Priority
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: ProviderDescriptor.Priority
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: Lower value = higher preference during auto-configuration ordering.
+  example: []
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl
+  id: SignupUrl
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: SignupUrl
+  nameWithType: ProviderDescriptor.SignupUrl
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SignupUrl
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: Where users sign up for a free or paid tier.
+  example: []
+  syntax:
+    content: public string SignupUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SignupUrl As String
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl
+  id: DocsUrl
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: DocsUrl
+  nameWithType: ProviderDescriptor.DocsUrl
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DocsUrl
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: Provider API documentation.
+  example: []
+  syntax:
+    content: public string DocsUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DocsUrl As String
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl*
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription
+  commentId: P:Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription
+  id: FreeTierDescription
+  parent: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  langs:
+  - csharp
+  - vb
+  name: FreeTierDescription
+  nameWithType: ProviderDescriptor.FreeTierDescription
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FreeTierDescription
+    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Metadata
+  summary: Short description of the free plan limits.
+  example: []
+  syntax:
+    content: public string FreeTierDescription { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FreeTierDescription As String
+  overload: Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription*
+references:
+- uid: Meridian.Application.Config.DataSourceKind
+  commentId: T:Meridian.Application.Config.DataSourceKind
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourceKind.html
+  name: DataSourceKind
+  nameWithType: DataSourceKind
+  fullName: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Application.Wizard.Metadata
+  commentId: N:Meridian.Application.Wizard.Metadata
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Metadata
+  nameWithType: Meridian.Application.Wizard.Metadata
+  fullName: Meridian.Application.Wizard.Metadata
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Metadata
+    name: Metadata
+    href: Meridian.Application.Wizard.Metadata.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Metadata
+    name: Metadata
+    href: Meridian.Application.Wizard.Metadata.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Wizard.Metadata.ProviderDescriptor}
+  commentId: T:System.IEquatable{Meridian.Application.Wizard.Metadata.ProviderDescriptor}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderDescriptor>
+  nameWithType: IEquatable<ProviderDescriptor>
+  fullName: System.IEquatable<Meridian.Application.Wizard.Metadata.ProviderDescriptor>
+  nameWithType.vb: IEquatable(Of ProviderDescriptor)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Wizard.Metadata.ProviderDescriptor)
+  name.vb: IEquatable(Of ProviderDescriptor)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+    name: ProviderDescriptor
+    href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+    name: ProviderDescriptor
+    href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.#ctor*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.#ctor
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor__ctor_System_String_System_String_System_String___System_String___System_String___System_Int32_System_String_System_String_System_String_
+  name: ProviderDescriptor
+  nameWithType: ProviderDescriptor.ProviderDescriptor
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.ProviderDescriptor
+  nameWithType.vb: ProviderDescriptor.New
+  fullName.vb: Meridian.Application.Wizard.Metadata.ProviderDescriptor.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_Name
+  name: Name
+  nameWithType: ProviderDescriptor.Name
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Name
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_DisplayName
+  name: DisplayName
+  nameWithType: ProviderDescriptor.DisplayName
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DisplayName
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_RequiredEnvVars
+  name: RequiredEnvVars
+  nameWithType: ProviderDescriptor.RequiredEnvVars
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.RequiredEnvVars
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_AlternativeEnvVars
+  name: AlternativeEnvVars
+  nameWithType: ProviderDescriptor.AlternativeEnvVars
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.AlternativeEnvVars
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_Capabilities
+  name: Capabilities
+  nameWithType: ProviderDescriptor.Capabilities
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Capabilities
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_Priority
+  name: Priority
+  nameWithType: ProviderDescriptor.Priority
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.Priority
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_SignupUrl
+  name: SignupUrl
+  nameWithType: ProviderDescriptor.SignupUrl
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.SignupUrl
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_DocsUrl
+  name: DocsUrl
+  nameWithType: ProviderDescriptor.DocsUrl
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.DocsUrl
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription*
+  commentId: Overload:Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html#Meridian_Application_Wizard_Metadata_ProviderDescriptor_FreeTierDescription
+  name: FreeTierDescription
+  nameWithType: ProviderDescriptor.FreeTierDescription
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor.FreeTierDescription

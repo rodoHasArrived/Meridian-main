@@ -1,0 +1,608 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  id: IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  langs:
+  - csharp
+  - vb
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IProviderMetadata
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 31
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Unified metadata interface that all provider types implement.
+
+    Enables consistent discovery, routing, and UI presentation across
+
+    streaming, backfill, and symbol search providers.
+  remarks: >-
+    This interface centralizes provider identity and capabilities into a single
+
+    contract, eliminating special-case logic in the registry and UI layers.
+
+    UI-specific properties (Notes, Warnings, CredentialFields) have default
+
+    implementations returning empty arrays, allowing providers to optionally
+
+    override them for richer UI presentation.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Unified provider metadata contract for all provider types")]
+
+      public interface IProviderMetadata
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Unified provider metadata contract for all provider types")>
+
+      Public Interface IProviderMetadata
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  - Meridian.Infrastructure.Adapters.Edgar.EdgarSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProviderRefactored
+  - Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSimulationClient
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  - Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
+  - Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
+  - Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient
+  - Meridian.Infrastructure.NoOpMarketDataClient
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Unified provider metadata contract for all provider types
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: IProviderMetadata.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 37
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unique identifier for the provider (e.g., "alpaca", "polygon", "yahoo").
+  example: []
+  syntax:
+    content: string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: IProviderMetadata.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 42
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: string ProviderDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ProviderDisplayName As String
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  id: ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescription
+  nameWithType: IProviderMetadata.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescription
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 47
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Description of the provider and its capabilities.
+  example: []
+  syntax:
+    content: string ProviderDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ProviderDescription As String
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: IProviderMetadata.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 52
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Priority for routing and failover (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: int ProviderPriority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property ProviderPriority As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: IProviderMetadata.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 57
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unified capability flags and metadata for this provider.
+  example: []
+  syntax:
+    content: ProviderCapabilities ProviderCapabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: ReadOnly Property ProviderCapabilities As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  id: RequiresCredentials
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: RequiresCredentials
+  nameWithType: IProviderMetadata.RequiresCredentials
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequiresCredentials
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 63
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Whether this provider requires credentials to operate.
+  example: []
+  syntax:
+    content: bool RequiresCredentials { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property RequiresCredentials As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  id: ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderCredentialFields
+  nameWithType: IProviderMetadata.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCredentialFields
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 69
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Credential fields required for this provider.
+
+    Override to specify API keys, tokens, or other authentication requirements.
+  example: []
+  syntax:
+    content: ProviderCredentialField[] ProviderCredentialFields { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+    content.vb: ReadOnly Property ProviderCredentialFields As ProviderCredentialField()
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  id: ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderNotes
+  nameWithType: IProviderMetadata.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderNotes
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 74
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Informational notes about using this provider (displayed in UI).
+  example: []
+  syntax:
+    content: string[] ProviderNotes { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: ReadOnly Property ProviderNotes As String()
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  id: ProviderWarnings
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: ProviderWarnings
+  nameWithType: IProviderMetadata.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderWarnings
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 79
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Warnings about limitations or issues with this provider (displayed in UI).
+  example: []
+  syntax:
+    content: string[] ProviderWarnings { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: ReadOnly Property ProviderWarnings As String()
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  id: SupportedDataTypes
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  langs:
+  - csharp
+  - vb
+  name: SupportedDataTypes
+  nameWithType: IProviderMetadata.SupportedDataTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedDataTypes
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 84
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Data types supported by this provider (e.g., "DailyBars", "Trades", "Quotes").
+  example: []
+  syntax:
+    content: string[] SupportedDataTypes { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: ReadOnly Property SupportedDataTypes As String()
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderId
+  name: ProviderId
+  nameWithType: IProviderMetadata.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: IProviderMetadata.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDescription
+  name: ProviderDescription
+  nameWithType: IProviderMetadata.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderPriority
+  name: ProviderPriority
+  nameWithType: IProviderMetadata.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: IProviderMetadata.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_RequiresCredentials
+  name: RequiresCredentials
+  nameWithType: IProviderMetadata.RequiresCredentials
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.RequiresCredentials
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: IProviderMetadata.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  name: ProviderCredentialField[]
+  nameWithType: ProviderCredentialField[]
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  nameWithType.vb: ProviderCredentialField()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField()
+  name.vb: ProviderCredentialField()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderNotes
+  name: ProviderNotes
+  nameWithType: IProviderMetadata.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderWarnings
+  name: ProviderWarnings
+  nameWithType: IProviderMetadata.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_SupportedDataTypes
+  name: SupportedDataTypes
+  nameWithType: IProviderMetadata.SupportedDataTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.SupportedDataTypes

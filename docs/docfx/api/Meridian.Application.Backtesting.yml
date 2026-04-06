@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backtesting
+  commentId: N:Meridian.Application.Backtesting
+  id: Meridian.Application.Backtesting
+  children:
+  - Meridian.Application.Backtesting.BacktestStudioRunHandle
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus
+  - Meridian.Application.Backtesting.IBacktestStudioEngine
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Backtesting
+  nameWithType: Meridian.Application.Backtesting
+  fullName: Meridian.Application.Backtesting
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  commentId: T:Meridian.Application.Backtesting.BacktestStudioRunRequest
+  parent: Meridian.Application.Backtesting
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html
+  name: BacktestStudioRunRequest
+  nameWithType: BacktestStudioRunRequest
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest
+- uid: Meridian.Application.Backtesting.BacktestStudioRunHandle
+  commentId: T:Meridian.Application.Backtesting.BacktestStudioRunHandle
+  href: Meridian.Application.Backtesting.BacktestStudioRunHandle.html
+  name: BacktestStudioRunHandle
+  nameWithType: BacktestStudioRunHandle
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunHandle
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  commentId: T:Meridian.Application.Backtesting.BacktestStudioRunStatus
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html
+  name: BacktestStudioRunStatus
+  nameWithType: BacktestStudioRunStatus
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine
+  commentId: T:Meridian.Application.Backtesting.IBacktestStudioEngine
+  parent: Meridian.Application.Backtesting
+  href: Meridian.Application.Backtesting.IBacktestStudioEngine.html
+  name: IBacktestStudioEngine
+  nameWithType: IBacktestStudioEngine
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine
+- uid: Meridian.Application.Backtesting
+  commentId: N:Meridian.Application.Backtesting
+  href: Meridian.html
+  name: Meridian.Application.Backtesting
+  nameWithType: Meridian.Application.Backtesting
+  fullName: Meridian.Application.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html

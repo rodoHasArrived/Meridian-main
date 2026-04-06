@@ -1,0 +1,1473 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline
+  commentId: T:Meridian.Application.Pipeline.DualPathEventPipeline
+  id: DualPathEventPipeline
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.DualPathEventPipeline.#ctor(Meridian.Application.Pipeline.EventPipeline,Meridian.Core.Performance.SymbolTable,System.Int32,System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DualPathEventPipeline})
+  - Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync
+  - Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed
+  - Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped
+  - Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished
+  - Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed
+  - Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped
+  - Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished
+  - Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure
+  - Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization
+  - Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount
+  - Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount
+  - Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  - Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+  - Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+  langs:
+  - csharp
+  - vb
+  name: DualPathEventPipeline
+  nameWithType: DualPathEventPipeline
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DualPathEventPipeline
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    A dual-path event pipeline that routes high-volume <xref href="Meridian.Contracts.Domain.Enums.MarketEventType.Trade" data-throw-if-not-resolved="false"></xref>
+
+    and <xref href="Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote" data-throw-if-not-resolved="false"></xref> events through a zero-allocation hot path
+
+    (struct ring buffer), while routing all other event types through the standard
+
+    record-based <xref href="Meridian.Application.Pipeline.EventPipeline" data-throw-if-not-resolved="false"></xref>.
+  remarks: >-
+    <p>
+
+    <b>Hot path (Trade / BboQuote):</b>
+
+    The producer extracts the essential fields into a <xref href="Meridian.Core.Performance.RawTradeEvent" data-throw-if-not-resolved="false"></xref> or
+
+    <xref href="Meridian.Core.Performance.RawQuoteEvent" data-throw-if-not-resolved="false"></xref> struct and writes it into a pre-allocated
+
+    <xref href="Meridian.Core.Performance.SpscRingBuffer%601" data-throw-if-not-resolved="false"></xref>.  No heap allocation occurs on the producer thread.
+
+    A dedicated background consumer drains the ring buffer in batches, reconstructs
+
+    <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> objects, and forwards them to the <xref href="Meridian.Application.Pipeline.EventPipeline" data-throw-if-not-resolved="false"></xref>
+
+    slow path for storage.
+
+    </p>
+
+    <p>
+
+    <b>Slow path (all other event types):</b>
+
+    Events are passed directly to the underlying <xref href="Meridian.Application.Pipeline.EventPipeline" data-throw-if-not-resolved="false"></xref>, preserving
+
+    all existing WAL, deduplication, and validation behaviour.
+
+    </p>
+
+    <p>
+
+    <b>Zero-allocation producer API:</b>
+
+    Callers that already construct structs without a <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> intermediary
+
+    can call <xref href="Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent%40)" data-throw-if-not-resolved="false"></xref> or <xref href="Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent%40)" data-throw-if-not-resolved="false"></xref> directly.
+
+    These overloads bypass <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> allocation entirely.
+
+    </p>
+
+    <p>
+
+    <b>Ring buffer full behaviour:</b>
+
+    When a ring buffer is full the event falls back to the slow path to prevent data loss.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable'
+    content.vb: Public NotInheritable Class DualPathEventPipeline Implements IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Domain.Events.IMarketEventPublisher
+  - Meridian.Domain.Events.IBackpressureSignal
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.#ctor(Meridian.Application.Pipeline.EventPipeline,Meridian.Core.Performance.SymbolTable,System.Int32,System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DualPathEventPipeline})
+  commentId: M:Meridian.Application.Pipeline.DualPathEventPipeline.#ctor(Meridian.Application.Pipeline.EventPipeline,Meridian.Core.Performance.SymbolTable,System.Int32,System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DualPathEventPipeline})
+  id: '#ctor(Meridian.Application.Pipeline.EventPipeline,Meridian.Core.Performance.SymbolTable,System.Int32,System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DualPathEventPipeline})'
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: DualPathEventPipeline(EventPipeline, SymbolTable, int, int, bool, ILogger<DualPathEventPipeline>?)
+  nameWithType: DualPathEventPipeline.DualPathEventPipeline(EventPipeline, SymbolTable, int, int, bool, ILogger<DualPathEventPipeline>?)
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.DualPathEventPipeline(Meridian.Application.Pipeline.EventPipeline, Meridian.Core.Performance.SymbolTable, int, int, bool, Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.DualPathEventPipeline>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Creates a <xref href="Meridian.Application.Pipeline.DualPathEventPipeline" data-throw-if-not-resolved="false"></xref> that wraps an existing
+
+    <xref href="Meridian.Application.Pipeline.EventPipeline" data-throw-if-not-resolved="false"></xref> slow path.
+  example: []
+  syntax:
+    content: public DualPathEventPipeline(EventPipeline slowPath, SymbolTable symbolTable, int ringBufferCapacity = 4096, int batchDrainSize = 256, bool startConsumers = true, ILogger<DualPathEventPipeline>? logger = null)
+    parameters:
+    - id: slowPath
+      type: Meridian.Application.Pipeline.EventPipeline
+      description: >-
+        The underlying <xref href="Meridian.Application.Pipeline.EventPipeline" data-throw-if-not-resolved="false"></xref> used for non-hot-path event types
+
+        and as a fallback when ring buffers are full.
+
+        The caller retains ownership and must dispose it separately after this pipeline.
+    - id: symbolTable
+      type: Meridian.Core.Performance.SymbolTable
+      description: >-
+        Shared symbol intern table.  Must be the same instance used by any callers
+
+        that invoke <xref href="Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent%40)" data-throw-if-not-resolved="false"></xref> / <xref href="Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent%40)" data-throw-if-not-resolved="false"></xref> directly.
+    - id: ringBufferCapacity
+      type: System.Int32
+      description: >-
+        Capacity of each ring buffer (one for trades, one for quotes).
+
+        Rounded up to the next power of two. Default is 4 096 slots.
+    - id: batchDrainSize
+      type: System.Int32
+      description: Maximum events drained per consumer iteration.  Default is 256.
+    - id: startConsumers
+      type: System.Boolean
+      description: >-
+        When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> the background consumer tasks are not started.
+
+        Intended for unit tests that need to inspect ring buffer state without a
+
+        concurrent consumer draining it.  Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DualPathEventPipeline}
+      description: Optional logger.
+    content.vb: Public Sub New(slowPath As EventPipeline, symbolTable As SymbolTable, ringBufferCapacity As Integer = 4096, batchDrainSize As Integer = 256, startConsumers As Boolean = True, logger As ILogger(Of DualPathEventPipeline) = Nothing)
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.#ctor*
+  nameWithType.vb: DualPathEventPipeline.New(EventPipeline, SymbolTable, Integer, Integer, Boolean, ILogger(Of DualPathEventPipeline))
+  fullName.vb: Meridian.Application.Pipeline.DualPathEventPipeline.New(Meridian.Application.Pipeline.EventPipeline, Meridian.Core.Performance.SymbolTable, Integer, Integer, Boolean, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.DualPathEventPipeline))
+  name.vb: New(EventPipeline, SymbolTable, Integer, Integer, Boolean, ILogger(Of DualPathEventPipeline))
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  id: TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: TryPublish(in MarketEvent)
+  nameWithType: DualPathEventPipeline.TryPublish(in MarketEvent)
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryPublish
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Routes the event to the hot path (ring buffer) for trades and quotes,
+
+    or to the slow path for all other event types.
+  remarks: >-
+    When the trade or quote ring buffer is full the event is forwarded to the
+
+    slow-path <xref href="Meridian.Application.Pipeline.EventPipeline" data-throw-if-not-resolved="false"></xref> to prevent data loss.
+  example: []
+  syntax:
+    content: public bool TryPublish(in MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: System.Boolean
+    content.vb: Public Function TryPublish(evt As MarketEvent) As Boolean
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish*
+  implements:
+  - Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  nameWithType.vb: DualPathEventPipeline.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+  commentId: M:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+  id: TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: TryPublishTrade(in RawTradeEvent)
+  nameWithType: DualPathEventPipeline.TryPublishTrade(in RawTradeEvent)
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(in Meridian.Core.Performance.RawTradeEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryPublishTrade
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Writes a <xref href="Meridian.Core.Performance.RawTradeEvent" data-throw-if-not-resolved="false"></xref> struct directly into the trade ring buffer
+
+    without any heap allocation on the calling (producer) thread.
+  example: []
+  syntax:
+    content: public bool TryPublishTrade(in RawTradeEvent trade)
+    parameters:
+    - id: trade
+      type: Meridian.Core.Performance.RawTradeEvent
+    return:
+      type: System.Boolean
+      description: >-
+        <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when the event was written;
+
+        <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> when the ring buffer was full and the event was dropped.
+    content.vb: Public Function TryPublishTrade(trade As RawTradeEvent) As Boolean
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade*
+  nameWithType.vb: DualPathEventPipeline.TryPublishTrade(RawTradeEvent)
+  fullName.vb: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent)
+  name.vb: TryPublishTrade(RawTradeEvent)
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+  commentId: M:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+  id: TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: TryPublishQuote(in RawQuoteEvent)
+  nameWithType: DualPathEventPipeline.TryPublishQuote(in RawQuoteEvent)
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(in Meridian.Core.Performance.RawQuoteEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryPublishQuote
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Writes a <xref href="Meridian.Core.Performance.RawQuoteEvent" data-throw-if-not-resolved="false"></xref> struct directly into the quote ring buffer
+
+    without any heap allocation on the calling (producer) thread.
+  example: []
+  syntax:
+    content: public bool TryPublishQuote(in RawQuoteEvent quote)
+    parameters:
+    - id: quote
+      type: Meridian.Core.Performance.RawQuoteEvent
+    return:
+      type: System.Boolean
+      description: >-
+        <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when the event was written;
+
+        <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> when the ring buffer was full and the event was dropped.
+    content.vb: Public Function TryPublishQuote(quote As RawQuoteEvent) As Boolean
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote*
+  nameWithType.vb: DualPathEventPipeline.TryPublishQuote(RawQuoteEvent)
+  fullName.vb: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent)
+  name.vb: TryPublishQuote(RawQuoteEvent)
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure
+  id: IsUnderPressure
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: IsUnderPressure
+  nameWithType: DualPathEventPipeline.IsUnderPressure
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsUnderPressure
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when the downstream queue utilization has reached or
+
+    exceeded the warning threshold (typically 80 %).
+
+    Producers should pause or slow down when this returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.
+  example: []
+  syntax:
+    content: public bool IsUnderPressure { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsUnderPressure As Boolean
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure*
+  implements:
+  - Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization
+  id: QueueUtilization
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: QueueUtilization
+  nameWithType: DualPathEventPipeline.QueueUtilization
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueUtilization
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Current queue fill level as a value between 0.0 and 1.0 (0 % – 100 %).
+
+    Useful for graduated throttling: e.g. skip non-critical events above 0.9.
+  example: []
+  syntax:
+    content: public double QueueUtilization { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property QueueUtilization As Double
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization*
+  implements:
+  - Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished
+  id: HotTradePublished
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: HotTradePublished
+  nameWithType: DualPathEventPipeline.HotTradePublished
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotTradePublished
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of trade events written to the hot-path ring buffer.
+  example: []
+  syntax:
+    content: public long HotTradePublished { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property HotTradePublished As Long
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped
+  id: HotTradeDropped
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: HotTradeDropped
+  nameWithType: DualPathEventPipeline.HotTradeDropped
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotTradeDropped
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of trade events dropped because the ring buffer was full.
+  example: []
+  syntax:
+    content: public long HotTradeDropped { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property HotTradeDropped As Long
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed
+  id: HotTradeConsumed
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: HotTradeConsumed
+  nameWithType: DualPathEventPipeline.HotTradeConsumed
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotTradeConsumed
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of trade events drained from the ring buffer and forwarded to storage.
+  example: []
+  syntax:
+    content: public long HotTradeConsumed { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property HotTradeConsumed As Long
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished
+  id: HotQuotePublished
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: HotQuotePublished
+  nameWithType: DualPathEventPipeline.HotQuotePublished
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotQuotePublished
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of quote events written to the hot-path ring buffer.
+  example: []
+  syntax:
+    content: public long HotQuotePublished { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property HotQuotePublished As Long
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped
+  id: HotQuoteDropped
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: HotQuoteDropped
+  nameWithType: DualPathEventPipeline.HotQuoteDropped
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotQuoteDropped
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of quote events dropped because the ring buffer was full.
+  example: []
+  syntax:
+    content: public long HotQuoteDropped { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property HotQuoteDropped As Long
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed
+  id: HotQuoteConsumed
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: HotQuoteConsumed
+  nameWithType: DualPathEventPipeline.HotQuoteConsumed
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotQuoteConsumed
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of quote events drained from the ring buffer and forwarded to storage.
+  example: []
+  syntax:
+    content: public long HotQuoteConsumed { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property HotQuoteConsumed As Long
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount
+  id: TradeBufferCount
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: TradeBufferCount
+  nameWithType: DualPathEventPipeline.TradeBufferCount
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeBufferCount
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the current number of trade events waiting in the ring buffer.
+  example: []
+  syntax:
+    content: public int TradeBufferCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property TradeBufferCount As Integer
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount
+  commentId: P:Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount
+  id: QuoteBufferCount
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: QuoteBufferCount
+  nameWithType: DualPathEventPipeline.QuoteBufferCount
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuoteBufferCount
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the current number of quote events waiting in the ring buffer.
+  example: []
+  syntax:
+    content: public int QuoteBufferCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property QuoteBufferCount As Integer
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount*
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync
+  commentId: M:Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Pipeline.DualPathEventPipeline
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: DualPathEventPipeline.DisposeAsync()
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    startLine: 263
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.Trade
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.Trade
+  name: Trade
+  nameWithType: MarketEventType.Trade
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.Trade
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote
+  name: BboQuote
+  nameWithType: MarketEventType.BboQuote
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote
+- uid: Meridian.Application.Pipeline.EventPipeline
+  commentId: T:Meridian.Application.Pipeline.EventPipeline
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.EventPipeline.html
+  name: EventPipeline
+  nameWithType: EventPipeline
+  fullName: Meridian.Application.Pipeline.EventPipeline
+- uid: Meridian.Core.Performance.RawTradeEvent
+  commentId: T:Meridian.Core.Performance.RawTradeEvent
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.RawTradeEvent.html
+  name: RawTradeEvent
+  nameWithType: RawTradeEvent
+  fullName: Meridian.Core.Performance.RawTradeEvent
+- uid: Meridian.Core.Performance.RawQuoteEvent
+  commentId: T:Meridian.Core.Performance.RawQuoteEvent
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.RawQuoteEvent.html
+  name: RawQuoteEvent
+  nameWithType: RawQuoteEvent
+  fullName: Meridian.Core.Performance.RawQuoteEvent
+- uid: Meridian.Core.Performance.SpscRingBuffer`1
+  commentId: T:Meridian.Core.Performance.SpscRingBuffer`1
+  href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  name: SpscRingBuffer<T>
+  nameWithType: SpscRingBuffer<T>
+  fullName: Meridian.Core.Performance.SpscRingBuffer<T>
+  nameWithType.vb: SpscRingBuffer(Of T)
+  fullName.vb: Meridian.Core.Performance.SpscRingBuffer(Of T)
+  name.vb: SpscRingBuffer(Of T)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+  commentId: M:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishTrade_Meridian_Core_Performance_RawTradeEvent__
+  name: TryPublishTrade(in RawTradeEvent)
+  nameWithType: DualPathEventPipeline.TryPublishTrade(in RawTradeEvent)
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(in Meridian.Core.Performance.RawTradeEvent)
+  nameWithType.vb: DualPathEventPipeline.TryPublishTrade(RawTradeEvent)
+  fullName.vb: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent)
+  name.vb: TryPublishTrade(RawTradeEvent)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+    name: TryPublishTrade
+    href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishTrade_Meridian_Core_Performance_RawTradeEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Core.Performance.RawTradeEvent
+    name: RawTradeEvent
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade(Meridian.Core.Performance.RawTradeEvent@)
+    name: TryPublishTrade
+    href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishTrade_Meridian_Core_Performance_RawTradeEvent__
+  - name: (
+  - uid: Meridian.Core.Performance.RawTradeEvent
+    name: RawTradeEvent
+  - name: )
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+  commentId: M:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishQuote_Meridian_Core_Performance_RawQuoteEvent__
+  name: TryPublishQuote(in RawQuoteEvent)
+  nameWithType: DualPathEventPipeline.TryPublishQuote(in RawQuoteEvent)
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(in Meridian.Core.Performance.RawQuoteEvent)
+  nameWithType.vb: DualPathEventPipeline.TryPublishQuote(RawQuoteEvent)
+  fullName.vb: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent)
+  name.vb: TryPublishQuote(RawQuoteEvent)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+    name: TryPublishQuote
+    href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishQuote_Meridian_Core_Performance_RawQuoteEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Core.Performance.RawQuoteEvent
+    name: RawQuoteEvent
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote(Meridian.Core.Performance.RawQuoteEvent@)
+    name: TryPublishQuote
+    href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishQuote_Meridian_Core_Performance_RawQuoteEvent__
+  - name: (
+  - uid: Meridian.Core.Performance.RawQuoteEvent
+    name: RawQuoteEvent
+  - name: )
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Events.IBackpressureSignal
+  commentId: T:Meridian.Domain.Events.IBackpressureSignal
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IBackpressureSignal.html
+  name: IBackpressureSignal
+  nameWithType: IBackpressureSignal
+  fullName: Meridian.Domain.Events.IBackpressureSignal
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline
+  commentId: T:Meridian.Application.Pipeline.DualPathEventPipeline
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html
+  name: DualPathEventPipeline
+  nameWithType: DualPathEventPipeline
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.#ctor
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline__ctor_Meridian_Application_Pipeline_EventPipeline_Meridian_Core_Performance_SymbolTable_System_Int32_System_Int32_System_Boolean_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Pipeline_DualPathEventPipeline__
+  name: DualPathEventPipeline
+  nameWithType: DualPathEventPipeline.DualPathEventPipeline
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.DualPathEventPipeline
+  nameWithType.vb: DualPathEventPipeline.New
+  fullName.vb: Meridian.Application.Pipeline.DualPathEventPipeline.New
+  name.vb: New
+- uid: Meridian.Core.Performance.SymbolTable
+  commentId: T:Meridian.Core.Performance.SymbolTable
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.SymbolTable.html
+  name: SymbolTable
+  nameWithType: SymbolTable
+  fullName: Meridian.Core.Performance.SymbolTable
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DualPathEventPipeline}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DualPathEventPipeline}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<DualPathEventPipeline>
+  nameWithType: ILogger<DualPathEventPipeline>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.DualPathEventPipeline>
+  nameWithType.vb: ILogger(Of DualPathEventPipeline)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.DualPathEventPipeline)
+  name.vb: ILogger(Of DualPathEventPipeline)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.DualPathEventPipeline
+    name: DualPathEventPipeline
+    href: Meridian.Application.Pipeline.DualPathEventPipeline.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.DualPathEventPipeline
+    name: DualPathEventPipeline
+    href: Meridian.Application.Pipeline.DualPathEventPipeline.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish
+  nameWithType: DualPathEventPipeline.TryPublish
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublish
+- uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Domain.Events.IMarketEventPublisher
+  href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish(in MarketEvent)
+  nameWithType: IMarketEventPublisher.TryPublish(in MarketEvent)
+  fullName: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  nameWithType.vb: IMarketEventPublisher.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishTrade_Meridian_Core_Performance_RawTradeEvent__
+  name: TryPublishTrade
+  nameWithType: DualPathEventPipeline.TryPublishTrade
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishTrade
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TryPublishQuote_Meridian_Core_Performance_RawQuoteEvent__
+  name: TryPublishQuote
+  nameWithType: DualPathEventPipeline.TryPublishQuote
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TryPublishQuote
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_IsUnderPressure
+  name: IsUnderPressure
+  nameWithType: DualPathEventPipeline.IsUnderPressure
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.IsUnderPressure
+- uid: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  commentId: P:Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  parent: Meridian.Domain.Events.IBackpressureSignal
+  href: Meridian.Domain.Events.IBackpressureSignal.html#Meridian_Domain_Events_IBackpressureSignal_IsUnderPressure
+  name: IsUnderPressure
+  nameWithType: IBackpressureSignal.IsUnderPressure
+  fullName: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_QueueUtilization
+  name: QueueUtilization
+  nameWithType: DualPathEventPipeline.QueueUtilization
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.QueueUtilization
+- uid: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  commentId: P:Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  parent: Meridian.Domain.Events.IBackpressureSignal
+  href: Meridian.Domain.Events.IBackpressureSignal.html#Meridian_Domain_Events_IBackpressureSignal_QueueUtilization
+  name: QueueUtilization
+  nameWithType: IBackpressureSignal.QueueUtilization
+  fullName: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_HotTradePublished
+  name: HotTradePublished
+  nameWithType: DualPathEventPipeline.HotTradePublished
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradePublished
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_HotTradeDropped
+  name: HotTradeDropped
+  nameWithType: DualPathEventPipeline.HotTradeDropped
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeDropped
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_HotTradeConsumed
+  name: HotTradeConsumed
+  nameWithType: DualPathEventPipeline.HotTradeConsumed
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotTradeConsumed
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_HotQuotePublished
+  name: HotQuotePublished
+  nameWithType: DualPathEventPipeline.HotQuotePublished
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuotePublished
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_HotQuoteDropped
+  name: HotQuoteDropped
+  nameWithType: DualPathEventPipeline.HotQuoteDropped
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteDropped
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_HotQuoteConsumed
+  name: HotQuoteConsumed
+  nameWithType: DualPathEventPipeline.HotQuoteConsumed
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.HotQuoteConsumed
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_TradeBufferCount
+  name: TradeBufferCount
+  nameWithType: DualPathEventPipeline.TradeBufferCount
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.TradeBufferCount
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_QuoteBufferCount
+  name: QuoteBufferCount
+  nameWithType: DualPathEventPipeline.QuoteBufferCount
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.QuoteBufferCount
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync*
+  commentId: Overload:Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html#Meridian_Application_Pipeline_DualPathEventPipeline_DisposeAsync
+  name: DisposeAsync
+  nameWithType: DualPathEventPipeline.DisposeAsync
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

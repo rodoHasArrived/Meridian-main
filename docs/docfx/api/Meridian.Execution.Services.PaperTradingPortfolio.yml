@@ -1,0 +1,1788 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.PaperTradingPortfolio
+  commentId: T:Meridian.Execution.Services.PaperTradingPortfolio
+  id: PaperTradingPortfolio
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition},Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  - Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Decimal,Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  - Meridian.Execution.Services.PaperTradingPortfolio.Accounts
+  - Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  - Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(System.String,Meridian.Execution.Sdk.ExecutionReport)
+  - Meridian.Execution.Services.PaperTradingPortfolio.Cash
+  - Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
+  - Meridian.Execution.Services.PaperTradingPortfolio.GetAccount(System.String)
+  - Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot(System.String)
+  - Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot
+  - Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots
+  - Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  - Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
+  - Meridian.Execution.Services.PaperTradingPortfolio.Positions
+  - Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl
+  - Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl
+  - Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.Decimal)
+  - Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.String,System.Decimal)
+  langs:
+  - csharp
+  - vb
+  name: PaperTradingPortfolio
+  nameWithType: PaperTradingPortfolio
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaperTradingPortfolio
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Tracks cash, positions, and realised P&amp;L for a paper trading session.
+
+    Supports both single-account (backward-compatible) and multi-account modes.
+
+    Optionally posts double-entry journal entries to a <xref href="Meridian.Execution.Services.PaperTradingPortfolio.Ledger" data-throw-if-not-resolved="false"></xref> after each fill.
+  example: []
+  syntax:
+    content: 'public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState, IPortfolioState'
+    content.vb: Public NotInheritable Class PaperTradingPortfolio Implements IMultiAccountPortfolioState, IPortfolioState
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Execution.Models.IMultiAccountPortfolioState
+  - Meridian.Execution.Models.IPortfolioState
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
+  commentId: F:Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
+  id: DefaultAccountId
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: DefaultAccountId
+  nameWithType: PaperTradingPortfolio.DefaultAccountId
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultAccountId
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Key used for the default / backwards-compatible account.
+  example: []
+  syntax:
+    content: public const string DefaultAccountId = "default"
+    return:
+      type: System.String
+    content.vb: Public Const DefaultAccountId As String = "default"
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Decimal,Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Decimal,Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  id: '#ctor(System.Decimal,Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)'
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: PaperTradingPortfolio(decimal, Ledger?, ILivePositionCorporateActionAdjuster?)
+  nameWithType: PaperTradingPortfolio.PaperTradingPortfolio(decimal, Ledger?, ILivePositionCorporateActionAdjuster?)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.PaperTradingPortfolio(decimal, Meridian.Ledger.Ledger?, Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Single-account initialiser for backwards compatibility.
+
+    Creates one brokerage account with id <xref href="Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public PaperTradingPortfolio(decimal initialCash, Ledger? ledger = null, ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null)
+    parameters:
+    - id: initialCash
+      type: System.Decimal
+    - id: ledger
+      type: Meridian.Ledger.Ledger
+    - id: corporateActionAdjuster
+      type: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+    content.vb: Public Sub New(initialCash As Decimal, ledger As Ledger = Nothing, corporateActionAdjuster As ILivePositionCorporateActionAdjuster = Nothing)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.#ctor*
+  nameWithType.vb: PaperTradingPortfolio.New(Decimal, Ledger, ILivePositionCorporateActionAdjuster)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.New(Decimal, Meridian.Ledger.Ledger, Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  name.vb: New(Decimal, Ledger, ILivePositionCorporateActionAdjuster)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition},Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition},Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition},Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)'
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: PaperTradingPortfolio(IReadOnlyList<AccountDefinition>, Ledger?, ILivePositionCorporateActionAdjuster?)
+  nameWithType: PaperTradingPortfolio.PaperTradingPortfolio(IReadOnlyList<AccountDefinition>, Ledger?, ILivePositionCorporateActionAdjuster?)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.PaperTradingPortfolio(System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.AccountDefinition>, Meridian.Ledger.Ledger?, Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Multi-account initialiser.  Each entry in <code class="paramref">accounts</code> is registered
+
+    with its own cash balance, kind, and display name.
+
+    The first entry becomes the <em>primary</em> account (equivalent of <xref href="Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId" data-throw-if-not-resolved="false"></xref>
+
+    for single-account callers).
+  example: []
+  syntax:
+    content: public PaperTradingPortfolio(IReadOnlyList<AccountDefinition> accounts, Ledger? ledger = null, ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null)
+    parameters:
+    - id: accounts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition}
+      description: At least one account must be supplied.
+    - id: ledger
+      type: Meridian.Ledger.Ledger
+      description: Optional shared ledger.
+    - id: corporateActionAdjuster
+      type: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+      description: Optional corporate-action adjuster.
+    content.vb: Public Sub New(accounts As IReadOnlyList(Of AccountDefinition), ledger As Ledger = Nothing, corporateActionAdjuster As ILivePositionCorporateActionAdjuster = Nothing)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.#ctor*
+  nameWithType.vb: PaperTradingPortfolio.New(IReadOnlyList(Of AccountDefinition), Ledger, ILivePositionCorporateActionAdjuster)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.New(System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.AccountDefinition), Meridian.Ledger.Ledger, Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
+  name.vb: New(IReadOnlyList(Of AccountDefinition), Ledger, ILivePositionCorporateActionAdjuster)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Cash
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.Cash
+  id: Cash
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: PaperTradingPortfolio.Cash
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Available cash (not including unrealised margin).
+  example: []
+  syntax:
+    content: public decimal Cash { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property Cash As Decimal
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.Cash*
+  implements:
+  - Meridian.Execution.Models.IPortfolioState.Cash
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
+  id: PortfolioValue
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: PortfolioValue
+  nameWithType: PaperTradingPortfolio.PortfolioValue
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioValue
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: 'Gross portfolio value: cash + long market value + short market value.'
+  example: []
+  syntax:
+    content: public decimal PortfolioValue { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property PortfolioValue As Decimal
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue*
+  implements:
+  - Meridian.Execution.Models.IPortfolioState.PortfolioValue
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: PaperTradingPortfolio.UnrealisedPnl
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Unrealised P&amp;L across all open positions.
+  example: []
+  syntax:
+    content: public decimal UnrealisedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property UnrealisedPnl As Decimal
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl*
+  implements:
+  - Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl
+  id: RealisedPnl
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: RealisedPnl
+  nameWithType: PaperTradingPortfolio.RealisedPnl
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealisedPnl
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Realised P&amp;L since the session began.
+  example: []
+  syntax:
+    content: public decimal RealisedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property RealisedPnl As Decimal
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl*
+  implements:
+  - Meridian.Execution.Models.IPortfolioState.RealisedPnl
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Positions
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.Positions
+  id: Positions
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: Positions
+  nameWithType: PaperTradingPortfolio.Positions
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Positions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Positions
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Open positions keyed by symbol.
+  remarks: Aggregates positions across all accounts; same-symbol positions are netted.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+    content.vb: Public ReadOnly Property Positions As IReadOnlyDictionary(Of String, ExecutionPosition)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.Positions*
+  implements:
+  - Meridian.Execution.Models.IPortfolioState.Positions
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Accounts
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.Accounts
+  id: Accounts
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: PaperTradingPortfolio.Accounts
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Read-only list of all tracked accounts (brokerage + bank).
+  example: []
+  syntax:
+    content: public IReadOnlyList<IAccountPortfolio> Accounts { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.IAccountPortfolio}
+    content.vb: Public ReadOnly Property Accounts As IReadOnlyList(Of IAccountPortfolio)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.Accounts*
+  implements:
+  - Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAccount(System.String)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.GetAccount(System.String)
+  id: GetAccount(System.String)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: GetAccount(string)
+  nameWithType: PaperTradingPortfolio.GetAccount(string)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAccount(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAccount
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Retrieves a single account by <code class="paramref">accountId</code>.
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no account with that ID is registered.
+  example: []
+  syntax:
+    content: public IAccountPortfolio? GetAccount(string accountId)
+    parameters:
+    - id: accountId
+      type: System.String
+    return:
+      type: Meridian.Execution.Interfaces.IAccountPortfolio
+    content.vb: Public Function GetAccount(accountId As String) As IAccountPortfolio
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.GetAccount*
+  implements:
+  - Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+  nameWithType.vb: PaperTradingPortfolio.GetAccount(String)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.GetAccount(String)
+  name.vb: GetAccount(String)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot
+  id: GetAggregateSnapshot
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: GetAggregateSnapshot()
+  nameWithType: PaperTradingPortfolio.GetAggregateSnapshot()
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAggregateSnapshot
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Produces an aggregate snapshot across all accounts.
+  example: []
+  syntax:
+    content: public MultiAccountPortfolioSnapshot GetAggregateSnapshot()
+    return:
+      type: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+    content.vb: Public Function GetAggregateSnapshot() As MultiAccountPortfolioSnapshot
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot*
+  implements:
+  - Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot(System.String)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot(System.String)
+  id: GetAccountSnapshot(System.String)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: GetAccountSnapshot(string)
+  nameWithType: PaperTradingPortfolio.GetAccountSnapshot(string)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAccountSnapshot
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Returns a detailed snapshot for a single account.
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the account does not exist.
+  example: []
+  syntax:
+    content: public ExecutionAccountDetailSnapshot? GetAccountSnapshot(string accountId)
+    parameters:
+    - id: accountId
+      type: System.String
+    return:
+      type: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+    content.vb: Public Function GetAccountSnapshot(accountId As String) As ExecutionAccountDetailSnapshot
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot*
+  nameWithType.vb: PaperTradingPortfolio.GetAccountSnapshot(String)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot(String)
+  name.vb: GetAccountSnapshot(String)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots
+  id: GetAllAccountSnapshots
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: GetAllAccountSnapshots()
+  nameWithType: PaperTradingPortfolio.GetAllAccountSnapshots()
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllAccountSnapshots
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns detailed snapshots for all tracked accounts.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ExecutionAccountDetailSnapshot> GetAllAccountSnapshots()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+    content.vb: Public Function GetAllAccountSnapshots() As IReadOnlyList(Of ExecutionAccountDetailSnapshot)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots*
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  id: ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: ApplyFill(ExecutionReport)
+  nameWithType: PaperTradingPortfolio.ApplyFill(ExecutionReport)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyFill
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Applies a fill to the <xref href="Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId" data-throw-if-not-resolved="false"></xref> account (single-account path).
+  example: []
+  syntax:
+    content: public void ApplyFill(ExecutionReport report)
+    parameters:
+    - id: report
+      type: Meridian.Execution.Sdk.ExecutionReport
+    content.vb: Public Sub ApplyFill(report As ExecutionReport)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill*
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(System.String,Meridian.Execution.Sdk.ExecutionReport)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(System.String,Meridian.Execution.Sdk.ExecutionReport)
+  id: ApplyFill(System.String,Meridian.Execution.Sdk.ExecutionReport)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: ApplyFill(string, ExecutionReport)
+  nameWithType: PaperTradingPortfolio.ApplyFill(string, ExecutionReport)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(string, Meridian.Execution.Sdk.ExecutionReport)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyFill
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Applies a fill to a specific <code class="paramref">accountId</code>.
+
+    When the account does not exist it is ignored (no-op).
+  example: []
+  syntax:
+    content: public void ApplyFill(string accountId, ExecutionReport report)
+    parameters:
+    - id: accountId
+      type: System.String
+    - id: report
+      type: Meridian.Execution.Sdk.ExecutionReport
+    content.vb: Public Sub ApplyFill(accountId As String, report As ExecutionReport)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill*
+  nameWithType.vb: PaperTradingPortfolio.ApplyFill(String, ExecutionReport)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(String, Meridian.Execution.Sdk.ExecutionReport)
+  name.vb: ApplyFill(String, ExecutionReport)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.Decimal)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.Decimal)
+  id: UpdateMarketPrice(System.String,System.Decimal)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: UpdateMarketPrice(string, decimal)
+  nameWithType: PaperTradingPortfolio.UpdateMarketPrice(string, decimal)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateMarketPrice
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Updates the last-known market price for <code class="paramref">symbol</code> across all accounts.
+  example: []
+  syntax:
+    content: public void UpdateMarketPrice(string symbol, decimal price)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: price
+      type: System.Decimal
+    content.vb: Public Sub UpdateMarketPrice(symbol As String, price As Decimal)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice*
+  nameWithType.vb: PaperTradingPortfolio.UpdateMarketPrice(String, Decimal)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(String, Decimal)
+  name.vb: UpdateMarketPrice(String, Decimal)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.String,System.Decimal)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.String,System.Decimal)
+  id: UpdateMarketPrice(System.String,System.String,System.Decimal)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: UpdateMarketPrice(string, string, decimal)
+  nameWithType: PaperTradingPortfolio.UpdateMarketPrice(string, string, decimal)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(string, string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateMarketPrice
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Updates the last-known market price for <code class="paramref">symbol</code> in a specific account.
+  example: []
+  syntax:
+    content: public void UpdateMarketPrice(string accountId, string symbol, decimal price)
+    parameters:
+    - id: accountId
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: price
+      type: System.Decimal
+    content.vb: Public Sub UpdateMarketPrice(accountId As String, symbol As String, price As Decimal)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice*
+  nameWithType.vb: PaperTradingPortfolio.UpdateMarketPrice(String, String, Decimal)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(String, String, Decimal)
+  name.vb: UpdateMarketPrice(String, String, Decimal)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  id: Ledger
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: PaperTradingPortfolio.Ledger
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Read-only view of the double-entry ledger for this session.
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no ledger was supplied at construction time.
+  example: []
+  syntax:
+    content: public IReadOnlyLedger? Ledger { get; }
+    parameters: []
+    return:
+      type: Meridian.Ledger.IReadOnlyLedger
+    content.vb: Public ReadOnly Property Ledger As IReadOnlyLedger
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.Ledger*
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: ApplyCorporateActionsAsync(string, DateTimeOffset, CancellationToken)
+  nameWithType: PaperTradingPortfolio.ApplyCorporateActionsAsync(string, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(string, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyCorporateActionsAsync
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 300
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Applies any corporate-action adjustments (splits, dividends) to an existing open position
+
+    in the default account.  No-op when no adjuster was supplied.
+  example: []
+  syntax:
+    content: public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: positionOpenedAt
+      type: System.DateTimeOffset
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ApplyCorporateActionsAsync(symbol As String, positionOpenedAt As DateTimeOffset, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync*
+  nameWithType.vb: PaperTradingPortfolio.ApplyCorporateActionsAsync(String, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(String, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: ApplyCorporateActionsAsync(String, DateTimeOffset, CancellationToken)
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: ApplyCorporateActionsAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: ApplyCorporateActionsAsync(string, string, DateTimeOffset, CancellationToken)
+  nameWithType: PaperTradingPortfolio.ApplyCorporateActionsAsync(string, string, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(string, string, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyCorporateActionsAsync
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 309
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Applies corporate-action adjustments to a position in a specific <code class="paramref">accountId</code>.
+  example: []
+  syntax:
+    content: public Task ApplyCorporateActionsAsync(string accountId, string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: positionOpenedAt
+      type: System.DateTimeOffset
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ApplyCorporateActionsAsync(accountId As String, symbol As String, positionOpenedAt As DateTimeOffset, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync*
+  nameWithType.vb: PaperTradingPortfolio.ApplyCorporateActionsAsync(String, String, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(String, String, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: ApplyCorporateActionsAsync(String, String, DateTimeOffset, CancellationToken)
+references:
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_Ledger
+  name: Ledger
+  nameWithType: PaperTradingPortfolio.Ledger
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+  commentId: T:Meridian.Execution.Models.IMultiAccountPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  name: IMultiAccountPortfolioState
+  nameWithType: IMultiAccountPortfolioState
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState
+- uid: Meridian.Execution.Models.IPortfolioState
+  commentId: T:Meridian.Execution.Models.IPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IPortfolioState.html
+  name: IPortfolioState
+  nameWithType: IPortfolioState
+  fullName: Meridian.Execution.Models.IPortfolioState
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
+  commentId: F:Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_DefaultAccountId
+  name: DefaultAccountId
+  nameWithType: PaperTradingPortfolio.DefaultAccountId
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.#ctor*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.#ctor
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio__ctor_System_Decimal_Meridian_Ledger_Ledger_Meridian_Application_SecurityMaster_ILivePositionCorporateActionAdjuster_
+  name: PaperTradingPortfolio
+  nameWithType: PaperTradingPortfolio.PaperTradingPortfolio
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.PaperTradingPortfolio
+  nameWithType.vb: PaperTradingPortfolio.New
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ledger.Ledger
+  commentId: T:Meridian.Ledger.Ledger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.Ledger.html
+  name: Ledger
+  nameWithType: Ledger
+  fullName: Meridian.Ledger.Ledger
+- uid: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+  commentId: T:Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.html
+  name: ILivePositionCorporateActionAdjuster
+  nameWithType: ILivePositionCorporateActionAdjuster
+  fullName: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AccountDefinition>
+  nameWithType: IReadOnlyList<AccountDefinition>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.AccountDefinition>
+  nameWithType.vb: IReadOnlyList(Of AccountDefinition)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.AccountDefinition)
+  name.vb: IReadOnlyList(Of AccountDefinition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.AccountDefinition
+    name: AccountDefinition
+    href: Meridian.Execution.Services.AccountDefinition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.AccountDefinition
+    name: AccountDefinition
+    href: Meridian.Execution.Services.AccountDefinition.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Cash*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.Cash
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_Cash
+  name: Cash
+  nameWithType: PaperTradingPortfolio.Cash
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Cash
+- uid: Meridian.Execution.Models.IPortfolioState.Cash
+  commentId: P:Meridian.Execution.Models.IPortfolioState.Cash
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_Cash
+  name: Cash
+  nameWithType: IPortfolioState.Cash
+  fullName: Meridian.Execution.Models.IPortfolioState.Cash
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_PortfolioValue
+  name: PortfolioValue
+  nameWithType: PaperTradingPortfolio.PortfolioValue
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
+- uid: Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  commentId: P:Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_PortfolioValue
+  name: PortfolioValue
+  nameWithType: IPortfolioState.PortfolioValue
+  fullName: Meridian.Execution.Models.IPortfolioState.PortfolioValue
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: PaperTradingPortfolio.UnrealisedPnl
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl
+- uid: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  commentId: P:Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: IPortfolioState.UnrealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_RealisedPnl
+  name: RealisedPnl
+  nameWithType: PaperTradingPortfolio.RealisedPnl
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl
+- uid: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  commentId: P:Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_RealisedPnl
+  name: RealisedPnl
+  nameWithType: IPortfolioState.RealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Positions*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.Positions
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_Positions
+  name: Positions
+  nameWithType: PaperTradingPortfolio.Positions
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Positions
+- uid: Meridian.Execution.Models.IPortfolioState.Positions
+  commentId: P:Meridian.Execution.Models.IPortfolioState.Positions
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_Positions
+  name: Positions
+  nameWithType: IPortfolioState.Positions
+  fullName: Meridian.Execution.Models.IPortfolioState.Positions
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, ExecutionPosition>
+  nameWithType: IReadOnlyDictionary<string, ExecutionPosition>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition>
+  nameWithType.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.ExecutionPosition)
+  name.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Accounts*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.Accounts
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_Accounts
+  name: Accounts
+  nameWithType: PaperTradingPortfolio.Accounts
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Accounts
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+  commentId: P:Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+  parent: Meridian.Execution.Models.IMultiAccountPortfolioState
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_Accounts
+  name: Accounts
+  nameWithType: IMultiAccountPortfolioState.Accounts
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.IAccountPortfolio}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.IAccountPortfolio}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IAccountPortfolio>
+  nameWithType: IReadOnlyList<IAccountPortfolio>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Interfaces.IAccountPortfolio>
+  nameWithType.vb: IReadOnlyList(Of IAccountPortfolio)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Interfaces.IAccountPortfolio)
+  name.vb: IReadOnlyList(Of IAccountPortfolio)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Interfaces.IAccountPortfolio
+    name: IAccountPortfolio
+    href: Meridian.Execution.Interfaces.IAccountPortfolio.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Interfaces.IAccountPortfolio
+    name: IAccountPortfolio
+    href: Meridian.Execution.Interfaces.IAccountPortfolio.html
+  - name: )
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAccount*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.GetAccount
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_GetAccount_System_String_
+  name: GetAccount
+  nameWithType: PaperTradingPortfolio.GetAccount
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAccount
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+  commentId: M:Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+  parent: Meridian.Execution.Models.IMultiAccountPortfolioState
+  isExternal: true
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAccount_System_String_
+  name: GetAccount(string)
+  nameWithType: IMultiAccountPortfolioState.GetAccount(string)
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(string)
+  nameWithType.vb: IMultiAccountPortfolioState.GetAccount(String)
+  fullName.vb: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(String)
+  name.vb: GetAccount(String)
+  spec.csharp:
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+    name: GetAccount
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAccount_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+    name: GetAccount
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAccount_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio
+  commentId: T:Meridian.Execution.Interfaces.IAccountPortfolio
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html
+  name: IAccountPortfolio
+  nameWithType: IAccountPortfolio
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_GetAggregateSnapshot
+  name: GetAggregateSnapshot
+  nameWithType: PaperTradingPortfolio.GetAggregateSnapshot
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+  commentId: M:Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+  parent: Meridian.Execution.Models.IMultiAccountPortfolioState
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAggregateSnapshot
+  name: GetAggregateSnapshot()
+  nameWithType: IMultiAccountPortfolioState.GetAggregateSnapshot()
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot()
+  spec.csharp:
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+    name: GetAggregateSnapshot
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAggregateSnapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+    name: GetAggregateSnapshot
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAggregateSnapshot
+  - name: (
+  - name: )
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  commentId: T:Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html
+  name: MultiAccountPortfolioSnapshot
+  nameWithType: MultiAccountPortfolioSnapshot
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_GetAccountSnapshot_System_String_
+  name: GetAccountSnapshot
+  nameWithType: PaperTradingPortfolio.GetAccountSnapshot
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  commentId: T:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
+  name: ExecutionAccountDetailSnapshot
+  nameWithType: ExecutionAccountDetailSnapshot
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_GetAllAccountSnapshots
+  name: GetAllAccountSnapshots
+  nameWithType: PaperTradingPortfolio.GetAllAccountSnapshots
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExecutionAccountDetailSnapshot>
+  nameWithType: IReadOnlyList<ExecutionAccountDetailSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot>
+  nameWithType.vb: IReadOnlyList(Of ExecutionAccountDetailSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot)
+  name.vb: IReadOnlyList(Of ExecutionAccountDetailSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+    name: ExecutionAccountDetailSnapshot
+    href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+    name: ExecutionAccountDetailSnapshot
+    href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
+  - name: )
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_ApplyFill_Meridian_Execution_Sdk_ExecutionReport_
+  name: ApplyFill
+  nameWithType: PaperTradingPortfolio.ApplyFill
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill
+- uid: Meridian.Execution.Sdk.ExecutionReport
+  commentId: T:Meridian.Execution.Sdk.ExecutionReport
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.ExecutionReport.html
+  name: ExecutionReport
+  nameWithType: ExecutionReport
+  fullName: Meridian.Execution.Sdk.ExecutionReport
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_UpdateMarketPrice_System_String_System_Decimal_
+  name: UpdateMarketPrice
+  nameWithType: PaperTradingPortfolio.UpdateMarketPrice
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.Ledger*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_Ledger
+  name: Ledger
+  nameWithType: PaperTradingPortfolio.Ledger
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+- uid: Meridian.Ledger.IReadOnlyLedger
+  commentId: T:Meridian.Ledger.IReadOnlyLedger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.IReadOnlyLedger.html
+  name: IReadOnlyLedger
+  nameWithType: IReadOnlyLedger
+  fullName: Meridian.Ledger.IReadOnlyLedger
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_ApplyCorporateActionsAsync_System_String_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: ApplyCorporateActionsAsync
+  nameWithType: PaperTradingPortfolio.ApplyCorporateActionsAsync
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -1,0 +1,546 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Etl.NormalizationOutcome
+  commentId: T:Meridian.Application.Etl.NormalizationOutcome
+  id: NormalizationOutcome
+  parent: Meridian.Application.Etl
+  children:
+  - Meridian.Application.Etl.NormalizationOutcome.Disposition
+  - Meridian.Application.Etl.NormalizationOutcome.Event
+  - Meridian.Application.Etl.NormalizationOutcome.RecordHash
+  - Meridian.Application.Etl.NormalizationOutcome.RejectCode
+  - Meridian.Application.Etl.NormalizationOutcome.RejectMessage
+  langs:
+  - csharp
+  - vb
+  name: NormalizationOutcome
+  nameWithType: NormalizationOutcome
+  fullName: Meridian.Application.Etl.NormalizationOutcome
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizationOutcome
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public sealed class NormalizationOutcome
+    content.vb: Public NotInheritable Class NormalizationOutcome
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Etl.NormalizationOutcome.Disposition
+  commentId: P:Meridian.Application.Etl.NormalizationOutcome.Disposition
+  id: Disposition
+  parent: Meridian.Application.Etl.NormalizationOutcome
+  langs:
+  - csharp
+  - vb
+  name: Disposition
+  nameWithType: NormalizationOutcome.Disposition
+  fullName: Meridian.Application.Etl.NormalizationOutcome.Disposition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disposition
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public required EtlRecordDisposition Disposition { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Etl.EtlRecordDisposition
+    content.vb: Public Property Disposition As EtlRecordDisposition
+  overload: Meridian.Application.Etl.NormalizationOutcome.Disposition*
+- uid: Meridian.Application.Etl.NormalizationOutcome.Event
+  commentId: P:Meridian.Application.Etl.NormalizationOutcome.Event
+  id: Event
+  parent: Meridian.Application.Etl.NormalizationOutcome
+  langs:
+  - csharp
+  - vb
+  name: Event
+  nameWithType: NormalizationOutcome.Event
+  fullName: Meridian.Application.Etl.NormalizationOutcome.Event
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Event
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public MarketEvent? Event { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Domain.Events.MarketEvent
+    content.vb: Public Property [Event] As MarketEvent
+  overload: Meridian.Application.Etl.NormalizationOutcome.Event*
+- uid: Meridian.Application.Etl.NormalizationOutcome.RejectCode
+  commentId: P:Meridian.Application.Etl.NormalizationOutcome.RejectCode
+  id: RejectCode
+  parent: Meridian.Application.Etl.NormalizationOutcome
+  langs:
+  - csharp
+  - vb
+  name: RejectCode
+  nameWithType: NormalizationOutcome.RejectCode
+  fullName: Meridian.Application.Etl.NormalizationOutcome.RejectCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectCode
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public string? RejectCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RejectCode As String
+  overload: Meridian.Application.Etl.NormalizationOutcome.RejectCode*
+- uid: Meridian.Application.Etl.NormalizationOutcome.RejectMessage
+  commentId: P:Meridian.Application.Etl.NormalizationOutcome.RejectMessage
+  id: RejectMessage
+  parent: Meridian.Application.Etl.NormalizationOutcome
+  langs:
+  - csharp
+  - vb
+  name: RejectMessage
+  nameWithType: NormalizationOutcome.RejectMessage
+  fullName: Meridian.Application.Etl.NormalizationOutcome.RejectMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectMessage
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public string? RejectMessage { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RejectMessage As String
+  overload: Meridian.Application.Etl.NormalizationOutcome.RejectMessage*
+- uid: Meridian.Application.Etl.NormalizationOutcome.RecordHash
+  commentId: P:Meridian.Application.Etl.NormalizationOutcome.RecordHash
+  id: RecordHash
+  parent: Meridian.Application.Etl.NormalizationOutcome
+  langs:
+  - csharp
+  - vb
+  name: RecordHash
+  nameWithType: NormalizationOutcome.RecordHash
+  fullName: Meridian.Application.Etl.NormalizationOutcome.RecordHash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordHash
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public string? RecordHash { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RecordHash As String
+  overload: Meridian.Application.Etl.NormalizationOutcome.RecordHash*
+references:
+- uid: Meridian.Application.Etl
+  commentId: N:Meridian.Application.Etl
+  href: Meridian.html
+  name: Meridian.Application.Etl
+  nameWithType: Meridian.Application.Etl
+  fullName: Meridian.Application.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Etl.NormalizationOutcome.Disposition*
+  commentId: Overload:Meridian.Application.Etl.NormalizationOutcome.Disposition
+  href: Meridian.Application.Etl.NormalizationOutcome.html#Meridian_Application_Etl_NormalizationOutcome_Disposition
+  name: Disposition
+  nameWithType: NormalizationOutcome.Disposition
+  fullName: Meridian.Application.Etl.NormalizationOutcome.Disposition
+- uid: Meridian.Contracts.Etl.EtlRecordDisposition
+  commentId: T:Meridian.Contracts.Etl.EtlRecordDisposition
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlRecordDisposition.html
+  name: EtlRecordDisposition
+  nameWithType: EtlRecordDisposition
+  fullName: Meridian.Contracts.Etl.EtlRecordDisposition
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Application.Etl.NormalizationOutcome.Event*
+  commentId: Overload:Meridian.Application.Etl.NormalizationOutcome.Event
+  href: Meridian.Application.Etl.NormalizationOutcome.html#Meridian_Application_Etl_NormalizationOutcome_Event
+  name: Event
+  nameWithType: NormalizationOutcome.Event
+  fullName: Meridian.Application.Etl.NormalizationOutcome.Event
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Application.Etl.NormalizationOutcome.RejectCode*
+  commentId: Overload:Meridian.Application.Etl.NormalizationOutcome.RejectCode
+  href: Meridian.Application.Etl.NormalizationOutcome.html#Meridian_Application_Etl_NormalizationOutcome_RejectCode
+  name: RejectCode
+  nameWithType: NormalizationOutcome.RejectCode
+  fullName: Meridian.Application.Etl.NormalizationOutcome.RejectCode
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Etl.NormalizationOutcome.RejectMessage*
+  commentId: Overload:Meridian.Application.Etl.NormalizationOutcome.RejectMessage
+  href: Meridian.Application.Etl.NormalizationOutcome.html#Meridian_Application_Etl_NormalizationOutcome_RejectMessage
+  name: RejectMessage
+  nameWithType: NormalizationOutcome.RejectMessage
+  fullName: Meridian.Application.Etl.NormalizationOutcome.RejectMessage
+- uid: Meridian.Application.Etl.NormalizationOutcome.RecordHash*
+  commentId: Overload:Meridian.Application.Etl.NormalizationOutcome.RecordHash
+  href: Meridian.Application.Etl.NormalizationOutcome.html#Meridian_Application_Etl_NormalizationOutcome_RecordHash
+  name: RecordHash
+  nameWithType: NormalizationOutcome.RecordHash
+  fullName: Meridian.Application.Etl.NormalizationOutcome.RecordHash

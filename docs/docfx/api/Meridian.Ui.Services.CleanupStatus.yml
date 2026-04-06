@@ -1,0 +1,230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.CleanupStatus
+  commentId: T:Meridian.Ui.Services.CleanupStatus
+  id: CleanupStatus
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.CleanupStatus.Cancelled
+  - Meridian.Ui.Services.CleanupStatus.Failed
+  - Meridian.Ui.Services.CleanupStatus.FailedVerification
+  - Meridian.Ui.Services.CleanupStatus.PartialSuccess
+  - Meridian.Ui.Services.CleanupStatus.Pending
+  - Meridian.Ui.Services.CleanupStatus.Success
+  langs:
+  - csharp
+  - vb
+  name: CleanupStatus
+  nameWithType: CleanupStatus
+  fullName: Meridian.Ui.Services.CleanupStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CleanupStatus
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Cleanup status.
+  example: []
+  syntax:
+    content: 'public enum CleanupStatus : byte'
+    content.vb: Public Enum CleanupStatus As Byte
+- uid: Meridian.Ui.Services.CleanupStatus.Pending
+  commentId: F:Meridian.Ui.Services.CleanupStatus.Pending
+  id: Pending
+  parent: Meridian.Ui.Services.CleanupStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: CleanupStatus.Pending
+  fullName: Meridian.Ui.Services.CleanupStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Ui.Services.CleanupStatus
+- uid: Meridian.Ui.Services.CleanupStatus.Success
+  commentId: F:Meridian.Ui.Services.CleanupStatus.Success
+  id: Success
+  parent: Meridian.Ui.Services.CleanupStatus
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: CleanupStatus.Success
+  fullName: Meridian.Ui.Services.CleanupStatus.Success
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Success = 1
+    return:
+      type: Meridian.Ui.Services.CleanupStatus
+- uid: Meridian.Ui.Services.CleanupStatus.PartialSuccess
+  commentId: F:Meridian.Ui.Services.CleanupStatus.PartialSuccess
+  id: PartialSuccess
+  parent: Meridian.Ui.Services.CleanupStatus
+  langs:
+  - csharp
+  - vb
+  name: PartialSuccess
+  nameWithType: CleanupStatus.PartialSuccess
+  fullName: Meridian.Ui.Services.CleanupStatus.PartialSuccess
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartialSuccess
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: PartialSuccess = 2
+    return:
+      type: Meridian.Ui.Services.CleanupStatus
+- uid: Meridian.Ui.Services.CleanupStatus.Failed
+  commentId: F:Meridian.Ui.Services.CleanupStatus.Failed
+  id: Failed
+  parent: Meridian.Ui.Services.CleanupStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: CleanupStatus.Failed
+  fullName: Meridian.Ui.Services.CleanupStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Failed = 3
+    return:
+      type: Meridian.Ui.Services.CleanupStatus
+- uid: Meridian.Ui.Services.CleanupStatus.FailedVerification
+  commentId: F:Meridian.Ui.Services.CleanupStatus.FailedVerification
+  id: FailedVerification
+  parent: Meridian.Ui.Services.CleanupStatus
+  langs:
+  - csharp
+  - vb
+  name: FailedVerification
+  nameWithType: CleanupStatus.FailedVerification
+  fullName: Meridian.Ui.Services.CleanupStatus.FailedVerification
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedVerification
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: FailedVerification = 4
+    return:
+      type: Meridian.Ui.Services.CleanupStatus
+- uid: Meridian.Ui.Services.CleanupStatus.Cancelled
+  commentId: F:Meridian.Ui.Services.CleanupStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Ui.Services.CleanupStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: CleanupStatus.Cancelled
+  fullName: Meridian.Ui.Services.CleanupStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Cancelled = 5
+    return:
+      type: Meridian.Ui.Services.CleanupStatus
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.CleanupStatus
+  commentId: T:Meridian.Ui.Services.CleanupStatus
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.CleanupStatus.html
+  name: CleanupStatus
+  nameWithType: CleanupStatus
+  fullName: Meridian.Ui.Services.CleanupStatus

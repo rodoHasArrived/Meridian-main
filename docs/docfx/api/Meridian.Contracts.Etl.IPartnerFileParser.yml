@@ -1,0 +1,358 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.IPartnerFileParser
+  commentId: T:Meridian.Contracts.Etl.IPartnerFileParser
+  id: IPartnerFileParser
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.IPartnerFileParser.CanParse(Meridian.Contracts.Etl.EtlStagedFile)
+  - Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync(Meridian.Contracts.Etl.EtlStagedFile,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  - Meridian.Contracts.Etl.IPartnerFileParser.SchemaId
+  langs:
+  - csharp
+  - vb
+  name: IPartnerFileParser
+  nameWithType: IPartnerFileParser
+  fullName: Meridian.Contracts.Etl.IPartnerFileParser
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPartnerFileParser
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  summary: Parses a staged partner file into record envelopes.
+  example: []
+  syntax:
+    content: public interface IPartnerFileParser
+    content.vb: Public Interface IPartnerFileParser
+  derivedClasses:
+  - Meridian.Infrastructure.Etl.CsvPartnerFileParser
+- uid: Meridian.Contracts.Etl.IPartnerFileParser.SchemaId
+  commentId: P:Meridian.Contracts.Etl.IPartnerFileParser.SchemaId
+  id: SchemaId
+  parent: Meridian.Contracts.Etl.IPartnerFileParser
+  langs:
+  - csharp
+  - vb
+  name: SchemaId
+  nameWithType: IPartnerFileParser.SchemaId
+  fullName: Meridian.Contracts.Etl.IPartnerFileParser.SchemaId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaId
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: string SchemaId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property SchemaId As String
+  overload: Meridian.Contracts.Etl.IPartnerFileParser.SchemaId*
+- uid: Meridian.Contracts.Etl.IPartnerFileParser.CanParse(Meridian.Contracts.Etl.EtlStagedFile)
+  commentId: M:Meridian.Contracts.Etl.IPartnerFileParser.CanParse(Meridian.Contracts.Etl.EtlStagedFile)
+  id: CanParse(Meridian.Contracts.Etl.EtlStagedFile)
+  parent: Meridian.Contracts.Etl.IPartnerFileParser
+  langs:
+  - csharp
+  - vb
+  name: CanParse(EtlStagedFile)
+  nameWithType: IPartnerFileParser.CanParse(EtlStagedFile)
+  fullName: Meridian.Contracts.Etl.IPartnerFileParser.CanParse(Meridian.Contracts.Etl.EtlStagedFile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanParse
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: bool CanParse(EtlStagedFile file)
+    parameters:
+    - id: file
+      type: Meridian.Contracts.Etl.EtlStagedFile
+    return:
+      type: System.Boolean
+    content.vb: Function CanParse(file As EtlStagedFile) As Boolean
+  overload: Meridian.Contracts.Etl.IPartnerFileParser.CanParse*
+- uid: Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync(Meridian.Contracts.Etl.EtlStagedFile,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync(Meridian.Contracts.Etl.EtlStagedFile,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  id: ParseAsync(Meridian.Contracts.Etl.EtlStagedFile,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Etl.IPartnerFileParser
+  langs:
+  - csharp
+  - vb
+  name: ParseAsync(EtlStagedFile, EtlCheckpointToken?, CancellationToken)
+  nameWithType: IPartnerFileParser.ParseAsync(EtlStagedFile, EtlCheckpointToken?, CancellationToken)
+  fullName: Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync(Meridian.Contracts.Etl.EtlStagedFile, Meridian.Contracts.Etl.EtlCheckpointToken?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseAsync
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: IAsyncEnumerable<PartnerRecordEnvelope> ParseAsync(EtlStagedFile file, EtlCheckpointToken? checkpoint, CancellationToken ct = default)
+    parameters:
+    - id: file
+      type: Meridian.Contracts.Etl.EtlStagedFile
+    - id: checkpoint
+      type: Meridian.Contracts.Etl.EtlCheckpointToken
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Etl.PartnerRecordEnvelope}
+    content.vb: Function ParseAsync(file As EtlStagedFile, checkpoint As EtlCheckpointToken, ct As CancellationToken = Nothing) As IAsyncEnumerable(Of PartnerRecordEnvelope)
+  overload: Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync*
+  nameWithType.vb: IPartnerFileParser.ParseAsync(EtlStagedFile, EtlCheckpointToken, CancellationToken)
+  fullName.vb: Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync(Meridian.Contracts.Etl.EtlStagedFile, Meridian.Contracts.Etl.EtlCheckpointToken, System.Threading.CancellationToken)
+  name.vb: ParseAsync(EtlStagedFile, EtlCheckpointToken, CancellationToken)
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Contracts.Etl.IPartnerFileParser.SchemaId*
+  commentId: Overload:Meridian.Contracts.Etl.IPartnerFileParser.SchemaId
+  href: Meridian.Contracts.Etl.IPartnerFileParser.html#Meridian_Contracts_Etl_IPartnerFileParser_SchemaId
+  name: SchemaId
+  nameWithType: IPartnerFileParser.SchemaId
+  fullName: Meridian.Contracts.Etl.IPartnerFileParser.SchemaId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Etl.IPartnerFileParser.CanParse*
+  commentId: Overload:Meridian.Contracts.Etl.IPartnerFileParser.CanParse
+  href: Meridian.Contracts.Etl.IPartnerFileParser.html#Meridian_Contracts_Etl_IPartnerFileParser_CanParse_Meridian_Contracts_Etl_EtlStagedFile_
+  name: CanParse
+  nameWithType: IPartnerFileParser.CanParse
+  fullName: Meridian.Contracts.Etl.IPartnerFileParser.CanParse
+- uid: Meridian.Contracts.Etl.EtlStagedFile
+  commentId: T:Meridian.Contracts.Etl.EtlStagedFile
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlStagedFile.html
+  name: EtlStagedFile
+  nameWithType: EtlStagedFile
+  fullName: Meridian.Contracts.Etl.EtlStagedFile
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync*
+  commentId: Overload:Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync
+  href: Meridian.Contracts.Etl.IPartnerFileParser.html#Meridian_Contracts_Etl_IPartnerFileParser_ParseAsync_Meridian_Contracts_Etl_EtlStagedFile_Meridian_Contracts_Etl_EtlCheckpointToken_System_Threading_CancellationToken_
+  name: ParseAsync
+  nameWithType: IPartnerFileParser.ParseAsync
+  fullName: Meridian.Contracts.Etl.IPartnerFileParser.ParseAsync
+- uid: Meridian.Contracts.Etl.EtlCheckpointToken
+  commentId: T:Meridian.Contracts.Etl.EtlCheckpointToken
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlCheckpointToken.html
+  name: EtlCheckpointToken
+  nameWithType: EtlCheckpointToken
+  fullName: Meridian.Contracts.Etl.EtlCheckpointToken
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Etl.PartnerRecordEnvelope}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Etl.PartnerRecordEnvelope}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<PartnerRecordEnvelope>
+  nameWithType: IAsyncEnumerable<PartnerRecordEnvelope>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Contracts.Etl.PartnerRecordEnvelope>
+  nameWithType.vb: IAsyncEnumerable(Of PartnerRecordEnvelope)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Contracts.Etl.PartnerRecordEnvelope)
+  name.vb: IAsyncEnumerable(Of PartnerRecordEnvelope)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Etl.PartnerRecordEnvelope
+    name: PartnerRecordEnvelope
+    href: Meridian.Contracts.Etl.PartnerRecordEnvelope.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Etl.PartnerRecordEnvelope
+    name: PartnerRecordEnvelope
+    href: Meridian.Contracts.Etl.PartnerRecordEnvelope.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

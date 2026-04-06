@@ -1,0 +1,1011 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Tools.DataValidator.ValidationResult
+  commentId: T:Meridian.Tools.DataValidator.ValidationResult
+  id: DataValidator.ValidationResult
+  parent: Meridian.Tools
+  children:
+  - Meridian.Tools.DataValidator.ValidationResult.#ctor(System.String,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  - Meridian.Tools.DataValidator.ValidationResult.Errors
+  - Meridian.Tools.DataValidator.ValidationResult.FilePath
+  - Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp
+  - Meridian.Tools.DataValidator.ValidationResult.Gaps
+  - Meridian.Tools.DataValidator.ValidationResult.InvalidEvents
+  - Meridian.Tools.DataValidator.ValidationResult.IsValid
+  - Meridian.Tools.DataValidator.ValidationResult.LastTimestamp
+  - Meridian.Tools.DataValidator.ValidationResult.ParseErrors
+  - Meridian.Tools.DataValidator.ValidationResult.TotalLines
+  - Meridian.Tools.DataValidator.ValidationResult.ValidEvents
+  langs:
+  - csharp
+  - vb
+  name: DataValidator.ValidationResult
+  nameWithType: DataValidator.ValidationResult
+  fullName: Meridian.Tools.DataValidator.ValidationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidationResult
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 29
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: 'public record DataValidator.ValidationResult : IEquatable<DataValidator.ValidationResult>'
+    content.vb: Public Class DataValidator.ValidationResult Implements IEquatable(Of DataValidator.ValidationResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Tools.DataValidator.ValidationResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Tools.DataValidator.ValidationResult.#ctor(System.String,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Tools.DataValidator.ValidationResult.#ctor(System.String,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.String,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: ValidationResult(string, bool, int, int, int, int, List<string>, List<GapInfo>, DateTimeOffset?, DateTimeOffset?)
+  nameWithType: DataValidator.ValidationResult.ValidationResult(string, bool, int, int, int, int, List<string>, List<DataValidator.GapInfo>, DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Tools.DataValidator.ValidationResult.ValidationResult(string, bool, int, int, int, int, System.Collections.Generic.List<string>, System.Collections.Generic.List<Meridian.Tools.DataValidator.GapInfo>, System.DateTimeOffset?, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 29
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public ValidationResult(string FilePath, bool IsValid, int TotalLines, int ValidEvents, int InvalidEvents, int ParseErrors, List<string> Errors, List<DataValidator.GapInfo> Gaps, DateTimeOffset? FirstTimestamp, DateTimeOffset? LastTimestamp)
+    parameters:
+    - id: FilePath
+      type: System.String
+    - id: IsValid
+      type: System.Boolean
+    - id: TotalLines
+      type: System.Int32
+    - id: ValidEvents
+      type: System.Int32
+    - id: InvalidEvents
+      type: System.Int32
+    - id: ParseErrors
+      type: System.Int32
+    - id: Errors
+      type: System.Collections.Generic.List{System.String}
+    - id: Gaps
+      type: System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo}
+    - id: FirstTimestamp
+      type: System.Nullable{System.DateTimeOffset}
+    - id: LastTimestamp
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(FilePath As String, IsValid As Boolean, TotalLines As Integer, ValidEvents As Integer, InvalidEvents As Integer, ParseErrors As Integer, Errors As List(Of String), Gaps As List(Of DataValidator.GapInfo), FirstTimestamp As DateTimeOffset?, LastTimestamp As DateTimeOffset?)
+  overload: Meridian.Tools.DataValidator.ValidationResult.#ctor*
+  nameWithType.vb: DataValidator.ValidationResult.New(String, Boolean, Integer, Integer, Integer, Integer, List(Of String), List(Of DataValidator.GapInfo), DateTimeOffset?, DateTimeOffset?)
+  fullName.vb: Meridian.Tools.DataValidator.ValidationResult.New(String, Boolean, Integer, Integer, Integer, Integer, System.Collections.Generic.List(Of String), System.Collections.Generic.List(Of Meridian.Tools.DataValidator.GapInfo), System.DateTimeOffset?, System.DateTimeOffset?)
+  name.vb: New(String, Boolean, Integer, Integer, Integer, Integer, List(Of String), List(Of GapInfo), DateTimeOffset?, DateTimeOffset?)
+- uid: Meridian.Tools.DataValidator.ValidationResult.FilePath
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.FilePath
+  id: FilePath
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: FilePath
+  nameWithType: DataValidator.ValidationResult.FilePath
+  fullName: Meridian.Tools.DataValidator.ValidationResult.FilePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilePath
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 30
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public string FilePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FilePath As String
+  overload: Meridian.Tools.DataValidator.ValidationResult.FilePath*
+- uid: Meridian.Tools.DataValidator.ValidationResult.IsValid
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.IsValid
+  id: IsValid
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: IsValid
+  nameWithType: DataValidator.ValidationResult.IsValid
+  fullName: Meridian.Tools.DataValidator.ValidationResult.IsValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValid
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 31
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public bool IsValid { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsValid As Boolean
+  overload: Meridian.Tools.DataValidator.ValidationResult.IsValid*
+- uid: Meridian.Tools.DataValidator.ValidationResult.TotalLines
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.TotalLines
+  id: TotalLines
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: TotalLines
+  nameWithType: DataValidator.ValidationResult.TotalLines
+  fullName: Meridian.Tools.DataValidator.ValidationResult.TotalLines
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalLines
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 32
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public int TotalLines { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalLines As Integer
+  overload: Meridian.Tools.DataValidator.ValidationResult.TotalLines*
+- uid: Meridian.Tools.DataValidator.ValidationResult.ValidEvents
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.ValidEvents
+  id: ValidEvents
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: ValidEvents
+  nameWithType: DataValidator.ValidationResult.ValidEvents
+  fullName: Meridian.Tools.DataValidator.ValidationResult.ValidEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidEvents
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 33
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public int ValidEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ValidEvents As Integer
+  overload: Meridian.Tools.DataValidator.ValidationResult.ValidEvents*
+- uid: Meridian.Tools.DataValidator.ValidationResult.InvalidEvents
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.InvalidEvents
+  id: InvalidEvents
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: InvalidEvents
+  nameWithType: DataValidator.ValidationResult.InvalidEvents
+  fullName: Meridian.Tools.DataValidator.ValidationResult.InvalidEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidEvents
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 34
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public int InvalidEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property InvalidEvents As Integer
+  overload: Meridian.Tools.DataValidator.ValidationResult.InvalidEvents*
+- uid: Meridian.Tools.DataValidator.ValidationResult.ParseErrors
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.ParseErrors
+  id: ParseErrors
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: ParseErrors
+  nameWithType: DataValidator.ValidationResult.ParseErrors
+  fullName: Meridian.Tools.DataValidator.ValidationResult.ParseErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseErrors
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 35
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public int ParseErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ParseErrors As Integer
+  overload: Meridian.Tools.DataValidator.ValidationResult.ParseErrors*
+- uid: Meridian.Tools.DataValidator.ValidationResult.Errors
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.Errors
+  id: Errors
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Errors
+  nameWithType: DataValidator.ValidationResult.Errors
+  fullName: Meridian.Tools.DataValidator.ValidationResult.Errors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Errors
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 36
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public List<string> Errors { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Errors As List(Of String)
+  overload: Meridian.Tools.DataValidator.ValidationResult.Errors*
+- uid: Meridian.Tools.DataValidator.ValidationResult.Gaps
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.Gaps
+  id: Gaps
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Gaps
+  nameWithType: DataValidator.ValidationResult.Gaps
+  fullName: Meridian.Tools.DataValidator.ValidationResult.Gaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gaps
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 37
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public List<DataValidator.GapInfo> Gaps { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo}
+    content.vb: Public Property Gaps As List(Of DataValidator.GapInfo)
+  overload: Meridian.Tools.DataValidator.ValidationResult.Gaps*
+- uid: Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp
+  id: FirstTimestamp
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: FirstTimestamp
+  nameWithType: DataValidator.ValidationResult.FirstTimestamp
+  fullName: Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstTimestamp
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 38
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public DateTimeOffset? FirstTimestamp { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property FirstTimestamp As DateTimeOffset?
+  overload: Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp*
+- uid: Meridian.Tools.DataValidator.ValidationResult.LastTimestamp
+  commentId: P:Meridian.Tools.DataValidator.ValidationResult.LastTimestamp
+  id: LastTimestamp
+  parent: Meridian.Tools.DataValidator.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: LastTimestamp
+  nameWithType: DataValidator.ValidationResult.LastTimestamp
+  fullName: Meridian.Tools.DataValidator.ValidationResult.LastTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastTimestamp
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 39
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  syntax:
+    content: public DateTimeOffset? LastTimestamp { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastTimestamp As DateTimeOffset?
+  overload: Meridian.Tools.DataValidator.ValidationResult.LastTimestamp*
+references:
+- uid: Meridian.Tools
+  commentId: N:Meridian.Tools
+  href: Meridian.html
+  name: Meridian.Tools
+  nameWithType: Meridian.Tools
+  fullName: Meridian.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Tools
+    name: Tools
+    href: Meridian.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Tools
+    name: Tools
+    href: Meridian.Tools.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Tools.DataValidator.ValidationResult}
+  commentId: T:System.IEquatable{Meridian.Tools.DataValidator.ValidationResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataValidator.ValidationResult>
+  nameWithType: IEquatable<DataValidator.ValidationResult>
+  fullName: System.IEquatable<Meridian.Tools.DataValidator.ValidationResult>
+  nameWithType.vb: IEquatable(Of DataValidator.ValidationResult)
+  fullName.vb: System.IEquatable(Of Meridian.Tools.DataValidator.ValidationResult)
+  name.vb: IEquatable(Of DataValidator.ValidationResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Tools.DataValidator.ValidationResult.#ctor*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.#ctor
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult__ctor_System_String_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Collections_Generic_List_System_String__System_Collections_Generic_List_Meridian_Tools_DataValidator_GapInfo__System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  name: ValidationResult
+  nameWithType: DataValidator.ValidationResult.ValidationResult
+  fullName: Meridian.Tools.DataValidator.ValidationResult.ValidationResult
+  nameWithType.vb: DataValidator.ValidationResult.New
+  fullName.vb: Meridian.Tools.DataValidator.ValidationResult.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo}
+  commentId: T:System.Collections.Generic.List{Meridian.Tools.DataValidator.GapInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<DataValidator.GapInfo>
+  nameWithType: List<DataValidator.GapInfo>
+  fullName: System.Collections.Generic.List<Meridian.Tools.DataValidator.GapInfo>
+  nameWithType.vb: List(Of DataValidator.GapInfo)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Tools.DataValidator.GapInfo)
+  name.vb: List(Of DataValidator.GapInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.GapInfo
+    name: GapInfo
+    href: Meridian.Tools.DataValidator.GapInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.GapInfo
+    name: GapInfo
+    href: Meridian.Tools.DataValidator.GapInfo.html
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Tools.DataValidator.ValidationResult.FilePath*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.FilePath
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_FilePath
+  name: FilePath
+  nameWithType: DataValidator.ValidationResult.FilePath
+  fullName: Meridian.Tools.DataValidator.ValidationResult.FilePath
+- uid: Meridian.Tools.DataValidator.ValidationResult.IsValid*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.IsValid
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_IsValid
+  name: IsValid
+  nameWithType: DataValidator.ValidationResult.IsValid
+  fullName: Meridian.Tools.DataValidator.ValidationResult.IsValid
+- uid: Meridian.Tools.DataValidator.ValidationResult.TotalLines*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.TotalLines
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_TotalLines
+  name: TotalLines
+  nameWithType: DataValidator.ValidationResult.TotalLines
+  fullName: Meridian.Tools.DataValidator.ValidationResult.TotalLines
+- uid: Meridian.Tools.DataValidator.ValidationResult.ValidEvents*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.ValidEvents
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_ValidEvents
+  name: ValidEvents
+  nameWithType: DataValidator.ValidationResult.ValidEvents
+  fullName: Meridian.Tools.DataValidator.ValidationResult.ValidEvents
+- uid: Meridian.Tools.DataValidator.ValidationResult.InvalidEvents*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.InvalidEvents
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_InvalidEvents
+  name: InvalidEvents
+  nameWithType: DataValidator.ValidationResult.InvalidEvents
+  fullName: Meridian.Tools.DataValidator.ValidationResult.InvalidEvents
+- uid: Meridian.Tools.DataValidator.ValidationResult.ParseErrors*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.ParseErrors
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_ParseErrors
+  name: ParseErrors
+  nameWithType: DataValidator.ValidationResult.ParseErrors
+  fullName: Meridian.Tools.DataValidator.ValidationResult.ParseErrors
+- uid: Meridian.Tools.DataValidator.ValidationResult.Errors*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.Errors
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_Errors
+  name: Errors
+  nameWithType: DataValidator.ValidationResult.Errors
+  fullName: Meridian.Tools.DataValidator.ValidationResult.Errors
+- uid: Meridian.Tools.DataValidator.ValidationResult.Gaps*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.Gaps
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_Gaps
+  name: Gaps
+  nameWithType: DataValidator.ValidationResult.Gaps
+  fullName: Meridian.Tools.DataValidator.ValidationResult.Gaps
+- uid: Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_FirstTimestamp
+  name: FirstTimestamp
+  nameWithType: DataValidator.ValidationResult.FirstTimestamp
+  fullName: Meridian.Tools.DataValidator.ValidationResult.FirstTimestamp
+- uid: Meridian.Tools.DataValidator.ValidationResult.LastTimestamp*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidationResult.LastTimestamp
+  href: Meridian.Tools.DataValidator.ValidationResult.html#Meridian_Tools_DataValidator_ValidationResult_LastTimestamp
+  name: LastTimestamp
+  nameWithType: DataValidator.ValidationResult.LastTimestamp
+  fullName: Meridian.Tools.DataValidator.ValidationResult.LastTimestamp

@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.ExportPresetCompression
+  commentId: T:Meridian.Contracts.Export.ExportPresetCompression
+  id: ExportPresetCompression
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.ExportPresetCompression.Gzip
+  - Meridian.Contracts.Export.ExportPresetCompression.Lz4
+  - Meridian.Contracts.Export.ExportPresetCompression.None
+  - Meridian.Contracts.Export.ExportPresetCompression.Snappy
+  - Meridian.Contracts.Export.ExportPresetCompression.Zip
+  - Meridian.Contracts.Export.ExportPresetCompression.Zstd
+  langs:
+  - csharp
+  - vb
+  name: ExportPresetCompression
+  nameWithType: ExportPresetCompression
+  fullName: Meridian.Contracts.Export.ExportPresetCompression
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportPresetCompression
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Compression types for export presets.
+  example: []
+  syntax:
+    content: 'public enum ExportPresetCompression : byte'
+    content.vb: Public Enum ExportPresetCompression As Byte
+- uid: Meridian.Contracts.Export.ExportPresetCompression.None
+  commentId: F:Meridian.Contracts.Export.ExportPresetCompression.None
+  id: None
+  parent: Meridian.Contracts.Export.ExportPresetCompression
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: ExportPresetCompression.None
+  fullName: Meridian.Contracts.Export.ExportPresetCompression.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: No compression.
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Contracts.Export.ExportPresetCompression
+- uid: Meridian.Contracts.Export.ExportPresetCompression.Gzip
+  commentId: F:Meridian.Contracts.Export.ExportPresetCompression.Gzip
+  id: Gzip
+  parent: Meridian.Contracts.Export.ExportPresetCompression
+  langs:
+  - csharp
+  - vb
+  name: Gzip
+  nameWithType: ExportPresetCompression.Gzip
+  fullName: Meridian.Contracts.Export.ExportPresetCompression.Gzip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gzip
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Gzip compression.
+  example: []
+  syntax:
+    content: Gzip = 1
+    return:
+      type: Meridian.Contracts.Export.ExportPresetCompression
+- uid: Meridian.Contracts.Export.ExportPresetCompression.Snappy
+  commentId: F:Meridian.Contracts.Export.ExportPresetCompression.Snappy
+  id: Snappy
+  parent: Meridian.Contracts.Export.ExportPresetCompression
+  langs:
+  - csharp
+  - vb
+  name: Snappy
+  nameWithType: ExportPresetCompression.Snappy
+  fullName: Meridian.Contracts.Export.ExportPresetCompression.Snappy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snappy
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Snappy compression (fast, moderate ratio).
+  example: []
+  syntax:
+    content: Snappy = 2
+    return:
+      type: Meridian.Contracts.Export.ExportPresetCompression
+- uid: Meridian.Contracts.Export.ExportPresetCompression.Zstd
+  commentId: F:Meridian.Contracts.Export.ExportPresetCompression.Zstd
+  id: Zstd
+  parent: Meridian.Contracts.Export.ExportPresetCompression
+  langs:
+  - csharp
+  - vb
+  name: Zstd
+  nameWithType: ExportPresetCompression.Zstd
+  fullName: Meridian.Contracts.Export.ExportPresetCompression.Zstd
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zstd
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: ZSTD compression (balanced).
+  example: []
+  syntax:
+    content: Zstd = 3
+    return:
+      type: Meridian.Contracts.Export.ExportPresetCompression
+- uid: Meridian.Contracts.Export.ExportPresetCompression.Lz4
+  commentId: F:Meridian.Contracts.Export.ExportPresetCompression.Lz4
+  id: Lz4
+  parent: Meridian.Contracts.Export.ExportPresetCompression
+  langs:
+  - csharp
+  - vb
+  name: Lz4
+  nameWithType: ExportPresetCompression.Lz4
+  fullName: Meridian.Contracts.Export.ExportPresetCompression.Lz4
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lz4
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 264
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: LZ4 compression (fastest).
+  example: []
+  syntax:
+    content: Lz4 = 4
+    return:
+      type: Meridian.Contracts.Export.ExportPresetCompression
+- uid: Meridian.Contracts.Export.ExportPresetCompression.Zip
+  commentId: F:Meridian.Contracts.Export.ExportPresetCompression.Zip
+  id: Zip
+  parent: Meridian.Contracts.Export.ExportPresetCompression
+  langs:
+  - csharp
+  - vb
+  name: Zip
+  nameWithType: ExportPresetCompression.Zip
+  fullName: Meridian.Contracts.Export.ExportPresetCompression.Zip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zip
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: ZIP archive.
+  example: []
+  syntax:
+    content: Zip = 5
+    return:
+      type: Meridian.Contracts.Export.ExportPresetCompression
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: Meridian.Contracts.Export.ExportPresetCompression
+  commentId: T:Meridian.Contracts.Export.ExportPresetCompression
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportPresetCompression.html
+  name: ExportPresetCompression
+  nameWithType: ExportPresetCompression
+  fullName: Meridian.Contracts.Export.ExportPresetCompression

@@ -39,7 +39,7 @@
   "build": {
     "content": [
       { "files": [ "docs/**/*.md", "docs/**/toc.yml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." },
-      { "files": [ "api/**.yml", "api/index.md" ] }
+      { "files": [ "api/**.yml", "api/index.md", "api/toc.yml" ] }
     ],
     "resource": [
       { "files": [ "docs/**/*.png", "docs/**/*.svg", "docs/**/*.puml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." }

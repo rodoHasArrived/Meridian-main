@@ -1,0 +1,89 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Utilities
+  commentId: N:Meridian.Infrastructure.Utilities
+  id: Meridian.Infrastructure.Utilities
+  children:
+  - Meridian.Infrastructure.Utilities.CredentialValidator
+  - Meridian.Infrastructure.Utilities.HttpResponseHandler
+  - Meridian.Infrastructure.Utilities.HttpResponseResult
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions
+  - Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  - Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Utilities
+  nameWithType: Meridian.Infrastructure.Utilities
+  fullName: Meridian.Infrastructure.Utilities
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  commentId: T:Meridian.Infrastructure.Utilities.HttpResponseHandler
+  href: Meridian.Infrastructure.Utilities.HttpResponseHandler.html
+  name: HttpResponseHandler
+  nameWithType: HttpResponseHandler
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler
+- uid: Meridian.Infrastructure.Utilities.HttpResponseResult
+  commentId: T:Meridian.Infrastructure.Utilities.HttpResponseResult
+  parent: Meridian.Infrastructure.Utilities
+  href: Meridian.Infrastructure.Utilities.HttpResponseResult.html
+  name: HttpResponseResult
+  nameWithType: HttpResponseResult
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseResult
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  commentId: T:Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html
+  name: RateLimitEventArgs
+  nameWithType: RateLimitEventArgs
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  commentId: T:Meridian.Infrastructure.Utilities.JsonElementExtensions
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html
+  name: JsonElementExtensions
+  nameWithType: JsonElementExtensions
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization
+  commentId: T:Meridian.Infrastructure.Utilities.SymbolNormalization
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html
+  name: SymbolNormalization
+  nameWithType: SymbolNormalization
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization
+- uid: Meridian.Infrastructure.Utilities.CredentialValidator
+  commentId: T:Meridian.Infrastructure.Utilities.CredentialValidator
+  href: Meridian.Infrastructure.Utilities.CredentialValidator.html
+  name: CredentialValidator
+  nameWithType: CredentialValidator
+  fullName: Meridian.Infrastructure.Utilities.CredentialValidator
+- uid: Meridian.Infrastructure.Utilities
+  commentId: N:Meridian.Infrastructure.Utilities
+  href: Meridian.html
+  name: Meridian.Infrastructure.Utilities
+  nameWithType: Meridian.Infrastructure.Utilities
+  fullName: Meridian.Infrastructure.Utilities
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html

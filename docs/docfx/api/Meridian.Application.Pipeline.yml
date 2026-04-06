@@ -1,0 +1,186 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  id: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.DeadLetterSink
+  - Meridian.Application.Pipeline.DeadLetterStatistics
+  - Meridian.Application.Pipeline.DroppedEventAuditTrail
+  - Meridian.Application.Pipeline.DroppedEventStatistics
+  - Meridian.Application.Pipeline.DualPathEventPipeline
+  - Meridian.Application.Pipeline.EventPipeline
+  - Meridian.Application.Pipeline.EventPipelinePolicy
+  - Meridian.Application.Pipeline.FSharpEventValidator
+  - Meridian.Application.Pipeline.HotPathBatchSerializer
+  - Meridian.Application.Pipeline.IDedupStore
+  - Meridian.Application.Pipeline.IEventValidator
+  - Meridian.Application.Pipeline.IngestionJobService
+  - Meridian.Application.Pipeline.IngestionJobSummary
+  - Meridian.Application.Pipeline.PersistentDedupLedger
+  - Meridian.Application.Pipeline.PipelineStatistics
+  - Meridian.Application.Pipeline.SchemaUpcasterRegistry
+  - Meridian.Application.Pipeline.SchemaUpcasterStatistics
+  - Meridian.Application.Pipeline.ValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Pipeline.DeadLetterSink
+  commentId: T:Meridian.Application.Pipeline.DeadLetterSink
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DeadLetterSink.html
+  name: DeadLetterSink
+  nameWithType: DeadLetterSink
+  fullName: Meridian.Application.Pipeline.DeadLetterSink
+- uid: Meridian.Application.Pipeline.DeadLetterStatistics
+  commentId: T:Meridian.Application.Pipeline.DeadLetterStatistics
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DeadLetterStatistics.html
+  name: DeadLetterStatistics
+  nameWithType: DeadLetterStatistics
+  fullName: Meridian.Application.Pipeline.DeadLetterStatistics
+- uid: Meridian.Application.Pipeline.DroppedEventAuditTrail
+  commentId: T:Meridian.Application.Pipeline.DroppedEventAuditTrail
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DroppedEventAuditTrail.html
+  name: DroppedEventAuditTrail
+  nameWithType: DroppedEventAuditTrail
+  fullName: Meridian.Application.Pipeline.DroppedEventAuditTrail
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics
+  commentId: T:Meridian.Application.Pipeline.DroppedEventStatistics
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DroppedEventStatistics.html
+  name: DroppedEventStatistics
+  nameWithType: DroppedEventStatistics
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics
+- uid: Meridian.Application.Pipeline.DualPathEventPipeline
+  commentId: T:Meridian.Application.Pipeline.DualPathEventPipeline
+  href: Meridian.Application.Pipeline.DualPathEventPipeline.html
+  name: DualPathEventPipeline
+  nameWithType: DualPathEventPipeline
+  fullName: Meridian.Application.Pipeline.DualPathEventPipeline
+- uid: Meridian.Application.Pipeline.EventPipeline
+  commentId: T:Meridian.Application.Pipeline.EventPipeline
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.EventPipeline.html
+  name: EventPipeline
+  nameWithType: EventPipeline
+  fullName: Meridian.Application.Pipeline.EventPipeline
+- uid: Meridian.Application.Pipeline.PipelineStatistics
+  commentId: T:Meridian.Application.Pipeline.PipelineStatistics
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.PipelineStatistics.html
+  name: PipelineStatistics
+  nameWithType: PipelineStatistics
+  fullName: Meridian.Application.Pipeline.PipelineStatistics
+- uid: Meridian.Application.Pipeline.FSharpEventValidator
+  commentId: T:Meridian.Application.Pipeline.FSharpEventValidator
+  href: Meridian.Application.Pipeline.FSharpEventValidator.html
+  name: FSharpEventValidator
+  nameWithType: FSharpEventValidator
+  fullName: Meridian.Application.Pipeline.FSharpEventValidator
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer
+  commentId: T:Meridian.Application.Pipeline.HotPathBatchSerializer
+  href: Meridian.Application.Pipeline.HotPathBatchSerializer.html
+  name: HotPathBatchSerializer
+  nameWithType: HotPathBatchSerializer
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer
+- uid: Meridian.Application.Pipeline.IDedupStore
+  commentId: T:Meridian.Application.Pipeline.IDedupStore
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IDedupStore.html
+  name: IDedupStore
+  nameWithType: IDedupStore
+  fullName: Meridian.Application.Pipeline.IDedupStore
+- uid: Meridian.Application.Pipeline.IEventValidator
+  commentId: T:Meridian.Application.Pipeline.IEventValidator
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IEventValidator.html
+  name: IEventValidator
+  nameWithType: IEventValidator
+  fullName: Meridian.Application.Pipeline.IEventValidator
+- uid: Meridian.Application.Pipeline.ValidationResult
+  commentId: T:Meridian.Application.Pipeline.ValidationResult
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.ValidationResult.html
+  name: ValidationResult
+  nameWithType: ValidationResult
+  fullName: Meridian.Application.Pipeline.ValidationResult
+- uid: Meridian.Application.Pipeline.IngestionJobService
+  commentId: T:Meridian.Application.Pipeline.IngestionJobService
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IngestionJobService.html
+  name: IngestionJobService
+  nameWithType: IngestionJobService
+  fullName: Meridian.Application.Pipeline.IngestionJobService
+- uid: Meridian.Application.Pipeline.IngestionJobSummary
+  commentId: T:Meridian.Application.Pipeline.IngestionJobSummary
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html
+  name: IngestionJobSummary
+  nameWithType: IngestionJobSummary
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger
+  commentId: T:Meridian.Application.Pipeline.PersistentDedupLedger
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html
+  name: PersistentDedupLedger
+  nameWithType: PersistentDedupLedger
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger
+- uid: Meridian.Application.Pipeline.SchemaUpcasterRegistry
+  commentId: T:Meridian.Application.Pipeline.SchemaUpcasterRegistry
+  href: Meridian.Application.Pipeline.SchemaUpcasterRegistry.html
+  name: SchemaUpcasterRegistry
+  nameWithType: SchemaUpcasterRegistry
+  fullName: Meridian.Application.Pipeline.SchemaUpcasterRegistry
+- uid: Meridian.Application.Pipeline.SchemaUpcasterStatistics
+  commentId: T:Meridian.Application.Pipeline.SchemaUpcasterStatistics
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.SchemaUpcasterStatistics.html
+  name: SchemaUpcasterStatistics
+  nameWithType: SchemaUpcasterStatistics
+  fullName: Meridian.Application.Pipeline.SchemaUpcasterStatistics
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy
+  commentId: T:Meridian.Application.Pipeline.EventPipelinePolicy
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html
+  name: EventPipelinePolicy
+  nameWithType: EventPipelinePolicy
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html

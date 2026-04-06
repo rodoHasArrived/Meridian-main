@@ -1,0 +1,845 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Models.MarketTradeUpdate
+  commentId: T:Meridian.Domain.Models.MarketTradeUpdate
+  id: MarketTradeUpdate
+  parent: Meridian.Domain.Models
+  children:
+  - Meridian.Domain.Models.MarketTradeUpdate.#ctor(System.DateTimeOffset,System.String,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Int64,System.String,System.String,System.String[])
+  - Meridian.Domain.Models.MarketTradeUpdate.Aggressor
+  - Meridian.Domain.Models.MarketTradeUpdate.Price
+  - Meridian.Domain.Models.MarketTradeUpdate.RawConditions
+  - Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber
+  - Meridian.Domain.Models.MarketTradeUpdate.Size
+  - Meridian.Domain.Models.MarketTradeUpdate.StreamId
+  - Meridian.Domain.Models.MarketTradeUpdate.Symbol
+  - Meridian.Domain.Models.MarketTradeUpdate.Timestamp
+  - Meridian.Domain.Models.MarketTradeUpdate.Venue
+  langs:
+  - csharp
+  - vb
+  name: MarketTradeUpdate
+  nameWithType: MarketTradeUpdate
+  fullName: Meridian.Domain.Models.MarketTradeUpdate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketTradeUpdate
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  summary: >-
+    Normalized tick-by-tick trade update (adapter input into TradeDataCollector).
+
+    This is NOT the stored Trade; it's the raw-ish input model.
+  example: []
+  syntax:
+    content: 'public sealed record MarketTradeUpdate : IEquatable<MarketTradeUpdate>'
+    content.vb: Public NotInheritable Class MarketTradeUpdate Implements IEquatable(Of MarketTradeUpdate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Domain.Models.MarketTradeUpdate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Domain.Models.MarketTradeUpdate.#ctor(System.DateTimeOffset,System.String,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Int64,System.String,System.String,System.String[])
+  commentId: M:Meridian.Domain.Models.MarketTradeUpdate.#ctor(System.DateTimeOffset,System.String,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Int64,System.String,System.String,System.String[])
+  id: '#ctor(System.DateTimeOffset,System.String,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Int64,System.String,System.String,System.String[])'
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: MarketTradeUpdate(DateTimeOffset, string, decimal, long, AggressorSide, long, string?, string?, string[]?)
+  nameWithType: MarketTradeUpdate.MarketTradeUpdate(DateTimeOffset, string, decimal, long, AggressorSide, long, string?, string?, string[]?)
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.MarketTradeUpdate(System.DateTimeOffset, string, decimal, long, Meridian.Contracts.Domain.Enums.AggressorSide, long, string?, string?, string[]?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  summary: >-
+    Normalized tick-by-tick trade update (adapter input into TradeDataCollector).
+
+    This is NOT the stored Trade; it's the raw-ish input model.
+  example: []
+  syntax:
+    content: public MarketTradeUpdate(DateTimeOffset Timestamp, string Symbol, decimal Price, long Size, AggressorSide Aggressor, long SequenceNumber, string? StreamId = null, string? Venue = null, string[]? RawConditions = null)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Symbol
+      type: System.String
+    - id: Price
+      type: System.Decimal
+    - id: Size
+      type: System.Int64
+    - id: Aggressor
+      type: Meridian.Contracts.Domain.Enums.AggressorSide
+    - id: SequenceNumber
+      type: System.Int64
+    - id: StreamId
+      type: System.String
+    - id: Venue
+      type: System.String
+    - id: RawConditions
+      type: System.String[]
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Symbol As String, Price As Decimal, Size As Long, Aggressor As AggressorSide, SequenceNumber As Long, StreamId As String = Nothing, Venue As String = Nothing, RawConditions As String() = Nothing)
+  overload: Meridian.Domain.Models.MarketTradeUpdate.#ctor*
+  nameWithType.vb: MarketTradeUpdate.New(DateTimeOffset, String, Decimal, Long, AggressorSide, Long, String, String, String())
+  fullName.vb: Meridian.Domain.Models.MarketTradeUpdate.New(System.DateTimeOffset, String, Decimal, Long, Meridian.Contracts.Domain.Enums.AggressorSide, Long, String, String, String())
+  name.vb: New(DateTimeOffset, String, Decimal, Long, AggressorSide, Long, String, String, String())
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Timestamp
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.Timestamp
+  id: Timestamp
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: MarketTradeUpdate.Timestamp
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Domain.Models.MarketTradeUpdate.Timestamp*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Symbol
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.Symbol
+  id: Symbol
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: MarketTradeUpdate.Symbol
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Domain.Models.MarketTradeUpdate.Symbol*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Price
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.Price
+  id: Price
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: MarketTradeUpdate.Price
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Domain.Models.MarketTradeUpdate.Price*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Size
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.Size
+  id: Size
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: MarketTradeUpdate.Size
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public long Size { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Size As Long
+  overload: Meridian.Domain.Models.MarketTradeUpdate.Size*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Aggressor
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.Aggressor
+  id: Aggressor
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: Aggressor
+  nameWithType: MarketTradeUpdate.Aggressor
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Aggressor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aggressor
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public AggressorSide Aggressor { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.AggressorSide
+    content.vb: Public Property Aggressor As AggressorSide
+  overload: Meridian.Domain.Models.MarketTradeUpdate.Aggressor*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: MarketTradeUpdate.SequenceNumber
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public long SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.StreamId
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.StreamId
+  id: StreamId
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: StreamId
+  nameWithType: MarketTradeUpdate.StreamId
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.StreamId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamId
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public string? StreamId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StreamId As String
+  overload: Meridian.Domain.Models.MarketTradeUpdate.StreamId*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Venue
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.Venue
+  id: Venue
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: Venue
+  nameWithType: MarketTradeUpdate.Venue
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Venue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Venue
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public string? Venue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Venue As String
+  overload: Meridian.Domain.Models.MarketTradeUpdate.Venue*
+- uid: Meridian.Domain.Models.MarketTradeUpdate.RawConditions
+  commentId: P:Meridian.Domain.Models.MarketTradeUpdate.RawConditions
+  id: RawConditions
+  parent: Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: RawConditions
+  nameWithType: MarketTradeUpdate.RawConditions
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.RawConditions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/MarketTradeUpdate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RawConditions
+    path: ../../src/Meridian.Domain/Models/MarketTradeUpdate.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  syntax:
+    content: public string[]? RawConditions { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property RawConditions As String()
+  overload: Meridian.Domain.Models.MarketTradeUpdate.RawConditions*
+references:
+- uid: Meridian.Domain.Models
+  commentId: N:Meridian.Domain.Models
+  href: Meridian.html
+  name: Meridian.Domain.Models
+  nameWithType: Meridian.Domain.Models
+  fullName: Meridian.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Domain.Models.MarketTradeUpdate}
+  commentId: T:System.IEquatable{Meridian.Domain.Models.MarketTradeUpdate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketTradeUpdate>
+  nameWithType: IEquatable<MarketTradeUpdate>
+  fullName: System.IEquatable<Meridian.Domain.Models.MarketTradeUpdate>
+  nameWithType.vb: IEquatable(Of MarketTradeUpdate)
+  fullName.vb: System.IEquatable(Of Meridian.Domain.Models.MarketTradeUpdate)
+  name.vb: IEquatable(Of MarketTradeUpdate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Domain.Models.MarketTradeUpdate
+    name: MarketTradeUpdate
+    href: Meridian.Domain.Models.MarketTradeUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Models.MarketTradeUpdate
+    name: MarketTradeUpdate
+    href: Meridian.Domain.Models.MarketTradeUpdate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Domain.Models.MarketTradeUpdate.#ctor*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.#ctor
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate__ctor_System_DateTimeOffset_System_String_System_Decimal_System_Int64_Meridian_Contracts_Domain_Enums_AggressorSide_System_Int64_System_String_System_String_System_String___
+  name: MarketTradeUpdate
+  nameWithType: MarketTradeUpdate.MarketTradeUpdate
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.MarketTradeUpdate
+  nameWithType.vb: MarketTradeUpdate.New
+  fullName.vb: Meridian.Domain.Models.MarketTradeUpdate.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Domain.Enums.AggressorSide
+  commentId: T:Meridian.Contracts.Domain.Enums.AggressorSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.AggressorSide.html
+  name: AggressorSide
+  nameWithType: AggressorSide
+  fullName: Meridian.Contracts.Domain.Enums.AggressorSide
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Timestamp*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.Timestamp
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_Timestamp
+  name: Timestamp
+  nameWithType: MarketTradeUpdate.Timestamp
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Timestamp
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Symbol*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.Symbol
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_Symbol
+  name: Symbol
+  nameWithType: MarketTradeUpdate.Symbol
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Symbol
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Price*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.Price
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_Price
+  name: Price
+  nameWithType: MarketTradeUpdate.Price
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Price
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Size*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.Size
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_Size
+  name: Size
+  nameWithType: MarketTradeUpdate.Size
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Size
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Aggressor*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.Aggressor
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_Aggressor
+  name: Aggressor
+  nameWithType: MarketTradeUpdate.Aggressor
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Aggressor
+- uid: Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_SequenceNumber
+  name: SequenceNumber
+  nameWithType: MarketTradeUpdate.SequenceNumber
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.SequenceNumber
+- uid: Meridian.Domain.Models.MarketTradeUpdate.StreamId*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.StreamId
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_StreamId
+  name: StreamId
+  nameWithType: MarketTradeUpdate.StreamId
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.StreamId
+- uid: Meridian.Domain.Models.MarketTradeUpdate.Venue*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.Venue
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_Venue
+  name: Venue
+  nameWithType: MarketTradeUpdate.Venue
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.Venue
+- uid: Meridian.Domain.Models.MarketTradeUpdate.RawConditions*
+  commentId: Overload:Meridian.Domain.Models.MarketTradeUpdate.RawConditions
+  href: Meridian.Domain.Models.MarketTradeUpdate.html#Meridian_Domain_Models_MarketTradeUpdate_RawConditions
+  name: RawConditions
+  nameWithType: MarketTradeUpdate.RawConditions
+  fullName: Meridian.Domain.Models.MarketTradeUpdate.RawConditions

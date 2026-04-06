@@ -1,0 +1,1076 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataSamplingService
+  commentId: T:Meridian.Ui.Services.DataSamplingService
+  id: DataSamplingService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.DataSamplingService.CreateSampleAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataSamplingService.Instance
+  - Meridian.Ui.Services.DataSamplingService.ProgressChanged
+  - Meridian.Ui.Services.DataSamplingService.ValidateOptions(Meridian.Ui.Services.SamplingOptions)
+  langs:
+  - csharp
+  - vb
+  name: DataSamplingService
+  nameWithType: DataSamplingService
+  fullName: Meridian.Ui.Services.DataSamplingService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSamplingService
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for creating data samples and subsets for development, testing, and analysis.
+
+    Supports various sampling strategies including random, time-based, stratified, and volatility-based.
+  example: []
+  syntax:
+    content: public sealed class DataSamplingService
+    content.vb: Public NotInheritable Class DataSamplingService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DataSamplingService.Instance
+  commentId: P:Meridian.Ui.Services.DataSamplingService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: DataSamplingService.Instance
+  fullName: Meridian.Ui.Services.DataSamplingService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static DataSamplingService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.DataSamplingService
+    content.vb: Public Shared ReadOnly Property Instance As DataSamplingService
+  overload: Meridian.Ui.Services.DataSamplingService.Instance*
+- uid: Meridian.Ui.Services.DataSamplingService.ProgressChanged
+  commentId: E:Meridian.Ui.Services.DataSamplingService.ProgressChanged
+  id: ProgressChanged
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: ProgressChanged
+  nameWithType: DataSamplingService.ProgressChanged
+  fullName: Meridian.Ui.Services.DataSamplingService.ProgressChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProgressChanged
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Raised when sampling progress changes.
+  example: []
+  syntax:
+    content: public event EventHandler<SamplingProgressEventArgs>? ProgressChanged
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.SamplingProgressEventArgs}
+    content.vb: Public Event ProgressChanged As EventHandler(Of SamplingProgressEventArgs)
+- uid: Meridian.Ui.Services.DataSamplingService.CreateSampleAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataSamplingService.CreateSampleAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  id: CreateSampleAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: CreateSampleAsync(SamplingOptions, CancellationToken)
+  nameWithType: DataSamplingService.CreateSampleAsync(SamplingOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.DataSamplingService.CreateSampleAsync(Meridian.Ui.Services.SamplingOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSampleAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a data sample with the specified options.
+  example: []
+  syntax:
+    content: public Task<SamplingResult> CreateSampleAsync(SamplingOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.SamplingOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SamplingResult}
+    content.vb: Public Function CreateSampleAsync(options As SamplingOptions, ct As CancellationToken = Nothing) As Task(Of SamplingResult)
+  overload: Meridian.Ui.Services.DataSamplingService.CreateSampleAsync*
+- uid: Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync(System.Threading.CancellationToken)
+  id: GetSamplingStrategiesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: GetSamplingStrategiesAsync(CancellationToken)
+  nameWithType: DataSamplingService.GetSamplingStrategiesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSamplingStrategiesAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available sampling strategies.
+  example: []
+  syntax:
+    content: public Task<List<SamplingStrategy>> GetSamplingStrategiesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SamplingStrategy}}
+    content.vb: Public Function GetSamplingStrategiesAsync(ct As CancellationToken = Nothing) As Task(Of List(Of SamplingStrategy))
+  overload: Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync*
+- uid: Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync(System.Threading.CancellationToken)
+  id: GetSamplingPresetsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: GetSamplingPresetsAsync(CancellationToken)
+  nameWithType: DataSamplingService.GetSamplingPresetsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSamplingPresetsAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets preset sampling configurations.
+  example: []
+  syntax:
+    content: public Task<List<SamplingPreset>> GetSamplingPresetsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SamplingPreset}}
+    content.vb: Public Function GetSamplingPresetsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of SamplingPreset))
+  overload: Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync*
+- uid: Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  id: EstimateSampleSizeAsync(Meridian.Ui.Services.SamplingOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: EstimateSampleSizeAsync(SamplingOptions, CancellationToken)
+  nameWithType: DataSamplingService.EstimateSampleSizeAsync(SamplingOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync(Meridian.Ui.Services.SamplingOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimateSampleSizeAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Estimates the sample size for given options.
+  example: []
+  syntax:
+    content: public Task<SampleEstimate> EstimateSampleSizeAsync(SamplingOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.SamplingOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SampleEstimate}
+    content.vb: Public Function EstimateSampleSizeAsync(options As SamplingOptions, ct As CancellationToken = Nothing) As Task(Of SampleEstimate)
+  overload: Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync*
+- uid: Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync(System.Threading.CancellationToken)
+  id: GetSavedSamplesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: GetSavedSamplesAsync(CancellationToken)
+  nameWithType: DataSamplingService.GetSavedSamplesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSavedSamplesAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets saved samples.
+  example: []
+  syntax:
+    content: public Task<List<SavedSample>> GetSavedSamplesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SavedSample}}
+    content.vb: Public Function GetSavedSamplesAsync(ct As CancellationToken = Nothing) As Task(Of List(Of SavedSample))
+  overload: Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync*
+- uid: Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteSampleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: DeleteSampleAsync(string, CancellationToken)
+  nameWithType: DataSamplingService.DeleteSampleAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteSampleAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Deletes a saved sample.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteSampleAsync(string sampleId, CancellationToken ct = default)
+    parameters:
+    - id: sampleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteSampleAsync(sampleId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync*
+  nameWithType.vb: DataSamplingService.DeleteSampleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteSampleAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.DataSamplingService.ValidateOptions(Meridian.Ui.Services.SamplingOptions)
+  commentId: M:Meridian.Ui.Services.DataSamplingService.ValidateOptions(Meridian.Ui.Services.SamplingOptions)
+  id: ValidateOptions(Meridian.Ui.Services.SamplingOptions)
+  parent: Meridian.Ui.Services.DataSamplingService
+  langs:
+  - csharp
+  - vb
+  name: ValidateOptions(SamplingOptions)
+  nameWithType: DataSamplingService.ValidateOptions(SamplingOptions)
+  fullName: Meridian.Ui.Services.DataSamplingService.ValidateOptions(Meridian.Ui.Services.SamplingOptions)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateOptions
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Validates sampling options.
+  example: []
+  syntax:
+    content: public SamplingValidationResult ValidateOptions(SamplingOptions options)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.SamplingOptions
+    return:
+      type: Meridian.Ui.Services.SamplingValidationResult
+    content.vb: Public Function ValidateOptions(options As SamplingOptions) As SamplingValidationResult
+  overload: Meridian.Ui.Services.DataSamplingService.ValidateOptions*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataSamplingService.Instance*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.Instance
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_Instance
+  name: Instance
+  nameWithType: DataSamplingService.Instance
+  fullName: Meridian.Ui.Services.DataSamplingService.Instance
+- uid: Meridian.Ui.Services.DataSamplingService
+  commentId: T:Meridian.Ui.Services.DataSamplingService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.DataSamplingService.html
+  name: DataSamplingService
+  nameWithType: DataSamplingService
+  fullName: Meridian.Ui.Services.DataSamplingService
+- uid: System.EventHandler{Meridian.Ui.Services.SamplingProgressEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.SamplingProgressEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<SamplingProgressEventArgs>
+  nameWithType: EventHandler<SamplingProgressEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.SamplingProgressEventArgs>
+  nameWithType.vb: EventHandler(Of SamplingProgressEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.SamplingProgressEventArgs)
+  name.vb: EventHandler(Of SamplingProgressEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.SamplingProgressEventArgs
+    name: SamplingProgressEventArgs
+    href: Meridian.Ui.Services.SamplingProgressEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SamplingProgressEventArgs
+    name: SamplingProgressEventArgs
+    href: Meridian.Ui.Services.SamplingProgressEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.DataSamplingService.CreateSampleAsync*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.CreateSampleAsync
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_CreateSampleAsync_Meridian_Ui_Services_SamplingOptions_System_Threading_CancellationToken_
+  name: CreateSampleAsync
+  nameWithType: DataSamplingService.CreateSampleAsync
+  fullName: Meridian.Ui.Services.DataSamplingService.CreateSampleAsync
+- uid: Meridian.Ui.Services.SamplingOptions
+  commentId: T:Meridian.Ui.Services.SamplingOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SamplingOptions.html
+  name: SamplingOptions
+  nameWithType: SamplingOptions
+  fullName: Meridian.Ui.Services.SamplingOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SamplingResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SamplingResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SamplingResult>
+  nameWithType: Task<SamplingResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SamplingResult>
+  nameWithType.vb: Task(Of SamplingResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SamplingResult)
+  name.vb: Task(Of SamplingResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SamplingResult
+    name: SamplingResult
+    href: Meridian.Ui.Services.SamplingResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SamplingResult
+    name: SamplingResult
+    href: Meridian.Ui.Services.SamplingResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_GetSamplingStrategiesAsync_System_Threading_CancellationToken_
+  name: GetSamplingStrategiesAsync
+  nameWithType: DataSamplingService.GetSamplingStrategiesAsync
+  fullName: Meridian.Ui.Services.DataSamplingService.GetSamplingStrategiesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SamplingStrategy}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SamplingStrategy}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<SamplingStrategy>>
+  nameWithType: Task<List<SamplingStrategy>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.SamplingStrategy>>
+  nameWithType.vb: Task(Of List(Of SamplingStrategy))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.SamplingStrategy))
+  name.vb: Task(Of List(Of SamplingStrategy))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.SamplingStrategy
+    name: SamplingStrategy
+    href: Meridian.Ui.Services.SamplingStrategy.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SamplingStrategy
+    name: SamplingStrategy
+    href: Meridian.Ui.Services.SamplingStrategy.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_GetSamplingPresetsAsync_System_Threading_CancellationToken_
+  name: GetSamplingPresetsAsync
+  nameWithType: DataSamplingService.GetSamplingPresetsAsync
+  fullName: Meridian.Ui.Services.DataSamplingService.GetSamplingPresetsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SamplingPreset}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SamplingPreset}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<SamplingPreset>>
+  nameWithType: Task<List<SamplingPreset>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.SamplingPreset>>
+  nameWithType.vb: Task(Of List(Of SamplingPreset))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.SamplingPreset))
+  name.vb: Task(Of List(Of SamplingPreset))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.SamplingPreset
+    name: SamplingPreset
+    href: Meridian.Ui.Services.SamplingPreset.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SamplingPreset
+    name: SamplingPreset
+    href: Meridian.Ui.Services.SamplingPreset.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_EstimateSampleSizeAsync_Meridian_Ui_Services_SamplingOptions_System_Threading_CancellationToken_
+  name: EstimateSampleSizeAsync
+  nameWithType: DataSamplingService.EstimateSampleSizeAsync
+  fullName: Meridian.Ui.Services.DataSamplingService.EstimateSampleSizeAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SampleEstimate}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SampleEstimate}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SampleEstimate>
+  nameWithType: Task<SampleEstimate>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SampleEstimate>
+  nameWithType.vb: Task(Of SampleEstimate)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SampleEstimate)
+  name.vb: Task(Of SampleEstimate)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SampleEstimate
+    name: SampleEstimate
+    href: Meridian.Ui.Services.SampleEstimate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SampleEstimate
+    name: SampleEstimate
+    href: Meridian.Ui.Services.SampleEstimate.html
+  - name: )
+- uid: Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_GetSavedSamplesAsync_System_Threading_CancellationToken_
+  name: GetSavedSamplesAsync
+  nameWithType: DataSamplingService.GetSavedSamplesAsync
+  fullName: Meridian.Ui.Services.DataSamplingService.GetSavedSamplesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SavedSample}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SavedSample}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<SavedSample>>
+  nameWithType: Task<List<SavedSample>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.SavedSample>>
+  nameWithType.vb: Task(Of List(Of SavedSample))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.SavedSample))
+  name.vb: Task(Of List(Of SavedSample))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.SavedSample
+    name: SavedSample
+    href: Meridian.Ui.Services.SavedSample.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SavedSample
+    name: SavedSample
+    href: Meridian.Ui.Services.SavedSample.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_DeleteSampleAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteSampleAsync
+  nameWithType: DataSamplingService.DeleteSampleAsync
+  fullName: Meridian.Ui.Services.DataSamplingService.DeleteSampleAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Ui.Services.DataSamplingService.ValidateOptions*
+  commentId: Overload:Meridian.Ui.Services.DataSamplingService.ValidateOptions
+  href: Meridian.Ui.Services.DataSamplingService.html#Meridian_Ui_Services_DataSamplingService_ValidateOptions_Meridian_Ui_Services_SamplingOptions_
+  name: ValidateOptions
+  nameWithType: DataSamplingService.ValidateOptions
+  fullName: Meridian.Ui.Services.DataSamplingService.ValidateOptions
+- uid: Meridian.Ui.Services.SamplingValidationResult
+  commentId: T:Meridian.Ui.Services.SamplingValidationResult
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SamplingValidationResult.html
+  name: SamplingValidationResult
+  nameWithType: SamplingValidationResult
+  fullName: Meridian.Ui.Services.SamplingValidationResult

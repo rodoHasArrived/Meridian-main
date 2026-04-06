@@ -1,0 +1,702 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  id: DataQualityMonitoringConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig
+  langs:
+  - csharp
+  - vb
+  name: DataQualityMonitoringConfig
+  nameWithType: DataQualityMonitoringConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityMonitoringConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 400
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Configuration for the data quality monitoring service.
+  example: []
+  syntax:
+    content: 'public sealed record DataQualityMonitoringConfig : IEquatable<DataQualityMonitoringConfig>'
+    content.vb: Public NotInheritable Class DataQualityMonitoringConfig Implements IEquatable(Of DataQualityMonitoringConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig
+  id: CompletenessConfig
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: CompletenessConfig
+  nameWithType: DataQualityMonitoringConfig.CompletenessConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public CompletenessConfig? CompletenessConfig { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+    content.vb: Public Property CompletenessConfig As CompletenessConfig
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig
+  id: GapAnalyzerConfig
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: GapAnalyzerConfig
+  nameWithType: DataQualityMonitoringConfig.GapAnalyzerConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapAnalyzerConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public GapAnalyzerConfig? GapAnalyzerConfig { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+    content.vb: Public Property GapAnalyzerConfig As GapAnalyzerConfig
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig
+  id: SequenceErrorConfig
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: SequenceErrorConfig
+  nameWithType: DataQualityMonitoringConfig.SequenceErrorConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceErrorConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public SequenceErrorConfig? SequenceErrorConfig { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorConfig
+    content.vb: Public Property SequenceErrorConfig As SequenceErrorConfig
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig
+  id: AnomalyConfig
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: AnomalyConfig
+  nameWithType: DataQualityMonitoringConfig.AnomalyConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public AnomalyDetectionConfig? AnomalyConfig { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+    content.vb: Public Property AnomalyConfig As AnomalyDetectionConfig
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig
+  id: LatencyConfig
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: LatencyConfig
+  nameWithType: DataQualityMonitoringConfig.LatencyConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public LatencyHistogramConfig? LatencyConfig { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+    content.vb: Public Property LatencyConfig As LatencyHistogramConfig
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig
+  id: CrossProviderConfig
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: CrossProviderConfig
+  nameWithType: DataQualityMonitoringConfig.CrossProviderConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrossProviderConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public CrossProviderConfig? CrossProviderConfig { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.CrossProviderConfig
+    content.vb: Public Property CrossProviderConfig As CrossProviderConfig
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory
+  id: ReportOutputDirectory
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: ReportOutputDirectory
+  nameWithType: DataQualityMonitoringConfig.ReportOutputDirectory
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportOutputDirectory
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 408
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string? ReportOutputDirectory { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReportOutputDirectory As String
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default
+  id: Default
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: DataQualityMonitoringConfig.Default
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 410
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public static DataQualityMonitoringConfig Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+    content.vb: Public Shared ReadOnly Property [Default] As DataQualityMonitoringConfig
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataQualityMonitoringConfig>
+  nameWithType: IEquatable<DataQualityMonitoringConfig>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig>
+  nameWithType.vb: IEquatable(Of DataQualityMonitoringConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig)
+  name.vb: IEquatable(Of DataQualityMonitoringConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+    name: DataQualityMonitoringConfig
+    href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+    name: DataQualityMonitoringConfig
+    href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_CompletenessConfig
+  name: CompletenessConfig
+  nameWithType: DataQualityMonitoringConfig.CompletenessConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CompletenessConfig
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessConfig.html
+  name: CompletenessConfig
+  nameWithType: CompletenessConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_GapAnalyzerConfig
+  name: GapAnalyzerConfig
+  nameWithType: DataQualityMonitoringConfig.GapAnalyzerConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.GapAnalyzerConfig
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig.html
+  name: GapAnalyzerConfig
+  nameWithType: GapAnalyzerConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_SequenceErrorConfig
+  name: SequenceErrorConfig
+  nameWithType: DataQualityMonitoringConfig.SequenceErrorConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.SequenceErrorConfig
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SequenceErrorConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorConfig.html
+  name: SequenceErrorConfig
+  nameWithType: SequenceErrorConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorConfig
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_AnomalyConfig
+  name: AnomalyConfig
+  nameWithType: DataQualityMonitoringConfig.AnomalyConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.AnomalyConfig
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html
+  name: AnomalyDetectionConfig
+  nameWithType: AnomalyDetectionConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_LatencyConfig
+  name: LatencyConfig
+  nameWithType: DataQualityMonitoringConfig.LatencyConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.LatencyConfig
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig.html
+  name: LatencyHistogramConfig
+  nameWithType: LatencyHistogramConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_CrossProviderConfig
+  name: CrossProviderConfig
+  nameWithType: DataQualityMonitoringConfig.CrossProviderConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.CrossProviderConfig
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CrossProviderConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderConfig.html
+  name: CrossProviderConfig
+  nameWithType: CrossProviderConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderConfig
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_ReportOutputDirectory
+  name: ReportOutputDirectory
+  nameWithType: DataQualityMonitoringConfig.ReportOutputDirectory
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.ReportOutputDirectory
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_Default
+  name: Default
+  nameWithType: DataQualityMonitoringConfig.Default
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.Default
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html
+  name: DataQualityMonitoringConfig
+  nameWithType: DataQualityMonitoringConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig

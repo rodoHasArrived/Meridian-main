@@ -1,0 +1,702 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  commentId: T:Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  id: AnalyticsSymbolQualityReport
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps
+  - Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol
+  langs:
+  - csharp
+  - vb
+  name: AnalyticsSymbolQualityReport
+  nameWithType: AnalyticsSymbolQualityReport
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnalyticsSymbolQualityReport
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class AnalyticsSymbolQualityReport
+    content.vb: Public NotInheritable Class AnalyticsSymbolQualityReport
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: AnalyticsSymbolQualityReport.Symbol
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol*
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore
+  id: OverallScore
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: OverallScore
+  nameWithType: AnalyticsSymbolQualityReport.OverallScore
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallScore
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double OverallScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property OverallScore As Double
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore*
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade
+  id: Grade
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: Grade
+  nameWithType: AnalyticsSymbolQualityReport.Grade
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Grade
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Grade { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Grade As String
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade*
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore
+  id: CompletenessScore
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: CompletenessScore
+  nameWithType: AnalyticsSymbolQualityReport.CompletenessScore
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessScore
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double CompletenessScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CompletenessScore As Double
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore*
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore
+  id: IntegrityScore
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: IntegrityScore
+  nameWithType: AnalyticsSymbolQualityReport.IntegrityScore
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityScore
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double IntegrityScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property IntegrityScore As Double
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore*
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps
+  id: SequenceGaps
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: SequenceGaps
+  nameWithType: AnalyticsSymbolQualityReport.SequenceGaps
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceGaps
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int SequenceGaps { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SequenceGaps As Integer
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps*
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies
+  id: Anomalies
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: Anomalies
+  nameWithType: AnalyticsSymbolQualityReport.Anomalies
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Anomalies
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int Anomalies { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Anomalies As Integer
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies*
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues
+  commentId: P:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues
+  id: Issues
+  parent: Meridian.Ui.Services.AnalyticsSymbolQualityReport
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: AnalyticsSymbolQualityReport.Issues
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string> Issues { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Issues As List(Of String)
+  overload: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_Symbol
+  name: Symbol
+  nameWithType: AnalyticsSymbolQualityReport.Symbol
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_OverallScore
+  name: OverallScore
+  nameWithType: AnalyticsSymbolQualityReport.OverallScore
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.OverallScore
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_Grade
+  name: Grade
+  nameWithType: AnalyticsSymbolQualityReport.Grade
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Grade
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_CompletenessScore
+  name: CompletenessScore
+  nameWithType: AnalyticsSymbolQualityReport.CompletenessScore
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.CompletenessScore
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_IntegrityScore
+  name: IntegrityScore
+  nameWithType: AnalyticsSymbolQualityReport.IntegrityScore
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.IntegrityScore
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_SequenceGaps
+  name: SequenceGaps
+  nameWithType: AnalyticsSymbolQualityReport.SequenceGaps
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.SequenceGaps
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_Anomalies
+  name: Anomalies
+  nameWithType: AnalyticsSymbolQualityReport.Anomalies
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Anomalies
+- uid: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues*
+  commentId: Overload:Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues
+  href: Meridian.Ui.Services.AnalyticsSymbolQualityReport.html#Meridian_Ui_Services_AnalyticsSymbolQualityReport_Issues
+  name: Issues
+  nameWithType: AnalyticsSymbolQualityReport.Issues
+  fullName: Meridian.Ui.Services.AnalyticsSymbolQualityReport.Issues
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

@@ -1,0 +1,458 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ChecklistDisplay
+  commentId: T:Meridian.Application.Services.ChecklistDisplay
+  id: ChecklistDisplay
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ChecklistDisplay.CompleteStep(System.Int32)
+  - Meridian.Application.Services.ChecklistDisplay.FailStep(System.Int32)
+  - Meridian.Application.Services.ChecklistDisplay.SkipStep(System.Int32)
+  - Meridian.Application.Services.ChecklistDisplay.StartStep(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: ChecklistDisplay
+  nameWithType: ChecklistDisplay
+  fullName: Meridian.Application.Services.ChecklistDisplay
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecklistDisplay
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a multi-step checklist with status indicators.
+  example: []
+  syntax:
+    content: public sealed class ChecklistDisplay
+    content.vb: Public NotInheritable Class ChecklistDisplay
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ChecklistDisplay.StartStep(System.Int32)
+  commentId: M:Meridian.Application.Services.ChecklistDisplay.StartStep(System.Int32)
+  id: StartStep(System.Int32)
+  parent: Meridian.Application.Services.ChecklistDisplay
+  langs:
+  - csharp
+  - vb
+  name: StartStep(int)
+  nameWithType: ChecklistDisplay.StartStep(int)
+  fullName: Meridian.Application.Services.ChecklistDisplay.StartStep(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartStep
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 367
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Marks the current step as in progress and moves to next.
+  example: []
+  syntax:
+    content: public void StartStep(int stepIndex)
+    parameters:
+    - id: stepIndex
+      type: System.Int32
+    content.vb: Public Sub StartStep(stepIndex As Integer)
+  overload: Meridian.Application.Services.ChecklistDisplay.StartStep*
+  nameWithType.vb: ChecklistDisplay.StartStep(Integer)
+  fullName.vb: Meridian.Application.Services.ChecklistDisplay.StartStep(Integer)
+  name.vb: StartStep(Integer)
+- uid: Meridian.Application.Services.ChecklistDisplay.CompleteStep(System.Int32)
+  commentId: M:Meridian.Application.Services.ChecklistDisplay.CompleteStep(System.Int32)
+  id: CompleteStep(System.Int32)
+  parent: Meridian.Application.Services.ChecklistDisplay
+  langs:
+  - csharp
+  - vb
+  name: CompleteStep(int)
+  nameWithType: ChecklistDisplay.CompleteStep(int)
+  fullName: Meridian.Application.Services.ChecklistDisplay.CompleteStep(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompleteStep
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Marks a step as completed.
+  example: []
+  syntax:
+    content: public void CompleteStep(int stepIndex)
+    parameters:
+    - id: stepIndex
+      type: System.Int32
+    content.vb: Public Sub CompleteStep(stepIndex As Integer)
+  overload: Meridian.Application.Services.ChecklistDisplay.CompleteStep*
+  nameWithType.vb: ChecklistDisplay.CompleteStep(Integer)
+  fullName.vb: Meridian.Application.Services.ChecklistDisplay.CompleteStep(Integer)
+  name.vb: CompleteStep(Integer)
+- uid: Meridian.Application.Services.ChecklistDisplay.FailStep(System.Int32)
+  commentId: M:Meridian.Application.Services.ChecklistDisplay.FailStep(System.Int32)
+  id: FailStep(System.Int32)
+  parent: Meridian.Application.Services.ChecklistDisplay
+  langs:
+  - csharp
+  - vb
+  name: FailStep(int)
+  nameWithType: ChecklistDisplay.FailStep(int)
+  fullName: Meridian.Application.Services.ChecklistDisplay.FailStep(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailStep
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Marks a step as failed.
+  example: []
+  syntax:
+    content: public void FailStep(int stepIndex)
+    parameters:
+    - id: stepIndex
+      type: System.Int32
+    content.vb: Public Sub FailStep(stepIndex As Integer)
+  overload: Meridian.Application.Services.ChecklistDisplay.FailStep*
+  nameWithType.vb: ChecklistDisplay.FailStep(Integer)
+  fullName.vb: Meridian.Application.Services.ChecklistDisplay.FailStep(Integer)
+  name.vb: FailStep(Integer)
+- uid: Meridian.Application.Services.ChecklistDisplay.SkipStep(System.Int32)
+  commentId: M:Meridian.Application.Services.ChecklistDisplay.SkipStep(System.Int32)
+  id: SkipStep(System.Int32)
+  parent: Meridian.Application.Services.ChecklistDisplay
+  langs:
+  - csharp
+  - vb
+  name: SkipStep(int)
+  nameWithType: ChecklistDisplay.SkipStep(int)
+  fullName: Meridian.Application.Services.ChecklistDisplay.SkipStep(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkipStep
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Marks a step as skipped.
+  example: []
+  syntax:
+    content: public void SkipStep(int stepIndex)
+    parameters:
+    - id: stepIndex
+      type: System.Int32
+    content.vb: Public Sub SkipStep(stepIndex As Integer)
+  overload: Meridian.Application.Services.ChecklistDisplay.SkipStep*
+  nameWithType.vb: ChecklistDisplay.SkipStep(Integer)
+  fullName.vb: Meridian.Application.Services.ChecklistDisplay.SkipStep(Integer)
+  name.vb: SkipStep(Integer)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ChecklistDisplay.StartStep*
+  commentId: Overload:Meridian.Application.Services.ChecklistDisplay.StartStep
+  href: Meridian.Application.Services.ChecklistDisplay.html#Meridian_Application_Services_ChecklistDisplay_StartStep_System_Int32_
+  name: StartStep
+  nameWithType: ChecklistDisplay.StartStep
+  fullName: Meridian.Application.Services.ChecklistDisplay.StartStep
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.ChecklistDisplay.CompleteStep*
+  commentId: Overload:Meridian.Application.Services.ChecklistDisplay.CompleteStep
+  href: Meridian.Application.Services.ChecklistDisplay.html#Meridian_Application_Services_ChecklistDisplay_CompleteStep_System_Int32_
+  name: CompleteStep
+  nameWithType: ChecklistDisplay.CompleteStep
+  fullName: Meridian.Application.Services.ChecklistDisplay.CompleteStep
+- uid: Meridian.Application.Services.ChecklistDisplay.FailStep*
+  commentId: Overload:Meridian.Application.Services.ChecklistDisplay.FailStep
+  href: Meridian.Application.Services.ChecklistDisplay.html#Meridian_Application_Services_ChecklistDisplay_FailStep_System_Int32_
+  name: FailStep
+  nameWithType: ChecklistDisplay.FailStep
+  fullName: Meridian.Application.Services.ChecklistDisplay.FailStep
+- uid: Meridian.Application.Services.ChecklistDisplay.SkipStep*
+  commentId: Overload:Meridian.Application.Services.ChecklistDisplay.SkipStep
+  href: Meridian.Application.Services.ChecklistDisplay.html#Meridian_Application_Services_ChecklistDisplay_SkipStep_System_Int32_
+  name: SkipStep
+  nameWithType: ChecklistDisplay.SkipStep
+  fullName: Meridian.Application.Services.ChecklistDisplay.SkipStep

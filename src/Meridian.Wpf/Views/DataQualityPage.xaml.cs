@@ -17,8 +17,10 @@ public partial class DataQualityPage : Page
 
     public DataQualityPage(DataQualityViewModel viewModel)
     {
+        // XAML applies SelectedIndex values during InitializeComponent, which raises
+        // SelectionChanged before the page constructor completes.
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
-        _viewModel = viewModel;
         DataContext = _viewModel;
 
         Loaded += OnPageLoaded;

@@ -1,0 +1,460 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions
+  commentId: T:Meridian.Contracts.FundStructure.AccountManagementOptions
+  id: AccountManagementOptions
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString
+  - Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance
+  - Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+  - Meridian.Contracts.FundStructure.AccountManagementOptions.Schema
+  langs:
+  - csharp
+  - vb
+  name: AccountManagementOptions
+  nameWithType: AccountManagementOptions
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountManagementOptions
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public sealed class AccountManagementOptions
+    content.vb: Public NotInheritable Class AccountManagementOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString
+  commentId: P:Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString
+  id: ConnectionString
+  parent: Meridian.Contracts.FundStructure.AccountManagementOptions
+  langs:
+  - csharp
+  - vb
+  name: ConnectionString
+  nameWithType: AccountManagementOptions.ConnectionString
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionString
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string ConnectionString { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConnectionString As String
+  overload: Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString*
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.Schema
+  commentId: P:Meridian.Contracts.FundStructure.AccountManagementOptions.Schema
+  id: Schema
+  parent: Meridian.Contracts.FundStructure.AccountManagementOptions
+  langs:
+  - csharp
+  - vb
+  name: Schema
+  nameWithType: AccountManagementOptions.Schema
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.Schema
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Schema
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Schema { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Schema As String
+  overload: Meridian.Contracts.FundStructure.AccountManagementOptions.Schema*
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance
+  commentId: P:Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance
+  id: ReconciliationAmountTolerance
+  parent: Meridian.Contracts.FundStructure.AccountManagementOptions
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationAmountTolerance
+  nameWithType: AccountManagementOptions.ReconciliationAmountTolerance
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationAmountTolerance
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: public decimal ReconciliationAmountTolerance { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ReconciliationAmountTolerance As Decimal
+  overload: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance*
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+  commentId: P:Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+  id: ReconciliationMaxAsOfDriftMinutes
+  parent: Meridian.Contracts.FundStructure.AccountManagementOptions
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationMaxAsOfDriftMinutes
+  nameWithType: AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationMaxAsOfDriftMinutes
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementOptions.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: public int ReconciliationMaxAsOfDriftMinutes { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ReconciliationMaxAsOfDriftMinutes As Integer
+  overload: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString
+  href: Meridian.Contracts.FundStructure.AccountManagementOptions.html#Meridian_Contracts_FundStructure_AccountManagementOptions_ConnectionString
+  name: ConnectionString
+  nameWithType: AccountManagementOptions.ConnectionString
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.ConnectionString
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.Schema*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountManagementOptions.Schema
+  href: Meridian.Contracts.FundStructure.AccountManagementOptions.html#Meridian_Contracts_FundStructure_AccountManagementOptions_Schema
+  name: Schema
+  nameWithType: AccountManagementOptions.Schema
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.Schema
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance
+  href: Meridian.Contracts.FundStructure.AccountManagementOptions.html#Meridian_Contracts_FundStructure_AccountManagementOptions_ReconciliationAmountTolerance
+  name: ReconciliationAmountTolerance
+  nameWithType: AccountManagementOptions.ReconciliationAmountTolerance
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationAmountTolerance
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+  href: Meridian.Contracts.FundStructure.AccountManagementOptions.html#Meridian_Contracts_FundStructure_AccountManagementOptions_ReconciliationMaxAsOfDriftMinutes
+  name: ReconciliationMaxAsOfDriftMinutes
+  nameWithType: AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions.ReconciliationMaxAsOfDriftMinutes
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

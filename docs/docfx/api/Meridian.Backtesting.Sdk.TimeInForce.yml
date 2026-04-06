@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.TimeInForce
+  commentId: T:Meridian.Backtesting.Sdk.TimeInForce
+  id: TimeInForce
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.TimeInForce.Day
+  - Meridian.Backtesting.Sdk.TimeInForce.FillOrKill
+  - Meridian.Backtesting.Sdk.TimeInForce.GoodTilCancelled
+  - Meridian.Backtesting.Sdk.TimeInForce.ImmediateOrCancel
+  langs:
+  - csharp
+  - vb
+  name: TimeInForce
+  nameWithType: TimeInForce
+  fullName: Meridian.Backtesting.Sdk.TimeInForce
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeInForce
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Controls how long an order should remain eligible for execution.
+  example: []
+  syntax:
+    content: public enum TimeInForce
+    content.vb: Public Enum TimeInForce
+- uid: Meridian.Backtesting.Sdk.TimeInForce.Day
+  commentId: F:Meridian.Backtesting.Sdk.TimeInForce.Day
+  id: Day
+  parent: Meridian.Backtesting.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: Day
+  nameWithType: TimeInForce.Day
+  fullName: Meridian.Backtesting.Sdk.TimeInForce.Day
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Day
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Day = 0
+    return:
+      type: Meridian.Backtesting.Sdk.TimeInForce
+- uid: Meridian.Backtesting.Sdk.TimeInForce.GoodTilCancelled
+  commentId: F:Meridian.Backtesting.Sdk.TimeInForce.GoodTilCancelled
+  id: GoodTilCancelled
+  parent: Meridian.Backtesting.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: GoodTilCancelled
+  nameWithType: TimeInForce.GoodTilCancelled
+  fullName: Meridian.Backtesting.Sdk.TimeInForce.GoodTilCancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GoodTilCancelled
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: GoodTilCancelled = 1
+    return:
+      type: Meridian.Backtesting.Sdk.TimeInForce
+- uid: Meridian.Backtesting.Sdk.TimeInForce.ImmediateOrCancel
+  commentId: F:Meridian.Backtesting.Sdk.TimeInForce.ImmediateOrCancel
+  id: ImmediateOrCancel
+  parent: Meridian.Backtesting.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: ImmediateOrCancel
+  nameWithType: TimeInForce.ImmediateOrCancel
+  fullName: Meridian.Backtesting.Sdk.TimeInForce.ImmediateOrCancel
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImmediateOrCancel
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: ImmediateOrCancel = 2
+    return:
+      type: Meridian.Backtesting.Sdk.TimeInForce
+- uid: Meridian.Backtesting.Sdk.TimeInForce.FillOrKill
+  commentId: F:Meridian.Backtesting.Sdk.TimeInForce.FillOrKill
+  id: FillOrKill
+  parent: Meridian.Backtesting.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: FillOrKill
+  nameWithType: TimeInForce.FillOrKill
+  fullName: Meridian.Backtesting.Sdk.TimeInForce.FillOrKill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillOrKill
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: FillOrKill = 3
+    return:
+      type: Meridian.Backtesting.Sdk.TimeInForce
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.TimeInForce
+  commentId: T:Meridian.Backtesting.Sdk.TimeInForce
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.TimeInForce.html
+  name: TimeInForce
+  nameWithType: TimeInForce
+  fullName: Meridian.Backtesting.Sdk.TimeInForce

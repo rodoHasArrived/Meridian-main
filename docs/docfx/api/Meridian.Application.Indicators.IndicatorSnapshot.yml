@@ -1,0 +1,639 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Indicators.IndicatorSnapshot
+  commentId: T:Meridian.Application.Indicators.IndicatorSnapshot
+  id: IndicatorSnapshot
+  parent: Meridian.Application.Indicators
+  children:
+  - Meridian.Application.Indicators.IndicatorSnapshot.#ctor(System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  - Meridian.Application.Indicators.IndicatorSnapshot.Indicators
+  - Meridian.Application.Indicators.IndicatorSnapshot.Symbol
+  - Meridian.Application.Indicators.IndicatorSnapshot.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: IndicatorSnapshot
+  nameWithType: IndicatorSnapshot
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndicatorSnapshot
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 558
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: A snapshot of all indicator values for a symbol at a point in time.
+  example: []
+  syntax:
+    content: 'public sealed record IndicatorSnapshot : IEquatable<IndicatorSnapshot>'
+    content.vb: Public NotInheritable Class IndicatorSnapshot Implements IEquatable(Of IndicatorSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Indicators.IndicatorSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.#ctor(System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  commentId: M:Meridian.Application.Indicators.IndicatorSnapshot.#ctor(System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  id: '#ctor(System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})'
+  parent: Meridian.Application.Indicators.IndicatorSnapshot
+  langs:
+  - csharp
+  - vb
+  name: IndicatorSnapshot(string, DateTimeOffset, IReadOnlyDictionary<string, decimal>)
+  nameWithType: IndicatorSnapshot.IndicatorSnapshot(string, DateTimeOffset, IReadOnlyDictionary<string, decimal>)
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.IndicatorSnapshot(string, System.DateTimeOffset, System.Collections.Generic.IReadOnlyDictionary<string, decimal>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 558
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: A snapshot of all indicator values for a symbol at a point in time.
+  example: []
+  syntax:
+    content: public IndicatorSnapshot(string Symbol, DateTimeOffset Timestamp, IReadOnlyDictionary<string, decimal> Indicators)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Indicators
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public Sub New(Symbol As String, Timestamp As DateTimeOffset, Indicators As IReadOnlyDictionary(Of String, Decimal))
+  overload: Meridian.Application.Indicators.IndicatorSnapshot.#ctor*
+  nameWithType.vb: IndicatorSnapshot.New(String, DateTimeOffset, IReadOnlyDictionary(Of String, Decimal))
+  fullName.vb: Meridian.Application.Indicators.IndicatorSnapshot.New(String, System.DateTimeOffset, System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal))
+  name.vb: New(String, DateTimeOffset, IReadOnlyDictionary(Of String, Decimal))
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.Symbol
+  commentId: P:Meridian.Application.Indicators.IndicatorSnapshot.Symbol
+  id: Symbol
+  parent: Meridian.Application.Indicators.IndicatorSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: IndicatorSnapshot.Symbol
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 559
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Indicators.IndicatorSnapshot.Symbol*
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.Timestamp
+  commentId: P:Meridian.Application.Indicators.IndicatorSnapshot.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Indicators.IndicatorSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: IndicatorSnapshot.Timestamp
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 560
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Indicators.IndicatorSnapshot.Timestamp*
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.Indicators
+  commentId: P:Meridian.Application.Indicators.IndicatorSnapshot.Indicators
+  id: Indicators
+  parent: Meridian.Application.Indicators.IndicatorSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Indicators
+  nameWithType: IndicatorSnapshot.Indicators
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.Indicators
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Indicators
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 561
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public IReadOnlyDictionary<string, decimal> Indicators { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public Property Indicators As IReadOnlyDictionary(Of String, Decimal)
+  overload: Meridian.Application.Indicators.IndicatorSnapshot.Indicators*
+references:
+- uid: Meridian.Application.Indicators
+  commentId: N:Meridian.Application.Indicators
+  href: Meridian.html
+  name: Meridian.Application.Indicators
+  nameWithType: Meridian.Application.Indicators
+  fullName: Meridian.Application.Indicators
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Indicators.IndicatorSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Indicators.IndicatorSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<IndicatorSnapshot>
+  nameWithType: IEquatable<IndicatorSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Indicators.IndicatorSnapshot>
+  nameWithType.vb: IEquatable(Of IndicatorSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Indicators.IndicatorSnapshot)
+  name.vb: IEquatable(Of IndicatorSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Indicators.IndicatorSnapshot
+    name: IndicatorSnapshot
+    href: Meridian.Application.Indicators.IndicatorSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Indicators.IndicatorSnapshot
+    name: IndicatorSnapshot
+    href: Meridian.Application.Indicators.IndicatorSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorSnapshot.#ctor
+  href: Meridian.Application.Indicators.IndicatorSnapshot.html#Meridian_Application_Indicators_IndicatorSnapshot__ctor_System_String_System_DateTimeOffset_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__
+  name: IndicatorSnapshot
+  nameWithType: IndicatorSnapshot.IndicatorSnapshot
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.IndicatorSnapshot
+  nameWithType.vb: IndicatorSnapshot.New
+  fullName.vb: Meridian.Application.Indicators.IndicatorSnapshot.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, decimal>
+  nameWithType: IReadOnlyDictionary<string, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal)
+  name.vb: IReadOnlyDictionary(Of String, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.Symbol*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorSnapshot.Symbol
+  href: Meridian.Application.Indicators.IndicatorSnapshot.html#Meridian_Application_Indicators_IndicatorSnapshot_Symbol
+  name: Symbol
+  nameWithType: IndicatorSnapshot.Symbol
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.Symbol
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.Timestamp*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorSnapshot.Timestamp
+  href: Meridian.Application.Indicators.IndicatorSnapshot.html#Meridian_Application_Indicators_IndicatorSnapshot_Timestamp
+  name: Timestamp
+  nameWithType: IndicatorSnapshot.Timestamp
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.Timestamp
+- uid: Meridian.Application.Indicators.IndicatorSnapshot.Indicators*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorSnapshot.Indicators
+  href: Meridian.Application.Indicators.IndicatorSnapshot.html#Meridian_Application_Indicators_IndicatorSnapshot_Indicators
+  name: Indicators
+  nameWithType: IndicatorSnapshot.Indicators
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot.Indicators

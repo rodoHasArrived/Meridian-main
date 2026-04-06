@@ -1,0 +1,923 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  commentId: T:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  id: RealtimeDepthUpdate
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.#ctor(System.String,Meridian.Contracts.Domain.Enums.DepthOperation,Meridian.Contracts.Domain.Enums.OrderBookSide,System.Int32,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Int64})
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol
+  - Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: RealtimeDepthUpdate
+  nameWithType: RealtimeDepthUpdate
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeDepthUpdate
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 208
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time market depth update from a data source.
+  example: []
+  syntax:
+    content: 'public sealed record RealtimeDepthUpdate : IEquatable<RealtimeDepthUpdate>'
+    content.vb: Public NotInheritable Class RealtimeDepthUpdate Implements IEquatable(Of RealtimeDepthUpdate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.#ctor(System.String,Meridian.Contracts.Domain.Enums.DepthOperation,Meridian.Contracts.Domain.Enums.OrderBookSide,System.Int32,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Int64})
+  commentId: M:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.#ctor(System.String,Meridian.Contracts.Domain.Enums.DepthOperation,Meridian.Contracts.Domain.Enums.OrderBookSide,System.Int32,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Int64})
+  id: '#ctor(System.String,Meridian.Contracts.Domain.Enums.DepthOperation,Meridian.Contracts.Domain.Enums.OrderBookSide,System.Int32,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Int64})'
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: RealtimeDepthUpdate(string, DepthOperation, OrderBookSide, int, decimal, long, DateTimeOffset, string, string?, long?)
+  nameWithType: RealtimeDepthUpdate.RealtimeDepthUpdate(string, DepthOperation, OrderBookSide, int, decimal, long, DateTimeOffset, string, string?, long?)
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.RealtimeDepthUpdate(string, Meridian.Contracts.Domain.Enums.DepthOperation, Meridian.Contracts.Domain.Enums.OrderBookSide, int, decimal, long, System.DateTimeOffset, string, string?, long?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 208
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time market depth update from a data source.
+  example: []
+  syntax:
+    content: public RealtimeDepthUpdate(string Symbol, DepthOperation Operation, OrderBookSide Side, int Level, decimal Price, long Size, DateTimeOffset Timestamp, string SourceId, string? MarketMaker = null, long? SequenceNumber = null)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Operation
+      type: Meridian.Contracts.Domain.Enums.DepthOperation
+    - id: Side
+      type: Meridian.Contracts.Domain.Enums.OrderBookSide
+    - id: Level
+      type: System.Int32
+    - id: Price
+      type: System.Decimal
+    - id: Size
+      type: System.Int64
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: SourceId
+      type: System.String
+    - id: MarketMaker
+      type: System.String
+    - id: SequenceNumber
+      type: System.Nullable{System.Int64}
+    content.vb: Public Sub New(Symbol As String, Operation As DepthOperation, Side As OrderBookSide, Level As Integer, Price As Decimal, Size As Long, Timestamp As DateTimeOffset, SourceId As String, MarketMaker As String = Nothing, SequenceNumber As Long? = Nothing)
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.#ctor*
+  nameWithType.vb: RealtimeDepthUpdate.New(String, DepthOperation, OrderBookSide, Integer, Decimal, Long, DateTimeOffset, String, String, Long?)
+  fullName.vb: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.New(String, Meridian.Contracts.Domain.Enums.DepthOperation, Meridian.Contracts.Domain.Enums.OrderBookSide, Integer, Decimal, Long, System.DateTimeOffset, String, String, Long?)
+  name.vb: New(String, DepthOperation, OrderBookSide, Integer, Decimal, Long, DateTimeOffset, String, String, Long?)
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: RealtimeDepthUpdate.Symbol
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 209
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation
+  id: Operation
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: Operation
+  nameWithType: RealtimeDepthUpdate.Operation
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Operation
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 210
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DepthOperation Operation { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthOperation
+    content.vb: Public Property Operation As DepthOperation
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side
+  id: Side
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: RealtimeDepthUpdate.Side
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 211
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public OrderBookSide Side { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.OrderBookSide
+    content.vb: Public Property Side As OrderBookSide
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level
+  id: Level
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: RealtimeDepthUpdate.Level
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 212
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public int Level { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Level As Integer
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price
+  id: Price
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: RealtimeDepthUpdate.Price
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 213
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size
+  id: Size
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: RealtimeDepthUpdate.Size
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 214
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public long Size { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Size As Long
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp
+  id: Timestamp
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: RealtimeDepthUpdate.Timestamp
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 215
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId
+  id: SourceId
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: SourceId
+  nameWithType: RealtimeDepthUpdate.SourceId
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceId
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 216
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string SourceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceId As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker
+  id: MarketMaker
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: MarketMaker
+  nameWithType: RealtimeDepthUpdate.MarketMaker
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketMaker
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 217
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? MarketMaker { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MarketMaker As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker*
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: RealtimeDepthUpdate.SequenceNumber
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 218
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public long? SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property SequenceNumber As Long?
+  overload: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RealtimeDepthUpdate>
+  nameWithType: IEquatable<RealtimeDepthUpdate>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.RealtimeDepthUpdate>
+  nameWithType.vb: IEquatable(Of RealtimeDepthUpdate)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.RealtimeDepthUpdate)
+  name.vb: IEquatable(Of RealtimeDepthUpdate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.#ctor
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate__ctor_System_String_Meridian_Contracts_Domain_Enums_DepthOperation_Meridian_Contracts_Domain_Enums_OrderBookSide_System_Int32_System_Decimal_System_Int64_System_DateTimeOffset_System_String_System_String_System_Nullable_System_Int64__
+  name: RealtimeDepthUpdate
+  nameWithType: RealtimeDepthUpdate.RealtimeDepthUpdate
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.RealtimeDepthUpdate
+  nameWithType.vb: RealtimeDepthUpdate.New
+  fullName.vb: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Enums.DepthOperation
+  commentId: T:Meridian.Contracts.Domain.Enums.DepthOperation
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.DepthOperation.html
+  name: DepthOperation
+  nameWithType: DepthOperation
+  fullName: Meridian.Contracts.Domain.Enums.DepthOperation
+- uid: Meridian.Contracts.Domain.Enums.OrderBookSide
+  commentId: T:Meridian.Contracts.Domain.Enums.OrderBookSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OrderBookSide.html
+  name: OrderBookSide
+  nameWithType: OrderBookSide
+  fullName: Meridian.Contracts.Domain.Enums.OrderBookSide
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_Symbol
+  name: Symbol
+  nameWithType: RealtimeDepthUpdate.Symbol
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Symbol
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_Operation
+  name: Operation
+  nameWithType: RealtimeDepthUpdate.Operation
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Operation
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_Side
+  name: Side
+  nameWithType: RealtimeDepthUpdate.Side
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Side
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_Level
+  name: Level
+  nameWithType: RealtimeDepthUpdate.Level
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Level
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_Price
+  name: Price
+  nameWithType: RealtimeDepthUpdate.Price
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Price
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_Size
+  name: Size
+  nameWithType: RealtimeDepthUpdate.Size
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Size
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_Timestamp
+  name: Timestamp
+  nameWithType: RealtimeDepthUpdate.Timestamp
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.Timestamp
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_SourceId
+  name: SourceId
+  nameWithType: RealtimeDepthUpdate.SourceId
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SourceId
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_MarketMaker
+  name: MarketMaker
+  nameWithType: RealtimeDepthUpdate.MarketMaker
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.MarketMaker
+- uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber
+  href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html#Meridian_Infrastructure_DataSources_RealtimeDepthUpdate_SequenceNumber
+  name: SequenceNumber
+  nameWithType: RealtimeDepthUpdate.SequenceNumber
+  fullName: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.SequenceNumber

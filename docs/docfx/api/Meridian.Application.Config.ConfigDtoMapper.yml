@@ -1,0 +1,1000 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigDtoMapper
+  commentId: T:Meridian.Application.Config.ConfigDtoMapper
+  id: ConfigDtoMapper
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget(Meridian.Contracts.Configuration.ProviderScopeDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope(Meridian.Contracts.Configuration.ProviderScopeDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderBindingConfigDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderCertificationConfigDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionConfigDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionsConfigDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPolicyConfigDto)
+  - Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPresetConfigDto)
+  langs:
+  - csharp
+  - vb
+  name: ConfigDtoMapper
+  nameWithType: ConfigDtoMapper
+  fullName: Meridian.Application.Config.ConfigDtoMapper
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigDtoMapper
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Maps shared configuration DTOs to core configuration records.
+  example: []
+  syntax:
+    content: public static class ConfigDtoMapper
+    content.vb: Public Module ConfigDtoMapper
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(AlpacaOptionsDto?)
+  nameWithType: ConfigDtoMapper.ToDomain(AlpacaOptionsDto?)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static AlpacaOptions? ToDomain(this AlpacaOptionsDto? dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.AlpacaOptionsDto
+    return:
+      type: Meridian.Application.Config.AlpacaOptions
+    content.vb: Public Shared Function ToDomain(dto As AlpacaOptionsDto) As AlpacaOptions
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+  nameWithType.vb: ConfigDtoMapper.ToDomain(AlpacaOptionsDto)
+  fullName.vb: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  name.vb: ToDomain(AlpacaOptionsDto)
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(PolygonOptionsDto?)
+  nameWithType: ConfigDtoMapper.ToDomain(PolygonOptionsDto?)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static PolygonOptions? ToDomain(this PolygonOptionsDto? dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.PolygonOptionsDto
+    return:
+      type: Meridian.Application.Config.PolygonOptions
+    content.vb: Public Shared Function ToDomain(dto As PolygonOptionsDto) As PolygonOptions
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+  nameWithType.vb: ConfigDtoMapper.ToDomain(PolygonOptionsDto)
+  fullName.vb: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  name.vb: ToDomain(PolygonOptionsDto)
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(IBOptionsDto?)
+  nameWithType: ConfigDtoMapper.ToDomain(IBOptionsDto?)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static IBOptions? ToDomain(this IBOptionsDto? dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.IBOptionsDto
+    return:
+      type: Meridian.Application.Config.IBOptions
+    content.vb: Public Shared Function ToDomain(dto As IBOptionsDto) As IBOptions
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+  nameWithType.vb: ConfigDtoMapper.ToDomain(IBOptionsDto)
+  fullName.vb: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  name.vb: ToDomain(IBOptionsDto)
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(DerivativesConfigDto?)
+  nameWithType: ConfigDtoMapper.ToDomain(DerivativesConfigDto?)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static DerivativesConfig? ToDomain(this DerivativesConfigDto? dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.DerivativesConfigDto
+    return:
+      type: Meridian.Application.Config.DerivativesConfig
+    content.vb: Public Shared Function ToDomain(dto As DerivativesConfigDto) As DerivativesConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+  nameWithType.vb: ConfigDtoMapper.ToDomain(DerivativesConfigDto)
+  fullName.vb: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  name.vb: ToDomain(DerivativesConfigDto)
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(IndexOptionsConfigDto?)
+  nameWithType: ConfigDtoMapper.ToDomain(IndexOptionsConfigDto?)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static IndexOptionsConfig? ToDomain(this IndexOptionsConfigDto? dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+    return:
+      type: Meridian.Application.Config.IndexOptionsConfig
+    content.vb: Public Shared Function ToDomain(dto As IndexOptionsConfigDto) As IndexOptionsConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+  nameWithType.vb: ConfigDtoMapper.ToDomain(IndexOptionsConfigDto)
+  fullName.vb: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  name.vb: ToDomain(IndexOptionsConfigDto)
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionsConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionsConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.ProviderConnectionsConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(ProviderConnectionsConfigDto?)
+  nameWithType: ConfigDtoMapper.ToDomain(ProviderConnectionsConfigDto?)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionsConfigDto?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderConnectionsConfig? ToDomain(this ProviderConnectionsConfigDto? dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
+    return:
+      type: Meridian.Application.Config.ProviderConnectionsConfig
+    content.vb: Public Shared Function ToDomain(dto As ProviderConnectionsConfigDto) As ProviderConnectionsConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+  nameWithType.vb: ConfigDtoMapper.ToDomain(ProviderConnectionsConfigDto)
+  fullName.vb: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionsConfigDto)
+  name.vb: ToDomain(ProviderConnectionsConfigDto)
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.ProviderConnectionConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(ProviderConnectionConfigDto)
+  nameWithType: ConfigDtoMapper.ToDomain(ProviderConnectionConfigDto)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderConnectionConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderConnectionConfig ToDomain(this ProviderConnectionConfigDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderConnectionConfigDto
+    return:
+      type: Meridian.Application.Config.ProviderConnectionConfig
+    content.vb: Public Shared Function ToDomain(dto As ProviderConnectionConfigDto) As ProviderConnectionConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderBindingConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderBindingConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.ProviderBindingConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(ProviderBindingConfigDto)
+  nameWithType: ConfigDtoMapper.ToDomain(ProviderBindingConfigDto)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderBindingConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderBindingConfig ToDomain(this ProviderBindingConfigDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderBindingConfigDto
+    return:
+      type: Meridian.Application.Config.ProviderBindingConfig
+    content.vb: Public Shared Function ToDomain(dto As ProviderBindingConfigDto) As ProviderBindingConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPolicyConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPolicyConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.ProviderPolicyConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(ProviderPolicyConfigDto)
+  nameWithType: ConfigDtoMapper.ToDomain(ProviderPolicyConfigDto)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPolicyConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderPolicyConfig ToDomain(this ProviderPolicyConfigDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderPolicyConfigDto
+    return:
+      type: Meridian.Application.Config.ProviderPolicyConfig
+    content.vb: Public Shared Function ToDomain(dto As ProviderPolicyConfigDto) As ProviderPolicyConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPresetConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPresetConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.ProviderPresetConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(ProviderPresetConfigDto)
+  nameWithType: ConfigDtoMapper.ToDomain(ProviderPresetConfigDto)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderPresetConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderPresetConfig ToDomain(this ProviderPresetConfigDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderPresetConfigDto
+    return:
+      type: Meridian.Application.Config.ProviderPresetConfig
+    content.vb: Public Shared Function ToDomain(dto As ProviderPresetConfigDto) As ProviderPresetConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderCertificationConfigDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderCertificationConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.ProviderCertificationConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(ProviderCertificationConfigDto)
+  nameWithType: ConfigDtoMapper.ToDomain(ProviderCertificationConfigDto)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain(Meridian.Contracts.Configuration.ProviderCertificationConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderCertificationConfig ToDomain(this ProviderCertificationConfigDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+    return:
+      type: Meridian.Application.Config.ProviderCertificationConfig
+    content.vb: Public Shared Function ToDomain(dto As ProviderCertificationConfigDto) As ProviderCertificationConfig
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope(Meridian.Contracts.Configuration.ProviderScopeDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope(Meridian.Contracts.Configuration.ProviderScopeDto)
+  id: ToConnectionScope(Meridian.Contracts.Configuration.ProviderScopeDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToConnectionScope(ProviderScopeDto)
+  nameWithType: ConfigDtoMapper.ToConnectionScope(ProviderScopeDto)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope(Meridian.Contracts.Configuration.ProviderScopeDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToConnectionScope
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderConnectionScope ToConnectionScope(this ProviderScopeDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderScopeDto
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionScope
+    content.vb: Public Shared Function ToConnectionScope(dto As ProviderScopeDto) As ProviderConnectionScope
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope*
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget(Meridian.Contracts.Configuration.ProviderScopeDto)
+  commentId: M:Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget(Meridian.Contracts.Configuration.ProviderScopeDto)
+  id: ToBindingTarget(Meridian.Contracts.Configuration.ProviderScopeDto)
+  isExtensionMethod: true
+  parent: Meridian.Application.Config.ConfigDtoMapper
+  langs:
+  - csharp
+  - vb
+  name: ToBindingTarget(ProviderScopeDto)
+  nameWithType: ConfigDtoMapper.ToBindingTarget(ProviderScopeDto)
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget(Meridian.Contracts.Configuration.ProviderScopeDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigDtoMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToBindingTarget
+    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public static ProviderBindingTarget ToBindingTarget(this ProviderScopeDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.ProviderScopeDto
+    return:
+      type: Meridian.ProviderSdk.ProviderBindingTarget
+    content.vb: Public Shared Function ToBindingTarget(dto As ProviderScopeDto) As ProviderBindingTarget
+  overload: Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToDomain*
+  commentId: Overload:Meridian.Application.Config.ConfigDtoMapper.ToDomain
+  href: Meridian.Application.Config.ConfigDtoMapper.html#Meridian_Application_Config_ConfigDtoMapper_ToDomain_Meridian_Contracts_Configuration_AlpacaOptionsDto_
+  name: ToDomain
+  nameWithType: ConfigDtoMapper.ToDomain
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToDomain
+- uid: Meridian.Contracts.Configuration.AlpacaOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.AlpacaOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.AlpacaOptionsDto.html
+  name: AlpacaOptionsDto
+  nameWithType: AlpacaOptionsDto
+  fullName: Meridian.Contracts.Configuration.AlpacaOptionsDto
+- uid: Meridian.Application.Config.AlpacaOptions
+  commentId: T:Meridian.Application.Config.AlpacaOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AlpacaOptions.html
+  name: AlpacaOptions
+  nameWithType: AlpacaOptions
+  fullName: Meridian.Application.Config.AlpacaOptions
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Contracts.Configuration.PolygonOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.PolygonOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.PolygonOptionsDto.html
+  name: PolygonOptionsDto
+  nameWithType: PolygonOptionsDto
+  fullName: Meridian.Contracts.Configuration.PolygonOptionsDto
+- uid: Meridian.Application.Config.PolygonOptions
+  commentId: T:Meridian.Application.Config.PolygonOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.PolygonOptions.html
+  name: PolygonOptions
+  nameWithType: PolygonOptions
+  fullName: Meridian.Application.Config.PolygonOptions
+- uid: Meridian.Contracts.Configuration.IBOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBOptionsDto.html
+  name: IBOptionsDto
+  nameWithType: IBOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBOptionsDto
+- uid: Meridian.Application.Config.IBOptions
+  commentId: T:Meridian.Application.Config.IBOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBOptions.html
+  name: IBOptions
+  nameWithType: IBOptions
+  fullName: Meridian.Application.Config.IBOptions
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto
+  commentId: T:Meridian.Contracts.Configuration.DerivativesConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html
+  name: DerivativesConfigDto
+  nameWithType: DerivativesConfigDto
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto
+- uid: Meridian.Application.Config.DerivativesConfig
+  commentId: T:Meridian.Application.Config.DerivativesConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DerivativesConfig.html
+  name: DerivativesConfig
+  nameWithType: DerivativesConfig
+  fullName: Meridian.Application.Config.DerivativesConfig
+- uid: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+  commentId: T:Meridian.Contracts.Configuration.IndexOptionsConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IndexOptionsConfigDto.html
+  name: IndexOptionsConfigDto
+  nameWithType: IndexOptionsConfigDto
+  fullName: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+- uid: Meridian.Application.Config.IndexOptionsConfig
+  commentId: T:Meridian.Application.Config.IndexOptionsConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IndexOptionsConfig.html
+  name: IndexOptionsConfig
+  nameWithType: IndexOptionsConfig
+  fullName: Meridian.Application.Config.IndexOptionsConfig
+- uid: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto.html
+  name: ProviderConnectionsConfigDto
+  nameWithType: ProviderConnectionsConfigDto
+  fullName: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
+- uid: Meridian.Application.Config.ProviderConnectionsConfig
+  commentId: T:Meridian.Application.Config.ProviderConnectionsConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderConnectionsConfig.html
+  name: ProviderConnectionsConfig
+  nameWithType: ProviderConnectionsConfig
+  fullName: Meridian.Application.Config.ProviderConnectionsConfig
+- uid: Meridian.Contracts.Configuration.ProviderConnectionConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderConnectionConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.ProviderConnectionConfigDto.html
+  name: ProviderConnectionConfigDto
+  nameWithType: ProviderConnectionConfigDto
+  fullName: Meridian.Contracts.Configuration.ProviderConnectionConfigDto
+- uid: Meridian.Application.Config.ProviderConnectionConfig
+  commentId: T:Meridian.Application.Config.ProviderConnectionConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderConnectionConfig.html
+  name: ProviderConnectionConfig
+  nameWithType: ProviderConnectionConfig
+  fullName: Meridian.Application.Config.ProviderConnectionConfig
+- uid: Meridian.Contracts.Configuration.ProviderBindingConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderBindingConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.ProviderBindingConfigDto.html
+  name: ProviderBindingConfigDto
+  nameWithType: ProviderBindingConfigDto
+  fullName: Meridian.Contracts.Configuration.ProviderBindingConfigDto
+- uid: Meridian.Application.Config.ProviderBindingConfig
+  commentId: T:Meridian.Application.Config.ProviderBindingConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderBindingConfig.html
+  name: ProviderBindingConfig
+  nameWithType: ProviderBindingConfig
+  fullName: Meridian.Application.Config.ProviderBindingConfig
+- uid: Meridian.Contracts.Configuration.ProviderPolicyConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderPolicyConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.ProviderPolicyConfigDto.html
+  name: ProviderPolicyConfigDto
+  nameWithType: ProviderPolicyConfigDto
+  fullName: Meridian.Contracts.Configuration.ProviderPolicyConfigDto
+- uid: Meridian.Application.Config.ProviderPolicyConfig
+  commentId: T:Meridian.Application.Config.ProviderPolicyConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderPolicyConfig.html
+  name: ProviderPolicyConfig
+  nameWithType: ProviderPolicyConfig
+  fullName: Meridian.Application.Config.ProviderPolicyConfig
+- uid: Meridian.Contracts.Configuration.ProviderPresetConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderPresetConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.ProviderPresetConfigDto.html
+  name: ProviderPresetConfigDto
+  nameWithType: ProviderPresetConfigDto
+  fullName: Meridian.Contracts.Configuration.ProviderPresetConfigDto
+- uid: Meridian.Application.Config.ProviderPresetConfig
+  commentId: T:Meridian.Application.Config.ProviderPresetConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderPresetConfig.html
+  name: ProviderPresetConfig
+  nameWithType: ProviderPresetConfig
+  fullName: Meridian.Application.Config.ProviderPresetConfig
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html
+  name: ProviderCertificationConfigDto
+  nameWithType: ProviderCertificationConfigDto
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+- uid: Meridian.Application.Config.ProviderCertificationConfig
+  commentId: T:Meridian.Application.Config.ProviderCertificationConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderCertificationConfig.html
+  name: ProviderCertificationConfig
+  nameWithType: ProviderCertificationConfig
+  fullName: Meridian.Application.Config.ProviderCertificationConfig
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope*
+  commentId: Overload:Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope
+  href: Meridian.Application.Config.ConfigDtoMapper.html#Meridian_Application_Config_ConfigDtoMapper_ToConnectionScope_Meridian_Contracts_Configuration_ProviderScopeDto_
+  name: ToConnectionScope
+  nameWithType: ConfigDtoMapper.ToConnectionScope
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToConnectionScope
+- uid: Meridian.Contracts.Configuration.ProviderScopeDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderScopeDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.ProviderScopeDto.html
+  name: ProviderScopeDto
+  nameWithType: ProviderScopeDto
+  fullName: Meridian.Contracts.Configuration.ProviderScopeDto
+- uid: Meridian.ProviderSdk.ProviderConnectionScope
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionScope
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderConnectionScope.html
+  name: ProviderConnectionScope
+  nameWithType: ProviderConnectionScope
+  fullName: Meridian.ProviderSdk.ProviderConnectionScope
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget*
+  commentId: Overload:Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget
+  href: Meridian.Application.Config.ConfigDtoMapper.html#Meridian_Application_Config_ConfigDtoMapper_ToBindingTarget_Meridian_Contracts_Configuration_ProviderScopeDto_
+  name: ToBindingTarget
+  nameWithType: ConfigDtoMapper.ToBindingTarget
+  fullName: Meridian.Application.Config.ConfigDtoMapper.ToBindingTarget
+- uid: Meridian.ProviderSdk.ProviderBindingTarget
+  commentId: T:Meridian.ProviderSdk.ProviderBindingTarget
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html
+  name: ProviderBindingTarget
+  nameWithType: ProviderBindingTarget
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget

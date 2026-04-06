@@ -1,0 +1,559 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundAuditEntry
+  commentId: T:Meridian.Contracts.Workstation.FundAuditEntry
+  id: FundAuditEntry
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundAuditEntry.#ctor(System.DateTimeOffset,System.String,System.String,System.String)
+  - Meridian.Contracts.Workstation.FundAuditEntry.Category
+  - Meridian.Contracts.Workstation.FundAuditEntry.Description
+  - Meridian.Contracts.Workstation.FundAuditEntry.Reference
+  - Meridian.Contracts.Workstation.FundAuditEntry.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: FundAuditEntry
+  nameWithType: FundAuditEntry
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundAuditEntry
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Lightweight audit row combining journal and reconciliation activity.
+  example: []
+  syntax:
+    content: 'public sealed record FundAuditEntry : IEquatable<FundAuditEntry>'
+    content.vb: Public NotInheritable Class FundAuditEntry Implements IEquatable(Of FundAuditEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundAuditEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.#ctor(System.DateTimeOffset,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.FundAuditEntry.#ctor(System.DateTimeOffset,System.String,System.String,System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.FundAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: FundAuditEntry(DateTimeOffset, string, string, string)
+  nameWithType: FundAuditEntry.FundAuditEntry(DateTimeOffset, string, string, string)
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.FundAuditEntry(System.DateTimeOffset, string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Lightweight audit row combining journal and reconciliation activity.
+  example: []
+  syntax:
+    content: public FundAuditEntry(DateTimeOffset Timestamp, string Category, string Description, string Reference)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Category
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: Reference
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Category As String, Description As String, Reference As String)
+  overload: Meridian.Contracts.Workstation.FundAuditEntry.#ctor*
+  nameWithType.vb: FundAuditEntry.New(DateTimeOffset, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.FundAuditEntry.New(System.DateTimeOffset, String, String, String)
+  name.vb: New(DateTimeOffset, String, String, String)
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Timestamp
+  commentId: P:Meridian.Contracts.Workstation.FundAuditEntry.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Workstation.FundAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: FundAuditEntry.Timestamp
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.FundAuditEntry.Timestamp*
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Category
+  commentId: P:Meridian.Contracts.Workstation.FundAuditEntry.Category
+  id: Category
+  parent: Meridian.Contracts.Workstation.FundAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: FundAuditEntry.Category
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Category { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Category As String
+  overload: Meridian.Contracts.Workstation.FundAuditEntry.Category*
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Description
+  commentId: P:Meridian.Contracts.Workstation.FundAuditEntry.Description
+  id: Description
+  parent: Meridian.Contracts.Workstation.FundAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: FundAuditEntry.Description
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.Workstation.FundAuditEntry.Description*
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Reference
+  commentId: P:Meridian.Contracts.Workstation.FundAuditEntry.Reference
+  id: Reference
+  parent: Meridian.Contracts.Workstation.FundAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Reference
+  nameWithType: FundAuditEntry.Reference
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Reference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reference
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Reference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reference As String
+  overload: Meridian.Contracts.Workstation.FundAuditEntry.Reference*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundAuditEntry}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundAuditEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundAuditEntry>
+  nameWithType: IEquatable<FundAuditEntry>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundAuditEntry>
+  nameWithType.vb: IEquatable(Of FundAuditEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundAuditEntry)
+  name.vb: IEquatable(Of FundAuditEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundAuditEntry
+    name: FundAuditEntry
+    href: Meridian.Contracts.Workstation.FundAuditEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundAuditEntry
+    name: FundAuditEntry
+    href: Meridian.Contracts.Workstation.FundAuditEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAuditEntry.#ctor
+  href: Meridian.Contracts.Workstation.FundAuditEntry.html#Meridian_Contracts_Workstation_FundAuditEntry__ctor_System_DateTimeOffset_System_String_System_String_System_String_
+  name: FundAuditEntry
+  nameWithType: FundAuditEntry.FundAuditEntry
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.FundAuditEntry
+  nameWithType.vb: FundAuditEntry.New
+  fullName.vb: Meridian.Contracts.Workstation.FundAuditEntry.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Timestamp*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAuditEntry.Timestamp
+  href: Meridian.Contracts.Workstation.FundAuditEntry.html#Meridian_Contracts_Workstation_FundAuditEntry_Timestamp
+  name: Timestamp
+  nameWithType: FundAuditEntry.Timestamp
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Timestamp
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Category*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAuditEntry.Category
+  href: Meridian.Contracts.Workstation.FundAuditEntry.html#Meridian_Contracts_Workstation_FundAuditEntry_Category
+  name: Category
+  nameWithType: FundAuditEntry.Category
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Category
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Description*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAuditEntry.Description
+  href: Meridian.Contracts.Workstation.FundAuditEntry.html#Meridian_Contracts_Workstation_FundAuditEntry_Description
+  name: Description
+  nameWithType: FundAuditEntry.Description
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Description
+- uid: Meridian.Contracts.Workstation.FundAuditEntry.Reference*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAuditEntry.Reference
+  href: Meridian.Contracts.Workstation.FundAuditEntry.html#Meridian_Contracts_Workstation_FundAuditEntry_Reference
+  name: Reference
+  nameWithType: FundAuditEntry.Reference
+  fullName: Meridian.Contracts.Workstation.FundAuditEntry.Reference

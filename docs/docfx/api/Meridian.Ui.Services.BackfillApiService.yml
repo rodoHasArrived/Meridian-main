@@ -1,0 +1,1518 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BackfillApiService
+  commentId: T:Meridian.Ui.Services.BackfillApiService
+  id: BackfillApiService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BackfillApiService.#ctor
+  - Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.GetPresetsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.GetProvidersAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.RunBackfillAsync(System.String,System.String[],System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.RunGapFillAsync(System.String[],System.Int32,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BackfillApiService
+  nameWithType: BackfillApiService
+  fullName: Meridian.Ui.Services.BackfillApiService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillApiService
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Service for managing backfill operations via the core API.
+  example: []
+  syntax:
+    content: public sealed class BackfillApiService
+    content.vb: Public NotInheritable Class BackfillApiService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.BackfillApiService.#ctor
+  commentId: M:Meridian.Ui.Services.BackfillApiService.#ctor
+  id: '#ctor'
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: BackfillApiService()
+  nameWithType: BackfillApiService.BackfillApiService()
+  fullName: Meridian.Ui.Services.BackfillApiService.BackfillApiService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public BackfillApiService()
+    content.vb: Public Sub New()
+  overload: Meridian.Ui.Services.BackfillApiService.#ctor*
+  nameWithType.vb: BackfillApiService.New()
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.New()
+  name.vb: New()
+- uid: Meridian.Ui.Services.BackfillApiService.GetProvidersAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.GetProvidersAsync(System.Threading.CancellationToken)
+  id: GetProvidersAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: GetProvidersAsync(CancellationToken)
+  nameWithType: BackfillApiService.GetProvidersAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.GetProvidersAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProvidersAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the list of available backfill providers.
+  example: []
+  syntax:
+    content: public Task<List<BackfillProviderInfo>> GetProvidersAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillProviderInfo}}
+    content.vb: Public Function GetProvidersAsync(ct As CancellationToken = Nothing) As Task(Of List(Of BackfillProviderInfo))
+  overload: Meridian.Ui.Services.BackfillApiService.GetProvidersAsync*
+- uid: Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync(System.Threading.CancellationToken)
+  id: GetLastStatusAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: GetLastStatusAsync(CancellationToken)
+  nameWithType: BackfillApiService.GetLastStatusAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastStatusAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the last backfill operation status.
+  example: []
+  syntax:
+    content: public Task<BackfillResultDto?> GetLastStatusAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+    content.vb: Public Function GetLastStatusAsync(ct As CancellationToken = Nothing) As Task(Of BackfillResultDto)
+  overload: Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync*
+- uid: Meridian.Ui.Services.BackfillApiService.RunBackfillAsync(System.String,System.String[],System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.RunBackfillAsync(System.String,System.String[],System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: RunBackfillAsync(System.String,System.String[],System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: RunBackfillAsync(string, string[], string?, string?, string, CancellationToken)
+  nameWithType: BackfillApiService.RunBackfillAsync(string, string[], string?, string?, string, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.RunBackfillAsync(string, string[], string?, string?, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunBackfillAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs a backfill operation for the specified symbols.
+  example: []
+  syntax:
+    content: public Task<BackfillResultDto?> RunBackfillAsync(string provider, string[] symbols, string? from, string? to, string granularity = "Daily", CancellationToken ct = default)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: symbols
+      type: System.String[]
+    - id: from
+      type: System.String
+    - id: to
+      type: System.String
+    - id: granularity
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+    content.vb: Public Function RunBackfillAsync(provider As String, symbols As String(), from As String, [to] As String, granularity As String = "Daily", ct As CancellationToken = Nothing) As Task(Of BackfillResultDto)
+  overload: Meridian.Ui.Services.BackfillApiService.RunBackfillAsync*
+  nameWithType.vb: BackfillApiService.RunBackfillAsync(String, String(), String, String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.RunBackfillAsync(String, String(), String, String, String, System.Threading.CancellationToken)
+  name.vb: RunBackfillAsync(String, String(), String, String, String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync(System.Threading.CancellationToken)
+  id: CheckProviderHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: CheckProviderHealthAsync(CancellationToken)
+  nameWithType: BackfillApiService.CheckProviderHealthAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckProviderHealthAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Checks the health of backfill providers.
+  example: []
+  syntax:
+    content: public Task<BackfillHealthResponse?> CheckProviderHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillHealthResponse}
+    content.vb: Public Function CheckProviderHealthAsync(ct As CancellationToken = Nothing) As Task(Of BackfillHealthResponse)
+  overload: Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync*
+- uid: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync(System.String[],System.Int32,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.RunGapFillAsync(System.String[],System.Int32,System.String,System.Threading.CancellationToken)
+  id: RunGapFillAsync(System.String[],System.Int32,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: RunGapFillAsync(string[], int, string, CancellationToken)
+  nameWithType: BackfillApiService.RunGapFillAsync(string[], int, string, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync(string[], int, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunGapFillAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs an immediate gap-fill operation.
+  example: []
+  syntax:
+    content: public Task<BackfillResultDto?> RunGapFillAsync(string[] symbols, int lookbackDays = 30, string priority = "High", CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.String[]
+    - id: lookbackDays
+      type: System.Int32
+    - id: priority
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+    content.vb: Public Function RunGapFillAsync(symbols As String(), lookbackDays As Integer = 30, priority As String = "High", ct As CancellationToken = Nothing) As Task(Of BackfillResultDto)
+  overload: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync*
+  nameWithType.vb: BackfillApiService.RunGapFillAsync(String(), Integer, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync(String(), Integer, String, System.Threading.CancellationToken)
+  name.vb: RunGapFillAsync(String(), Integer, String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillApiService.GetPresetsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.GetPresetsAsync(System.Threading.CancellationToken)
+  id: GetPresetsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: GetPresetsAsync(CancellationToken)
+  nameWithType: BackfillApiService.GetPresetsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.GetPresetsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPresetsAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available backfill presets.
+  example: []
+  syntax:
+    content: public Task<List<BackfillPreset>> GetPresetsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillPreset}}
+    content.vb: Public Function GetPresetsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of BackfillPreset))
+  overload: Meridian.Ui.Services.BackfillApiService.GetPresetsAsync*
+- uid: Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetExecutionHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: GetExecutionHistoryAsync(int, CancellationToken)
+  nameWithType: BackfillApiService.GetExecutionHistoryAsync(int, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecutionHistoryAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets backfill execution history.
+  example: []
+  syntax:
+    content: public Task<List<BackfillExecution>> GetExecutionHistoryAsync(int limit = 50, CancellationToken ct = default)
+    parameters:
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillExecution}}
+    content.vb: Public Function GetExecutionHistoryAsync(limit As Integer = 50, ct As CancellationToken = Nothing) As Task(Of List(Of BackfillExecution))
+  overload: Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync*
+  nameWithType.vb: BackfillApiService.GetExecutionHistoryAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetExecutionHistoryAsync(Integer, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  id: GetStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: GetStatisticsAsync(int?, CancellationToken)
+  nameWithType: BackfillApiService.GetStatisticsAsync(int?, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync(int?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatisticsAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets backfill statistics.
+  example: []
+  syntax:
+    content: public Task<BackfillStatistics?> GetStatisticsAsync(int? hours = null, CancellationToken ct = default)
+    parameters:
+    - id: hours
+      type: System.Nullable{System.Int32}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillStatistics}
+    content.vb: Public Function GetStatisticsAsync(hours As Integer? = Nothing, ct As CancellationToken = Nothing) As Task(Of BackfillStatistics)
+  overload: Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync*
+  nameWithType.vb: BackfillApiService.GetStatisticsAsync(Integer?, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync(Integer?, System.Threading.CancellationToken)
+  name.vb: GetStatisticsAsync(Integer?, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: GetSymbolGapAnalysisAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolGapAnalysisAsync(string, string?, CancellationToken)
+  nameWithType: BackfillApiService.GetSymbolGapAnalysisAsync(string, string?, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolGapAnalysisAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Gets real gap analysis for a symbol from the quality monitoring service.
+
+    Returns null when the backend is unreachable or has no data for the symbol.
+  example: []
+  syntax:
+    content: public Task<SymbolGapAnalysisDto?> GetSymbolGapAnalysisAsync(string symbol, string? date = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolGapAnalysisDto}
+    content.vb: Public Function GetSymbolGapAnalysisAsync(symbol As String, [date] As String = Nothing, ct As CancellationToken = Nothing) As Task(Of SymbolGapAnalysisDto)
+  overload: Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync*
+  nameWithType.vb: BackfillApiService.GetSymbolGapAnalysisAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync(String, String, System.Threading.CancellationToken)
+  name.vb: GetSymbolGapAnalysisAsync(String, String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
+  id: GetSchedulesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: GetSchedulesAsync(CancellationToken)
+  nameWithType: BackfillApiService.GetSchedulesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSchedulesAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all configured backfill schedules.
+  example: []
+  syntax:
+    content: public Task<List<BackfillScheduleSummary>> GetSchedulesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.BackfillScheduleSummary}}
+    content.vb: Public Function GetSchedulesAsync(ct As CancellationToken = Nothing) As Task(Of List(Of BackfillScheduleSummary))
+  overload: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync*
+- uid: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
+  id: CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: CreateScheduleAsync(BackfillScheduleCreateRequest, CancellationToken)
+  nameWithType: BackfillApiService.CreateScheduleAsync(BackfillScheduleCreateRequest, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateScheduleAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a new backfill schedule.
+  example: []
+  syntax:
+    content: public Task<BackfillScheduleSummary?> CreateScheduleAsync(BackfillScheduleCreateRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Ui.Services.BackfillScheduleCreateRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillScheduleSummary}
+    content.vb: Public Function CreateScheduleAsync(request As BackfillScheduleCreateRequest, ct As CancellationToken = Nothing) As Task(Of BackfillScheduleSummary)
+  overload: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync*
+- uid: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: DeleteScheduleAsync(string, CancellationToken)
+  nameWithType: BackfillApiService.DeleteScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteScheduleAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Deletes a schedule by id.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteScheduleAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync*
+  nameWithType.vb: BackfillApiService.DeleteScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteScheduleAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
+  id: RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillApiService
+  langs:
+  - csharp
+  - vb
+  name: RunScheduleNowAsync(string, CancellationToken)
+  nameWithType: BackfillApiService.RunScheduleNowAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunScheduleNowAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Triggers a schedule immediately.
+  example: []
+  syntax:
+    content: public Task<BackfillExecutionResponse?> RunScheduleNowAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
+    content.vb: Public Function RunScheduleNowAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of BackfillExecutionResponse)
+  overload: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync*
+  nameWithType.vb: BackfillApiService.RunScheduleNowAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(String, System.Threading.CancellationToken)
+  name.vb: RunScheduleNowAsync(String, CancellationToken)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.BackfillApiService.#ctor*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.#ctor
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService__ctor
+  name: BackfillApiService
+  nameWithType: BackfillApiService.BackfillApiService
+  fullName: Meridian.Ui.Services.BackfillApiService.BackfillApiService
+  nameWithType.vb: BackfillApiService.New
+  fullName.vb: Meridian.Ui.Services.BackfillApiService.New
+  name.vb: New
+- uid: Meridian.Ui.Services.BackfillApiService.GetProvidersAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetProvidersAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetProvidersAsync_System_Threading_CancellationToken_
+  name: GetProvidersAsync
+  nameWithType: BackfillApiService.GetProvidersAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.GetProvidersAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillProviderInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillProviderInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<BackfillProviderInfo>>
+  nameWithType: Task<List<BackfillProviderInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Contracts.Api.BackfillProviderInfo>>
+  nameWithType.vb: Task(Of List(Of BackfillProviderInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Contracts.Api.BackfillProviderInfo))
+  name.vb: Task(Of List(Of BackfillProviderInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillProviderInfo
+    name: BackfillProviderInfo
+    href: Meridian.Contracts.Api.BackfillProviderInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillProviderInfo
+    name: BackfillProviderInfo
+    href: Meridian.Contracts.Api.BackfillProviderInfo.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetLastStatusAsync_System_Threading_CancellationToken_
+  name: GetLastStatusAsync
+  nameWithType: BackfillApiService.GetLastStatusAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillResultDto>
+  nameWithType: Task<BackfillResultDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillResultDto>
+  nameWithType.vb: Task(Of BackfillResultDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillResultDto)
+  name.vb: Task(Of BackfillResultDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillResultDto
+    name: BackfillResultDto
+    href: Meridian.Contracts.Api.BackfillResultDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillResultDto
+    name: BackfillResultDto
+    href: Meridian.Contracts.Api.BackfillResultDto.html
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.RunBackfillAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.RunBackfillAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_RunBackfillAsync_System_String_System_String___System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: RunBackfillAsync
+  nameWithType: BackfillApiService.RunBackfillAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.RunBackfillAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_CheckProviderHealthAsync_System_Threading_CancellationToken_
+  name: CheckProviderHealthAsync
+  nameWithType: BackfillApiService.CheckProviderHealthAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillHealthResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillHealthResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillHealthResponse>
+  nameWithType: Task<BackfillHealthResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillHealthResponse>
+  nameWithType.vb: Task(Of BackfillHealthResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillHealthResponse)
+  name.vb: Task(Of BackfillHealthResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillHealthResponse
+    name: BackfillHealthResponse
+    href: Meridian.Contracts.Api.BackfillHealthResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillHealthResponse
+    name: BackfillHealthResponse
+    href: Meridian.Contracts.Api.BackfillHealthResponse.html
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.RunGapFillAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_RunGapFillAsync_System_String___System_Int32_System_String_System_Threading_CancellationToken_
+  name: RunGapFillAsync
+  nameWithType: BackfillApiService.RunGapFillAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.BackfillApiService.GetPresetsAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetPresetsAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetPresetsAsync_System_Threading_CancellationToken_
+  name: GetPresetsAsync
+  nameWithType: BackfillApiService.GetPresetsAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.GetPresetsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillPreset}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillPreset}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<BackfillPreset>>
+  nameWithType: Task<List<BackfillPreset>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Contracts.Api.BackfillPreset>>
+  nameWithType.vb: Task(Of List(Of BackfillPreset))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Contracts.Api.BackfillPreset))
+  name.vb: Task(Of List(Of BackfillPreset))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillPreset
+    name: BackfillPreset
+    href: Meridian.Contracts.Api.BackfillPreset.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillPreset
+    name: BackfillPreset
+    href: Meridian.Contracts.Api.BackfillPreset.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetExecutionHistoryAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetExecutionHistoryAsync
+  nameWithType: BackfillApiService.GetExecutionHistoryAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillExecution}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillExecution}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<BackfillExecution>>
+  nameWithType: Task<List<BackfillExecution>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Contracts.Api.BackfillExecution>>
+  nameWithType.vb: Task(Of List(Of BackfillExecution))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Contracts.Api.BackfillExecution))
+  name.vb: Task(Of List(Of BackfillExecution))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillExecution
+    name: BackfillExecution
+    href: Meridian.Contracts.Api.BackfillExecution.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillExecution
+    name: BackfillExecution
+    href: Meridian.Contracts.Api.BackfillExecution.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetStatisticsAsync_System_Nullable_System_Int32__System_Threading_CancellationToken_
+  name: GetStatisticsAsync
+  nameWithType: BackfillApiService.GetStatisticsAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillStatistics}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillStatistics}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillStatistics>
+  nameWithType: Task<BackfillStatistics>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillStatistics>
+  nameWithType.vb: Task(Of BackfillStatistics)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillStatistics)
+  name.vb: Task(Of BackfillStatistics)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillStatistics
+    name: BackfillStatistics
+    href: Meridian.Contracts.Api.BackfillStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillStatistics
+    name: BackfillStatistics
+    href: Meridian.Contracts.Api.BackfillStatistics.html
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetSymbolGapAnalysisAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: GetSymbolGapAnalysisAsync
+  nameWithType: BackfillApiService.GetSymbolGapAnalysisAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolGapAnalysisDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolGapAnalysisDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolGapAnalysisDto>
+  nameWithType: Task<SymbolGapAnalysisDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SymbolGapAnalysisDto>
+  nameWithType.vb: Task(Of SymbolGapAnalysisDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SymbolGapAnalysisDto)
+  name.vb: Task(Of SymbolGapAnalysisDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SymbolGapAnalysisDto
+    name: SymbolGapAnalysisDto
+    href: Meridian.Ui.Services.SymbolGapAnalysisDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SymbolGapAnalysisDto
+    name: SymbolGapAnalysisDto
+    href: Meridian.Ui.Services.SymbolGapAnalysisDto.html
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetSchedulesAsync_System_Threading_CancellationToken_
+  name: GetSchedulesAsync
+  nameWithType: BackfillApiService.GetSchedulesAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.BackfillScheduleSummary}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.BackfillScheduleSummary}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<BackfillScheduleSummary>>
+  nameWithType: Task<List<BackfillScheduleSummary>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.BackfillScheduleSummary>>
+  nameWithType.vb: Task(Of List(Of BackfillScheduleSummary))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.BackfillScheduleSummary))
+  name.vb: Task(Of List(Of BackfillScheduleSummary))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.BackfillScheduleSummary
+    name: BackfillScheduleSummary
+    href: Meridian.Ui.Services.BackfillScheduleSummary.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BackfillScheduleSummary
+    name: BackfillScheduleSummary
+    href: Meridian.Ui.Services.BackfillScheduleSummary.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_CreateScheduleAsync_Meridian_Ui_Services_BackfillScheduleCreateRequest_System_Threading_CancellationToken_
+  name: CreateScheduleAsync
+  nameWithType: BackfillApiService.CreateScheduleAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync
+- uid: Meridian.Ui.Services.BackfillScheduleCreateRequest
+  commentId: T:Meridian.Ui.Services.BackfillScheduleCreateRequest
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BackfillScheduleCreateRequest.html
+  name: BackfillScheduleCreateRequest
+  nameWithType: BackfillScheduleCreateRequest
+  fullName: Meridian.Ui.Services.BackfillScheduleCreateRequest
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillScheduleSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillScheduleSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillScheduleSummary>
+  nameWithType: Task<BackfillScheduleSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BackfillScheduleSummary>
+  nameWithType.vb: Task(Of BackfillScheduleSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BackfillScheduleSummary)
+  name.vb: Task(Of BackfillScheduleSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.BackfillScheduleSummary
+    name: BackfillScheduleSummary
+    href: Meridian.Ui.Services.BackfillScheduleSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BackfillScheduleSummary
+    name: BackfillScheduleSummary
+    href: Meridian.Ui.Services.BackfillScheduleSummary.html
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_DeleteScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteScheduleAsync
+  nameWithType: BackfillApiService.DeleteScheduleAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync
+  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_RunScheduleNowAsync_System_String_System_Threading_CancellationToken_
+  name: RunScheduleNowAsync
+  nameWithType: BackfillApiService.RunScheduleNowAsync
+  fullName: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillExecutionResponse>
+  nameWithType: Task<BackfillExecutionResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillExecutionResponse>
+  nameWithType.vb: Task(Of BackfillExecutionResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillExecutionResponse)
+  name.vb: Task(Of BackfillExecutionResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillExecutionResponse
+    name: BackfillExecutionResponse
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillExecutionResponse
+    name: BackfillExecutionResponse
+  - name: )

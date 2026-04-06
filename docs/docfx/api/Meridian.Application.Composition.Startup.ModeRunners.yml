@@ -1,0 +1,51 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Startup.ModeRunners
+  commentId: N:Meridian.Application.Composition.Startup.ModeRunners
+  id: Meridian.Application.Composition.Startup.ModeRunners
+  children:
+  - Meridian.Application.Composition.Startup.ModeRunners.BackfillModeRunner
+  - Meridian.Application.Composition.Startup.ModeRunners.CollectorModeRunner
+  - Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  - Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner
+  - Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Composition.Startup.ModeRunners
+  nameWithType: Meridian.Application.Composition.Startup.ModeRunners
+  fullName: Meridian.Application.Composition.Startup.ModeRunners
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Composition.Startup.ModeRunners.BackfillModeRunner
+  commentId: T:Meridian.Application.Composition.Startup.ModeRunners.BackfillModeRunner
+  href: Meridian.Application.Composition.Startup.ModeRunners.BackfillModeRunner.html
+  name: BackfillModeRunner
+  nameWithType: BackfillModeRunner
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.BackfillModeRunner
+- uid: Meridian.Application.Composition.Startup.ModeRunners.CollectorModeRunner
+  commentId: T:Meridian.Application.Composition.Startup.ModeRunners.CollectorModeRunner
+  href: Meridian.Application.Composition.Startup.ModeRunners.CollectorModeRunner.html
+  name: CollectorModeRunner
+  nameWithType: CollectorModeRunner
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.CollectorModeRunner
+- uid: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  commentId: T:Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  href: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.html
+  name: CommandModeRunner
+  nameWithType: CommandModeRunner
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+- uid: Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner
+  commentId: T:Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner
+  href: Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner.html
+  name: DesktopModeRunner
+  nameWithType: DesktopModeRunner
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner
+- uid: Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner
+  commentId: T:Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner
+  href: Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner.html
+  name: WebModeRunner
+  nameWithType: WebModeRunner
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner

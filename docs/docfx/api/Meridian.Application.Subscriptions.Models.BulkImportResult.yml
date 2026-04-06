@@ -1,0 +1,690 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult
+  commentId: T:Meridian.Application.Subscriptions.Models.BulkImportResult
+  id: BulkImportResult
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.BulkImportResult.#ctor(System.Int32,System.Int32,System.Int32,Meridian.Application.Subscriptions.Models.ImportError[],System.String[],System.Int64)
+  - Meridian.Application.Subscriptions.Models.BulkImportResult.Errors
+  - Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount
+  - Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols
+  - Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs
+  - Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount
+  - Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount
+  langs:
+  - csharp
+  - vb
+  name: BulkImportResult
+  nameWithType: BulkImportResult
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BulkImportResult
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Result of a bulk CSV import operation.
+  example: []
+  syntax:
+    content: 'public sealed record BulkImportResult : IEquatable<BulkImportResult>'
+    content.vb: Public NotInheritable Class BulkImportResult Implements IEquatable(Of BulkImportResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.BulkImportResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.#ctor(System.Int32,System.Int32,System.Int32,Meridian.Application.Subscriptions.Models.ImportError[],System.String[],System.Int64)
+  commentId: M:Meridian.Application.Subscriptions.Models.BulkImportResult.#ctor(System.Int32,System.Int32,System.Int32,Meridian.Application.Subscriptions.Models.ImportError[],System.String[],System.Int64)
+  id: '#ctor(System.Int32,System.Int32,System.Int32,Meridian.Application.Subscriptions.Models.ImportError[],System.String[],System.Int64)'
+  parent: Meridian.Application.Subscriptions.Models.BulkImportResult
+  langs:
+  - csharp
+  - vb
+  name: BulkImportResult(int, int, int, ImportError[], string[], long)
+  nameWithType: BulkImportResult.BulkImportResult(int, int, int, ImportError[], string[], long)
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.BulkImportResult(int, int, int, Meridian.Application.Subscriptions.Models.ImportError[], string[], long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Result of a bulk CSV import operation.
+  example: []
+  syntax:
+    content: public BulkImportResult(int SuccessCount, int FailureCount, int SkippedCount, ImportError[] Errors, string[] ImportedSymbols, long ProcessingTimeMs)
+    parameters:
+    - id: SuccessCount
+      type: System.Int32
+    - id: FailureCount
+      type: System.Int32
+    - id: SkippedCount
+      type: System.Int32
+    - id: Errors
+      type: Meridian.Application.Subscriptions.Models.ImportError[]
+    - id: ImportedSymbols
+      type: System.String[]
+    - id: ProcessingTimeMs
+      type: System.Int64
+    content.vb: Public Sub New(SuccessCount As Integer, FailureCount As Integer, SkippedCount As Integer, Errors As ImportError(), ImportedSymbols As String(), ProcessingTimeMs As Long)
+  overload: Meridian.Application.Subscriptions.Models.BulkImportResult.#ctor*
+  nameWithType.vb: BulkImportResult.New(Integer, Integer, Integer, ImportError(), String(), Long)
+  fullName.vb: Meridian.Application.Subscriptions.Models.BulkImportResult.New(Integer, Integer, Integer, Meridian.Application.Subscriptions.Models.ImportError(), String(), Long)
+  name.vb: New(Integer, Integer, Integer, ImportError(), String(), Long)
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount
+  commentId: P:Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount
+  id: SuccessCount
+  parent: Meridian.Application.Subscriptions.Models.BulkImportResult
+  langs:
+  - csharp
+  - vb
+  name: SuccessCount
+  nameWithType: BulkImportResult.SuccessCount
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessCount
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public int SuccessCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SuccessCount As Integer
+  overload: Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount*
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount
+  commentId: P:Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount
+  id: FailureCount
+  parent: Meridian.Application.Subscriptions.Models.BulkImportResult
+  langs:
+  - csharp
+  - vb
+  name: FailureCount
+  nameWithType: BulkImportResult.FailureCount
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailureCount
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public int FailureCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailureCount As Integer
+  overload: Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount*
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount
+  commentId: P:Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount
+  id: SkippedCount
+  parent: Meridian.Application.Subscriptions.Models.BulkImportResult
+  langs:
+  - csharp
+  - vb
+  name: SkippedCount
+  nameWithType: BulkImportResult.SkippedCount
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedCount
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public int SkippedCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SkippedCount As Integer
+  overload: Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount*
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.Errors
+  commentId: P:Meridian.Application.Subscriptions.Models.BulkImportResult.Errors
+  id: Errors
+  parent: Meridian.Application.Subscriptions.Models.BulkImportResult
+  langs:
+  - csharp
+  - vb
+  name: Errors
+  nameWithType: BulkImportResult.Errors
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.Errors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Errors
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public ImportError[] Errors { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Models.ImportError[]
+    content.vb: Public Property Errors As ImportError()
+  overload: Meridian.Application.Subscriptions.Models.BulkImportResult.Errors*
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols
+  commentId: P:Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols
+  id: ImportedSymbols
+  parent: Meridian.Application.Subscriptions.Models.BulkImportResult
+  langs:
+  - csharp
+  - vb
+  name: ImportedSymbols
+  nameWithType: BulkImportResult.ImportedSymbols
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportedSymbols
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string[] ImportedSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property ImportedSymbols As String()
+  overload: Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols*
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs
+  commentId: P:Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs
+  id: ProcessingTimeMs
+  parent: Meridian.Application.Subscriptions.Models.BulkImportResult
+  langs:
+  - csharp
+  - vb
+  name: ProcessingTimeMs
+  nameWithType: BulkImportResult.ProcessingTimeMs
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessingTimeMs
+    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long ProcessingTimeMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ProcessingTimeMs As Long
+  overload: Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.BulkImportResult}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.BulkImportResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BulkImportResult>
+  nameWithType: IEquatable<BulkImportResult>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.BulkImportResult>
+  nameWithType.vb: IEquatable(Of BulkImportResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.BulkImportResult)
+  name.vb: IEquatable(Of BulkImportResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.BulkImportResult
+    name: BulkImportResult
+    href: Meridian.Application.Subscriptions.Models.BulkImportResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.BulkImportResult
+    name: BulkImportResult
+    href: Meridian.Application.Subscriptions.Models.BulkImportResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BulkImportResult.#ctor
+  href: Meridian.Application.Subscriptions.Models.BulkImportResult.html#Meridian_Application_Subscriptions_Models_BulkImportResult__ctor_System_Int32_System_Int32_System_Int32_Meridian_Application_Subscriptions_Models_ImportError___System_String___System_Int64_
+  name: BulkImportResult
+  nameWithType: BulkImportResult.BulkImportResult
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.BulkImportResult
+  nameWithType.vb: BulkImportResult.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.BulkImportResult.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Subscriptions.Models.ImportError[]
+  isExternal: true
+  href: Meridian.Application.Subscriptions.Models.ImportError.html
+  name: ImportError[]
+  nameWithType: ImportError[]
+  fullName: Meridian.Application.Subscriptions.Models.ImportError[]
+  nameWithType.vb: ImportError()
+  fullName.vb: Meridian.Application.Subscriptions.Models.ImportError()
+  name.vb: ImportError()
+  spec.csharp:
+  - uid: Meridian.Application.Subscriptions.Models.ImportError
+    name: ImportError
+    href: Meridian.Application.Subscriptions.Models.ImportError.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Application.Subscriptions.Models.ImportError
+    name: ImportError
+    href: Meridian.Application.Subscriptions.Models.ImportError.html
+  - name: (
+  - name: )
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount
+  href: Meridian.Application.Subscriptions.Models.BulkImportResult.html#Meridian_Application_Subscriptions_Models_BulkImportResult_SuccessCount
+  name: SuccessCount
+  nameWithType: BulkImportResult.SuccessCount
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.SuccessCount
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount
+  href: Meridian.Application.Subscriptions.Models.BulkImportResult.html#Meridian_Application_Subscriptions_Models_BulkImportResult_FailureCount
+  name: FailureCount
+  nameWithType: BulkImportResult.FailureCount
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.FailureCount
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount
+  href: Meridian.Application.Subscriptions.Models.BulkImportResult.html#Meridian_Application_Subscriptions_Models_BulkImportResult_SkippedCount
+  name: SkippedCount
+  nameWithType: BulkImportResult.SkippedCount
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.SkippedCount
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.Errors*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BulkImportResult.Errors
+  href: Meridian.Application.Subscriptions.Models.BulkImportResult.html#Meridian_Application_Subscriptions_Models_BulkImportResult_Errors
+  name: Errors
+  nameWithType: BulkImportResult.Errors
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.Errors
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols
+  href: Meridian.Application.Subscriptions.Models.BulkImportResult.html#Meridian_Application_Subscriptions_Models_BulkImportResult_ImportedSymbols
+  name: ImportedSymbols
+  nameWithType: BulkImportResult.ImportedSymbols
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.ImportedSymbols
+- uid: Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs
+  href: Meridian.Application.Subscriptions.Models.BulkImportResult.html#Meridian_Application_Subscriptions_Models_BulkImportResult_ProcessingTimeMs
+  name: ProcessingTimeMs
+  nameWithType: BulkImportResult.ProcessingTimeMs
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportResult.ProcessingTimeMs

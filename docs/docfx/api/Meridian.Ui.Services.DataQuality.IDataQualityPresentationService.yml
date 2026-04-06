@@ -1,0 +1,393 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService
+  commentId: T:Meridian.Ui.Services.DataQuality.IDataQualityPresentationService
+  id: IDataQualityPresentationService
+  parent: Meridian.Ui.Services.DataQuality
+  children:
+  - Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown(Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation)
+  - Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IDataQualityPresentationService
+  nameWithType: IDataQualityPresentationService
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDataQualityPresentationService
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  summary: Maps quality API responses into UI-ready presentation snapshots shared across desktop views.
+  example: []
+  syntax:
+    content: public interface IDataQualityPresentationService
+    content.vb: Public Interface IDataQualityPresentationService
+  derivedClasses:
+  - Meridian.Ui.Services.DataQuality.DataQualityPresentationService
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync(System.String,System.Threading.CancellationToken)
+  id: GetSnapshotAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshotAsync(string, CancellationToken)
+  nameWithType: IDataQualityPresentationService.GetSnapshotAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshotAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<DataQualityPresentationSnapshot> GetSnapshotAsync(string timeRange, CancellationToken ct = default)
+    parameters:
+    - id: timeRange
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot}
+    content.vb: Function GetSnapshotAsync(timeRange As String, ct As CancellationToken = Nothing) As Task(Of DataQualityPresentationSnapshot)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync*
+  nameWithType.vb: IDataQualityPresentationService.GetSnapshotAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync(String, System.Threading.CancellationToken)
+  name.vb: GetSnapshotAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  id: GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService
+  langs:
+  - csharp
+  - vb
+  name: GetProviderComparisonAsync(string, CancellationToken)
+  nameWithType: IDataQualityPresentationService.GetProviderComparisonAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderComparisonAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<DataQualityProviderComparisonPresentation> GetProviderComparisonAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation}
+    content.vb: Function GetProviderComparisonAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of DataQualityProviderComparisonPresentation)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync*
+  nameWithType.vb: IDataQualityPresentationService.GetProviderComparisonAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync(String, System.Threading.CancellationToken)
+  name.vb: GetProviderComparisonAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown(Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown(Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation)
+  id: BuildSymbolDrilldown(Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService
+  langs:
+  - csharp
+  - vb
+  name: BuildSymbolDrilldown(DataQualitySymbolPresentation)
+  nameWithType: IDataQualityPresentationService.BuildSymbolDrilldown(DataQualitySymbolPresentation)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown(Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildSymbolDrilldown
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityPresentationService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: DataQualitySymbolDrilldownPresentation BuildSymbolDrilldown(DataQualitySymbolPresentation symbol)
+    parameters:
+    - id: symbol
+      type: Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation
+    return:
+      type: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+    content.vb: Function BuildSymbolDrilldown(symbol As DataQualitySymbolPresentation) As DataQualitySymbolDrilldownPresentation
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown*
+references:
+- uid: Meridian.Ui.Services.DataQuality
+  commentId: N:Meridian.Ui.Services.DataQuality
+  href: Meridian.html
+  name: Meridian.Ui.Services.DataQuality
+  nameWithType: Meridian.Ui.Services.DataQuality
+  fullName: Meridian.Ui.Services.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.html#Meridian_Ui_Services_DataQuality_IDataQualityPresentationService_GetSnapshotAsync_System_String_System_Threading_CancellationToken_
+  name: GetSnapshotAsync
+  nameWithType: IDataQualityPresentationService.GetSnapshotAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetSnapshotAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataQualityPresentationSnapshot>
+  nameWithType: Task<DataQualityPresentationSnapshot>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot>
+  nameWithType.vb: Task(Of DataQualityPresentationSnapshot)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot)
+  name.vb: Task(Of DataQualityPresentationSnapshot)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot
+    name: DataQualityPresentationSnapshot
+    href: Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot
+    name: DataQualityPresentationSnapshot
+    href: Meridian.Ui.Services.DataQuality.DataQualityPresentationSnapshot.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.html#Meridian_Ui_Services_DataQuality_IDataQualityPresentationService_GetProviderComparisonAsync_System_String_System_Threading_CancellationToken_
+  name: GetProviderComparisonAsync
+  nameWithType: IDataQualityPresentationService.GetProviderComparisonAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.GetProviderComparisonAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataQualityProviderComparisonPresentation>
+  nameWithType: Task<DataQualityProviderComparisonPresentation>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation>
+  nameWithType.vb: Task(Of DataQualityProviderComparisonPresentation)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation)
+  name.vb: Task(Of DataQualityProviderComparisonPresentation)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation
+    name: DataQualityProviderComparisonPresentation
+    href: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation
+    name: DataQualityProviderComparisonPresentation
+    href: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonPresentation.html
+  - name: )
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown
+  href: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.html#Meridian_Ui_Services_DataQuality_IDataQualityPresentationService_BuildSymbolDrilldown_Meridian_Ui_Services_DataQuality_DataQualitySymbolPresentation_
+  name: BuildSymbolDrilldown
+  nameWithType: IDataQualityPresentationService.BuildSymbolDrilldown
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityPresentationService.BuildSymbolDrilldown
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation
+  commentId: T:Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation
+  parent: Meridian.Ui.Services.DataQuality
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation.html
+  name: DataQualitySymbolPresentation
+  nameWithType: DataQualitySymbolPresentation
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolPresentation
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  commentId: T:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  parent: Meridian.Ui.Services.DataQuality
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html
+  name: DataQualitySymbolDrilldownPresentation
+  nameWithType: DataQualitySymbolDrilldownPresentation
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation

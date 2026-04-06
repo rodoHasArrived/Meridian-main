@@ -1,0 +1,134 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition
+  commentId: N:Meridian.Application.Composition
+  id: Meridian.Application.Composition
+  children:
+  - Meridian.Application.Composition.BackfillHostAdapter
+  - Meridian.Application.Composition.CompositionOptions
+  - Meridian.Application.Composition.ConsoleHostAdapter
+  - Meridian.Application.Composition.DesktopHostAdapter
+  - Meridian.Application.Composition.HostBuilder
+  - Meridian.Application.Composition.HostStartup
+  - Meridian.Application.Composition.HostStartupFactory
+  - Meridian.Application.Composition.IHostAdapter
+  - Meridian.Application.Composition.PipelinePublisher
+  - Meridian.Application.Composition.ServiceCompositionRoot
+  - Meridian.Application.Composition.StreamingHostAdapter
+  - Meridian.Application.Composition.WebHostAdapter
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Composition
+  nameWithType: Meridian.Application.Composition
+  fullName: Meridian.Application.Composition
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Composition.IHostAdapter
+  commentId: T:Meridian.Application.Composition.IHostAdapter
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.IHostAdapter.html
+  name: IHostAdapter
+  nameWithType: IHostAdapter
+  fullName: Meridian.Application.Composition.IHostAdapter
+- uid: Meridian.Application.Composition.WebHostAdapter
+  commentId: T:Meridian.Application.Composition.WebHostAdapter
+  href: Meridian.Application.Composition.WebHostAdapter.html
+  name: WebHostAdapter
+  nameWithType: WebHostAdapter
+  fullName: Meridian.Application.Composition.WebHostAdapter
+- uid: Meridian.Application.Composition.ConsoleHostAdapter
+  commentId: T:Meridian.Application.Composition.ConsoleHostAdapter
+  href: Meridian.Application.Composition.ConsoleHostAdapter.html
+  name: ConsoleHostAdapter
+  nameWithType: ConsoleHostAdapter
+  fullName: Meridian.Application.Composition.ConsoleHostAdapter
+- uid: Meridian.Application.Composition.DesktopHostAdapter
+  commentId: T:Meridian.Application.Composition.DesktopHostAdapter
+  href: Meridian.Application.Composition.DesktopHostAdapter.html
+  name: DesktopHostAdapter
+  nameWithType: DesktopHostAdapter
+  fullName: Meridian.Application.Composition.DesktopHostAdapter
+- uid: Meridian.Application.Composition.StreamingHostAdapter
+  commentId: T:Meridian.Application.Composition.StreamingHostAdapter
+  href: Meridian.Application.Composition.StreamingHostAdapter.html
+  name: StreamingHostAdapter
+  nameWithType: StreamingHostAdapter
+  fullName: Meridian.Application.Composition.StreamingHostAdapter
+- uid: Meridian.Application.Composition.BackfillHostAdapter
+  commentId: T:Meridian.Application.Composition.BackfillHostAdapter
+  href: Meridian.Application.Composition.BackfillHostAdapter.html
+  name: BackfillHostAdapter
+  nameWithType: BackfillHostAdapter
+  fullName: Meridian.Application.Composition.BackfillHostAdapter
+- uid: Meridian.Application.Composition.HostBuilder
+  commentId: T:Meridian.Application.Composition.HostBuilder
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.HostBuilder.html
+  name: HostBuilder
+  nameWithType: HostBuilder
+  fullName: Meridian.Application.Composition.HostBuilder
+- uid: Meridian.Application.Composition.HostStartup
+  commentId: T:Meridian.Application.Composition.HostStartup
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.HostStartup.html
+  name: HostStartup
+  nameWithType: HostStartup
+  fullName: Meridian.Application.Composition.HostStartup
+- uid: Meridian.Application.Composition.HostStartupFactory
+  commentId: T:Meridian.Application.Composition.HostStartupFactory
+  href: Meridian.Application.Composition.HostStartupFactory.html
+  name: HostStartupFactory
+  nameWithType: HostStartupFactory
+  fullName: Meridian.Application.Composition.HostStartupFactory
+- uid: Meridian.Application.Composition.ServiceCompositionRoot
+  commentId: T:Meridian.Application.Composition.ServiceCompositionRoot
+  href: Meridian.Application.Composition.ServiceCompositionRoot.html
+  name: ServiceCompositionRoot
+  nameWithType: ServiceCompositionRoot
+  fullName: Meridian.Application.Composition.ServiceCompositionRoot
+- uid: Meridian.Application.Composition.PipelinePublisher
+  commentId: T:Meridian.Application.Composition.PipelinePublisher
+  href: Meridian.Application.Composition.PipelinePublisher.html
+  name: PipelinePublisher
+  nameWithType: PipelinePublisher
+  fullName: Meridian.Application.Composition.PipelinePublisher
+- uid: Meridian.Application.Composition.CompositionOptions
+  commentId: T:Meridian.Application.Composition.CompositionOptions
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.CompositionOptions.html
+  name: CompositionOptions
+  nameWithType: CompositionOptions
+  fullName: Meridian.Application.Composition.CompositionOptions
+- uid: Meridian.Application.Composition
+  commentId: N:Meridian.Application.Composition
+  href: Meridian.html
+  name: Meridian.Application.Composition
+  nameWithType: Meridian.Application.Composition
+  fullName: Meridian.Application.Composition
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html

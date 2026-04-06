@@ -1,0 +1,300 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.OperationType
+  commentId: T:Meridian.Application.Scheduling.OperationType
+  id: OperationType
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.OperationType.Backfill
+  - Meridian.Application.Scheduling.OperationType.CacheRefresh
+  - Meridian.Application.Scheduling.OperationType.CredentialRefresh
+  - Meridian.Application.Scheduling.OperationType.HealthCheck
+  - Meridian.Application.Scheduling.OperationType.IndexRebuild
+  - Meridian.Application.Scheduling.OperationType.IntegrityCheck
+  - Meridian.Application.Scheduling.OperationType.Maintenance
+  - Meridian.Application.Scheduling.OperationType.Reporting
+  langs:
+  - csharp
+  - vb
+  name: OperationType
+  nameWithType: OperationType
+  fullName: Meridian.Application.Scheduling.OperationType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OperationType
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Types of operations that can be scheduled.
+  example: []
+  syntax:
+    content: 'public enum OperationType : byte'
+    content.vb: Public Enum OperationType As Byte
+- uid: Meridian.Application.Scheduling.OperationType.Maintenance
+  commentId: F:Meridian.Application.Scheduling.OperationType.Maintenance
+  id: Maintenance
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: Maintenance
+  nameWithType: OperationType.Maintenance
+  fullName: Meridian.Application.Scheduling.OperationType.Maintenance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Maintenance
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Routine maintenance (archival, cleanup).
+  example: []
+  syntax:
+    content: Maintenance = 0
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.OperationType.Backfill
+  commentId: F:Meridian.Application.Scheduling.OperationType.Backfill
+  id: Backfill
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: Backfill
+  nameWithType: OperationType.Backfill
+  fullName: Meridian.Application.Scheduling.OperationType.Backfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backfill
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Historical data backfill.
+  example: []
+  syntax:
+    content: Backfill = 1
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.OperationType.IntegrityCheck
+  commentId: F:Meridian.Application.Scheduling.OperationType.IntegrityCheck
+  id: IntegrityCheck
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: IntegrityCheck
+  nameWithType: OperationType.IntegrityCheck
+  fullName: Meridian.Application.Scheduling.OperationType.IntegrityCheck
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityCheck
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Data integrity checks and repairs.
+  example: []
+  syntax:
+    content: IntegrityCheck = 2
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.OperationType.Reporting
+  commentId: F:Meridian.Application.Scheduling.OperationType.Reporting
+  id: Reporting
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: Reporting
+  nameWithType: OperationType.Reporting
+  fullName: Meridian.Application.Scheduling.OperationType.Reporting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reporting
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Report generation.
+  example: []
+  syntax:
+    content: Reporting = 3
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.OperationType.HealthCheck
+  commentId: F:Meridian.Application.Scheduling.OperationType.HealthCheck
+  id: HealthCheck
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: HealthCheck
+  nameWithType: OperationType.HealthCheck
+  fullName: Meridian.Application.Scheduling.OperationType.HealthCheck
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheck
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: System health checks.
+  example: []
+  syntax:
+    content: HealthCheck = 4
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.OperationType.CacheRefresh
+  commentId: F:Meridian.Application.Scheduling.OperationType.CacheRefresh
+  id: CacheRefresh
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: CacheRefresh
+  nameWithType: OperationType.CacheRefresh
+  fullName: Meridian.Application.Scheduling.OperationType.CacheRefresh
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CacheRefresh
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Cache refresh operations.
+  example: []
+  syntax:
+    content: CacheRefresh = 5
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.OperationType.CredentialRefresh
+  commentId: F:Meridian.Application.Scheduling.OperationType.CredentialRefresh
+  id: CredentialRefresh
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: CredentialRefresh
+  nameWithType: OperationType.CredentialRefresh
+  fullName: Meridian.Application.Scheduling.OperationType.CredentialRefresh
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialRefresh
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Provider credential refresh.
+  example: []
+  syntax:
+    content: CredentialRefresh = 6
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.OperationType.IndexRebuild
+  commentId: F:Meridian.Application.Scheduling.OperationType.IndexRebuild
+  id: IndexRebuild
+  parent: Meridian.Application.Scheduling.OperationType
+  langs:
+  - csharp
+  - vb
+  name: IndexRebuild
+  nameWithType: OperationType.IndexRebuild
+  fullName: Meridian.Application.Scheduling.OperationType.IndexRebuild
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexRebuild
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Index rebuilding.
+  example: []
+  syntax:
+    content: IndexRebuild = 7
+    return:
+      type: Meridian.Application.Scheduling.OperationType
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: Meridian.Application.Scheduling.OperationType
+  commentId: T:Meridian.Application.Scheduling.OperationType
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.OperationType.html
+  name: OperationType
+  nameWithType: OperationType
+  fullName: Meridian.Application.Scheduling.OperationType

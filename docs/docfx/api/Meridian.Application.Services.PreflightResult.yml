@@ -1,0 +1,756 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.PreflightResult
+  commentId: T:Meridian.Application.Services.PreflightResult
+  id: PreflightResult
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.PreflightResult.#ctor(System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult},System.Double,System.DateTimeOffset)
+  - Meridian.Application.Services.PreflightResult.AllChecksPassed
+  - Meridian.Application.Services.PreflightResult.CheckedAt
+  - Meridian.Application.Services.PreflightResult.Checks
+  - Meridian.Application.Services.PreflightResult.GetSummary
+  - Meridian.Application.Services.PreflightResult.HasWarnings
+  - Meridian.Application.Services.PreflightResult.TotalDurationMs
+  langs:
+  - csharp
+  - vb
+  name: PreflightResult
+  nameWithType: PreflightResult
+  fullName: Meridian.Application.Services.PreflightResult
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreflightResult
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 771
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Result of all pre-flight checks.
+  example: []
+  syntax:
+    content: 'public readonly record struct PreflightResult : IEquatable<PreflightResult>'
+    content.vb: Public Structure PreflightResult Implements IEquatable(Of PreflightResult)
+  implements:
+  - System.IEquatable{Meridian.Application.Services.PreflightResult}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Services.PreflightResult.#ctor(System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult},System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Services.PreflightResult.#ctor(System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult},System.Double,System.DateTimeOffset)
+  id: '#ctor(System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult},System.Double,System.DateTimeOffset)'
+  parent: Meridian.Application.Services.PreflightResult
+  langs:
+  - csharp
+  - vb
+  name: PreflightResult(bool, bool, IReadOnlyList<PreflightCheckResult>, double, DateTimeOffset)
+  nameWithType: PreflightResult.PreflightResult(bool, bool, IReadOnlyList<PreflightCheckResult>, double, DateTimeOffset)
+  fullName: Meridian.Application.Services.PreflightResult.PreflightResult(bool, bool, System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.PreflightCheckResult>, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 771
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Result of all pre-flight checks.
+  example: []
+  syntax:
+    content: public PreflightResult(bool AllChecksPassed, bool HasWarnings, IReadOnlyList<PreflightCheckResult> Checks, double TotalDurationMs, DateTimeOffset CheckedAt)
+    parameters:
+    - id: AllChecksPassed
+      type: System.Boolean
+    - id: HasWarnings
+      type: System.Boolean
+    - id: Checks
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult}
+    - id: TotalDurationMs
+      type: System.Double
+    - id: CheckedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(AllChecksPassed As Boolean, HasWarnings As Boolean, Checks As IReadOnlyList(Of PreflightCheckResult), TotalDurationMs As Double, CheckedAt As DateTimeOffset)
+  overload: Meridian.Application.Services.PreflightResult.#ctor*
+  nameWithType.vb: PreflightResult.New(Boolean, Boolean, IReadOnlyList(Of PreflightCheckResult), Double, DateTimeOffset)
+  fullName.vb: Meridian.Application.Services.PreflightResult.New(Boolean, Boolean, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.PreflightCheckResult), Double, System.DateTimeOffset)
+  name.vb: New(Boolean, Boolean, IReadOnlyList(Of PreflightCheckResult), Double, DateTimeOffset)
+- uid: Meridian.Application.Services.PreflightResult.AllChecksPassed
+  commentId: P:Meridian.Application.Services.PreflightResult.AllChecksPassed
+  id: AllChecksPassed
+  parent: Meridian.Application.Services.PreflightResult
+  langs:
+  - csharp
+  - vb
+  name: AllChecksPassed
+  nameWithType: PreflightResult.AllChecksPassed
+  fullName: Meridian.Application.Services.PreflightResult.AllChecksPassed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllChecksPassed
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 772
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool AllChecksPassed { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AllChecksPassed As Boolean
+  overload: Meridian.Application.Services.PreflightResult.AllChecksPassed*
+- uid: Meridian.Application.Services.PreflightResult.HasWarnings
+  commentId: P:Meridian.Application.Services.PreflightResult.HasWarnings
+  id: HasWarnings
+  parent: Meridian.Application.Services.PreflightResult
+  langs:
+  - csharp
+  - vb
+  name: HasWarnings
+  nameWithType: PreflightResult.HasWarnings
+  fullName: Meridian.Application.Services.PreflightResult.HasWarnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasWarnings
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 773
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool HasWarnings { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HasWarnings As Boolean
+  overload: Meridian.Application.Services.PreflightResult.HasWarnings*
+- uid: Meridian.Application.Services.PreflightResult.Checks
+  commentId: P:Meridian.Application.Services.PreflightResult.Checks
+  id: Checks
+  parent: Meridian.Application.Services.PreflightResult
+  langs:
+  - csharp
+  - vb
+  name: Checks
+  nameWithType: PreflightResult.Checks
+  fullName: Meridian.Application.Services.PreflightResult.Checks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Checks
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 774
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IReadOnlyList<PreflightCheckResult> Checks { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult}
+    content.vb: Public Property Checks As IReadOnlyList(Of PreflightCheckResult)
+  overload: Meridian.Application.Services.PreflightResult.Checks*
+- uid: Meridian.Application.Services.PreflightResult.TotalDurationMs
+  commentId: P:Meridian.Application.Services.PreflightResult.TotalDurationMs
+  id: TotalDurationMs
+  parent: Meridian.Application.Services.PreflightResult
+  langs:
+  - csharp
+  - vb
+  name: TotalDurationMs
+  nameWithType: PreflightResult.TotalDurationMs
+  fullName: Meridian.Application.Services.PreflightResult.TotalDurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDurationMs
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 775
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public double TotalDurationMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property TotalDurationMs As Double
+  overload: Meridian.Application.Services.PreflightResult.TotalDurationMs*
+- uid: Meridian.Application.Services.PreflightResult.CheckedAt
+  commentId: P:Meridian.Application.Services.PreflightResult.CheckedAt
+  id: CheckedAt
+  parent: Meridian.Application.Services.PreflightResult
+  langs:
+  - csharp
+  - vb
+  name: CheckedAt
+  nameWithType: PreflightResult.CheckedAt
+  fullName: Meridian.Application.Services.PreflightResult.CheckedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckedAt
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 776
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset CheckedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CheckedAt As DateTimeOffset
+  overload: Meridian.Application.Services.PreflightResult.CheckedAt*
+- uid: Meridian.Application.Services.PreflightResult.GetSummary
+  commentId: M:Meridian.Application.Services.PreflightResult.GetSummary
+  id: GetSummary
+  parent: Meridian.Application.Services.PreflightResult
+  langs:
+  - csharp
+  - vb
+  name: GetSummary()
+  nameWithType: PreflightResult.GetSummary()
+  fullName: Meridian.Application.Services.PreflightResult.GetSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSummary
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 782
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets a summary string of the pre-flight results.
+  example: []
+  syntax:
+    content: public string GetSummary()
+    return:
+      type: System.String
+    content.vb: Public Function GetSummary() As String
+  overload: Meridian.Application.Services.PreflightResult.GetSummary*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.IEquatable{Meridian.Application.Services.PreflightResult}
+  commentId: T:System.IEquatable{Meridian.Application.Services.PreflightResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PreflightResult>
+  nameWithType: IEquatable<PreflightResult>
+  fullName: System.IEquatable<Meridian.Application.Services.PreflightResult>
+  nameWithType.vb: IEquatable(Of PreflightResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.PreflightResult)
+  name.vb: IEquatable(Of PreflightResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.PreflightResult
+    name: PreflightResult
+    href: Meridian.Application.Services.PreflightResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.PreflightResult
+    name: PreflightResult
+    href: Meridian.Application.Services.PreflightResult.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Services.PreflightResult.#ctor*
+  commentId: Overload:Meridian.Application.Services.PreflightResult.#ctor
+  href: Meridian.Application.Services.PreflightResult.html#Meridian_Application_Services_PreflightResult__ctor_System_Boolean_System_Boolean_System_Collections_Generic_IReadOnlyList_Meridian_Application_Services_PreflightCheckResult__System_Double_System_DateTimeOffset_
+  name: PreflightResult
+  nameWithType: PreflightResult.PreflightResult
+  fullName: Meridian.Application.Services.PreflightResult.PreflightResult
+  nameWithType.vb: PreflightResult.New
+  fullName.vb: Meridian.Application.Services.PreflightResult.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.PreflightCheckResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PreflightCheckResult>
+  nameWithType: IReadOnlyList<PreflightCheckResult>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.PreflightCheckResult>
+  nameWithType.vb: IReadOnlyList(Of PreflightCheckResult)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.PreflightCheckResult)
+  name.vb: IReadOnlyList(Of PreflightCheckResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.PreflightCheckResult
+    name: PreflightCheckResult
+    href: Meridian.Application.Services.PreflightCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.PreflightCheckResult
+    name: PreflightCheckResult
+    href: Meridian.Application.Services.PreflightCheckResult.html
+  - name: )
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.PreflightResult.AllChecksPassed*
+  commentId: Overload:Meridian.Application.Services.PreflightResult.AllChecksPassed
+  href: Meridian.Application.Services.PreflightResult.html#Meridian_Application_Services_PreflightResult_AllChecksPassed
+  name: AllChecksPassed
+  nameWithType: PreflightResult.AllChecksPassed
+  fullName: Meridian.Application.Services.PreflightResult.AllChecksPassed
+- uid: Meridian.Application.Services.PreflightResult.HasWarnings*
+  commentId: Overload:Meridian.Application.Services.PreflightResult.HasWarnings
+  href: Meridian.Application.Services.PreflightResult.html#Meridian_Application_Services_PreflightResult_HasWarnings
+  name: HasWarnings
+  nameWithType: PreflightResult.HasWarnings
+  fullName: Meridian.Application.Services.PreflightResult.HasWarnings
+- uid: Meridian.Application.Services.PreflightResult.Checks*
+  commentId: Overload:Meridian.Application.Services.PreflightResult.Checks
+  href: Meridian.Application.Services.PreflightResult.html#Meridian_Application_Services_PreflightResult_Checks
+  name: Checks
+  nameWithType: PreflightResult.Checks
+  fullName: Meridian.Application.Services.PreflightResult.Checks
+- uid: Meridian.Application.Services.PreflightResult.TotalDurationMs*
+  commentId: Overload:Meridian.Application.Services.PreflightResult.TotalDurationMs
+  href: Meridian.Application.Services.PreflightResult.html#Meridian_Application_Services_PreflightResult_TotalDurationMs
+  name: TotalDurationMs
+  nameWithType: PreflightResult.TotalDurationMs
+  fullName: Meridian.Application.Services.PreflightResult.TotalDurationMs
+- uid: Meridian.Application.Services.PreflightResult.CheckedAt*
+  commentId: Overload:Meridian.Application.Services.PreflightResult.CheckedAt
+  href: Meridian.Application.Services.PreflightResult.html#Meridian_Application_Services_PreflightResult_CheckedAt
+  name: CheckedAt
+  nameWithType: PreflightResult.CheckedAt
+  fullName: Meridian.Application.Services.PreflightResult.CheckedAt
+- uid: Meridian.Application.Services.PreflightResult.GetSummary*
+  commentId: Overload:Meridian.Application.Services.PreflightResult.GetSummary
+  href: Meridian.Application.Services.PreflightResult.html#Meridian_Application_Services_PreflightResult_GetSummary
+  name: GetSummary
+  nameWithType: PreflightResult.GetSummary
+  fullName: Meridian.Application.Services.PreflightResult.GetSummary
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

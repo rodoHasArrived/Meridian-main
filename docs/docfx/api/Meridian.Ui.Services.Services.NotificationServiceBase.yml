@@ -1,0 +1,1483 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase
+  commentId: T:Meridian.Ui.Services.Services.NotificationServiceBase
+  id: NotificationServiceBase
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory
+  - Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory
+  - Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings
+  - Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount
+  - Meridian.Ui.Services.Services.NotificationServiceBase.HistoryLock
+  - Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead(System.Int32)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotificationReceived
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync(System.String,System.String,Meridian.Ui.Services.NotificationType)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync(System.Boolean,System.Int32,System.Int32,System.TimeSpan)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync(System.Boolean,System.String,System.String)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync(System.String,System.DateTime,System.DateTime,System.Int32)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync(System.String,System.String,System.Exception)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo(System.String,System.String)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync(System.String,System.Boolean,System.Boolean)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync(System.Double,System.Int64)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess(System.String,System.String)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning(System.String,System.String)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync(System.String,System.String)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification
+  - Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification(System.String,System.String,Meridian.Ui.Services.NotificationType,System.Int32)
+  - Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings(Meridian.Ui.Services.Services.NotificationSettings)
+  langs:
+  - csharp
+  - vb
+  name: NotificationServiceBase
+  nameWithType: NotificationServiceBase
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotificationServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Abstract base class for notification management shared between platforms.
+
+    Provides smart suppression (deduplication + rate limiting), history tracking,
+
+    settings management, and domain-specific notification methods.
+
+    Part of Phase 2 service extraction.
+  example: []
+  syntax:
+    content: public abstract class NotificationServiceBase
+    content.vb: Public MustInherit Class NotificationServiceBase
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.HistoryLock
+  commentId: F:Meridian.Ui.Services.Services.NotificationServiceBase.HistoryLock
+  id: HistoryLock
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: HistoryLock
+  nameWithType: NotificationServiceBase.HistoryLock
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.HistoryLock
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoryLock
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: protected readonly object HistoryLock
+    return:
+      type: System.Object
+    content.vb: Protected ReadOnly HistoryLock As Object
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotificationReceived
+  commentId: E:Meridian.Ui.Services.Services.NotificationServiceBase.NotificationReceived
+  id: NotificationReceived
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotificationReceived
+  nameWithType: NotificationServiceBase.NotificationReceived
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotificationReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotificationReceived
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public event EventHandler<NotificationEventArgs>? NotificationReceived
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Services.NotificationEventArgs}
+    content.vb: Public Event NotificationReceived As EventHandler(Of NotificationEventArgs)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification(System.String,System.String,Meridian.Ui.Services.NotificationType,System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification(System.String,System.String,Meridian.Ui.Services.NotificationType,System.Int32)
+  id: ShowNotification(System.String,System.String,Meridian.Ui.Services.NotificationType,System.Int32)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ShowNotification(string, string, NotificationType, int)
+  nameWithType: NotificationServiceBase.ShowNotification(string, string, NotificationType, int)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification(string, string, Meridian.Ui.Services.NotificationType, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShowNotification
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000)
+    parameters:
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    - id: type
+      type: Meridian.Ui.Services.NotificationType
+    - id: durationMs
+      type: System.Int32
+    content.vb: Public Sub ShowNotification(title As String, message As String, type As NotificationType = NotificationType.Info, durationMs As Integer = 5000)
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification*
+  nameWithType.vb: NotificationServiceBase.ShowNotification(String, String, NotificationType, Integer)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification(String, String, Meridian.Ui.Services.NotificationType, Integer)
+  name.vb: ShowNotification(String, String, NotificationType, Integer)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync(System.String,System.String,System.Exception)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync(System.String,System.String,System.Exception)
+  id: NotifyErrorAsync(System.String,System.String,System.Exception)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyErrorAsync(string, string, Exception?)
+  nameWithType: NotificationServiceBase.NotifyErrorAsync(string, string, Exception?)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync(string, string, System.Exception?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyErrorAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyErrorAsync(string title, string message, Exception? exception = null)
+    parameters:
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    - id: exception
+      type: System.Exception
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyErrorAsync(title As String, message As String, exception As Exception = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyErrorAsync(String, String, Exception)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync(String, String, System.Exception)
+  name.vb: NotifyErrorAsync(String, String, Exception)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess(System.String,System.String)
+  id: NotifySuccess(System.String,System.String)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifySuccess(string, string)
+  nameWithType: NotificationServiceBase.NotifySuccess(string, string)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifySuccess
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void NotifySuccess(string title, string message)
+    parameters:
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    content.vb: Public Sub NotifySuccess(title As String, message As String)
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess*
+  nameWithType.vb: NotificationServiceBase.NotifySuccess(String, String)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess(String, String)
+  name.vb: NotifySuccess(String, String)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning(System.String,System.String)
+  id: NotifyWarning(System.String,System.String)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyWarning(string, string)
+  nameWithType: NotificationServiceBase.NotifyWarning(string, string)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyWarning
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void NotifyWarning(string title, string message)
+    parameters:
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    content.vb: Public Sub NotifyWarning(title As String, message As String)
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning*
+  nameWithType.vb: NotificationServiceBase.NotifyWarning(String, String)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning(String, String)
+  name.vb: NotifyWarning(String, String)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync(System.String,System.String)
+  id: NotifyWarningAsync(System.String,System.String)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyWarningAsync(string, string)
+  nameWithType: NotificationServiceBase.NotifyWarningAsync(string, string)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyWarningAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyWarningAsync(string title, string message)
+    parameters:
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyWarningAsync(title As String, message As String) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyWarningAsync(String, String)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync(String, String)
+  name.vb: NotifyWarningAsync(String, String)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync(System.String,System.String,Meridian.Ui.Services.NotificationType)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync(System.String,System.String,Meridian.Ui.Services.NotificationType)
+  id: NotifyAsync(System.String,System.String,Meridian.Ui.Services.NotificationType)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyAsync(string, string, NotificationType)
+  nameWithType: NotificationServiceBase.NotifyAsync(string, string, NotificationType)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync(string, string, Meridian.Ui.Services.NotificationType)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info)
+    parameters:
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    - id: type
+      type: Meridian.Ui.Services.NotificationType
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyAsync(title As String, message As String, type As NotificationType = NotificationType.Info) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyAsync(String, String, NotificationType)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync(String, String, Meridian.Ui.Services.NotificationType)
+  name.vb: NotifyAsync(String, String, NotificationType)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo(System.String,System.String)
+  id: NotifyInfo(System.String,System.String)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyInfo(string, string)
+  nameWithType: NotificationServiceBase.NotifyInfo(string, string)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyInfo
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void NotifyInfo(string title, string message)
+    parameters:
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    content.vb: Public Sub NotifyInfo(title As String, message As String)
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo*
+  nameWithType.vb: NotificationServiceBase.NotifyInfo(String, String)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo(String, String)
+  name.vb: NotifyInfo(String, String)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync(System.Boolean,System.String,System.String)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync(System.Boolean,System.String,System.String)
+  id: NotifyConnectionStatusAsync(System.Boolean,System.String,System.String)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyConnectionStatusAsync(bool, string, string?)
+  nameWithType: NotificationServiceBase.NotifyConnectionStatusAsync(bool, string, string?)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync(bool, string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyConnectionStatusAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null)
+    parameters:
+    - id: connected
+      type: System.Boolean
+    - id: providerName
+      type: System.String
+    - id: details
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyConnectionStatusAsync(connected As Boolean, providerName As String, details As String = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyConnectionStatusAsync(Boolean, String, String)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync(Boolean, String, String)
+  name.vb: NotifyConnectionStatusAsync(Boolean, String, String)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync(System.Boolean,System.Int32,System.Int32,System.TimeSpan)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync(System.Boolean,System.Int32,System.Int32,System.TimeSpan)
+  id: NotifyBackfillCompleteAsync(System.Boolean,System.Int32,System.Int32,System.TimeSpan)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyBackfillCompleteAsync(bool, int, int, TimeSpan)
+  nameWithType: NotificationServiceBase.NotifyBackfillCompleteAsync(bool, int, int, TimeSpan)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync(bool, int, int, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyBackfillCompleteAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration)
+    parameters:
+    - id: success
+      type: System.Boolean
+    - id: symbolCount
+      type: System.Int32
+    - id: barsWritten
+      type: System.Int32
+    - id: duration
+      type: System.TimeSpan
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyBackfillCompleteAsync(success As Boolean, symbolCount As Integer, barsWritten As Integer, duration As TimeSpan) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyBackfillCompleteAsync(Boolean, Integer, Integer, TimeSpan)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync(Boolean, Integer, Integer, System.TimeSpan)
+  name.vb: NotifyBackfillCompleteAsync(Boolean, Integer, Integer, TimeSpan)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync(System.String,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync(System.String,System.Boolean,System.Boolean)
+  id: NotifyScheduledJobAsync(System.String,System.Boolean,System.Boolean)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyScheduledJobAsync(string, bool, bool)
+  nameWithType: NotificationServiceBase.NotifyScheduledJobAsync(string, bool, bool)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync(string, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyScheduledJobAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true)
+    parameters:
+    - id: jobName
+      type: System.String
+    - id: started
+      type: System.Boolean
+    - id: success
+      type: System.Boolean
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyScheduledJobAsync(jobName As String, started As Boolean, success As Boolean = True) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyScheduledJobAsync(String, Boolean, Boolean)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync(String, Boolean, Boolean)
+  name.vb: NotifyScheduledJobAsync(String, Boolean, Boolean)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync(System.String,System.DateTime,System.DateTime,System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync(System.String,System.DateTime,System.DateTime,System.Int32)
+  id: NotifyDataGapAsync(System.String,System.DateTime,System.DateTime,System.Int32)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyDataGapAsync(string, DateTime, DateTime, int)
+  nameWithType: NotificationServiceBase.NotifyDataGapAsync(string, DateTime, DateTime, int)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync(string, System.DateTime, System.DateTime, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyDataGapAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: gapStart
+      type: System.DateTime
+    - id: gapEnd
+      type: System.DateTime
+    - id: missingBars
+      type: System.Int32
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyDataGapAsync(symbol As String, gapStart As Date, gapEnd As Date, missingBars As Integer) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyDataGapAsync(String, Date, Date, Integer)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync(String, Date, Date, Integer)
+  name.vb: NotifyDataGapAsync(String, Date, Date, Integer)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync(System.Double,System.Int64)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync(System.Double,System.Int64)
+  id: NotifyStorageWarningAsync(System.Double,System.Int64)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NotifyStorageWarningAsync(double, long)
+  nameWithType: NotificationServiceBase.NotifyStorageWarningAsync(double, long)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync(double, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyStorageWarningAsync
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes)
+    parameters:
+    - id: usedPercent
+      type: System.Double
+    - id: freeSpaceBytes
+      type: System.Int64
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function NotifyStorageWarningAsync(usedPercent As Double, freeSpaceBytes As Long) As Task
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync*
+  nameWithType.vb: NotificationServiceBase.NotifyStorageWarningAsync(Double, Long)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync(Double, Long)
+  name.vb: NotifyStorageWarningAsync(Double, Long)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification
+  id: SendTestNotification
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SendTestNotification()
+  nameWithType: NotificationServiceBase.SendTestNotification()
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SendTestNotification
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 267
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void SendTestNotification()
+    content.vb: Public Sub SendTestNotification()
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification*
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings(Meridian.Ui.Services.Services.NotificationSettings)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings(Meridian.Ui.Services.Services.NotificationSettings)
+  id: UpdateSettings(Meridian.Ui.Services.Services.NotificationSettings)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: UpdateSettings(NotificationSettings)
+  nameWithType: NotificationServiceBase.UpdateSettings(NotificationSettings)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings(Meridian.Ui.Services.Services.NotificationSettings)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSettings
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void UpdateSettings(NotificationSettings settings)
+    parameters:
+    - id: settings
+      type: Meridian.Ui.Services.Services.NotificationSettings
+    content.vb: Public Sub UpdateSettings(settings As NotificationSettings)
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings*
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings
+  id: GetSettings
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetSettings()
+  nameWithType: NotificationServiceBase.GetSettings()
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSettings
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public NotificationSettings GetSettings()
+    return:
+      type: Meridian.Ui.Services.Services.NotificationSettings
+    content.vb: Public Function GetSettings() As NotificationSettings
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings*
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory
+  id: GetHistory
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetHistory()
+  nameWithType: NotificationServiceBase.GetHistory()
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistory
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public IReadOnlyList<NotificationHistoryItem> GetHistory()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Services.NotificationHistoryItem}
+    content.vb: Public Function GetHistory() As IReadOnlyList(Of NotificationHistoryItem)
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory*
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory
+  id: ClearHistory
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ClearHistory()
+  nameWithType: NotificationServiceBase.ClearHistory()
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearHistory
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void ClearHistory()
+    content.vb: Public Sub ClearHistory()
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory*
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead(System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead(System.Int32)
+  id: MarkAsRead(System.Int32)
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: MarkAsRead(int)
+  nameWithType: NotificationServiceBase.MarkAsRead(int)
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkAsRead
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public void MarkAsRead(int index)
+    parameters:
+    - id: index
+      type: System.Int32
+    content.vb: Public Sub MarkAsRead(index As Integer)
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead*
+  nameWithType.vb: NotificationServiceBase.MarkAsRead(Integer)
+  fullName.vb: Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead(Integer)
+  name.vb: MarkAsRead(Integer)
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount
+  commentId: M:Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount
+  id: GetUnreadCount
+  parent: Meridian.Ui.Services.Services.NotificationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetUnreadCount()
+  nameWithType: NotificationServiceBase.GetUnreadCount()
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUnreadCount
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int GetUnreadCount()
+    return:
+      type: System.Int32
+    content.vb: Public Function GetUnreadCount() As Integer
+  overload: Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.EventHandler{Meridian.Ui.Services.Services.NotificationEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Services.NotificationEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<NotificationEventArgs>
+  nameWithType: EventHandler<NotificationEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.Services.NotificationEventArgs>
+  nameWithType.vb: EventHandler(Of NotificationEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Services.NotificationEventArgs)
+  name.vb: EventHandler(Of NotificationEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.NotificationEventArgs
+    name: NotificationEventArgs
+    href: Meridian.Ui.Services.Services.NotificationEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.NotificationEventArgs
+    name: NotificationEventArgs
+    href: Meridian.Ui.Services.Services.NotificationEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_ShowNotification_System_String_System_String_Meridian_Ui_Services_NotificationType_System_Int32_
+  name: ShowNotification
+  nameWithType: NotificationServiceBase.ShowNotification
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.ShowNotification
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.NotificationType
+  commentId: T:Meridian.Ui.Services.NotificationType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.NotificationType.html
+  name: NotificationType
+  nameWithType: NotificationType
+  fullName: Meridian.Ui.Services.NotificationType
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyErrorAsync_System_String_System_String_System_Exception_
+  name: NotifyErrorAsync
+  nameWithType: NotificationServiceBase.NotifyErrorAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyErrorAsync
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifySuccess_System_String_System_String_
+  name: NotifySuccess
+  nameWithType: NotificationServiceBase.NotifySuccess
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifySuccess
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyWarning_System_String_System_String_
+  name: NotifyWarning
+  nameWithType: NotificationServiceBase.NotifyWarning
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarning
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyWarningAsync_System_String_System_String_
+  name: NotifyWarningAsync
+  nameWithType: NotificationServiceBase.NotifyWarningAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyWarningAsync
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyAsync_System_String_System_String_Meridian_Ui_Services_NotificationType_
+  name: NotifyAsync
+  nameWithType: NotificationServiceBase.NotifyAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyAsync
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyInfo_System_String_System_String_
+  name: NotifyInfo
+  nameWithType: NotificationServiceBase.NotifyInfo
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyInfo
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyConnectionStatusAsync_System_Boolean_System_String_System_String_
+  name: NotifyConnectionStatusAsync
+  nameWithType: NotificationServiceBase.NotifyConnectionStatusAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyConnectionStatusAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyBackfillCompleteAsync_System_Boolean_System_Int32_System_Int32_System_TimeSpan_
+  name: NotifyBackfillCompleteAsync
+  nameWithType: NotificationServiceBase.NotifyBackfillCompleteAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyBackfillCompleteAsync
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyScheduledJobAsync_System_String_System_Boolean_System_Boolean_
+  name: NotifyScheduledJobAsync
+  nameWithType: NotificationServiceBase.NotifyScheduledJobAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyScheduledJobAsync
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyDataGapAsync_System_String_System_DateTime_System_DateTime_System_Int32_
+  name: NotifyDataGapAsync
+  nameWithType: NotificationServiceBase.NotifyDataGapAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyDataGapAsync
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_NotifyStorageWarningAsync_System_Double_System_Int64_
+  name: NotifyStorageWarningAsync
+  nameWithType: NotificationServiceBase.NotifyStorageWarningAsync
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.NotifyStorageWarningAsync
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_SendTestNotification
+  name: SendTestNotification
+  nameWithType: NotificationServiceBase.SendTestNotification
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.SendTestNotification
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_UpdateSettings_Meridian_Ui_Services_Services_NotificationSettings_
+  name: UpdateSettings
+  nameWithType: NotificationServiceBase.UpdateSettings
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.UpdateSettings
+- uid: Meridian.Ui.Services.Services.NotificationSettings
+  commentId: T:Meridian.Ui.Services.Services.NotificationSettings
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.NotificationSettings.html
+  name: NotificationSettings
+  nameWithType: NotificationSettings
+  fullName: Meridian.Ui.Services.Services.NotificationSettings
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_GetSettings
+  name: GetSettings
+  nameWithType: NotificationServiceBase.GetSettings
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.GetSettings
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_GetHistory
+  name: GetHistory
+  nameWithType: NotificationServiceBase.GetHistory
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.GetHistory
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Services.NotificationHistoryItem}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Services.NotificationHistoryItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<NotificationHistoryItem>
+  nameWithType: IReadOnlyList<NotificationHistoryItem>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.Services.NotificationHistoryItem>
+  nameWithType.vb: IReadOnlyList(Of NotificationHistoryItem)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.Services.NotificationHistoryItem)
+  name.vb: IReadOnlyList(Of NotificationHistoryItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.NotificationHistoryItem
+    name: NotificationHistoryItem
+    href: Meridian.Ui.Services.Services.NotificationHistoryItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.NotificationHistoryItem
+    name: NotificationHistoryItem
+    href: Meridian.Ui.Services.Services.NotificationHistoryItem.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_ClearHistory
+  name: ClearHistory
+  nameWithType: NotificationServiceBase.ClearHistory
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.ClearHistory
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_MarkAsRead_System_Int32_
+  name: MarkAsRead
+  nameWithType: NotificationServiceBase.MarkAsRead
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.MarkAsRead
+- uid: Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount
+  href: Meridian.Ui.Services.Services.NotificationServiceBase.html#Meridian_Ui_Services_Services_NotificationServiceBase_GetUnreadCount
+  name: GetUnreadCount
+  nameWithType: NotificationServiceBase.GetUnreadCount
+  fullName: Meridian.Ui.Services.Services.NotificationServiceBase.GetUnreadCount

@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  id: ReportExportFormat
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Csv
+  - Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Html
+  - Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Json
+  - Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Markdown
+  langs:
+  - csharp
+  - vb
+  name: ReportExportFormat
+  nameWithType: ReportExportFormat
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportExportFormat
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 388
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Export format for reports.
+  example: []
+  syntax:
+    content: 'public enum ReportExportFormat : byte'
+    content.vb: Public Enum ReportExportFormat As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Json
+  commentId: F:Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Json
+  id: Json
+  parent: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Json
+  nameWithType: ReportExportFormat.Json
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Json
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Json
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 390
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Json = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Csv
+  commentId: F:Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Csv
+  id: Csv
+  parent: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Csv
+  nameWithType: ReportExportFormat.Csv
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Csv
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Csv
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Csv = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Html
+  commentId: F:Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Html
+  id: Html
+  parent: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Html
+  nameWithType: ReportExportFormat.Html
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Html
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Html
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Html = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Markdown
+  commentId: F:Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Markdown
+  id: Markdown
+  parent: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Markdown
+  nameWithType: ReportExportFormat.Markdown
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.Markdown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Markdown
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 393
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Markdown = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.html
+  name: ReportExportFormat
+  nameWithType: ReportExportFormat
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat

@@ -1,0 +1,104 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  id: Meridian.Application.ProviderRouting
+  children:
+  - Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  - Meridian.Application.ProviderRouting.ProviderBindingService
+  - Meridian.Application.ProviderRouting.ProviderCertificationService
+  - Meridian.Application.ProviderRouting.ProviderConnectionService
+  - Meridian.Application.ProviderRouting.ProviderPresetService
+  - Meridian.Application.ProviderRouting.ProviderRouteExplainabilityService
+  - Meridian.Application.ProviderRouting.ProviderRoutingService
+  - Meridian.Application.ProviderRouting.ProviderTrustScoringService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderBindingService
+  href: Meridian.Application.ProviderRouting.ProviderBindingService.html
+  name: ProviderBindingService
+  nameWithType: ProviderBindingService
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService
+- uid: Meridian.Application.ProviderRouting.ProviderConnectionService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderConnectionService
+  href: Meridian.Application.ProviderRouting.ProviderConnectionService.html
+  name: ProviderConnectionService
+  nameWithType: ProviderConnectionService
+  fullName: Meridian.Application.ProviderRouting.ProviderConnectionService
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderPresetService
+  href: Meridian.Application.ProviderRouting.ProviderPresetService.html
+  name: ProviderPresetService
+  nameWithType: ProviderPresetService
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService
+- uid: Meridian.Application.ProviderRouting.ProviderTrustScoringService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderTrustScoringService
+  href: Meridian.Application.ProviderRouting.ProviderTrustScoringService.html
+  name: ProviderTrustScoringService
+  nameWithType: ProviderTrustScoringService
+  fullName: Meridian.Application.ProviderRouting.ProviderTrustScoringService
+- uid: Meridian.Application.ProviderRouting.ProviderCertificationService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderCertificationService
+  href: Meridian.Application.ProviderRouting.ProviderCertificationService.html
+  name: ProviderCertificationService
+  nameWithType: ProviderCertificationService
+  fullName: Meridian.Application.ProviderRouting.ProviderCertificationService
+- uid: Meridian.Application.ProviderRouting.ProviderRouteExplainabilityService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderRouteExplainabilityService
+  href: Meridian.Application.ProviderRouting.ProviderRouteExplainabilityService.html
+  name: ProviderRouteExplainabilityService
+  nameWithType: ProviderRouteExplainabilityService
+  fullName: Meridian.Application.ProviderRouting.ProviderRouteExplainabilityService
+- uid: Meridian.Application.ProviderRouting.ProviderRoutingService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderRoutingService
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.ProviderRoutingService.html
+  name: ProviderRoutingService
+  nameWithType: ProviderRoutingService
+  fullName: Meridian.Application.ProviderRouting.ProviderRoutingService
+- uid: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  commentId: T:Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.html
+  name: IProviderFamilyCatalogService
+  nameWithType: IProviderFamilyCatalogService
+  fullName: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  href: Meridian.html
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html

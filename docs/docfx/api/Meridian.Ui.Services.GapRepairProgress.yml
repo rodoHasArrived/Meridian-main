@@ -1,0 +1,504 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.GapRepairProgress
+  commentId: T:Meridian.Ui.Services.GapRepairProgress
+  id: GapRepairProgress
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.GapRepairProgress.CurrentDate
+  - Meridian.Ui.Services.GapRepairProgress.CurrentSymbol
+  - Meridian.Ui.Services.GapRepairProgress.PercentComplete
+  - Meridian.Ui.Services.GapRepairProgress.ProcessedGaps
+  - Meridian.Ui.Services.GapRepairProgress.TotalGaps
+  langs:
+  - csharp
+  - vb
+  name: GapRepairProgress
+  nameWithType: GapRepairProgress
+  fullName: Meridian.Ui.Services.GapRepairProgress
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapRepairProgress
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 639
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gap repair progress.
+  example: []
+  syntax:
+    content: public sealed class GapRepairProgress
+    content.vb: Public NotInheritable Class GapRepairProgress
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.GapRepairProgress.CurrentSymbol
+  commentId: P:Meridian.Ui.Services.GapRepairProgress.CurrentSymbol
+  id: CurrentSymbol
+  parent: Meridian.Ui.Services.GapRepairProgress
+  langs:
+  - csharp
+  - vb
+  name: CurrentSymbol
+  nameWithType: GapRepairProgress.CurrentSymbol
+  fullName: Meridian.Ui.Services.GapRepairProgress.CurrentSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentSymbol
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 641
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string CurrentSymbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CurrentSymbol As String
+  overload: Meridian.Ui.Services.GapRepairProgress.CurrentSymbol*
+- uid: Meridian.Ui.Services.GapRepairProgress.CurrentDate
+  commentId: P:Meridian.Ui.Services.GapRepairProgress.CurrentDate
+  id: CurrentDate
+  parent: Meridian.Ui.Services.GapRepairProgress
+  langs:
+  - csharp
+  - vb
+  name: CurrentDate
+  nameWithType: GapRepairProgress.CurrentDate
+  fullName: Meridian.Ui.Services.GapRepairProgress.CurrentDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentDate
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 642
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly CurrentDate { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property CurrentDate As DateOnly
+  overload: Meridian.Ui.Services.GapRepairProgress.CurrentDate*
+- uid: Meridian.Ui.Services.GapRepairProgress.ProcessedGaps
+  commentId: P:Meridian.Ui.Services.GapRepairProgress.ProcessedGaps
+  id: ProcessedGaps
+  parent: Meridian.Ui.Services.GapRepairProgress
+  langs:
+  - csharp
+  - vb
+  name: ProcessedGaps
+  nameWithType: GapRepairProgress.ProcessedGaps
+  fullName: Meridian.Ui.Services.GapRepairProgress.ProcessedGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessedGaps
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 643
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int ProcessedGaps { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ProcessedGaps As Integer
+  overload: Meridian.Ui.Services.GapRepairProgress.ProcessedGaps*
+- uid: Meridian.Ui.Services.GapRepairProgress.TotalGaps
+  commentId: P:Meridian.Ui.Services.GapRepairProgress.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Ui.Services.GapRepairProgress
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: GapRepairProgress.TotalGaps
+  fullName: Meridian.Ui.Services.GapRepairProgress.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalGaps { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalGaps As Integer
+  overload: Meridian.Ui.Services.GapRepairProgress.TotalGaps*
+- uid: Meridian.Ui.Services.GapRepairProgress.PercentComplete
+  commentId: P:Meridian.Ui.Services.GapRepairProgress.PercentComplete
+  id: PercentComplete
+  parent: Meridian.Ui.Services.GapRepairProgress
+  langs:
+  - csharp
+  - vb
+  name: PercentComplete
+  nameWithType: GapRepairProgress.PercentComplete
+  fullName: Meridian.Ui.Services.GapRepairProgress.PercentComplete
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PercentComplete
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 645
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double PercentComplete { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property PercentComplete As Double
+  overload: Meridian.Ui.Services.GapRepairProgress.PercentComplete*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.GapRepairProgress.CurrentSymbol*
+  commentId: Overload:Meridian.Ui.Services.GapRepairProgress.CurrentSymbol
+  href: Meridian.Ui.Services.GapRepairProgress.html#Meridian_Ui_Services_GapRepairProgress_CurrentSymbol
+  name: CurrentSymbol
+  nameWithType: GapRepairProgress.CurrentSymbol
+  fullName: Meridian.Ui.Services.GapRepairProgress.CurrentSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.GapRepairProgress.CurrentDate*
+  commentId: Overload:Meridian.Ui.Services.GapRepairProgress.CurrentDate
+  href: Meridian.Ui.Services.GapRepairProgress.html#Meridian_Ui_Services_GapRepairProgress_CurrentDate
+  name: CurrentDate
+  nameWithType: GapRepairProgress.CurrentDate
+  fullName: Meridian.Ui.Services.GapRepairProgress.CurrentDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Ui.Services.GapRepairProgress.ProcessedGaps*
+  commentId: Overload:Meridian.Ui.Services.GapRepairProgress.ProcessedGaps
+  href: Meridian.Ui.Services.GapRepairProgress.html#Meridian_Ui_Services_GapRepairProgress_ProcessedGaps
+  name: ProcessedGaps
+  nameWithType: GapRepairProgress.ProcessedGaps
+  fullName: Meridian.Ui.Services.GapRepairProgress.ProcessedGaps
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.GapRepairProgress.TotalGaps*
+  commentId: Overload:Meridian.Ui.Services.GapRepairProgress.TotalGaps
+  href: Meridian.Ui.Services.GapRepairProgress.html#Meridian_Ui_Services_GapRepairProgress_TotalGaps
+  name: TotalGaps
+  nameWithType: GapRepairProgress.TotalGaps
+  fullName: Meridian.Ui.Services.GapRepairProgress.TotalGaps
+- uid: Meridian.Ui.Services.GapRepairProgress.PercentComplete*
+  commentId: Overload:Meridian.Ui.Services.GapRepairProgress.PercentComplete
+  href: Meridian.Ui.Services.GapRepairProgress.html#Meridian_Ui_Services_GapRepairProgress_PercentComplete
+  name: PercentComplete
+  nameWithType: GapRepairProgress.PercentComplete
+  fullName: Meridian.Ui.Services.GapRepairProgress.PercentComplete
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Logging
+  commentId: N:Meridian.Application.Logging
+  id: Meridian.Application.Logging
+  children:
+  - Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Logging
+  nameWithType: Meridian.Application.Logging
+  fullName: Meridian.Application.Logging
+  type: Namespace
+  assemblies:
+  - Meridian.Core
+references:
+- uid: Meridian.Application.Logging.LoggingSetup
+  commentId: T:Meridian.Application.Logging.LoggingSetup
+  href: Meridian.Application.Logging.LoggingSetup.html
+  name: LoggingSetup
+  nameWithType: LoggingSetup
+  fullName: Meridian.Application.Logging.LoggingSetup

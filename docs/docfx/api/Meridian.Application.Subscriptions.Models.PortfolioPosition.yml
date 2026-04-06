@@ -1,0 +1,811 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  commentId: T:Meridian.Application.Subscriptions.Models.PortfolioPosition
+  id: PortfolioPosition
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.#ctor(System.String,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.String,System.String)
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.Side
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol
+  - Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL
+  langs:
+  - csharp
+  - vb
+  name: PortfolioPosition
+  nameWithType: PortfolioPosition
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioPosition
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Represents a position from a broker portfolio.
+  example: []
+  syntax:
+    content: 'public sealed record PortfolioPosition : IEquatable<PortfolioPosition>'
+    content.vb: Public NotInheritable Class PortfolioPosition Implements IEquatable(Of PortfolioPosition)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.PortfolioPosition}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.#ctor(System.String,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Models.PortfolioPosition.#ctor(System.String,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.String,System.String)'
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: PortfolioPosition(string, decimal, decimal?, decimal?, decimal?, string?, string?, string, string)
+  nameWithType: PortfolioPosition.PortfolioPosition(string, decimal, decimal?, decimal?, decimal?, string?, string?, string, string)
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.PortfolioPosition(string, decimal, decimal?, decimal?, decimal?, string?, string?, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Represents a position from a broker portfolio.
+  example: []
+  syntax:
+    content: public PortfolioPosition(string Symbol, decimal Quantity, decimal? MarketValue, decimal? AverageCost, decimal? UnrealizedPnL, string? AssetClass, string? Exchange, string Currency = "USD", string Side = "long")
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Quantity
+      type: System.Decimal
+    - id: MarketValue
+      type: System.Nullable{System.Decimal}
+    - id: AverageCost
+      type: System.Nullable{System.Decimal}
+    - id: UnrealizedPnL
+      type: System.Nullable{System.Decimal}
+    - id: AssetClass
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: Currency
+      type: System.String
+    - id: Side
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, Quantity As Decimal, MarketValue As Decimal?, AverageCost As Decimal?, UnrealizedPnL As Decimal?, AssetClass As String, Exchange As String, Currency As String = "USD", Side As String = "long")
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.#ctor*
+  nameWithType.vb: PortfolioPosition.New(String, Decimal, Decimal?, Decimal?, Decimal?, String, String, String, String)
+  fullName.vb: Meridian.Application.Subscriptions.Models.PortfolioPosition.New(String, Decimal, Decimal?, Decimal?, Decimal?, String, String, String, String)
+  name.vb: New(String, Decimal, Decimal?, Decimal?, Decimal?, String, String, String, String)
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol
+  id: Symbol
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: PortfolioPosition.Symbol
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity
+  id: Quantity
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: PortfolioPosition.Quantity
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Quantity As Decimal
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue
+  id: MarketValue
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: MarketValue
+  nameWithType: PortfolioPosition.MarketValue
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketValue
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? MarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MarketValue As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost
+  id: AverageCost
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: AverageCost
+  nameWithType: PortfolioPosition.AverageCost
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageCost
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? AverageCost { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property AverageCost As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL
+  id: UnrealizedPnL
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnL
+  nameWithType: PortfolioPosition.UnrealizedPnL
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnL
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? UnrealizedPnL { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property UnrealizedPnL As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass
+  id: AssetClass
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: PortfolioPosition.AssetClass
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange
+  id: Exchange
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: PortfolioPosition.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency
+  id: Currency
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: PortfolioPosition.Currency
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Side
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioPosition.Side
+  id: Side
+  parent: Meridian.Application.Subscriptions.Models.PortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: PortfolioPosition.Side
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Side { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Side As String
+  overload: Meridian.Application.Subscriptions.Models.PortfolioPosition.Side*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.PortfolioPosition}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.PortfolioPosition}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PortfolioPosition>
+  nameWithType: IEquatable<PortfolioPosition>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.PortfolioPosition>
+  nameWithType.vb: IEquatable(Of PortfolioPosition)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.PortfolioPosition)
+  name.vb: IEquatable(Of PortfolioPosition)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.PortfolioPosition
+    name: PortfolioPosition
+    href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.PortfolioPosition
+    name: PortfolioPosition
+    href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.#ctor
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition__ctor_System_String_System_Decimal_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_String_System_String_System_String_System_String_
+  name: PortfolioPosition
+  nameWithType: PortfolioPosition.PortfolioPosition
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.PortfolioPosition
+  nameWithType.vb: PortfolioPosition.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.PortfolioPosition.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_Symbol
+  name: Symbol
+  nameWithType: PortfolioPosition.Symbol
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Symbol
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_Quantity
+  name: Quantity
+  nameWithType: PortfolioPosition.Quantity
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Quantity
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_MarketValue
+  name: MarketValue
+  nameWithType: PortfolioPosition.MarketValue
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.MarketValue
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_AverageCost
+  name: AverageCost
+  nameWithType: PortfolioPosition.AverageCost
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.AverageCost
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_UnrealizedPnL
+  name: UnrealizedPnL
+  nameWithType: PortfolioPosition.UnrealizedPnL
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.UnrealizedPnL
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_AssetClass
+  name: AssetClass
+  nameWithType: PortfolioPosition.AssetClass
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.AssetClass
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_Exchange
+  name: Exchange
+  nameWithType: PortfolioPosition.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Exchange
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_Currency
+  name: Currency
+  nameWithType: PortfolioPosition.Currency
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Currency
+- uid: Meridian.Application.Subscriptions.Models.PortfolioPosition.Side*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioPosition.Side
+  href: Meridian.Application.Subscriptions.Models.PortfolioPosition.html#Meridian_Application_Subscriptions_Models_PortfolioPosition_Side
+  name: Side
+  nameWithType: PortfolioPosition.Side
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioPosition.Side

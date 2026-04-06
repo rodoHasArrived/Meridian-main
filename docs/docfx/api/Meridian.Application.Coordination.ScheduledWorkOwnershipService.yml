@@ -1,0 +1,943 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  commentId: T:Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  id: ScheduledWorkOwnershipService
+  parent: Meridian.Application.Coordination
+  children:
+  - Meridian.Application.Coordination.ScheduledWorkOwnershipService.#ctor(Meridian.Application.Coordination.ILeaseManager)
+  - Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ScheduledWorkOwnershipService
+  nameWithType: ScheduledWorkOwnershipService
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledWorkOwnershipService
+    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: 'public sealed class ScheduledWorkOwnershipService : IScheduledWorkOwnershipService'
+    content.vb: Public NotInheritable Class ScheduledWorkOwnershipService Implements IScheduledWorkOwnershipService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.#ctor(Meridian.Application.Coordination.ILeaseManager)
+  commentId: M:Meridian.Application.Coordination.ScheduledWorkOwnershipService.#ctor(Meridian.Application.Coordination.ILeaseManager)
+  id: '#ctor(Meridian.Application.Coordination.ILeaseManager)'
+  parent: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: ScheduledWorkOwnershipService(ILeaseManager)
+  nameWithType: ScheduledWorkOwnershipService.ScheduledWorkOwnershipService(ILeaseManager)
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ScheduledWorkOwnershipService(Meridian.Application.Coordination.ILeaseManager)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public ScheduledWorkOwnershipService(ILeaseManager leaseManager)
+    parameters:
+    - id: leaseManager
+      type: Meridian.Application.Coordination.ILeaseManager
+    content.vb: Public Sub New(leaseManager As ILeaseManager)
+  overload: Meridian.Application.Coordination.ScheduledWorkOwnershipService.#ctor*
+  nameWithType.vb: ScheduledWorkOwnershipService.New(ILeaseManager)
+  fullName.vb: Meridian.Application.Coordination.ScheduledWorkOwnershipService.New(Meridian.Application.Coordination.ILeaseManager)
+  name.vb: New(ILeaseManager)
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  id: TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: TryAcquireDispatcherLeadershipAsync(CancellationToken)
+  nameWithType: ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryAcquireDispatcherLeadershipAsync
+    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<LeaseAcquireResult> TryAcquireDispatcherLeadershipAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+    content.vb: Public Function TryAcquireDispatcherLeadershipAsync(ct As CancellationToken = Nothing) As Task(Of LeaseAcquireResult)
+  overload: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync*
+  implements:
+  - Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+  id: TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: TryAcquireScheduleAsync(string, CancellationToken)
+  nameWithType: ScheduledWorkOwnershipService.TryAcquireScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryAcquireScheduleAsync
+    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<LeaseAcquireResult> TryAcquireScheduleAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+    content.vb: Public Function TryAcquireScheduleAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of LeaseAcquireResult)
+  overload: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync*
+  implements:
+  - Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: ScheduledWorkOwnershipService.TryAcquireScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: TryAcquireScheduleAsync(String, CancellationToken)
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+  id: ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: ReleaseScheduleAsync(string, CancellationToken)
+  nameWithType: ScheduledWorkOwnershipService.ReleaseScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReleaseScheduleAsync
+    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<bool> ReleaseScheduleAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function ReleaseScheduleAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync*
+  implements:
+  - Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: ScheduledWorkOwnershipService.ReleaseScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: ReleaseScheduleAsync(String, CancellationToken)
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+  id: TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: TryAcquireJobAsync(string, CancellationToken)
+  nameWithType: ScheduledWorkOwnershipService.TryAcquireJobAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryAcquireJobAsync
+    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<LeaseAcquireResult> TryAcquireJobAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+    content.vb: Public Function TryAcquireJobAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of LeaseAcquireResult)
+  overload: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync*
+  implements:
+  - Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: ScheduledWorkOwnershipService.TryAcquireJobAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync(String, System.Threading.CancellationToken)
+  name.vb: TryAcquireJobAsync(String, CancellationToken)
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+  id: ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: ReleaseJobAsync(string, CancellationToken)
+  nameWithType: ScheduledWorkOwnershipService.ReleaseJobAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReleaseJobAsync
+    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<bool> ReleaseJobAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function ReleaseJobAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync*
+  implements:
+  - Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: ScheduledWorkOwnershipService.ReleaseJobAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync(String, System.Threading.CancellationToken)
+  name.vb: ReleaseJobAsync(String, CancellationToken)
+references:
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  commentId: T:Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html
+  name: IScheduledWorkOwnershipService
+  nameWithType: IScheduledWorkOwnershipService
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.#ctor*
+  commentId: Overload:Meridian.Application.Coordination.ScheduledWorkOwnershipService.#ctor
+  href: Meridian.Application.Coordination.ScheduledWorkOwnershipService.html#Meridian_Application_Coordination_ScheduledWorkOwnershipService__ctor_Meridian_Application_Coordination_ILeaseManager_
+  name: ScheduledWorkOwnershipService
+  nameWithType: ScheduledWorkOwnershipService.ScheduledWorkOwnershipService
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ScheduledWorkOwnershipService
+  nameWithType.vb: ScheduledWorkOwnershipService.New
+  fullName.vb: Meridian.Application.Coordination.ScheduledWorkOwnershipService.New
+  name.vb: New
+- uid: Meridian.Application.Coordination.ILeaseManager
+  commentId: T:Meridian.Application.Coordination.ILeaseManager
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ILeaseManager.html
+  name: ILeaseManager
+  nameWithType: ILeaseManager
+  fullName: Meridian.Application.Coordination.ILeaseManager
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync*
+  commentId: Overload:Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync
+  href: Meridian.Application.Coordination.ScheduledWorkOwnershipService.html#Meridian_Application_Coordination_ScheduledWorkOwnershipService_TryAcquireDispatcherLeadershipAsync_System_Threading_CancellationToken_
+  name: TryAcquireDispatcherLeadershipAsync
+  nameWithType: ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  isExternal: true
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireDispatcherLeadershipAsync_System_Threading_CancellationToken_
+  name: TryAcquireDispatcherLeadershipAsync(CancellationToken)
+  nameWithType: IScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+    name: TryAcquireDispatcherLeadershipAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireDispatcherLeadershipAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireDispatcherLeadershipAsync(System.Threading.CancellationToken)
+    name: TryAcquireDispatcherLeadershipAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireDispatcherLeadershipAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeaseAcquireResult>
+  nameWithType: Task<LeaseAcquireResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Coordination.LeaseAcquireResult>
+  nameWithType.vb: Task(Of LeaseAcquireResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Coordination.LeaseAcquireResult)
+  name.vb: Task(Of LeaseAcquireResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Coordination.LeaseAcquireResult
+    name: LeaseAcquireResult
+    href: Meridian.Application.Coordination.LeaseAcquireResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Coordination.LeaseAcquireResult
+    name: LeaseAcquireResult
+    href: Meridian.Application.Coordination.LeaseAcquireResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync*
+  commentId: Overload:Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync
+  href: Meridian.Application.Coordination.ScheduledWorkOwnershipService.html#Meridian_Application_Coordination_ScheduledWorkOwnershipService_TryAcquireScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: TryAcquireScheduleAsync
+  nameWithType: ScheduledWorkOwnershipService.TryAcquireScheduleAsync
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireScheduleAsync
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  isExternal: true
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: TryAcquireScheduleAsync(string, CancellationToken)
+  nameWithType: IScheduledWorkOwnershipService.TryAcquireScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireScheduleAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IScheduledWorkOwnershipService.TryAcquireScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: TryAcquireScheduleAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+    name: TryAcquireScheduleAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireScheduleAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireScheduleAsync(System.String,System.Threading.CancellationToken)
+    name: TryAcquireScheduleAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireScheduleAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync*
+  commentId: Overload:Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync
+  href: Meridian.Application.Coordination.ScheduledWorkOwnershipService.html#Meridian_Application_Coordination_ScheduledWorkOwnershipService_ReleaseScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: ReleaseScheduleAsync
+  nameWithType: ScheduledWorkOwnershipService.ReleaseScheduleAsync
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseScheduleAsync
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  isExternal: true
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_ReleaseScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: ReleaseScheduleAsync(string, CancellationToken)
+  nameWithType: IScheduledWorkOwnershipService.ReleaseScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseScheduleAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IScheduledWorkOwnershipService.ReleaseScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: ReleaseScheduleAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+    name: ReleaseScheduleAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_ReleaseScheduleAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseScheduleAsync(System.String,System.Threading.CancellationToken)
+    name: ReleaseScheduleAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_ReleaseScheduleAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync*
+  commentId: Overload:Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync
+  href: Meridian.Application.Coordination.ScheduledWorkOwnershipService.html#Meridian_Application_Coordination_ScheduledWorkOwnershipService_TryAcquireJobAsync_System_String_System_Threading_CancellationToken_
+  name: TryAcquireJobAsync
+  nameWithType: ScheduledWorkOwnershipService.TryAcquireJobAsync
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.TryAcquireJobAsync
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  isExternal: true
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireJobAsync_System_String_System_Threading_CancellationToken_
+  name: TryAcquireJobAsync(string, CancellationToken)
+  nameWithType: IScheduledWorkOwnershipService.TryAcquireJobAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireJobAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IScheduledWorkOwnershipService.TryAcquireJobAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireJobAsync(String, System.Threading.CancellationToken)
+  name.vb: TryAcquireJobAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+    name: TryAcquireJobAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireJobAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.TryAcquireJobAsync(System.String,System.Threading.CancellationToken)
+    name: TryAcquireJobAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_TryAcquireJobAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync*
+  commentId: Overload:Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync
+  href: Meridian.Application.Coordination.ScheduledWorkOwnershipService.html#Meridian_Application_Coordination_ScheduledWorkOwnershipService_ReleaseJobAsync_System_String_System_Threading_CancellationToken_
+  name: ReleaseJobAsync
+  nameWithType: ScheduledWorkOwnershipService.ReleaseJobAsync
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService.ReleaseJobAsync
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  isExternal: true
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_ReleaseJobAsync_System_String_System_Threading_CancellationToken_
+  name: ReleaseJobAsync(string, CancellationToken)
+  nameWithType: IScheduledWorkOwnershipService.ReleaseJobAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseJobAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IScheduledWorkOwnershipService.ReleaseJobAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseJobAsync(String, System.Threading.CancellationToken)
+  name.vb: ReleaseJobAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+    name: ReleaseJobAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_ReleaseJobAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService.ReleaseJobAsync(System.String,System.Threading.CancellationToken)
+    name: ReleaseJobAsync
+    href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html#Meridian_Application_Coordination_IScheduledWorkOwnershipService_ReleaseJobAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )

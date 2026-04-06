@@ -1,0 +1,608 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  id: SecuritySnapshotRecord
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.Text.Json.JsonElement)
+  - Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload
+  - Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId
+  - Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp
+  - Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version
+  langs:
+  - csharp
+  - vb
+  name: SecuritySnapshotRecord
+  nameWithType: SecuritySnapshotRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecuritySnapshotRecord
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: 'public sealed record SecuritySnapshotRecord : IEquatable<SecuritySnapshotRecord>'
+    content.vb: Public NotInheritable Class SecuritySnapshotRecord Implements IEquatable(Of SecuritySnapshotRecord)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.Text.Json.JsonElement)
+  commentId: M:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.Text.Json.JsonElement)
+  id: '#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.Text.Json.JsonElement)'
+  parent: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  langs:
+  - csharp
+  - vb
+  name: SecuritySnapshotRecord(Guid, long, DateTimeOffset, JsonElement)
+  nameWithType: SecuritySnapshotRecord.SecuritySnapshotRecord(Guid, long, DateTimeOffset, JsonElement)
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecuritySnapshotRecord(System.Guid, long, System.DateTimeOffset, System.Text.Json.JsonElement)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public SecuritySnapshotRecord(Guid SecurityId, long Version, DateTimeOffset SnapshotTimestamp, JsonElement Payload)
+    parameters:
+    - id: SecurityId
+      type: System.Guid
+    - id: Version
+      type: System.Int64
+    - id: SnapshotTimestamp
+      type: System.DateTimeOffset
+    - id: Payload
+      type: System.Text.Json.JsonElement
+    content.vb: Public Sub New(SecurityId As Guid, Version As Long, SnapshotTimestamp As DateTimeOffset, Payload As JsonElement)
+  overload: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.#ctor*
+  nameWithType.vb: SecuritySnapshotRecord.New(Guid, Long, DateTimeOffset, JsonElement)
+  fullName.vb: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.New(System.Guid, Long, System.DateTimeOffset, System.Text.Json.JsonElement)
+  name.vb: New(Guid, Long, DateTimeOffset, JsonElement)
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: SecuritySnapshotRecord.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId*
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version
+  commentId: P:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version
+  id: Version
+  parent: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  langs:
+  - csharp
+  - vb
+  name: Version
+  nameWithType: SecuritySnapshotRecord.Version
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Version
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public long Version { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Version As Long
+  overload: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version*
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp
+  commentId: P:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp
+  id: SnapshotTimestamp
+  parent: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  langs:
+  - csharp
+  - vb
+  name: SnapshotTimestamp
+  nameWithType: SecuritySnapshotRecord.SnapshotTimestamp
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SnapshotTimestamp
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateTimeOffset SnapshotTimestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property SnapshotTimestamp As DateTimeOffset
+  overload: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp*
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload
+  commentId: P:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload
+  id: Payload
+  parent: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  langs:
+  - csharp
+  - vb
+  name: Payload
+  nameWithType: SecuritySnapshotRecord.Payload
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Payload
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public JsonElement Payload { get; init; }
+    parameters: []
+    return:
+      type: System.Text.Json.JsonElement
+    content.vb: Public Property Payload As JsonElement
+  overload: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SecuritySnapshotRecord>
+  nameWithType: IEquatable<SecuritySnapshotRecord>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord>
+  nameWithType.vb: IEquatable(Of SecuritySnapshotRecord)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord)
+  name.vb: IEquatable(Of SecuritySnapshotRecord)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+    name: SecuritySnapshotRecord
+    href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+    name: SecuritySnapshotRecord
+    href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.#ctor
+  href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html#Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord__ctor_System_Guid_System_Int64_System_DateTimeOffset_System_Text_Json_JsonElement_
+  name: SecuritySnapshotRecord
+  nameWithType: SecuritySnapshotRecord.SecuritySnapshotRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecuritySnapshotRecord
+  nameWithType.vb: SecuritySnapshotRecord.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Text.Json.JsonElement
+  commentId: T:System.Text.Json.JsonElement
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonelement
+  name: JsonElement
+  nameWithType: JsonElement
+  fullName: System.Text.Json.JsonElement
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId
+  href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html#Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord_SecurityId
+  name: SecurityId
+  nameWithType: SecuritySnapshotRecord.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SecurityId
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version
+  href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html#Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord_Version
+  name: Version
+  nameWithType: SecuritySnapshotRecord.Version
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Version
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp
+  href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html#Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord_SnapshotTimestamp
+  name: SnapshotTimestamp
+  nameWithType: SecuritySnapshotRecord.SnapshotTimestamp
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.SnapshotTimestamp
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload
+  href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html#Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord_Payload
+  name: Payload
+  nameWithType: SecuritySnapshotRecord.Payload
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.Payload
