@@ -332,6 +332,7 @@ Use these documents together when planning or implementing new work:
 │       ├── docker.yml
 │       ├── documentation.yml
 │       ├── export-project-artifact.yml
+│       ├── export-standalone-exe.yml
 │       ├── generate-build-artifact.yml
 │       ├── golden-path-validation.yml
 │       ├── labeling.yml
@@ -3611,6 +3612,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-470 directories, 3011 files
+470 directories, 3012 files
 ```
 <!-- readme-tree end -->
