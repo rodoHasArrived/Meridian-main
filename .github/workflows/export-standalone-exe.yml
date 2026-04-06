@@ -85,10 +85,16 @@ jobs:
         id: version
         shell: pwsh
         run: |
+          $tag = "${{ inputs.release_tag }}"
           if ("${{ github.ref }}" -match "^refs/tags/(v[^/]+)$") {
             $v = $Matches[1]
-          } elseif ("${{ inputs.release_tag }}" -ne "") {
-            $v = "${{ inputs.release_tag }}"
+          } elseif ($tag -ne "") {
+            # Validate that a manually supplied tag follows vX.Y.Z[-suffix] format.
+            if ($tag -notmatch "^v\d+\.\d+\.\d+") {
+              Write-Error "release_tag '$tag' must start with 'v' followed by a semantic version (e.g. v1.2.0)."
+              exit 1
+            }
+            $v = $tag
           } else {
             $sha = "${{ github.sha }}".Substring(0, 7)
             $v = "dev-$sha"
@@ -101,6 +107,10 @@ jobs:
 
       - name: Publish self-contained single-file executable
         run: |
+          # The explicit TargetFramework override is intentional: on the windows-latest
+          # runner the project builds as net9.0-windows10.0.19041.0 (the full WPF TFM),
+          # but without the override MSBuild would select the stub net9.0 target used
+          # on non-Windows systems. This matches the same flag in desktop-builds.yml.
           dotnet publish ${{ env.WPF_PROJECT }} `
             -c ${{ env.BUILD_CONFIG }} `
             -r ${{ matrix.rid }} `
@@ -144,9 +154,6 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-      # Upload to the GitHub Release only when a version tag is available.
-      # If the release was created by release.yml it will already exist; if not,
-      # gh will create a minimal one so the asset upload succeeds.
       - name: Upload to GitHub Release
         if: >
           startsWith(github.ref, 'refs/tags/v') ||
@@ -160,12 +167,18 @@ jobs:
 
           echo "Uploading $ARCHIVE to release $TAG"
 
-          # Create the release if it does not already exist (idempotent).
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes "Standalone executable build for $TAG" \
-            --draft=false \
-            2>/dev/null || true
+          # Check whether the release already exists before attempting creation so
+          # that errors from gh release create only surface for genuine failures,
+          # not the benign "release already exists" case.
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG not found — creating it."
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "Standalone executable build for $TAG" \
+              --draft=false
+          else
+            echo "Release $TAG already exists — skipping creation."
+          fi
 
           # Upload the archive, replacing any previous asset with the same name.
           gh release upload "$TAG" "$ARCHIVE" --clobber
