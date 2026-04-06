@@ -227,8 +227,9 @@ Common flags:
 | `--diagnostics` | Extended diagnostic output |
 | `--backfill` | Trigger historical data backfill |
 | `--package` | Package data for export |
-| `--config-check` | Validate configuration file |
-| `--validate-providers` | Test all configured providers |
+| `--check-config` | Validate configuration file |
+| `--show-config` | Print the effective configuration |
+| `--validate-credentials` | Test configured credentials |
 
 ## Analysis-Ready Exports
 
