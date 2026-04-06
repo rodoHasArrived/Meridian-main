@@ -2,7 +2,7 @@
 param(
   [string]$ProjectPath = 'src/Meridian.Wpf/Meridian.Wpf.csproj',
   [string]$Configuration = 'Release',
-  [string]$Framework = 'net9.0-windows',
+  [string]$Framework = 'net9.0-windows10.0.19041.0',
   [string]$ExeName = 'Meridian.Desktop.exe',
   [string]$OutputDir = 'docs/screenshots/desktop',
   [switch]$SkipBuild,

@@ -49,9 +49,14 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
 
 jobs:
+  build-artifact:
+    name: Build Artifact
+    uses: ./.github/workflows/generate-build-artifact.yml
+
   # Ubuntu tests always run (free tier for public repos, essential for PRs)
   test-ubuntu:
     name: Test (Linux)
+    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -59,18 +64,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup .NET with Cache
-        uses: ./.github/actions/setup-dotnet-cache
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
-
-      - name: Build
-        shell: bash
-        run: |
-          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-artifact.outputs.artifact-name }}
 
       - name: Run C# unit tests
         shell: bash
@@ -121,6 +123,7 @@ jobs:
   test-db:
     name: Test (PostgreSQL)
     if: github.event_name != 'pull_request'
+    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -147,16 +150,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup .NET with Cache
-        uses: ./.github/actions/setup-dotnet-cache
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
-
-      - name: Build
-        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-artifact.outputs.artifact-name }}
 
       - name: Run Security Master PostgreSQL tests
         shell: bash

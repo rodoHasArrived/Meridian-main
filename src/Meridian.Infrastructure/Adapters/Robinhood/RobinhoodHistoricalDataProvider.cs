@@ -82,12 +82,14 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
     /// <param name="priority">Priority in fallback chain (lower = tried first, default: 35).</param>
     /// <param name="httpClient">Optional HTTP client instance.</param>
     /// <param name="log">Optional logger instance.</param>
+    /// <param name="enableResilience">Whether to enable Polly retry/circuit-breaker pipeline (default: true). Pass false in unit tests to avoid retry delays.</param>
     public RobinhoodHistoricalDataProvider(
         string? accessToken = null,
         int priority = 35,
         HttpClient? httpClient = null,
-        ILogger? log = null)
-        : base(httpClient, log)
+        ILogger? log = null,
+        bool enableResilience = true)
+        : base(httpClient, log, enableResilience)
     {
         _priority = priority;
         _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);

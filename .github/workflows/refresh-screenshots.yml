@@ -42,8 +42,13 @@ env:
   UI_PORT: 8200
 
 jobs:
+  build-artifact:
+    name: Build Artifact
+    uses: ./.github/workflows/generate-build-artifact.yml
+
   refresh:
     name: Take screenshots
+    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -51,17 +56,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup .NET with Cache
-        uses: ./.github/actions/setup-dotnet-cache
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache-suffix: screenshots
 
-      - name: Restore dependencies
-        run: dotnet restore src/Meridian/Meridian.csproj -p:EnableWindowsTargeting=true --verbosity minimal
-
-      - name: Build Meridian (Release)
-        run: dotnet build src/Meridian/Meridian.csproj -c Release --no-restore -p:EnableWindowsTargeting=true --verbosity minimal
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-artifact.outputs.artifact-name }}
 
       - name: Copy sample config
         run: cp config/appsettings.sample.json config/appsettings.json
@@ -407,13 +410,13 @@ jobs:
           cache-suffix: desktop-screenshots
 
       - name: Restore WPF dependencies
-        run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
+        run: dotnet restore ${{ env.WPF_PROJECT }} -p:TargetFramework=net9.0-windows10.0.19041.0 --verbosity minimal
 
       - name: Build WPF app (Release)
         run: >
           dotnet build ${{ env.WPF_PROJECT }}
           -c Release --no-restore
-          -p:TargetFramework=net9.0-windows
+          -p:TargetFramework=net9.0-windows10.0.19041.0
           --verbosity minimal
 
       - name: Copy sample config
@@ -429,7 +432,7 @@ jobs:
             -SkipBuild `
             -ProjectPath "${{ env.WPF_PROJECT }}" `
             -Configuration Release `
-            -Framework net9.0-windows
+            -Framework net9.0-windows10.0.19041.0
 
       - name: Commit WPF desktop screenshots
         uses: stefanzweifel/git-auto-commit-action@v7

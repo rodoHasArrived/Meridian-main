@@ -409,3 +409,23 @@ If headings are missing, the workflow still creates an entry with safe defaults 
 - **Source issue**: PR "Fix CS0433 type ambiguity errors breaking WPF desktop build"
 - **Status**: fixed
 - **Fixed in**: `src/Meridian.Ui.Services/Meridian.Ui.Services.csproj` — replaced the entire `<Compile Include>` block sourcing Contracts files with a single `<ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />`
+
+### AI-20260406-orphaned-submodule-worktree-gitlink
+- **ID**: AI-20260406-orphaned-submodule-worktree-gitlink
+- **Area**: git/repository-structure
+- **Symptoms**: CI workflow fails during git cleanup or checkout with `fatal: No url found for submodule path '.claude/worktrees/<name>' in .gitmodules`. Downstream `git diff` calls also fail with `fatal: ambiguous argument 'main': unknown revision`.
+- **Root cause**: An AI agent that uses git worktrees creates a directory like `.claude/worktrees/<name>`. Git tracks any directory containing a `.git` file as a gitlink (mode 160000 — a submodule reference). When the agent commits while that worktree directory is present, git records it as a submodule entry in the tree. Because no `.gitmodules` file exists with a corresponding URL, subsequent `git submodule foreach` calls — run automatically by `actions/checkout` during post-job cleanup — fail with exit code 128.
+- **Prevention checklist**:
+  - [ ] Always add `.claude/worktrees/` to `.gitignore` before any agent session that uses git worktrees — this prevents the directory from ever being staged or committed as a gitlink
+  - [ ] Before committing, run `git ls-files --stage | grep '^160000'` to detect accidental gitlink entries; if any are present, `git rm --cached <path>` them before committing
+  - [ ] After removing a gitlink, confirm with `git ls-tree -r HEAD | grep 160000` that no mode-160000 entries remain
+  - [ ] If a gitlink is accidentally committed, remove it with `git rm --cached .claude/worktrees/<name>` and amend or follow-up commit
+  - [ ] Verify `.gitignore` contains `.claude/worktrees/` after any agent session that creates worktrees
+- **Verification commands**:
+  - `git ls-tree -r HEAD | grep 160000` (should return no output — zero gitlinks)
+  - `cat .gitignore | grep 'claude/worktrees'` (should show `.claude/worktrees/`)
+  - `cat .gitmodules 2>/dev/null || echo "No .gitmodules"` (if the file exists, it should contain only intentional submodule entries; if it does not exist and there are no gitlinks, that is also correct)
+  - `git config --list | grep '^submodule\.'` (should return nothing if no submodules are configured)
+- **Source issue**: PR #651 "Fix orphaned submodule configuration to resolve workflow failure"
+- **Status**: fixed
+- **Fixed in**: gitlink removed in commit `d38e3b81`; `.claude/worktrees/` added to `.gitignore` in the same commit

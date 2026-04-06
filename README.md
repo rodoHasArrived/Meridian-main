@@ -138,64 +138,62 @@ Use these documents together when planning or implementing new work:
 │   │   └── meridian-navigation.md
 │   ├── settings.json
 │   ├── settings.local.json
-│   ├── skills
-│   │   ├── _shared
-│   │   │   └── project-context.md
-│   │   ├── meridian-blueprint
-│   │   │   ├── CHANGELOG.md
-│   │   │   ├── SKILL.md
-│   │   │   └── references
-│   │   │       ├── blueprint-patterns.md
-│   │   │       └── pipeline-position.md
-│   │   ├── meridian-brainstorm
-│   │   │   ├── CHANGELOG.md
-│   │   │   ├── SKILL.md
-│   │   │   ├── brainstorm-history.jsonl
-│   │   │   └── references
-│   │   │       ├── competitive-landscape.md
-│   │   │       └── idea-dimensions.md
-│   │   ├── meridian-code-review
-│   │   │   ├── CHANGELOG.md
-│   │   │   ├── SKILL.md
-│   │   │   ├── agents
-│   │   │   │   └── grader.md
-│   │   │   ├── eval-viewer
-│   │   │   │   ├── generate_review.py
-│   │   │   │   └── viewer.html
-│   │   │   ├── evals
-│   │   │   │   ├── benchmark_baseline.json
-│   │   │   │   └── evals.json
-│   │   │   ├── references
-│   │   │   │   ├── architecture.md
-│   │   │   │   └── schemas.md
-│   │   │   └── scripts
-│   │   │       ├── __init__.py
-│   │   │       ├── aggregate_benchmark.py
-│   │   │       ├── package_skill.py
-│   │   │       ├── quick_validate.py
-│   │   │       ├── run_eval.py
-│   │   │       └── utils.py
-│   │   ├── meridian-implementation-assurance
-│   │   │   ├── SKILL.md
-│   │   │   ├── references
-│   │   │   │   ├── documentation-routing.md
-│   │   │   │   └── evaluation-harness.md
-│   │   │   └── scripts
-│   │   │       ├── doc_route.py
-│   │   │       └── score_eval.py
-│   │   ├── meridian-provider-builder
-│   │   │   ├── CHANGELOG.md
-│   │   │   ├── SKILL.md
-│   │   │   └── references
-│   │   │       └── provider-patterns.md
-│   │   ├── meridian-test-writer
-│   │   │   ├── CHANGELOG.md
-│   │   │   ├── SKILL.md
-│   │   │   └── references
-│   │   │       └── test-patterns.md
-│   │   └── skills_provider.py
-│   └── worktrees
-│       └── sweet-colden
+│   └── skills
+│       ├── _shared
+│       │   └── project-context.md
+│       ├── meridian-blueprint
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   └── references
+│       │       ├── blueprint-patterns.md
+│       │       └── pipeline-position.md
+│       ├── meridian-brainstorm
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   ├── brainstorm-history.jsonl
+│       │   └── references
+│       │       ├── competitive-landscape.md
+│       │       └── idea-dimensions.md
+│       ├── meridian-code-review
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── grader.md
+│       │   ├── eval-viewer
+│       │   │   ├── generate_review.py
+│       │   │   └── viewer.html
+│       │   ├── evals
+│       │   │   ├── benchmark_baseline.json
+│       │   │   └── evals.json
+│       │   ├── references
+│       │   │   ├── architecture.md
+│       │   │   └── schemas.md
+│       │   └── scripts
+│       │       ├── __init__.py
+│       │       ├── aggregate_benchmark.py
+│       │       ├── package_skill.py
+│       │       ├── quick_validate.py
+│       │       ├── run_eval.py
+│       │       └── utils.py
+│       ├── meridian-implementation-assurance
+│       │   ├── SKILL.md
+│       │   ├── references
+│       │   │   ├── documentation-routing.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── doc_route.py
+│       │       └── score_eval.py
+│       ├── meridian-provider-builder
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   └── references
+│       │       └── provider-patterns.md
+│       ├── meridian-test-writer
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   └── references
+│       │       └── test-patterns.md
+│       └── skills_provider.py
 ├── .codex
 │   ├── config.toml
 │   ├── environments
@@ -3606,6 +3604,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-472 directories, 3004 files
+470 directories, 3004 files
 ```
 <!-- readme-tree end -->
