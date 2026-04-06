@@ -3,6 +3,7 @@ using Meridian.Application.Config;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
@@ -87,7 +88,18 @@ public sealed class ProviderFactoryCredentialContextTests
 
         var providers = factory.CreateSymbolSearchProviders();
 
-        providers.Should().BeEmpty();
+        // EDGAR (SEC public API) requires no credentials and is always included.
+        // Credential-gated providers (Alpaca, Polygon, Finnhub) are skipped when no
+        // credentials are configured.
+        providers.Should().ContainSingle(p => p is EdgarSymbolSearchProvider,
+            because: "EDGAR is a free public data source that does not require credentials");
+        providers.Should().NotContain(p => p is AlpacaSymbolSearchProviderRefactored,
+            because: "Alpaca symbol search requires credentials that were not supplied");
+        providers.Should().NotContain(p => p is FinnhubSymbolSearchProviderRefactored,
+            because: "Finnhub symbol search requires credentials that were not supplied");
+        providers.Should().NotContain(p => p is PolygonSymbolSearchProvider,
+            because: "Polygon symbol search requires credentials that were not supplied");
+
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
