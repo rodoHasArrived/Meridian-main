@@ -30,7 +30,6 @@ public sealed class ScatterAnalysisViewModel : BindableBase
     private string _xExpression = "SPY.close()";
     private string _yExpression = "QQQ.close()";
     private string _selectedTimeRange = "1Y";
-    private int _activeTabIndex;
 
     // ── Chart / status ────────────────────────────────────────────────────────
     private bool _isBusy;
@@ -107,12 +106,6 @@ public sealed class ScatterAnalysisViewModel : BindableBase
             if (SetProperty(ref _selectedTimeRange, value))
                 PlotCommand.ExecuteAsync(null);
         }
-    }
-
-    public int ActiveTabIndex
-    {
-        get => _activeTabIndex;
-        set => SetProperty(ref _activeTabIndex, value);
     }
 
     // ── Chart state properties ────────────────────────────────────────────────
@@ -223,10 +216,11 @@ public sealed class ScatterAnalysisViewModel : BindableBase
         {
             var (from, to) = GetDateRange();
 
-            // Fetch both series in parallel
+            // Fetch both series in parallel; do NOT ConfigureAwait(false) — UI properties
+            // are updated after the await so we must remain on the synchronization context.
             var xTask = _backfillService.GetHistoricalBarsAsync(xSym, from, to, ct);
             var yTask = _backfillService.GetHistoricalBarsAsync(ySym, from, to, ct);
-            await Task.WhenAll(xTask, yTask).ConfigureAwait(false);
+            await Task.WhenAll(xTask, yTask);
 
             var xBars = await xTask;
             var yBars = await yTask;

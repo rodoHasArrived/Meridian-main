@@ -3,12 +3,11 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
-      Loaded="OnPageLoaded"
       AutomationProperties.Name="Scatter Analysis">
 
   <Page.Resources>
-    <!-- Time-range toggle button style -->
-    <Style x:Key="TimeRangeButtonStyle" TargetType="ToggleButton">
+    <!-- Time-range RadioButton style (mutual exclusion via GroupName) -->
+    <Style x:Key="TimeRangeButtonStyle" TargetType="RadioButton">
       <Setter Property="Height" Value="28" />
       <Setter Property="Padding" Value="10,0" />
       <Setter Property="FontSize" Value="12" />
@@ -19,19 +18,25 @@
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="Template">
         <Setter.Value>
-          <ControlTemplate TargetType="ToggleButton">
+          <ControlTemplate TargetType="RadioButton">
             <Border x:Name="Border" Background="{TemplateBinding Background}"
                     CornerRadius="4" Padding="{TemplateBinding Padding}">
               <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
             <ControlTemplate.Triggers>
+              <!-- Checked — accent fill -->
               <Trigger Property="IsChecked" Value="True">
                 <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentButtonBackground}" />
                 <Setter Property="Foreground" Value="White" />
               </Trigger>
-              <Trigger Property="IsMouseOver" Value="True">
+              <!-- Hover only when NOT already selected, so the accent fill is never overridden -->
+              <MultiTrigger>
+                <MultiTrigger.Conditions>
+                  <Condition Property="IsMouseOver" Value="True" />
+                  <Condition Property="IsChecked" Value="False" />
+                </MultiTrigger.Conditions>
                 <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleBackgroundBrush}" />
-              </Trigger>
+              </MultiTrigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
@@ -76,7 +81,7 @@
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
-    <!-- Tab header button style -->
+    <!-- Tab header RadioButton style (bottom underline accent) -->
     <Style x:Key="AnalysisTabButtonStyle" TargetType="RadioButton">
       <Setter Property="Height" Value="32" />
       <Setter Property="Padding" Value="14,0" />
@@ -96,13 +101,19 @@
               <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
             <ControlTemplate.Triggers>
+              <!-- Active tab — accent underline + accent text -->
               <Trigger Property="IsChecked" Value="True">
                 <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
                 <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentTextBrush}" />
               </Trigger>
-              <Trigger Property="IsMouseOver" Value="True">
+              <!-- Hover only when NOT already selected -->
+              <MultiTrigger>
+                <MultiTrigger.Conditions>
+                  <Condition Property="IsMouseOver" Value="True" />
+                  <Condition Property="IsChecked" Value="False" />
+                </MultiTrigger.Conditions>
                 <Setter Property="Foreground" Value="{DynamicResource ConsoleTextBrush}" />
-              </Trigger>
+              </MultiTrigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
@@ -159,14 +170,14 @@
                   Style="{StaticResource PrimaryButtonStyle}" />
         </StackPanel>
 
-        <!-- Time-range toggles -->
+        <!-- Time-range RadioButtons (GroupName provides mutual exclusion natively) -->
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-          <ToggleButton Content="1M"  Tag="1M"  Style="{StaticResource TimeRangeButtonStyle}" Click="TimeRange_Click" />
-          <ToggleButton Content="3M"  Tag="3M"  Style="{StaticResource TimeRangeButtonStyle}" Click="TimeRange_Click" />
-          <ToggleButton Content="6M"  Tag="6M"  Style="{StaticResource TimeRangeButtonStyle}" Click="TimeRange_Click" />
-          <ToggleButton Content="1Y"  Tag="1Y"  Style="{StaticResource TimeRangeButtonStyle}" Click="TimeRange_Click" IsChecked="True" x:Name="Toggle1Y" />
-          <ToggleButton Content="3Y"  Tag="3Y"  Style="{StaticResource TimeRangeButtonStyle}" Click="TimeRange_Click" />
-          <ToggleButton Content="MAX" Tag="MAX" Style="{StaticResource TimeRangeButtonStyle}" Click="TimeRange_Click" />
+          <RadioButton Content="1M"  Tag="1M"  GroupName="TimeRange" Style="{StaticResource TimeRangeButtonStyle}" Checked="TimeRange_Checked" />
+          <RadioButton Content="3M"  Tag="3M"  GroupName="TimeRange" Style="{StaticResource TimeRangeButtonStyle}" Checked="TimeRange_Checked" />
+          <RadioButton Content="6M"  Tag="6M"  GroupName="TimeRange" Style="{StaticResource TimeRangeButtonStyle}" Checked="TimeRange_Checked" />
+          <RadioButton Content="1Y"  Tag="1Y"  GroupName="TimeRange" Style="{StaticResource TimeRangeButtonStyle}" Checked="TimeRange_Checked" IsChecked="True" />
+          <RadioButton Content="3Y"  Tag="3Y"  GroupName="TimeRange" Style="{StaticResource TimeRangeButtonStyle}" Checked="TimeRange_Checked" />
+          <RadioButton Content="MAX" Tag="MAX" GroupName="TimeRange" Style="{StaticResource TimeRangeButtonStyle}" Checked="TimeRange_Checked" />
         </StackPanel>
       </Grid>
     </Border>
