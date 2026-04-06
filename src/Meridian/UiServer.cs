@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using System.Globalization;
 using Meridian.Application.Composition;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
@@ -24,6 +25,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using AppBacktesting = global::Meridian.Application.Backtesting;
@@ -63,7 +65,16 @@ public sealed class UiServer : IAsyncDisposable
     /// <param name="port">HTTP port to listen on.</param>
     public UiServer(string configPath, int port = 8080)
     {
-        var builder = WebApplication.CreateBuilder();
+        var contentRootPath = Directory.GetCurrentDirectory();
+        var webRootPath = StaticAssetPathResolver.ResolveWebRootPath(
+            existingWebRootPath: null,
+            contentRootPath,
+            AppContext.BaseDirectory);
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = contentRootPath,
+            WebRootPath = webRootPath
+        });
 
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
@@ -132,21 +143,36 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
 
-        // Execution layer — paper trading gateway wired for cockpit endpoints
-        builder.Services.AddSingleton<IOrderGateway>(sp =>
-            new Meridian.Execution.Adapters.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>()));
-        builder.Services.AddSingleton<IPortfolioState>(_ => new PaperTradingPortfolio(100_000m));
-        builder.Services.AddSingleton<IOrderManager>(sp =>
+        // Execution layer — stable REST seam backed by configurable paper/live gateway selection.
+        builder.Services.AddSingleton(sp =>
         {
-            var gateway = sp.GetRequiredService<IExecutionGateway>();
-            var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-            var risk = sp.GetService<IRiskValidator>();
-            return new OrderManagementSystem(gateway, logger, risk);
+            var dataRoot = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load().DataRoot;
+            return new ExecutionAuditTrailOptions(Path.Combine(dataRoot, "execution", "audit"));
         });
-        builder.Services.AddSingleton<IExecutionGateway>(sp =>
-            new Meridian.Execution.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>()));
+        builder.Services.AddSingleton(sp =>
+        {
+            var dataRoot = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load().DataRoot;
+            return new ExecutionOperatorControlOptions(Path.Combine(dataRoot, "execution", "controls"));
+        });
+        builder.Services.AddSingleton<ExecutionAuditTrailService>();
+        builder.Services.AddSingleton<ExecutionOperatorControlService>();
+        builder.Services.AddSingleton<IPortfolioState>(_ => new PaperTradingPortfolio(100_000m));
+        builder.Services.TryAddSingleton<Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var options = sp.GetService<Meridian.Application.Config.AlpacaOptions>()
+                ?? new Meridian.Application.Config.AlpacaOptions(
+                    KeyId: Environment.GetEnvironmentVariable("ALPACA_KEY_ID")
+                        ?? Environment.GetEnvironmentVariable("ALPACA__KEYID") ?? string.Empty,
+                    SecretKey: Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
+                        ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY") ?? string.Empty);
+            var logger = sp.GetRequiredService<ILogger<Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway>>();
+            return new Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway(httpClientFactory, options, logger);
+        });
+        builder.Services.AddBrokerageGateway(
+            "alpaca",
+            sp => sp.GetRequiredService<Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway>());
+        builder.Services.AddBrokerageExecution(ApplyExecutionConfiguration);
 
         // Register OpenAPI/Swagger services
         builder.Services.AddEndpointsApiExplorer();
@@ -323,5 +349,67 @@ public sealed class UiServer : IAsyncDisposable
         {
             return Array.Empty<DepthIntegrityEvent>();
         }
+    }
+
+    private static void ApplyExecutionConfiguration(BrokerageConfiguration config)
+    {
+        config.Gateway = GetEnvironmentValue(
+            "MERIDIAN_EXECUTION_GATEWAY",
+            "MERIDIAN__EXECUTION__GATEWAY")
+            ?? "paper";
+
+        config.LiveExecutionEnabled = GetEnvironmentBool(
+            "MERIDIAN_EXECUTION_LIVE_ENABLED",
+            "MERIDIAN__EXECUTION__LIVE_ENABLED")
+            ?? false;
+
+        config.MaxPositionSize = GetEnvironmentDecimal(
+            "MERIDIAN_EXECUTION_MAX_POSITION_SIZE",
+            "MERIDIAN__EXECUTION__MAX_POSITION_SIZE")
+            ?? 0m;
+
+        config.MaxOrderNotional = GetEnvironmentDecimal(
+            "MERIDIAN_EXECUTION_MAX_ORDER_NOTIONAL",
+            "MERIDIAN__EXECUTION__MAX_ORDER_NOTIONAL")
+            ?? 0m;
+
+        config.MaxOpenOrders = GetEnvironmentInt(
+            "MERIDIAN_EXECUTION_MAX_OPEN_ORDERS",
+            "MERIDIAN__EXECUTION__MAX_OPEN_ORDERS")
+            ?? 0;
+    }
+
+    private static string? GetEnvironmentValue(params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
+    }
+
+    private static bool? GetEnvironmentBool(params string[] names)
+    {
+        var raw = GetEnvironmentValue(names);
+        return bool.TryParse(raw, out var parsed) ? parsed : null;
+    }
+
+    private static decimal? GetEnvironmentDecimal(params string[] names)
+    {
+        var raw = GetEnvironmentValue(names);
+        return decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+    }
+
+    private static int? GetEnvironmentInt(params string[] names)
+    {
+        var raw = GetEnvironmentValue(names);
+        return int.TryParse(raw, out var parsed) ? parsed : null;
     }
 }

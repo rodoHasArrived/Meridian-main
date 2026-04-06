@@ -70,6 +70,13 @@ public sealed class FundLedgerViewModelTests
                 var ledgerReadService = new LedgerReadService(lookup);
                 var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
                 var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient(
+                [
+                    BuildBreakQueueItem("run-fund-ops")
+                ],
+                [
+                    BuildStrategyDetail("run-fund-ops")
+                ]);
 
                 var fundAccountService = new InMemoryFundAccountService();
                 var fundId = ToFundId("alpha-fund");
@@ -112,6 +119,11 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     workspaceService,
                     strategyReconciliationService);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    fakeApiClient);
                 var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
 
                 using var viewModel = new FundLedgerViewModel(
@@ -120,10 +132,11 @@ public sealed class FundLedgerViewModelTests
                     navigation,
                     fundAccountReadService,
                     cashFinancingReadService,
-                    reconciliationReadService,
+                    workbenchService,
                     workspaceService);
 
                 await viewModel.LoadAsync();
+                await WaitForConditionAsync(() => viewModel.SupportsSelectedBreakActions);
 
                 viewModel.Accounts.Should().ContainSingle();
                 viewModel.Accounts[0].StructureLabel.Should().Contain("Entity");
@@ -145,7 +158,168 @@ public sealed class FundLedgerViewModelTests
                     item.RunId == "run-fund-ops" &&
                     item.HasSecurityCoverageIssues &&
                     item.SecurityIssueCount == 2);
+                viewModel.SelectedReconciliationQueueIndex.Should().Be(0);
+                viewModel.IsOpenBreakQueueFilterSelected.Should().BeTrue();
+                viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
+                    item.RunId == "run-fund-ops" &&
+                    item.Status == ReconciliationBreakQueueStatus.Open);
+                viewModel.ReconciliationDetailTitle.Should().Be("Reconciliation Strategy");
+                viewModel.SupportsSelectedBreakActions.Should().BeTrue();
+                viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
+                viewModel.CanResolveSelectedBreak.Should().BeFalse();
+                viewModel.ReconciliationNoteText = "Investigating ledger drift";
+                viewModel.CanResolveSelectedBreak.Should().BeTrue();
                 viewModel.OverviewStatusText.Should().Contain("unresolved security mapping");
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void RefreshReconciliationWorkbenchAsync_PreservesRunSelection_AndLoadsAccountDetail()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                await fundContext.UpsertProfileAsync(new FundProfileDetail(
+                    FundProfileId: "alpha-fund",
+                    DisplayName: "Alpha Fund",
+                    LegalEntityName: "Alpha Fund LP",
+                    BaseCurrency: "USD",
+                    DefaultWorkspaceId: "governance",
+                    DefaultLandingPageTag: "FundLedger",
+                    DefaultLedgerScope: FundLedgerScope.Consolidated,
+                    EntityIds: ["entity-alpha"],
+                    SleeveIds: ["sleeve-credit"],
+                    VehicleIds: ["vehicle-master"],
+                    IsDefault: true));
+                await fundContext.SelectFundProfileAsync("alpha-fund");
+
+                var lookup = new StubSecurityReferenceLookup();
+                lookup.Register("AAPL", new WorkstationSecurityReference(
+                    SecurityId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                    DisplayName: "Apple Inc.",
+                    AssetClass: "Equity",
+                    Currency: "USD",
+                    Status: SecurityStatusDto.Active,
+                    PrimaryIdentifier: "AAPL"));
+
+                var store = new StrategyRunStore();
+                await store.RecordRunAsync(BuildFundScopedRun("run-fund-ops"));
+
+                var portfolioReadService = new PortfolioReadService(lookup);
+                var ledgerReadService = new LedgerReadService(lookup);
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient(
+                [
+                    BuildBreakQueueItem("run-fund-ops")
+                ],
+                [
+                    BuildStrategyDetail("run-fund-ops")
+                ]);
+
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundId = ToFundId("alpha-fund");
+                var entityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+                var sleeveId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+                var vehicleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+                var accountId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+
+                await fundAccountService.CreateAccountAsync(new CreateAccountRequest(
+                    AccountId: accountId,
+                    AccountType: AccountTypeDto.Custody,
+                    AccountCode: "CUST-002",
+                    DisplayName: "Operations Custody",
+                    BaseCurrency: "USD",
+                    EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-10),
+                    CreatedBy: "test",
+                    EntityId: entityId,
+                    FundId: fundId,
+                    SleeveId: sleeveId,
+                    VehicleId: vehicleId,
+                    Institution: "Northern Trust"));
+                await fundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+                    AccountId: accountId,
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    Currency: "USD",
+                    CashBalance: 750m,
+                    Source: "test",
+                    RecordedBy: "test",
+                    SecuritiesMarketValue: 250m));
+                await fundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(
+                    AccountId: accountId,
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    RequestedBy: "test"));
+
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
+                var reconciliationRepository = new InMemoryReconciliationRunRepository();
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService,
+                    new ReconciliationProjectionService(),
+                    reconciliationRepository);
+                var reconciliationReadService = new ReconciliationReadService(
+                    fundAccountService,
+                    fundAccountReadService,
+                    workspaceService,
+                    strategyReconciliationService);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    fakeApiClient);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
+
+                using var viewModel = new FundLedgerViewModel(
+                    fundLedgerReadService,
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    cashFinancingReadService,
+                    workbenchService,
+                    workspaceService);
+
+                await viewModel.LoadAsync();
+                await WaitForConditionAsync(() => viewModel.ReconciliationRunItems.Any(item => item.SourceType == FundReconciliationSourceType.AccountRun));
+
+                var accountRun = viewModel.ReconciliationRunItems.Single(item => item.SourceType == FundReconciliationSourceType.AccountRun);
+                viewModel.SelectedReconciliationQueueIndex = 1;
+                viewModel.SelectedReconciliationRun = accountRun;
+
+                await WaitForConditionAsync(() =>
+                    viewModel.ReconciliationDetailTitle == accountRun.PrimaryLabel &&
+                    viewModel.CanOpenSelectedReconciliationAccountWorkflow);
+
+                await viewModel.RefreshReconciliationWorkbenchAsync();
+                await WaitForConditionAsync(() =>
+                    viewModel.SelectedReconciliationRun?.RowKey == accountRun.RowKey &&
+                    viewModel.ReconciliationDetailTitle == accountRun.PrimaryLabel &&
+                    viewModel.CanOpenSelectedReconciliationAccountWorkflow);
+
+                viewModel.SelectedReconciliationQueueIndex.Should().Be(1);
+                viewModel.SelectedReconciliationRun.Should().NotBeNull();
+                viewModel.SelectedReconciliationRun!.RowKey.Should().Be(accountRun.RowKey);
+                viewModel.ReconciliationDetailTitle.Should().Be(accountRun.PrimaryLabel);
+                viewModel.SupportsSelectedBreakActions.Should().BeFalse();
+                viewModel.CanOpenSelectedReconciliationAccountWorkflow.Should().BeTrue();
             }
             finally
             {
@@ -159,6 +333,87 @@ public sealed class FundLedgerViewModelTests
 
     private static Guid ToFundId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId.Trim())));
+
+    private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)
+    {
+        for (var index = 0; index < attempts; index++)
+        {
+            if (condition())
+            {
+                return;
+            }
+
+            await Task.Delay(25);
+        }
+
+        condition().Should().BeTrue();
+    }
+
+    private static ReconciliationBreakQueueItem BuildBreakQueueItem(string runId)
+        => new(
+            BreakId: $"{runId}:price-gap",
+            RunId: runId,
+            StrategyName: "Reconciliation Strategy",
+            Category: ReconciliationBreakCategory.AmountMismatch,
+            Status: ReconciliationBreakQueueStatus.Open,
+            Variance: 12.5m,
+            Reason: "Ledger and portfolio quantities differ.",
+            AssignedTo: null,
+            DetectedAt: new DateTimeOffset(2026, 3, 21, 16, 35, 0, TimeSpan.Zero),
+            LastUpdatedAt: new DateTimeOffset(2026, 3, 21, 16, 35, 0, TimeSpan.Zero));
+
+    private static ReconciliationRunDetail BuildStrategyDetail(string runId)
+        => new(
+            Summary: new ReconciliationRunSummary(
+                ReconciliationRunId: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                RunId: runId,
+                CreatedAt: new DateTimeOffset(2026, 3, 21, 16, 40, 0, TimeSpan.Zero),
+                PortfolioAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
+                LedgerAsOf: new DateTimeOffset(2026, 3, 21, 16, 31, 0, TimeSpan.Zero),
+                MatchCount: 2,
+                BreakCount: 1,
+                OpenBreakCount: 1,
+                HasTimingDrift: false,
+                AmountTolerance: 0.01m,
+                MaxAsOfDriftMinutes: 5,
+                SecurityIssueCount: 1,
+                HasSecurityCoverageIssues: true),
+            Matches:
+            [
+                new ReconciliationMatchDto(
+                    CheckId: "cash-balance",
+                    Label: "Cash balance",
+                    ExpectedSource: "Ledger",
+                    ActualSource: "Portfolio",
+                    ExpectedAmount: 750m,
+                    ActualAmount: 750m,
+                    Variance: 0m,
+                    ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
+                    ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero))
+            ],
+            Breaks:
+            [
+                new ReconciliationBreakDto(
+                    CheckId: "price-gap",
+                    Label: "TSLA market value",
+                    Category: ReconciliationBreakCategory.AmountMismatch,
+                    Status: ReconciliationBreakStatus.Open,
+                    MissingSource: "Portfolio",
+                    ExpectedAmount: 150m,
+                    ActualAmount: 137.5m,
+                    Variance: 12.5m,
+                    Reason: "Broker statement has not been normalized yet.",
+                    ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
+                    ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 29, 0, TimeSpan.Zero))
+            ],
+            SecurityCoverageIssues:
+            [
+                new ReconciliationSecurityCoverageIssueDto(
+                    Source: "Portfolio",
+                    Symbol: "TSLA",
+                    AccountName: "Primary Custody",
+                    Reason: "Security Master coverage is missing.")
+            ]);
 
     private static StrategyRunEntry BuildFundScopedRun(string runId)
     {

@@ -139,13 +139,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public QuantScriptDocumentEntry? SelectedDocument
     {
         get => _selectedDocument;
-        set
-        {
-            if (!SetProperty(ref _selectedDocument, value) || _isLoadingDocument || value is null)
-                return;
-
-            _ = OpenDocumentAsync(value);
-        }
+        set => SetSelectedDocument(value, openDocument: true);
     }
 
     public QuantScriptCellViewModel? SelectedCell
@@ -634,8 +628,10 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         await RunOnUiThreadAsync(() =>
         {
             RefreshDocuments();
-            SelectedDocument = Documents.FirstOrDefault(doc =>
-                string.Equals(doc.FullPath, targetPath, StringComparison.OrdinalIgnoreCase));
+            SetSelectedDocument(
+                Documents.FirstOrDefault(doc =>
+                    string.Equals(doc.FullPath, targetPath, StringComparison.OrdinalIgnoreCase)),
+                openDocument: false);
         }).ConfigureAwait(false);
     }
 
@@ -644,6 +640,14 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         Documents.Clear();
         foreach (var document in _notebookStore.ListDocuments().OrderBy(item => item.Kind).ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase))
             Documents.Add(new QuantScriptDocumentEntry(document.Name, document.FullPath, document.Kind));
+    }
+
+    private void SetSelectedDocument(QuantScriptDocumentEntry? document, bool openDocument)
+    {
+        if (!SetProperty(ref _selectedDocument, document) || _isLoadingDocument || document is null || !openDocument)
+            return;
+
+        _ = OpenDocumentAsync(document);
     }
 
     private async Task OpenDocumentAsync(QuantScriptDocumentEntry document)

@@ -29,9 +29,6 @@ public static class BrokerageServiceRegistration
         configure?.Invoke(config);
         services.AddSingleton(config);
 
-        // Register IExecutionGateway for the OMS (OrderManagementSystem).
-        // For paper mode, use the Execution-layer PaperTradingGateway which implements IExecutionGateway.
-        // For live mode, the IBrokerageGateway itself implements IExecutionGateway.
         services.TryAddSingleton<IExecutionGateway>(sp =>
         {
             var brokerageConfig = sp.GetRequiredService<BrokerageConfiguration>();
@@ -62,30 +59,25 @@ public static class BrokerageServiceRegistration
             return new BrokerageGatewayAdapter(gateway, adapterLogger);
         });
 
-        // Register IExecutionGateway for the OMS.
-        // IBrokerageGateway extends IExecutionGateway, so in live mode the underlying brokerage
-        // gateway is used directly. In paper mode the SDK-level PaperTradingGateway is used.
-        services.TryAddSingleton<IExecutionGateway>(sp =>
-        {
-            var brokerageConfig = sp.GetRequiredService<BrokerageConfiguration>();
-
-            if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
-            {
-                var paperLogger = sp.GetRequiredService<ILogger<PaperTradingGateway>>();
-                return new PaperTradingGateway(paperLogger);
-            }
-
-            // IBrokerageGateway : IExecutionGateway — use the live gateway directly.
-            return ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
-        });
-
         // Register the OMS with the resolved gateway
         services.TryAddSingleton<IOrderManager>(sp =>
         {
             var gateway = sp.GetRequiredService<IExecutionGateway>();
             var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
             var riskValidator = sp.GetService<IRiskValidator>();
-            return new OrderManagementSystem(gateway, logger, riskValidator);
+            var securityMasterGate = sp.GetService<ISecurityMasterGate>();
+            var operatorControls = sp.GetService<Services.ExecutionOperatorControlService>();
+            var auditTrail = sp.GetService<Services.ExecutionAuditTrailService>();
+            var portfolioState = sp.GetService<Models.IPortfolioState>();
+
+            return new OrderManagementSystem(
+                gateway,
+                logger,
+                riskValidator,
+                securityMasterGate,
+                operatorControls,
+                auditTrail,
+                portfolioState);
         });
 
         return services;

@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-03
+**Last Updated:** 2026-04-05
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -45,6 +45,8 @@ Implemented foundations now available to build on:
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path
+- live execution governance now wired into the stable execution seam: durable audit trail, circuit breaker / position-limit / manual-override controls, and human-approved `Paper → Live` promotion
+- Alpaca execution path validated end to end through the existing `/api/execution/*` seam with executable test evidence
 
 The remaining backlog is therefore about turning those foundations into a complete operator-facing product.
 
@@ -77,9 +79,9 @@ Goal: make the existing execution primitives, brokerage adapters, and wired REST
 Open work:
 
 - build live positions, open orders, fills, P&L, and risk state panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result and approval controls in the dashboard
+- expose promotion evaluation result, approval controls, and execution-control state in the dashboard
 - add paper-trading session persistence and replay from persisted order history
-- validate brokerage gateway adapters against real vendor APIs (Alpaca, IB, StockSharp)
+- extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 
 Primary anchors:
 
@@ -137,14 +139,13 @@ Backtesting feels like one product regardless of whether the native engine or Le
 
 ### Track E: Live integration readiness
 
-Goal: validate the brokerage gateway framework against real vendor surfaces and add the execution audit trail needed for live operations.
+Goal: validate the brokerage gateway framework against real vendor surfaces and keep the live-operation governance path complete and operable.
 
 Open work:
 
-- validate brokerage gateway adapters against live vendor APIs (Alpaca, IB, StockSharp)
-- add execution audit trail sufficient for live operations
-- define operator controls (circuit breakers, position limits, manual overrides)
-- wire `Paper → Live` promotion gate with human-approval controls
+- extend live validation beyond the checked-in Alpaca execution path to IB and StockSharp
+- add richer live-broker cancellation / amend evidence for Alpaca and other gateways
+- surface the new audit / control / promotion-governance endpoints in the dashboard UI
 
 Primary anchors:
 
@@ -156,6 +157,7 @@ Primary anchors:
 Exit signal:
 
 At least one brokerage adapter is validated against a live vendor surface with audit trail.
+Current status: Alpaca execution path is now validated through the stable REST seam with audit and control coverage; additional broker/runtime proof remains open.
 
 ### Track F: Governance and fund-operations productization
 

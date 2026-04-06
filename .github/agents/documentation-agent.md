@@ -53,7 +53,6 @@ docs/
 ├── evaluations/                 # Feature and platform evaluations
 ├── examples/                    # Provider template examples
 ├── generated/                   # Auto-generated docs (do not edit by hand)
-│   ├── interfaces.md            # Extracted interface documentation
 │   ├── project-context.md       # Project context from code annotations
 │   ├── provider-registry.md     # Provider registry
 │   ├── repository-structure.md  # Repository structure

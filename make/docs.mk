@@ -3,7 +3,7 @@
 # =============================================================================
 
 .PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
-        gen-interfaces gen-structure gen-providers gen-workflows \
+        gen-structure gen-providers gen-workflows \
         update-claude-md docs-all
 
 docs: gen-context verify-adrs ## Generate all documentation from code
@@ -32,14 +32,6 @@ verify-contracts: build ## Verify runtime contracts at startup
 
 verify-tooling-metadata: ## Validate Makefile/package/dependabot path references
 	@python3 build/scripts/validate-tooling-metadata.py
-
-gen-interfaces: ## Extract interface documentation from code
-	@echo "$(BLUE)Extracting interface documentation...$(NC)"
-	@dotnet build $(DOCGEN_PROJECT) -c Release -v q
-	@dotnet run --project $(DOCGEN_PROJECT) --no-build -c Release -- interfaces \
-		--src src/Meridian \
-		--output docs/generated/interfaces.md
-	@echo "$(GREEN)Generated docs/generated/interfaces.md$(NC)"
 
 gen-structure: ## Generate repository structure documentation
 	@echo "$(BLUE)Generating repository structure documentation...$(NC)"
@@ -72,5 +64,5 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
 
-docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows verify-adrs ## Generate all documentation
+docs-all: gen-context gen-structure gen-providers gen-workflows verify-adrs ## Generate all documentation
 	@echo "$(GREEN)All documentation generated$(NC)"

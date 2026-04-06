@@ -6,14 +6,14 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
-public sealed class FundLedgerViewModel : BindableBase, IDisposable
+public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 {
     private readonly FundLedgerReadService _fundLedgerReadService;
     private readonly FundContextService _fundContextService;
     private readonly NavigationService _navigationService;
     private readonly FundAccountReadService _fundAccountReadService;
     private readonly CashFinancingReadService _cashFinancingReadService;
-    private readonly ReconciliationReadService _reconciliationReadService;
+    private readonly IFundReconciliationWorkbenchService _fundReconciliationWorkbenchService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
 
     private string _title = "Fund Operations";
@@ -56,7 +56,7 @@ public sealed class FundLedgerViewModel : BindableBase, IDisposable
         NavigationService navigationService,
         FundAccountReadService fundAccountReadService,
         CashFinancingReadService cashFinancingReadService,
-        ReconciliationReadService reconciliationReadService,
+        IFundReconciliationWorkbenchService fundReconciliationWorkbenchService,
         StrategyRunWorkspaceService runWorkspaceService)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
@@ -64,7 +64,7 @@ public sealed class FundLedgerViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fundAccountReadService = fundAccountReadService ?? throw new ArgumentNullException(nameof(fundAccountReadService));
         _cashFinancingReadService = cashFinancingReadService ?? throw new ArgumentNullException(nameof(cashFinancingReadService));
-        _reconciliationReadService = reconciliationReadService ?? throw new ArgumentNullException(nameof(reconciliationReadService));
+        _fundReconciliationWorkbenchService = fundReconciliationWorkbenchService ?? throw new ArgumentNullException(nameof(fundReconciliationWorkbenchService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
 
         TrialBalance = [];
@@ -91,6 +91,7 @@ public sealed class FundLedgerViewModel : BindableBase, IDisposable
         OpenSelectedPortfolioSecurityCommand = new RelayCommand(OpenSelectedPortfolioSecurity, () => SelectedPortfolioPosition is not null);
 
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
+        InitializeReconciliationWorkbench();
     }
 
     public object? Parameter
@@ -382,7 +383,7 @@ public sealed class FundLedgerViewModel : BindableBase, IDisposable
         var accountsTask = _fundAccountReadService.GetAccountsAsync(activeFund.FundProfileId, ct);
         var bankSnapshotsTask = _fundAccountReadService.GetBankSnapshotsAsync(activeFund.FundProfileId, ct);
         var cashTask = _cashFinancingReadService.GetAsync(activeFund.FundProfileId, activeFund.BaseCurrency, ct);
-        var reconciliationTask = _reconciliationReadService.GetAsync(activeFund.FundProfileId, ct);
+        var reconciliationTask = _fundReconciliationWorkbenchService.GetSnapshotAsync(activeFund.FundProfileId, ct);
         var portfolioTask = BuildFundPortfolioAsync(activeFund.FundProfileId, ct);
 
         await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask);
@@ -391,7 +392,7 @@ public sealed class FundLedgerViewModel : BindableBase, IDisposable
         var accounts = accountsTask.Result;
         var bankSnapshots = bankSnapshotsTask.Result;
         var cashSummary = cashTask.Result;
-        var reconciliation = reconciliationTask.Result;
+        var reconciliationSnapshot = reconciliationTask.Result;
         var portfolioPositions = portfolioTask.Result;
 
         Title = $"Fund Operations · {activeFund.DisplayName}";
@@ -404,14 +405,15 @@ public sealed class FundLedgerViewModel : BindableBase, IDisposable
         ApplyBankSnapshots(bankSnapshots);
         ApplyCashSummary(cashSummary);
         ApplyPortfolio(portfolioPositions);
-        ApplyReconciliation(reconciliation);
-        BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliation);
-        BuildAuditTrail(ledger, reconciliation);
+        await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
+        BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
+        BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
     }
 
     public void Dispose()
     {
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
+        DisposeReconciliationWorkbench();
     }
 
     private async Task<FundProfileDetail?> ResolveActiveFundAsync(
@@ -470,6 +472,7 @@ public sealed class FundLedgerViewModel : BindableBase, IDisposable
         ReconciliationRuns.Clear();
         CashFinancingHighlights.Clear();
         AuditTrail.Clear();
+        ResetReconciliationWorkbenchState();
     }
 
     private void ApplyLedger(FundLedgerSummary? summary)

@@ -77,16 +77,18 @@ public sealed class AlpacaCorporateActionProvider : ICorporateActionProvider
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
-        var results = new List<CorporateActionCommand>();
-
         // Fetch dividends and splits in parallel.
         var dividendTask = FetchAnnouncementsAsync(client, ticker, securityId, "dividend", ct);
         var splitTask = FetchAnnouncementsAsync(client, ticker, securityId, "split", ct);
 
         await Task.WhenAll(dividendTask, splitTask).ConfigureAwait(false);
 
-        results.AddRange(dividendTask.Result);
-        results.AddRange(splitTask.Result);
+        var dividendResults = await dividendTask.ConfigureAwait(false);
+        var splitResults = await splitTask.ConfigureAwait(false);
+        var results = new List<CorporateActionCommand>(dividendResults.Count + splitResults.Count);
+
+        results.AddRange(dividendResults);
+        results.AddRange(splitResults);
 
         _logger.LogDebug(
             "Fetched {Count} corporate action(s) for {Ticker} from Alpaca.",

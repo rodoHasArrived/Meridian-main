@@ -687,7 +687,10 @@ public static class WorkstationEndpoints
             // Serve static assets (JS, CSS, etc.) directly from wwwroot/workstation/.
             // UseStaticFiles() middleware runs after routing in WebApplication, so the
             // catch-all route must serve these files explicitly.
-            var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+            var root = StaticAssetPathResolver.ResolveWebRootPath(
+                environment.WebRootPath,
+                environment.ContentRootPath,
+                AppContext.BaseDirectory);
             var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(filePath))
                 return Results.NotFound();
@@ -2263,7 +2266,10 @@ public static class WorkstationEndpoints
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
     {
-        var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+        var root = StaticAssetPathResolver.ResolveWebRootPath(
+            environment.WebRootPath,
+            environment.ContentRootPath,
+            AppContext.BaseDirectory);
         var indexPath = Path.Combine(root, "workstation", "index.html");
 
         return File.Exists(indexPath)

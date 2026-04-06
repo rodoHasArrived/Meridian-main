@@ -66,6 +66,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --mode web --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
 ```
 
+When you launch the web host from the repository root, Meridian resolves bundled `wwwroot` and `/workstation` assets automatically from the compiled host output, so you do not need to `cd` into `src/Meridian` first.
+
 Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
 ### Standalone web dashboard — `src/Meridian.Ui`

@@ -310,6 +310,8 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 connectionsTask.Result.Connections,
                 bindingsTask.Result.Bindings,
                 trustTask.Result.Snapshots,
+                _fundProfileCatalog.CurrentFundProfile?.DefaultWorkspaceId,
+                SelectedFundProfileId,
                 previewTasks
                     .Where(task => task.Result.Success && task.Result.Preview is not null)
                     .Select(task => task.Result.Preview!)
@@ -331,6 +333,8 @@ public sealed partial class FundAccountsViewModel : BindableBase
         IReadOnlyList<ProviderConnectionDto> connections,
         IReadOnlyList<ProviderBindingDto> bindings,
         IReadOnlyList<ProviderTrustSnapshotDto> trustSnapshots,
+        string? workspaceId,
+        string? fundProfileId,
         IReadOnlyList<RoutePreviewResponse> previews)
     {
         ProviderBindings.Clear();
@@ -340,7 +344,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         var trustByConnectionId = trustSnapshots.ToDictionary(snapshot => snapshot.ConnectionId, StringComparer.OrdinalIgnoreCase);
 
         foreach (var binding in bindings
-            .Where(binding => ScopeMatches(binding.Target, account))
+            .Where(binding => ScopeMatches(binding.Target, account, workspaceId, fundProfileId))
             .OrderBy(binding => binding.Priority)
             .ThenBy(binding => binding.Capability, StringComparer.OrdinalIgnoreCase))
         {
@@ -383,10 +387,26 @@ public sealed partial class FundAccountsViewModel : BindableBase
             : $"Loaded {ProviderBindings.Count} binding(s) and {RoutePreviews.Count} route preview(s).";
     }
 
-    private static bool ScopeMatches(ProviderRouteScopeDto? scope, AccountSummaryDto account)
+    private static bool ScopeMatches(
+        ProviderRouteScopeDto? scope,
+        AccountSummaryDto account,
+        string? workspaceId,
+        string? fundProfileId)
     {
         if (scope is null)
             return true;
+
+        if (!string.IsNullOrWhiteSpace(scope.Workspace) &&
+            !string.Equals(scope.Workspace, workspaceId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(scope.FundProfileId) &&
+            !string.Equals(scope.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
 
         if (scope.AccountId.HasValue && scope.AccountId != account.AccountId)
             return false;

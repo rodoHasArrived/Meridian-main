@@ -1,0 +1,221 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using FluentAssertions;
+using Meridian.Execution;
+using Meridian.Execution.Models;
+using Meridian.Execution.Services;
+using Meridian.Execution.Sdk;
+using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
+
+namespace Meridian.Tests.Ui;
+
+public sealed class ExecutionGovernanceEndpointsTests
+{
+    [Fact]
+    public async Task ControlsEndpoints_UpdateCircuitBreakerAndExposeAuditTrail()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+        });
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var response = await client.PostAsync(
+            "/api/execution/controls/circuit-breaker",
+            JsonContent(new { isOpen = true, reason = "manual halt" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var controlsResponse = await client.GetAsync("/api/execution/controls");
+        controlsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var controlsJson = JsonDocument.Parse(await controlsResponse.Content.ReadAsStringAsync());
+        controlsJson.RootElement.GetProperty("circuitBreaker").GetProperty("isOpen").GetBoolean().Should().BeTrue();
+
+        var auditResponse = await client.GetAsync("/api/execution/audit?take=10");
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditEntries = JsonSerializer.Deserialize<ExecutionAuditEntry[]>(
+            await auditResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+
+        auditEntries.Should().NotBeNull();
+        auditEntries!.Should().Contain(entry =>
+            entry.Action == "CircuitBreakerOpened" &&
+            entry.Actor == "ops");
+    }
+
+    [Fact]
+    public async Task AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam()
+    {
+        var tempRoot = CreateTempRoot();
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() }
+        });
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IHttpClientFactory>(new StubHttpClientFactory(new SequentialStubHandler(responses)));
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton(sp => new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true,
+                MaxPositionSize = 100m
+            });
+            services.AddSingleton(sp => new AlpacaBrokerageGateway(
+                sp.GetRequiredService<IHttpClientFactory>(),
+                new Meridian.Application.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
+                NullLogger<AlpacaBrokerageGateway>.Instance));
+            services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
+            services.AddBrokerageExecution(config =>
+            {
+                config.Gateway = "alpaca";
+                config.LiveExecutionEnabled = true;
+                config.MaxPositionSize = 100m;
+            });
+        });
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var submitResponse = await client.PostAsync(
+            "/api/execution/orders/submit",
+            JsonContent(new
+            {
+                symbol = "AAPL",
+                side = 0,
+                type = 0,
+                timeInForce = 0,
+                quantity = 1,
+                strategyId = "strategy-live"
+            }));
+
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        using var submitJson = JsonDocument.Parse(await submitResponse.Content.ReadAsStringAsync());
+        submitJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+
+        var healthResponse = await client.GetAsync("/api/execution/health");
+        healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var healthJson = JsonDocument.Parse(await healthResponse.Content.ReadAsStringAsync());
+        healthJson.RootElement.GetProperty("brokerName").GetString().Should().Be("Alpaca Markets");
+        healthJson.RootElement.GetProperty("selectedGatewayId").GetString().Should().Be("alpaca");
+
+        var auditResponse = await client.GetAsync("/api/execution/audit?take=10");
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditEntries = JsonSerializer.Deserialize<ExecutionAuditEntry[]>(
+            await auditResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+
+        auditEntries.Should().NotBeNull();
+        auditEntries!.Should().Contain(entry =>
+            entry.Action == "OrderSubmitted" &&
+            entry.BrokerName == "alpaca" &&
+            entry.Symbol == "AAPL");
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.WebHost.UseTestServer();
+        configureServices(builder.Services);
+
+        var app = builder.Build();
+        app.MapExecutionEndpoints(JsonOptions());
+        await app.StartAsync();
+        return app;
+    }
+
+    private static JsonSerializerOptions JsonOptions() => new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
+    private static StringContent JsonContent(object payload) =>
+        new(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+    private static StringContent BuildAccountResponse() =>
+        JsonContent(new
+        {
+            account_number = "ACC-123",
+            equity = "100000.00",
+            cash = "80000.00",
+            buying_power = "160000.00",
+            currency = "USD",
+            status = "active"
+        });
+
+    private static StringContent BuildOrderResponse() =>
+        JsonContent(new
+        {
+            id = "alpaca-order-1",
+            client_order_id = "client-order-1",
+            symbol = "AAPL",
+            side = "buy",
+            type = "market",
+            qty = "1",
+            filled_qty = "0",
+            status = "accepted",
+            created_at = "2026-04-05T14:30:00Z"
+        });
+
+    private static string CreateTempRoot()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
+    private sealed class StubHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) =>
+            new(handler, disposeHandler: false);
+    }
+
+    private sealed class SequentialStubHandler(Queue<HttpResponseMessage> responses) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(
+                responses.Count > 0
+                    ? responses.Dequeue()
+                    : new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent(new { }) });
+        }
+    }
+
+    private sealed class EmptyPortfolioState : IPortfolioState
+    {
+        public decimal Cash => 100_000m;
+        public decimal PortfolioValue => 100_000m;
+        public decimal UnrealisedPnl => 0m;
+        public decimal RealisedPnl => 0m;
+        public IReadOnlyDictionary<string, ExecutionPosition> Positions { get; } =
+            new Dictionary<string, ExecutionPosition>(StringComparer.OrdinalIgnoreCase);
+    }
+}

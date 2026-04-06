@@ -43,7 +43,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     private readonly DispatcherTimer _progressPollTimer;
     private CancellationTokenSource? _backfillCts;
 
-    // Last known symbol counts — used to restore taskbar progress after a resume.
+    // Last known symbol counts for taskbar progress updates.
     private ulong _lastCompletedSymbols;
     private ulong _lastTotalSymbols;
 
@@ -66,13 +66,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     {
         get => _overallProgressText;
         private set => SetProperty(ref _overallProgressText, value);
-    }
-
-    private string _pauseButtonContent = "Pause";
-    public string PauseButtonContent
-    {
-        get => _pauseButtonContent;
-        private set => SetProperty(ref _pauseButtonContent, value);
     }
 
     private bool _isBackfillActive;
@@ -755,7 +748,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         OverallProgressText = $"Overall: 0 / {symbols.Length} symbols complete";
         IsBackfillActive = true;
         IsProgressVisible = true;
-        PauseButtonContent = "Pause";
         _taskbarProgressService.SetIndeterminate();
 
         _notificationService.ShowNotification(
@@ -796,26 +788,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         }
     }
 
-    public void PauseOrResumeBackfill()
-    {
-        if (_backfillService.IsPaused)
-        {
-            _backfillService.Resume();
-            BackfillStatusText = "Running...";
-            PauseButtonContent = "Pause";
-            _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
-            _notificationService.ShowNotification("Backfill Resumed", "Backfill operation has been resumed.", NotificationType.Info);
-        }
-        else
-        {
-            _backfillService.Pause();
-            BackfillStatusText = "Paused";
-            PauseButtonContent = "Resume";
-            _taskbarProgressService.SetPaused();
-            _notificationService.ShowNotification("Backfill Paused", "Backfill operation has been paused.", NotificationType.Warning);
-        }
-    }
-
     public void CancelBackfill()
     {
         _backfillService.Cancel();
@@ -844,7 +816,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             BackfillStatusText = $"Resuming ({job.PendingCount} symbols remaining)...";
             IsBackfillActive = true;
             IsProgressVisible = true;
-            PauseButtonContent = "Pause";
             _taskbarProgressService.SetIndeterminate();
 
             _notificationService.ShowNotification(
@@ -1102,7 +1073,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         OverallProgressText = $"Overall: 0 / {symbols.Length} symbols complete";
         IsBackfillActive = true;
         IsProgressVisible = true;
-        PauseButtonContent = "Pause";
         _taskbarProgressService.SetIndeterminate();
         _progressPollTimer.Start();
 
@@ -1396,16 +1366,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             "Backfill",
             startCommand,
             "Ctrl+B"));
-
-        // Pause/Resume command
-        var pauseResumeCommand = new RelayCommand(PauseOrResumeBackfill);
-        commands.Add(new CommandEntry(
-            IsBackfillActive && !(_backfillService?.IsPaused ?? false) ? "Pause Backfill" : "Resume Backfill",
-            IsBackfillActive && !(_backfillService?.IsPaused ?? false)
-                ? "Pause the currently running backfill operation"
-                : "Resume a paused backfill operation",
-            "Backfill",
-            pauseResumeCommand));
 
         // Cancel command
         if (IsBackfillActive)

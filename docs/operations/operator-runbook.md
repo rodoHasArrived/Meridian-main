@@ -2,6 +2,8 @@
 
 Use [Provider Confidence Baseline](../providers/provider-confidence-baseline.md) as the source of truth for what Meridian validates offline today for Polygon, NYSE, Interactive Brokers, and StockSharp. This runbook focuses on operator workflows and deliberately avoids implying broader provider readiness than the repo evidence supports.
 
+For live-routing guardrails, approval workflow, and the execution audit trail, use [Live Execution Controls](live-execution-controls.md) together with this runbook.
+
 ## Startup
 
 ### Headless / Test Mode
@@ -268,6 +270,8 @@ Notes:
 - This integration supports **trade prints** (`T:"t"` messages).
 - Quote support (`T:"q"` messages) requires `SubscribeQuotes: true` and is wired to `QuoteCollector`.
 - Full Level-2 depth is not supported for stocks via Alpaca.
+- Live order routing through the stable execution seam requires `MERIDIAN_EXECUTION_GATEWAY=alpaca` and `MERIDIAN_EXECUTION_LIVE_ENABLED=true`, plus valid `ALPACA_KEY_ID` / `ALPACA_SECRET_KEY`.
+- Before approving `Paper -> Live`, create an `AllowLivePromotion` manual override and confirm `GET /api/execution/controls` shows the expected scope.
 
 ### Polygon
 

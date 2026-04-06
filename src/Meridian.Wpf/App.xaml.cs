@@ -401,6 +401,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.FundAccountReadService>();
         services.AddSingleton<WpfServices.CashFinancingReadService>();
         services.AddSingleton<WpfServices.ReconciliationReadService>();
+        services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
+        services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
 
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();

@@ -56,16 +56,25 @@ public partial class MainPage
 
     private void OnSplitPanePaneDropRequested(object sender, PaneDropEventArgs e)
     {
+        var targetPaneIndex = Math.Clamp(
+            e.TargetPaneIndex,
+            0,
+            Math.Max(0, _viewModel.SplitPane.SelectedLayout.PaneCount - 1));
+
         if (e.Action == PaneDropAction.SplitRight)
         {
+            _viewModel.SplitPane.FocusPaneCommand.Execute(targetPaneIndex);
             _viewModel.SplitPane.SplitPaneCommand.Execute("Right");
+            targetPaneIndex = Math.Min(_viewModel.SplitPane.SelectedLayout.PaneCount - 1, targetPaneIndex + 1);
         }
         else if (e.Action == PaneDropAction.SplitBelow)
         {
+            _viewModel.SplitPane.FocusPaneCommand.Execute(targetPaneIndex);
             _viewModel.SplitPane.SplitPaneCommand.Execute("Below");
+            targetPaneIndex = Math.Min(_viewModel.SplitPane.SelectedLayout.PaneCount - 1, targetPaneIndex + 1);
         }
 
-        _viewModel.SplitPane.AssignPageToPane(e.PageTag, e.TargetPaneIndex);
+        _viewModel.SplitPane.AssignPageToPane(e.PageTag, targetPaneIndex);
         RefreshSplitPaneContent();
     }
 

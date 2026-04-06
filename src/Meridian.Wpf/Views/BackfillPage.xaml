@@ -560,12 +560,6 @@
                                     Visibility="{Binding IsBackfillActive, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
                                     Click="StartBackfill_Click"
                                     Margin="0,0,12,0" />
-                            <Button x:Name="PauseBackfillButton"
-                                    Content="{Binding PauseButtonContent}"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Visibility="{Binding IsBackfillActive, Converter={StaticResource BoolToVisibilityConverter}}"
-                                    Click="PauseBackfill_Click"
-                                    Margin="0,0,12,0" />
                             <Button x:Name="CancelBackfillButton"
                                     Content="Cancel"
                                     Style="{StaticResource GhostButtonStyle}"

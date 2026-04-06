@@ -79,7 +79,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
     [Fact]
     public void NewNotebookCommand_CreatesSeededNotebook()
     {
-        var vm = CreateVm();
+        using var vm = CreateVm();
 
         vm.NewNotebookCommand.Execute(null);
 
@@ -91,7 +91,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
     [Fact]
     public void AddCellBelowCommand_InsertsAndSelectsNewCell()
     {
-        var vm = CreateVm();
+        using var vm = CreateVm();
         vm.NewNotebookCommand.Execute(null);
         var firstCell = vm.Cells[0];
 
@@ -105,7 +105,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
     [Fact]
     public void EditingEarlierCell_MarksFollowingCellsStale()
     {
-        var vm = CreateVm();
+        using var vm = CreateVm();
         vm.NewNotebookCommand.Execute(null);
         vm.AddCellBelowCommand.Execute(vm.Cells[0]);
         vm.Cells[0].Status = QuantScriptCellStatus.Success;
@@ -120,7 +120,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
     [Fact]
     public async Task RunCellAndAdvanceCommand_AppendsNewCellAtNotebookEnd()
     {
-        var vm = CreateVm(useRealRunner: true);
+        using var vm = CreateVm(useRealRunner: true);
         vm.NewNotebookCommand.Execute(null);
 
         await vm.RunCellAndAdvanceCommand.ExecuteAsync(vm.Cells[0]);
@@ -133,7 +133,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
     [Fact]
     public async Task RunCellCommand_ReplaysUsingPreviousCheckpoint()
     {
-        var vm = CreateVm(useRealRunner: true);
+        using var vm = CreateVm(useRealRunner: true);
         vm.NewNotebookCommand.Execute(null);
         vm.Cells[0].SourceCode = "var x = 2;";
         vm.AddCellBelowCommand.Execute(vm.Cells[0]);
@@ -155,7 +155,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
             new ParameterDescriptor("lookback", "int", "Lookback", 20)
         ]);
 
-        var vm = CreateVm(compiler: compiler);
+        using var vm = CreateVm(compiler: compiler);
         vm.NewNotebookCommand.Execute(null);
         vm.Parameters.Should().ContainSingle();
 
@@ -175,7 +175,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
             new ParameterDescriptor("lookback", "int", "Lookback", 20)
         ]);
 
-        var vm = CreateVm(compiler: compiler);
+        using var vm = CreateVm(compiler: compiler);
         vm.NewNotebookCommand.Execute(null);
         vm.Parameters[0].RawValue = "not-a-number";
 
@@ -190,7 +190,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
     [Fact]
     public async Task SaveNotebookCommand_TracksDraftAndSavedState()
     {
-        var vm = CreateVm();
+        using var vm = CreateVm();
         vm.NewNotebookCommand.Execute(null);
 
         vm.DocumentStateText.Should().Be("Draft");
@@ -224,7 +224,7 @@ public sealed class QuantScriptViewModelTests : IDisposable
                     Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
                     NullLogger<ScriptRunner>.Instance));
 
-            var vm = CreateVm(runner: runner);
+            using var vm = CreateVm(runner: runner);
             vm.NewNotebookCommand.Execute(null);
             vm.Cells[0].SourceCode = """
                 var returns = new ReturnSeries("SPY", ReturnKind.Arithmetic, new[]

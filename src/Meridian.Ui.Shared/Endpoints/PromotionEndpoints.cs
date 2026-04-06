@@ -42,7 +42,13 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var result = await service.ApproveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var effectiveRequest = request with
+            {
+                ApprovedBy = request.ApprovedBy ?? ResolveActor(context),
+                ApprovalReason = request.ApprovalReason ?? request.ReviewNotes
+            };
+
+            var result = await service.ApproveAsync(effectiveRequest, context.RequestAborted).ConfigureAwait(false);
 
             return result.Success
                 ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
@@ -59,7 +65,12 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var result = await service.RejectAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var effectiveRequest = request with
+            {
+                RejectedBy = request.RejectedBy ?? ResolveActor(context)
+            };
+
+            var result = await service.RejectAsync(effectiveRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("RejectPromotion")
@@ -78,5 +89,18 @@ public static class PromotionEndpoints
         .WithName("GetPromotionHistory")
         .Produces<IReadOnlyList<StrategyPromotionRecord>>(200)
         .Produces(501);
+    }
+
+    private static string? ResolveActor(HttpContext context)
+    {
+        var actor = context.Request.Headers["X-Meridian-Actor"].ToString();
+        if (!string.IsNullOrWhiteSpace(actor))
+        {
+            return actor.Trim();
+        }
+
+        return context.User.Identity?.IsAuthenticated == true
+            ? context.User.Identity.Name
+            : null;
     }
 }

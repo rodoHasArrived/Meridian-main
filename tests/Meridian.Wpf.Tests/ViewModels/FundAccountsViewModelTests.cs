@@ -83,6 +83,21 @@ public sealed class FundAccountsViewModelTests
                     Notes: "Primary execution path."),
                 new ProviderBindingDto(
                     BindingId: "binding-2",
+                    Capability: "AccountBalances",
+                    ConnectionId: "broker-a-live",
+                    Target: new ProviderRouteScopeDto
+                    {
+                        Workspace = "research",
+                        FundProfileId = "alpha-fund",
+                        AccountId = account.AccountId
+                    },
+                    Priority: 20,
+                    Enabled: true,
+                    FailoverConnectionIds: [],
+                    SafetyModeOverride: "NoAutomaticFailover",
+                    Notes: "Other workspace only."),
+                new ProviderBindingDto(
+                    BindingId: "binding-3",
                     Capability: "CashTransactions",
                     ConnectionId: "bank-x",
                     Target: new ProviderRouteScopeDto { AccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") },
@@ -118,7 +133,9 @@ public sealed class FundAccountsViewModelTests
                     FallbackConnectionIds: ["broker-a-backup"],
                     PolicyGate: null,
                     Candidates: [])
-            ]);
+            ],
+            workspaceId: "trading",
+            fundProfileId: "alpha-fund");
 
         viewModel.ProviderBindings.Should().ContainSingle();
         viewModel.ProviderBindings[0].Capability.Should().Be("OrderExecution");

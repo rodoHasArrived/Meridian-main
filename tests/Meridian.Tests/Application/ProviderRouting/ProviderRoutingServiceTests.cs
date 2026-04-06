@@ -78,6 +78,34 @@ public sealed class ProviderRoutingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RouteAsync_NoAutomaticFailover_DoesNotSelectHealthyBackup()
+    {
+        await SaveConfigAsync(new AppConfig(
+            ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new ProviderConnectionConfig("primary", "alpha", "Primary"),
+                    new ProviderConnectionConfig("backup", "beta", "Backup")
+                ],
+                Bindings:
+                [
+                    new ProviderBindingConfig(
+                        "historical-binding",
+                        ProviderCapabilityKind.HistoricalBars,
+                        "primary",
+                        FailoverConnectionIds: ["backup"],
+                        SafetyModeOverride: ProviderSafetyMode.NoAutomaticFailover)
+                ])));
+
+        var service = CreateService(new FakeHealthSource(("primary", false), ("backup", true)));
+        var result = await service.RouteAsync(new ProviderRouteContext(ProviderCapabilityKind.HistoricalBars));
+
+        result.IsSuccess.Should().BeFalse();
+        result.SelectedDecision.Should().BeNull();
+        result.PolicyGate.Should().Contain("automatic failover is blocked");
+    }
+
+    [Fact]
     public async Task RouteAsync_BlocksStrictCapabilityWithoutAccountScopedBinding()
     {
         await SaveConfigAsync(new AppConfig(
@@ -99,6 +127,30 @@ public sealed class ProviderRoutingServiceTests : IDisposable
 
         result.IsSuccess.Should().BeFalse();
         result.PolicyGate.Should().Contain("account-scoped");
+    }
+
+    [Fact]
+    public async Task RouteAsync_RequestRequiresProductionReady_BlocksDraftConnection()
+    {
+        await SaveConfigAsync(new AppConfig(
+            ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new ProviderConnectionConfig("research-feed", "alpha", "Research feed", ProductionReady: false)
+                ],
+                Bindings:
+                [
+                    new ProviderBindingConfig("historical-binding", ProviderCapabilityKind.HistoricalBars, "research-feed")
+                ])));
+
+        var service = CreateService();
+        var result = await service.RouteAsync(new ProviderRouteContext(
+            Capability: ProviderCapabilityKind.HistoricalBars,
+            RequireProductionReady: true));
+
+        result.IsSuccess.Should().BeFalse();
+        result.SelectedDecision.Should().BeNull();
+        result.PolicyGate.Should().Contain("not production ready");
     }
 
     [Fact]

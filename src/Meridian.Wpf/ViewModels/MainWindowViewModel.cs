@@ -186,9 +186,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             case "RunBackfill":
                 Navigate("Backfill");
                 break;
-            case "PauseBackfill":
-                _messagingService.Send("PauseBackfill");
-                break;
             case "CancelBackfill":
                 _messagingService.Send("CancelBackfill");
                 break;

@@ -315,7 +315,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         if (policy.RequireExplicitBinding && strictAccountCapability && context.AccountId is not null && binding.Target?.AccountId is null)
             return $"Capability '{policy.Capability}' requires an account-scoped binding.";
 
-        if (policy.RequireProductionReady && !connection.ProductionReady)
+        if ((policy.RequireProductionReady || context.RequireProductionReady) && !connection.ProductionReady)
             return $"Connection '{connection.ConnectionId}' is not production ready.";
 
         return null;
@@ -327,6 +327,9 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         IReadOnlyDictionary<string, ProviderConnectionConfig> connections,
         ProviderSafetyPolicy policy)
     {
+        if (policy.Mode != ProviderSafetyMode.HealthAwareFailover)
+            return Array.Empty<string>();
+
         var fallbacks = (binding.FailoverConnectionIds ?? Array.Empty<string>()).ToList();
         if (policy.AllowedFailoverConnectionIds is { Count: > 0 })
         {

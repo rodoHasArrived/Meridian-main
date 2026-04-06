@@ -74,9 +74,9 @@ public sealed class BackfillModeRunner
             providersArray = backfillProviders.ToArray();
         }
 
-        var backfill = new HistoricalBackfillService(providersArray, _log);
-        var result = await backfill.RunAsync(backfillRequest, pipeline);
         var statusStore = BackfillStatusStore.FromConfig(ctx.Config);
+        var backfill = new HistoricalBackfillService(providersArray, _log, checkpointStore: statusStore);
+        var result = await backfill.RunAsync(backfillRequest, pipeline, ct);
         await statusStore.WriteAsync(result);
         await pipeline.FlushAsync();
         await statusWriter.WriteOnceAsync();

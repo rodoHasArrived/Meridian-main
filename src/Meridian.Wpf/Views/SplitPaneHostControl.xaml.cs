@@ -211,12 +211,9 @@ public partial class SplitPaneHostControl : UserControl
 
     private int HitTestPaneIndex(Point position)
     {
-        for (var i = 0; i < _paneFrames.Count; i++)
+        for (var i = 0; i < _paneHosts.Count; i++)
         {
-            var frame = _paneFrames[i];
-            var bounds = new Rect(
-                frame.TranslatePoint(new Point(0, 0), this),
-                new Size(frame.ActualWidth, frame.ActualHeight));
+            var bounds = GetBounds(_paneHosts[i]);
 
             if (bounds.Contains(position))
             {
@@ -229,13 +226,14 @@ public partial class SplitPaneHostControl : UserControl
 
     private PaneDropAction HitTestDropAction(Point position)
     {
-        if (ActualWidth <= 0 || ActualHeight <= 0)
+        var size = GetSurfaceSize();
+        if (size.Width <= 0 || size.Height <= 0)
         {
             return PaneDropAction.Replace;
         }
 
-        var x = position.X / ActualWidth;
-        var y = position.Y / ActualHeight;
+        var x = position.X / size.Width;
+        var y = position.Y / size.Height;
 
         if (y < 0.22 && x > 0.58)
         {
@@ -263,6 +261,33 @@ public partial class SplitPaneHostControl : UserControl
         }
 
         return PaneDropAction.Replace;
+    }
+
+    private Rect GetBounds(FrameworkElement element)
+    {
+        var size = new Size(
+            element.ActualWidth > 0 ? element.ActualWidth : element.RenderSize.Width,
+            element.ActualHeight > 0 ? element.ActualHeight : element.RenderSize.Height);
+
+        return size.Width <= 0 || size.Height <= 0
+            ? Rect.Empty
+            : new Rect(element.TranslatePoint(new Point(0, 0), this), size);
+    }
+
+    private Size GetSurfaceSize()
+    {
+        var width = ActualWidth > 0
+            ? ActualWidth
+            : RenderSize.Width > 0
+                ? RenderSize.Width
+                : Width;
+        var height = ActualHeight > 0
+            ? ActualHeight
+            : RenderSize.Height > 0
+                ? RenderSize.Height
+                : Height;
+
+        return new Size(width, height);
     }
 
     private void HighlightDropTarget(PaneDropAction? action)

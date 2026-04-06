@@ -321,11 +321,6 @@ public partial class BackfillPage : Page
             request.Granularity);
     }
 
-    private void PauseBackfill_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.PauseOrResumeBackfill();
-    }
-
     private void CancelBackfill_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(

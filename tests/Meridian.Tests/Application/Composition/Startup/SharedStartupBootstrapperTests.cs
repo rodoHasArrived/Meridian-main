@@ -89,6 +89,49 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         server.StopCancellationToken.CanBeCanceled.Should().BeFalse();
     }
 
+    [Fact]
+    public void BuildBackfillRequest_ForwardsResumeFlagFromCli()
+    {
+        var cfg = new AppConfig
+        {
+            Backfill = new BackfillConfig(
+                Provider: "stooq",
+                Symbols: ["SPY"],
+                From: new DateOnly(2024, 1, 1),
+                To: new DateOnly(2024, 12, 31))
+        };
+        var cliArgs = CliArguments.Parse(["--backfill", "--resume"]);
+
+        var request = SharedStartupHelpers.BuildBackfillRequest(cfg, cliArgs);
+
+        request.ResumeFromCheckpoint.Should().BeTrue();
+    }
+
+    [Fact]
+    public void BuildBackfillRequest_PreservesConfiguredConcurrencyWhenApplyingCliOverrides()
+    {
+        var cfg = new AppConfig
+        {
+            Backfill = new BackfillConfig(
+                Provider: "stooq",
+                Symbols: ["SPY"],
+                From: new DateOnly(2024, 1, 1),
+                To: new DateOnly(2024, 12, 31),
+                Jobs: new BackfillJobsConfig(MaxConcurrentRequests: 7))
+        };
+        var cliArgs = CliArguments.Parse([
+            "--backfill",
+            "--backfill-provider", "yahoo",
+            "--backfill-symbols", "MSFT,AAPL"
+        ]);
+
+        var request = SharedStartupHelpers.BuildBackfillRequest(cfg, cliArgs);
+
+        request.Provider.Should().Be("yahoo");
+        request.Symbols.Should().Equal("MSFT", "AAPL");
+        request.MaxConcurrentSymbols.Should().Be(7);
+    }
+
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("MDC_CONFIG_PATH", _originalConfigPath);
