@@ -94,10 +94,10 @@ jobs:
           cache-suffix: 'wpf'
 
       - name: Restore dependencies
-        run: dotnet restore ${{ env.WPF_PROJECT }} -p:TargetFramework=net9.0-windows10.0.19041.0 --verbosity minimal
+        run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
 
       - name: Build
-        run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore -p:TargetFramework=net9.0-windows10.0.19041.0 --verbosity minimal
+        run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore --verbosity minimal
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
