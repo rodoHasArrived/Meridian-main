@@ -48,6 +48,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ["RunCashFlow"] = new("Run Cash Flow", "Review cash movement, projections, and funding impact for the selected run."),
             ["Charts"] = new("Charts", "Visualize price action, overlays, and investigation snapshots."),
             ["QuantScript"] = new("Quant Script", "Prototype research logic and iterate on calculations inside the workstation."),
+            ["ScatterAnalysis"] = new("Scatter Analysis", "Plot the bivariate relationship between two data series with regression and statistics."),
             ["Backtest"] = new("Backtest", "Configure strategy runs and launch new simulations."),
             ["TradingHours"] = new("Trading Hours", "Check venue schedules, sessions, and trading-calendar coverage."),
             ["Provider"] = new("Providers", "Manage provider integrations, health, and operational posture."),
