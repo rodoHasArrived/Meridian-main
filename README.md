@@ -2836,6 +2836,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
+│       │   ├── ScatterAnalysisViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -2995,6 +2996,8 @@ Use these documents together when planning or implementing new work:
 │           ├── RunRiskPage.xaml.cs
 │           ├── SaveWatchlistDialog.xaml
 │           ├── SaveWatchlistDialog.xaml.cs
+│           ├── ScatterAnalysisPage.xaml
+│           ├── ScatterAnalysisPage.xaml.cs
 │           ├── ScheduleManagerPage.xaml
 │           ├── ScheduleManagerPage.xaml.cs
 │           ├── SecurityMasterPage.xaml
@@ -3612,6 +3615,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-470 directories, 3012 files
+470 directories, 3015 files
 ```
 <!-- readme-tree end -->
