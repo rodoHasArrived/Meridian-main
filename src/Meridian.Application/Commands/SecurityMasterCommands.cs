@@ -1,5 +1,6 @@
 using Meridian.Application.ResultTypes;
 using Meridian.Application.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
@@ -8,11 +9,12 @@ namespace Meridian.Application.Commands;
 
 /// <summary>
 /// Handles --security-master-ingest CLI command for bulk-importing securities from CSV or JSON,
-/// or directly from Polygon.io.
+/// or directly from Polygon.io or EDGAR.
 /// Usage:
 ///   --security-master-ingest ./securities.csv
 ///   --security-master-ingest ./securities.json
 ///   --security-master-ingest --provider polygon [--exchange XNAS] [--type CS]
+///   --security-master-ingest --provider edgar [--enrich]
 /// Requires MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to be configured.
 /// </summary>
 internal sealed class SecurityMasterCommands : ICliCommand
@@ -52,6 +54,10 @@ internal sealed class SecurityMasterCommands : ICliCommand
         var provider = CliArguments.GetValue(args, "--provider");
         if (string.Equals(provider, "polygon", StringComparison.OrdinalIgnoreCase))
             return await ExecutePolygonIngestAsync(args, ct).ConfigureAwait(false);
+
+        // --- EDGAR provider ingest path ---
+        if (string.Equals(provider, "edgar", StringComparison.OrdinalIgnoreCase))
+            return await ExecuteEdgarIngestAsync(args, ct).ConfigureAwait(false);
 
         // --- File-based ingest path ---
         return await ExecuteFileIngestAsync(args, ct).ConfigureAwait(false);
@@ -132,6 +138,79 @@ internal sealed class SecurityMasterCommands : ICliCommand
         return failed == 0 ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
     }
 
+    private async Task<CliResult> ExecuteEdgarIngestAsync(string[] args, CancellationToken ct)
+    {
+        if (_securityMasterService is null)
+        {
+            Console.Error.WriteLine("Security Master service is not available for provider ingest.");
+            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
+        }
+
+        var enrich = args.Any(a => a.Equals("--enrich", StringComparison.OrdinalIgnoreCase));
+
+        _log.Information("Starting EDGAR Security Master ingest (enrich={Enrich})", enrich);
+        Console.WriteLine($"Fetching all SEC-reporting companies from EDGAR (enrich={enrich})...");
+        if (enrich)
+            Console.WriteLine("  Note: enrichment mode fetches one extra request per company and is slow.");
+
+        IReadOnlyList<Contracts.SecurityMaster.CreateSecurityRequest> requests;
+        using var ingestProvider = new EdgarSecurityMasterIngestProvider(
+            NullLogger<EdgarSecurityMasterIngestProvider>.Instance);
+
+        var fetchProgress = new Progress<int>(count =>
+        {
+            if (count % 500 == 0)
+                Console.WriteLine($"  Processed {count} companies...");
+        });
+
+        requests = await ingestProvider.FetchAllAsync(enrich, fetchProgress, ct).ConfigureAwait(false);
+
+        if (requests.Count == 0)
+        {
+            Console.WriteLine("No companies returned from EDGAR.");
+            return CliResult.Ok();
+        }
+
+        Console.WriteLine($"Fetched {requests.Count} companies. Importing into Security Master...");
+
+        int imported = 0, skipped = 0, failed = 0;
+        var errors = new List<string>();
+
+        for (int i = 0; i < requests.Count; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var request = requests[i];
+            try
+            {
+                await _securityMasterService.CreateAsync(request, ct).ConfigureAwait(false);
+                imported++;
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
+                {
+                    skipped++;
+                }
+                else
+                {
+                    failed++;
+                    var ticker = request.Identifiers.FirstOrDefault()?.Value ?? "?";
+                    errors.Add($"{ticker}: {ex.Message}");
+                }
+            }
+
+            if ((i + 1) % ProgressReportInterval == 0 || i == requests.Count - 1)
+                Console.WriteLine($"  Progress: {i + 1}/{requests.Count} ({imported} imported, {failed} failed, {skipped} skipped)");
+        }
+
+        PrintSummary(imported, skipped, failed, 0, errors);
+        _log.Information("EDGAR ingest: {Imported} imported, {Skipped} skipped, {Failed} failed",
+            imported, skipped, failed);
+
+        return failed == 0 ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
+    }
+
     private async Task<CliResult> ExecuteFileIngestAsync(string[] args, CancellationToken ct)
     {
         var filePath = CliArguments.GetValue(args, "--security-master-ingest");
@@ -139,6 +218,7 @@ internal sealed class SecurityMasterCommands : ICliCommand
         {
             Console.Error.WriteLine("Usage: --security-master-ingest <file.csv|file.json>");
             Console.Error.WriteLine("       --security-master-ingest --provider polygon [--exchange XNAS] [--type CS]");
+            Console.Error.WriteLine("       --security-master-ingest --provider edgar [--enrich]");
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
         }
 
