@@ -16,6 +16,19 @@ public sealed record ScatterPoint(double X, double Y, DateOnly Date);
 public sealed record DataSheetRow(string Date, string XValue, string YValue);
 
 /// <summary>
+/// A pre-built scatter template shown in the Quickstart sidebar.
+/// Clicking a template populates both symbol inputs and fires PlotAsync.
+/// </summary>
+public sealed record QuickstartTemplate(
+    string Name,
+    string Category,
+    string XSymbol,
+    string YSymbol,
+    string XExpression,
+    string YExpression,
+    string TimeRange = "1Y");
+
+/// <summary>
 /// ViewModel for the Scatter Analysis page — a bivariate scatter plot with expression
 /// inputs, time-range selection, linear regression, and statistics, inspired by the
 /// Goldman Sachs Marquee PlotTool scatter workflow.
@@ -58,10 +71,31 @@ public sealed class ScatterAnalysisViewModel : BindableBase
     // ── Static lookup ─────────────────────────────────────────────────────────
     public static IReadOnlyList<string> TimeRanges { get; } = ["1M", "3M", "6M", "1Y", "3Y", "MAX"];
 
+    /// <summary>
+    /// Pre-built scatter templates shown in the Quickstart sidebar, modelled after the
+    /// Goldman Sachs Marquee PlotTool quickstart workflow.
+    /// </summary>
+    public static IReadOnlyList<QuickstartTemplate> QuickstartTemplates { get; } =
+    [
+        new("SPY vs QQQ — Getting Started",  "Quickstart", "SPY",  "QQQ",  "SPY.close()",  "QQQ.close()"),
+        new("Equity vs Rates",               "Quickstart", "SPY",  "TLT",  "SPY.close()",  "TLT.close()"),
+        new("Growth vs Value",               "Quickstart", "QQQ",  "IWD",  "QQQ.close()",  "IWD.close()"),
+        new("Large Cap vs Small Cap",        "Quickstart", "SPY",  "IWM",  "SPY.close()",  "IWM.close()"),
+        new("US vs International Dev",       "Quickstart", "SPY",  "EFA",  "SPY.close()",  "EFA.close()"),
+        new("Developed vs Emerging Mkts",    "Quickstart", "EFA",  "EEM",  "EFA.close()",  "EEM.close()"),
+        new("Credit vs Equity",              "Quickstart", "HYG",  "SPY",  "HYG.close()",  "SPY.close()"),
+        new("Tech vs Financials",            "Quickstart", "XLK",  "XLF",  "XLK.close()",  "XLF.close()"),
+        new("Energy vs Utilities",           "Quickstart", "XLE",  "XLU",  "XLE.close()",  "XLU.close()"),
+        new("Equity vs Volatility",          "Quickstart", "SPY",  "VIXY", "SPY.close()",  "VIXY.close()"),
+        new("Gold vs Long Bonds",            "Quickstart", "GLD",  "TLT",  "GLD.close()",  "TLT.close()"),
+        new("Momentum vs Quality",           "Quickstart", "MTUM", "QUAL", "MTUM.close()", "QUAL.close()"),
+    ];
+
     public ScatterAnalysisViewModel(BackfillService backfillService)
     {
         _backfillService = backfillService ?? throw new ArgumentNullException(nameof(backfillService));
-        PlotCommand = new AsyncRelayCommand(PlotAsync);
+        PlotCommand            = new AsyncRelayCommand(PlotAsync);
+        ApplyTemplateCommand   = new RelayCommand<QuickstartTemplate>(ApplyTemplate);
     }
 
     // ── Input properties ──────────────────────────────────────────────────────
@@ -184,10 +218,33 @@ public sealed class ScatterAnalysisViewModel : BindableBase
 
     public AsyncRelayCommand PlotCommand { get; }
 
+    /// <summary>Loads a Quickstart template into the symbol inputs and immediately plots.</summary>
+    public RelayCommand<QuickstartTemplate> ApplyTemplateCommand { get; }
+
     /// <summary>Raised on the UI thread whenever new chart data is ready to render.</summary>
     public event EventHandler? ChartDataReady;
 
     // ── Implementation ────────────────────────────────────────────────────────
+
+    private void ApplyTemplate(QuickstartTemplate? template)
+    {
+        if (template is null) return;
+
+        // Batch-update backing fields so only one PlotAsync is triggered, not one per setter.
+        _xSymbol         = template.XSymbol;
+        _ySymbol         = template.YSymbol;
+        _xExpression     = template.XExpression;
+        _yExpression     = template.YExpression;
+        _selectedTimeRange = template.TimeRange;
+
+        OnPropertyChanged(nameof(XSymbol));
+        OnPropertyChanged(nameof(YSymbol));
+        OnPropertyChanged(nameof(XExpression));
+        OnPropertyChanged(nameof(YExpression));
+        OnPropertyChanged(nameof(SelectedTimeRange));
+
+        PlotCommand.ExecuteAsync(null);
+    }
 
     private void SyncExpressions()
     {

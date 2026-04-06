@@ -119,12 +119,41 @@
         </Setter.Value>
       </Setter>
     </Style>
+    <!-- Quickstart sidebar item button style -->
+    <Style x:Key="QuickstartItemStyle" TargetType="Button">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="ItemBorder"
+                    Background="{TemplateBinding Background}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleBackgroundBrush}" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource AccentButtonBackground}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
   </Page.Resources>
 
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />  <!-- Header -->
-      <RowDefinition Height="*" />     <!-- Chart + bottom panel -->
+      <RowDefinition Height="Auto" />  <!-- Header (full width) -->
+      <RowDefinition Height="*" />     <!-- Sidebar + chart content -->
     </Grid.RowDefinitions>
 
     <!-- ══ Header ══════════════════════════════════════════════════════════ -->
@@ -182,8 +211,76 @@
       </Grid>
     </Border>
 
-    <!-- ══ Main content area ════════════════════════════════════════════════ -->
-    <Grid Grid.Row="1" Margin="24,12,24,24">
+    <!-- ══ Body: Quickstart sidebar + chart area ════════════════════════════ -->
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="220" />   <!-- Quickstart sidebar -->
+        <ColumnDefinition Width="*" />     <!-- Chart + bottom panel -->
+      </Grid.ColumnDefinitions>
+
+      <!-- ── Quickstart sidebar ─────────────────────────────────────────── -->
+      <Border Grid.Column="0"
+              Margin="24,12,0,24"
+              Background="{DynamicResource CardBackgroundBrush}"
+              BorderBrush="{DynamicResource CardBorderBrush}"
+              BorderThickness="1" CornerRadius="8"
+              ClipToBounds="True">
+        <DockPanel>
+
+          <!-- "EXPLORE PLOTTOOL" section label -->
+          <Border DockPanel.Dock="Top"
+                  Padding="12,10"
+                  BorderBrush="{DynamicResource CardBorderBrush}"
+                  BorderThickness="0,0,0,1">
+            <TextBlock Text="EXPLORE PLOTTOOL"
+                       FontSize="10" FontWeight="Bold"
+                       Foreground="{DynamicResource MutedTextBrush}" />
+          </Border>
+
+          <!-- "Quickstart" group header -->
+          <Border DockPanel.Dock="Top"
+                  Padding="12,8"
+                  Background="{DynamicResource SubtleBackgroundBrush}"
+                  BorderBrush="{DynamicResource CardBorderBrush}"
+                  BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="▾" FontSize="11" VerticalAlignment="Center"
+                         Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,5,0" />
+              <TextBlock Text="Quickstart"
+                         FontSize="12" FontWeight="SemiBold"
+                         Foreground="{DynamicResource ConsoleTextBrush}" />
+            </StackPanel>
+          </Border>
+
+          <!-- Template list -->
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding QuickstartTemplates}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Button Style="{StaticResource QuickstartItemStyle}"
+                          Command="{Binding DataContext.ApplyTemplateCommand,
+                                            RelativeSource={RelativeSource AncestorType=Page}}"
+                          CommandParameter="{Binding}"
+                          HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock Text="›" FontSize="12" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource MutedTextBrush}" Margin="0,0,4,0" />
+                      <TextBlock Text="📁" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0" />
+                      <TextBlock Text="{Binding Name}" FontSize="12"
+                                 Foreground="{DynamicResource ConsoleTextBrush}"
+                                 TextWrapping="Wrap" />
+                    </StackPanel>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+
+        </DockPanel>
+      </Border>
+
+      <!-- ── Chart + bottom panel ────────────────────────────────────────── -->
+      <Grid Grid.Column="1" Margin="8,12,24,24">
       <Grid.RowDefinitions>
         <RowDefinition Height="*" MinHeight="300" />   <!-- Chart -->
         <RowDefinition Height="5" />                   <!-- Splitter -->
@@ -440,6 +537,8 @@
           </Grid>
         </Grid>
       </Border>
-    </Grid>
+      </Grid>  <!-- ── end Chart + bottom panel ── -->
+
+    </Grid>  <!-- ── end Body grid ── -->
   </Grid>
 </Page>
