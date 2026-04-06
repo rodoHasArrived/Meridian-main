@@ -156,6 +156,10 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
 
             return bars.Count > 0;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _log.Debug(ex, "IB availability check failed");

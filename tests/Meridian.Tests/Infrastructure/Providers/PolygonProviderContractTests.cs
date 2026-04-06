@@ -168,6 +168,10 @@ public sealed class PolygonHistoricalResponseParsingTests
             var bars = await provider.GetAdjustedDailyBarsAsync("AAPL", null, null);
             bars.Should().BeEmpty("a non-success HTTP response must not produce bars");
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             ex.Should().NotBeNull("an exception is an acceptable response to a 401");

@@ -115,6 +115,10 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             Log.Debug(ex, "Robinhood availability check failed");
