@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **211**
+Total items: **212**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -140,7 +140,8 @@ Total items: **211**
 | `docs/status/health-dashboard.md` | 33 | `TODO` | ❌ | \| TODO density \| 15 pts \| Lower density of TODO/FIXME markers \| |
 | `docs/status/rules-report.md` | 431 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded API keys in docs \| error \| |
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
-| `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 20 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
+| `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 22 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
+| `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 154 | `NOTE` | ❌ | Console.WriteLine("  Note: enrichment mode fetches one extra request per company and is slow."); |
 | `src/Meridian.Application/Config/ConfigValidationHelper.cs` | 123 | `TODO` | ❌ | var placeholders = new[] { "__SET_ME__", "YOUR_", "REPLACE_", "ENTER_", "INSERT_", "TODO" }; |
 | `src/Meridian.Application/Config/ConfigurationPipeline.cs` | 324 | `TODO` | ❌ | ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"]; |
 | `src/Meridian.Application/Config/Credentials/CredentialTestingService.cs` | 376 | `NOTE` | ❌ | if (content.Contains("\"Note\":")) |
