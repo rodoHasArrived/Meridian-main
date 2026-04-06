@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-02 21:30:59 UTC. Do not edit manually.
+> Auto-generated on 2026-04-06 04:05:34 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -22,6 +22,7 @@
 | `src/Meridian.Core/Config/IConfigurationProvider.cs` |
 | `src/Meridian.Core/Exceptions/DataProviderException.cs` |
 | `src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs` |
+| `src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs` |
