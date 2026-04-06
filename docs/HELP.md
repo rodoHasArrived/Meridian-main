@@ -169,6 +169,79 @@ npm --prefix src/Meridian.Ui/dashboard run test
 - `docs/status/FEATURE_INVENTORY.md` - capability inventory
 - `docs/plans/` - active product and technical blueprints
 
+## Configuration
+
+Configuration lives in `config/` at the repository root. The primary config file is `config/appsettings.json`. Provider credentials and secrets use the secrets management pattern documented in [ADR-011](adr/011-centralized-configuration-and-credentials.md).
+
+```bash
+# View current configuration
+dotnet run --project src/Meridian/Meridian.csproj -- --show-config
+
+# Validate provider credentials
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
+```
+
+See [Getting Started](getting-started/README.md) for initial setup steps and provider configuration.
+
+## Troubleshooting
+
+Common issues and resolutions:
+
+- **Build failures:** Run `dotnet restore Meridian.sln` before building. Ensure .NET 9 SDK is installed.
+- **Provider connectivity:** Run `dotnet run --project src/Meridian/Meridian.csproj -- --selftest` to validate connectivity.
+- **Missing configuration:** Confirm `config/appsettings.json` exists and contains valid provider entries.
+- **WPF test failures on Linux/macOS:** WPF tests require Windows. Use `/p:EnableWindowsTargeting=true` or skip with `--filter "Category!=WPF"`.
+- **Test isolation failures:** Each test must own its data; see [Desktop Testing Guide](development/desktop-testing-guide.md).
+
+For deeper diagnostics run `dotnet run ... -- --diagnostics`.
+
+## FAQ
+
+**Q: Which provider should I use for equities data?**
+See [Provider Comparison](providers/provider-comparison.md) for a feature matrix.
+
+**Q: How do I add a new data provider?**
+Follow the [Provider Builder Guide](ai/skills/README.md) or use the `meridian-provider-builder` skill.
+
+**Q: Where do I find the current roadmap?**
+See [ROADMAP.md](status/ROADMAP.md) for current delivery waves and priorities.
+
+**Q: How do I run only tests for a single project?**
+Use `dotnet test tests/<ProjectName>.Tests/<ProjectName>.Tests.csproj`.
+
+## Command-Line Usage
+
+Full CLI reference:
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --help
+```
+
+Common flags:
+
+| Flag | Purpose |
+|------|---------|
+| `--dry-run` | Simulate operations without writing data |
+| `--offline` | Run without live provider connections |
+| `--selftest` | Run connectivity and config validation |
+| `--diagnostics` | Extended diagnostic output |
+| `--backfill` | Trigger historical data backfill |
+| `--package` | Package data for export |
+| `--check-config` | Validate configuration file |
+| `--show-config` | Print the effective configuration |
+| `--validate-credentials` | Test configured credentials |
+
+## Analysis-Ready Exports
+
+Meridian can export data in analysis-ready formats using the package command:
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name my-export
+dotnet run --project src/Meridian/Meridian.csproj -- --package --package-format csv --package-symbols AAPL,MSFT
+```
+
+See [Portable Data Packager](operations/portable-data-packager.md) for full export options including CSV, Parquet, and ZIP bundle formats.
+
 ## Notes
 
 - This document is intentionally grounded in the local codebase rather than aspirational feature copy.
