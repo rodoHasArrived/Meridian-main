@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
@@ -309,6 +310,9 @@ public sealed class ProviderFactory
 
         // Polygon Symbol Search (uses same credentials as Polygon backfill)
         TryAddSearchProvider(providers, () => CreatePolygonSearchProvider(backfillProviders?.Polygon));
+
+        // EDGAR (SEC public API — no credentials required, covers all SEC-reporting US companies)
+        TryAddSearchProvider(providers, () => new EdgarSymbolSearchProvider(log: _log));
 
         return providers
             .OrderBy(p => p.Priority)
