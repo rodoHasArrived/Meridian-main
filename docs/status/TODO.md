@@ -45,7 +45,7 @@ Total items: **226**
 | `.github/workflows/README.md` | 323 | `TODO` | ❌ | \| `documentation.yml` \| Doc Quality Review, TODO Triage \| Completeness/accuracy assessment, TODO prioritization \| |
 | `.github/workflows/codeql.yml` | 7 | `NOTE` | ❌ | # ******** NOTE ******** |
 | `.github/workflows/desktop-builds.yml` | 9 | `NOTE` | ❌ | # NOTE: UWP/WinUI 3 application has been removed. WPF is the sole desktop client. |
-| `.github/workflows/nightly.yml` | 208 | `NOTE` | ❌ | 4) If only certain platforms failed, note platform-specific issues |
+| `.github/workflows/nightly.yml` | 214 | `NOTE` | ❌ | 4) If only certain platforms failed, note platform-specific issues |
 | `.github/workflows/prompt-generation.yml` | 269 | `NOTE` | ❌ | - name: Note skipped AI review |
 | `.github/workflows/prompt-generation.yml` | 473 | `NOTE` | ❌ | - name: Note Copilot trigger status |
 | `.github/workflows/scheduled-maintenance.yml` | 311 | `TODO` | ❌ | echo "### TODO/FIXME/HACK Markers" >> $GITHUB_STEP_SUMMARY |
@@ -135,7 +135,7 @@ Total items: **226**
 | `docs/status/docs-automation-summary.json` | 32 | `TODO` | ❌ | "output_file": "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.md` | 9 | `TODO` | ❌ | \| `scan-todos` \| `success` \| `175.615` \| `docs/status/TODO.md` \| |
 | `docs/status/example-validation.md` | 148 | `TODO` | ❌ | \| `docs\status\TODO.md` \| 1 \| |
-| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 318 \| |
+| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 312 \| |
 | `docs/status/health-dashboard.md` | 33 | `TODO` | ❌ | \| TODO density \| 15 pts \| Lower density of TODO/FIXME markers \| |
 | `docs/status/rules-report.md` | 431 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded API keys in docs \| error \| |
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
