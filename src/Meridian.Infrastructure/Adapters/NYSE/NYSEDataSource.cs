@@ -777,6 +777,14 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         Status = DataSourceStatus.Unavailable;
     }
 
+    /// <summary>
+    /// Test-only entry point: routes a raw JSON string through the same
+    /// <see cref="ProcessWebSocketMessage"/> path used by the live WebSocket receive loop.
+    /// Allows unit tests to verify end-to-end message routing and collector wiring
+    /// without establishing a real network connection.
+    /// </summary>
+    internal void ProcessTestMessage(string message) => ProcessWebSocketMessage(message);
+
     private void ProcessWebSocketMessage(string message)
     {
         try
