@@ -834,4 +834,11 @@ file sealed class StubBacktestContext : IBacktestContext
     public Guid PlaceStopLimitOrder(string symbol, long quantity, decimal stopPrice, decimal limitPrice, string accountId) => Guid.NewGuid();
     public void CancelOrder(Guid orderId) { }
     public void CancelContingentOrders(Guid parentOrderId) { }
+
+    public Task<OptionChainSnapshot?> GetOptionChainAsync(
+        string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default)
+        => Task.FromResult<OptionChainSnapshot?>(null);
+
+    public Task<DateOnly?> GetNearestExpirationAsync(string underlyingSymbol, int minDte = 0, CancellationToken ct = default)
+        => Task.FromResult<DateOnly?>(null);
 }

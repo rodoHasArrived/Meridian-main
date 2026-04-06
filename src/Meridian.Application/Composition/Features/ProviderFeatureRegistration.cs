@@ -9,7 +9,9 @@ using Meridian.Contracts.Api;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure;
+using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -70,6 +72,11 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
 
             return registry;
         });
+
+        // Options chain providers — registered in priority order.
+        // CollectorFeatureRegistration resolves the first registered IOptionsChainProvider via
+        // sp.GetService<IOptionsChainProvider>() and passes it to OptionsChainService.
+        RegisterOptionsChainProviders(services);
 
         // Keep ProviderFactory for backward compatibility
         services.AddSingleton<ProviderFactory>(sp =>
@@ -217,5 +224,37 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         {
             registry.Register(provider);
         }
+    }
+
+    /// <summary>
+    /// Registers <see cref="IOptionsChainProvider"/> implementations in priority order.
+    /// <list type="number">
+    ///   <item>If Alpaca or Polygon credentials are present, those providers are registered first.</item>
+    ///   <item>The <see cref="SyntheticOptionsChainProvider"/> is always registered as the fallback.</item>
+    /// </list>
+    /// The <see cref="CollectorFeatureRegistration"/> resolves
+    /// <c>IOptionsChainProvider</c> via <c>GetService&lt;IOptionsChainProvider&gt;()</c>;
+    /// it receives the first (highest-priority) registration.
+    /// All providers are also exposed via <c>IEnumerable&lt;IOptionsChainProvider&gt;</c>
+    /// so the <see cref="Meridian.Application.ProviderRouting.ProviderRoutingEngine"/> can
+    /// enumerate every registered provider for health monitoring.
+    /// </summary>
+    private static void RegisterOptionsChainProviders(IServiceCollection services)
+    {
+        // 1. Alpaca options — requires ALPACA_KEY_ID + ALPACA_SECRET_KEY
+        services.AddSingleton<AlpacaOptionsChainProvider>();
+
+        // 2. Polygon options — requires POLYGON_API_KEY
+        services.AddSingleton<PolygonOptionsChainProvider>();
+
+        // 3. Synthetic — always available, deterministic offline fallback
+        services.AddSingleton<SyntheticOptionsChainProvider>();
+
+        // Register via the interface:
+        //   • GetService<IOptionsChainProvider>() → Alpaca (first registration wins for concrete resolution)
+        //   • GetServices<IOptionsChainProvider>() → all three (for enumeration)
+        services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<AlpacaOptionsChainProvider>());
+        services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<PolygonOptionsChainProvider>());
+        services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<SyntheticOptionsChainProvider>());
     }
 }
