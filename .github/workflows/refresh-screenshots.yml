@@ -407,13 +407,13 @@ jobs:
           cache-suffix: desktop-screenshots
 
       - name: Restore WPF dependencies
-        run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
+        run: dotnet restore ${{ env.WPF_PROJECT }} -p:TargetFramework=net9.0-windows10.0.19041.0 --verbosity minimal
 
       - name: Build WPF app (Release)
         run: >
           dotnet build ${{ env.WPF_PROJECT }}
           -c Release --no-restore
-          -p:TargetFramework=net9.0-windows
+          -p:TargetFramework=net9.0-windows10.0.19041.0
           --verbosity minimal
 
       - name: Copy sample config
@@ -429,7 +429,7 @@ jobs:
             -SkipBuild `
             -ProjectPath "${{ env.WPF_PROJECT }}" `
             -Configuration Release `
-            -Framework net9.0-windows
+            -Framework net9.0-windows10.0.19041.0
 
       - name: Commit WPF desktop screenshots
         uses: stefanzweifel/git-auto-commit-action@v7
