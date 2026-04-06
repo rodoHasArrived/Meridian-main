@@ -111,6 +111,10 @@ jobs:
           # runner the project builds as net9.0-windows10.0.19041.0 (the full WPF TFM),
           # but without the override MSBuild would select the stub net9.0 target used
           # on non-Windows systems. This matches the same flag in desktop-builds.yml.
+          #
+          # PublishReadyToRun is intentionally omitted (defaults to false in the project)
+          # because the Sharpino.Lib dependency contains F# async state machine methods
+          # that fail R2R code generation (NETSDK1096 / ILCompiler.CodeGenerationFailedException).
           dotnet publish ${{ env.WPF_PROJECT }} `
             -c ${{ env.BUILD_CONFIG }} `
             -r ${{ matrix.rid }} `
@@ -118,7 +122,6 @@ jobs:
             --self-contained true `
             -p:TargetFramework=net9.0-windows10.0.19041.0 `
             -p:PublishSingleFile=true `
-            -p:PublishReadyToRun=true `
             -p:EnableCompressionInSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true
 
