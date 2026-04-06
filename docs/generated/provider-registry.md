@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-06 04:05:34 UTC. Do not edit manually.
+> Auto-generated on 2026-04-06 15:26:37 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -42,6 +42,8 @@
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
 | `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |

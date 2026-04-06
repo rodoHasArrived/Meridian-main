@@ -1,6 +1,10 @@
 # Repository Structure
 
+<<<<<<< HEAD
 > Auto-generated on 2026-04-06 07:51:50 UTC. Do not edit manually.
+=======
+> Auto-generated on 2026-04-06 15:37:15 UTC. Do not edit manually.
+>>>>>>> a7790925f5c8a3094b31e70ee3188535dfd9aa1c
 
 ```text
 Meridian-main
@@ -1958,6 +1962,9 @@ Meridian-main
 │   │   │   │   ├── ResponseHandler.cs
 │   │   │   │   ├── SymbolSearchUtility.cs
 │   │   │   │   └── WebSocketProviderBase.cs
+│   │   │   ├── Edgar
+│   │   │   │   ├── EdgarSecurityMasterIngestProvider.cs
+│   │   │   │   └── EdgarSymbolSearchProvider.cs
 │   │   │   ├── Failover
 │   │   │   │   ├── FailoverAwareMarketDataClient.cs
 │   │   │   │   ├── StreamingFailoverRegistry.cs
@@ -3332,6 +3339,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
+│   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs

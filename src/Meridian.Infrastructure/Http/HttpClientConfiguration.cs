@@ -40,6 +40,8 @@ public static class HttpClientNames
     public const string PolygonSymbolSearch = "polygon-symbol-search";
     public const string FinnhubSymbolSearch = "finnhub-symbol-search";
     public const string OpenFigi = "openfigi";
+    public const string EdgarSymbolSearch = "edgar-symbol-search";
+    public const string EdgarSecurityMaster = "edgar-security-master";
 
     // Application services
     public const string CredentialValidation = "credential-validation";
@@ -281,6 +283,28 @@ public static class HttpClientConfiguration
                 client.BaseAddress = new Uri("https://api.openfigi.com/v3/");
                 client.Timeout = SharedResiliencePolicies.DefaultTimeout;
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
+            })
+            .AddSharedResiliencePolicy();
+
+        // EDGAR symbol search client (SEC public API — no auth required, 10 req/s courtesy limit)
+        services.AddHttpClient(HttpClientNames.EdgarSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://www.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
+            })
+            .AddSharedResiliencePolicy();
+
+        // EDGAR security master ingest client (data.sec.gov endpoint for submissions)
+        services.AddHttpClient(HttpClientNames.EdgarSecurityMaster)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://data.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
             })
             .AddSharedResiliencePolicy();
 
@@ -592,7 +616,27 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.OpenFigi, onStateChanged);
 
-        // NYSE client
+        // EDGAR symbol search client (SEC public API — no auth required, 10 req/s courtesy limit)
+        services.AddHttpClient(HttpClientNames.EdgarSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://www.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.EdgarSymbolSearch, onStateChanged);
+
+        // EDGAR security master ingest client (data.sec.gov endpoint for submissions)
+        services.AddHttpClient(HttpClientNames.EdgarSecurityMaster)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://data.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.EdgarSecurityMaster, onStateChanged);
         services.AddHttpClient(HttpClientNames.NYSE)
             .ConfigureHttpClient(client =>
             {

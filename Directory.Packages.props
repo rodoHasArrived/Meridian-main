@@ -151,7 +151,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Testing">
-    <PackageVersion Include="Bogus" Version="35.6.1" />
+    <PackageVersion Include="Bogus" Version="35.6.5" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.14" />
     <PackageVersion Include="xunit" Version="2.9.3" />
@@ -168,7 +168,7 @@
   </ItemGroup>
 
   <ItemGroup Label="FSharp Event Sourcing">
-    <PackageVersion Include="Sharpino" Version="4.9.1" />
+    <PackageVersion Include="Sharpino" Version="4.9.2" />
   </ItemGroup>
 
   <ItemGroup Label="WinUI / Desktop">
