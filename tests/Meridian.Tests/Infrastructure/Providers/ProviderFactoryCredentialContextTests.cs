@@ -88,12 +88,18 @@ public sealed class ProviderFactoryCredentialContextTests
 
         var providers = factory.CreateSymbolSearchProviders();
 
-        // Credential-gated providers (Alpaca, Finnhub, Polygon) must be absent when keys are null.
-        // EdgarSymbolSearchProvider requires no credentials and is always included.
-        providers.Should().ContainSingle(p => p is EdgarSymbolSearchProvider);
-        providers.Should().NotContain(p => p is AlpacaSymbolSearchProviderRefactored);
-        providers.Should().NotContain(p => p is FinnhubSymbolSearchProviderRefactored);
-        providers.Should().NotContain(p => p is PolygonSymbolSearchProvider);
+        // EDGAR (SEC public API) requires no credentials and is always included.
+        // Credential-gated providers (Alpaca, Polygon, Finnhub) are skipped when no
+        // credentials are configured.
+        providers.Should().ContainSingle(p => p is EdgarSymbolSearchProvider,
+            because: "EDGAR is a free public data source that does not require credentials");
+        providers.Should().NotContain(p => p is AlpacaSymbolSearchProviderRefactored,
+            because: "Alpaca symbol search requires credentials that were not supplied");
+        providers.Should().NotContain(p => p is FinnhubSymbolSearchProviderRefactored,
+            because: "Finnhub symbol search requires credentials that were not supplied");
+        providers.Should().NotContain(p => p is PolygonSymbolSearchProvider,
+            because: "Polygon symbol search requires credentials that were not supplied");
+
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
