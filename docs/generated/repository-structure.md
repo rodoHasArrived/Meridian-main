@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-06 21:32:39 UTC. Do not edit manually.
+> Auto-generated on 2026-04-06 21:46:23 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -187,6 +187,7 @@ Meridian-main
 │   │   ├── docker.yml
 │   │   ├── documentation.yml
 │   │   ├── export-project-artifact.yml
+│   │   ├── export-standalone-exe.yml
 │   │   ├── generate-build-artifact.yml
 │   │   ├── golden-path-validation.yml
 │   │   ├── labeling.yml
