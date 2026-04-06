@@ -19,7 +19,8 @@ public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
     Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null,
-    ICorporateActionAdjustmentService? corporateActionAdjustment = null)
+    ICorporateActionAdjustmentService? corporateActionAdjustment = null,
+    Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider? optionsProvider = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -69,7 +70,7 @@ public sealed class BacktestEngine(
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
-        var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
+        var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId, optionsProvider);
         var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
         var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate);
         var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
