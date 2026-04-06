@@ -298,6 +298,7 @@ Meridian-main
 │   │   ├── docker.yml
 │   │   ├── documentation.yml
 │   │   ├── export-project-artifact.yml
+│   │   ├── generate-build-artifact.yml
 │   │   ├── golden-path-validation.yml
 │   │   ├── labeling.yml
 │   │   ├── maintenance-self-test.yml
