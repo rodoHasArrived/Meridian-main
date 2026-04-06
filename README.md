@@ -1900,6 +1900,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── ISymbolResolver.cs
 │   │   │   │   ├── SymbolSearchUtility.cs
 │   │   │   │   └── WebSocketProviderBase.cs
+│   │   │   ├── Edgar
+│   │   │   │   ├── EdgarSecurityMasterIngestProvider.cs
+│   │   │   │   └── EdgarSymbolSearchProvider.cs
 │   │   │   ├── Failover
 │   │   │   │   ├── FailoverAwareMarketDataClient.cs
 │   │   │   │   ├── StreamingFailoverRegistry.cs
@@ -3265,6 +3268,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
+│   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── InteractiveBrokers
@@ -3569,6 +3573,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-467 directories, 2974 files
+468 directories, 2977 files
 ```
 <!-- readme-tree end -->
