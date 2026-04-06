@@ -156,9 +156,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("EventReplay", typeof(EventReplayPage));
         RegisterPage("PackageManager", typeof(PackageManagerPage));
 
-        // Analytics & Visualization (4 pages)
+        // Analytics & Visualization (5 pages)
         RegisterPage("AdvancedAnalytics", typeof(AdvancedAnalyticsPage));
         RegisterPage("Charts", typeof(ChartingPage));
+        RegisterPage("ScatterAnalysis", typeof(ScatterAnalysisPage));
         RegisterPage("OrderBook", typeof(OrderBookPage));
         RegisterPage("DataCalendar", typeof(DataCalendarPage));
         RegisterPage("QuantScript", typeof(QuantScriptPage));

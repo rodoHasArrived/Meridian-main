@@ -326,6 +326,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<TradingHoursPage>();
         services.AddTransient<AdvancedAnalyticsPage>();
         services.AddTransient<ChartingPage>();
+        services.AddTransient<ScatterAnalysisViewModel>();
+        services.AddTransient<ScatterAnalysisPage>();
         services.AddTransient<OrderBookPage>();
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<DataCalendarPage>();
