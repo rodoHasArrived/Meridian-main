@@ -108,7 +108,9 @@ public sealed class JsonlStorageSink : IStorageSink
     private readonly ConcurrentDictionary<string, MarketEventBuffer> _buffers = new(StringComparer.OrdinalIgnoreCase);
 
     // Pre-allocated task list reused across flush cycles to avoid per-flush heap allocation.
-    // Access is serialized by _flushGate so no concurrent modification is possible.
+    // All access is serialized by _flushGate (SemaphoreSlim(1,1)): the timer-triggered flush,
+    // the public FlushAsync, and the disposal path each acquire the gate before touching this
+    // list, so no concurrent modification is possible even during disposal.
     private readonly List<Task> _flushTasks = new();
 
     // Cached factory delegate — the Lazy<> wrapper ensures WriterState.Create is called at most once

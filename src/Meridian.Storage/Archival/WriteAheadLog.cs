@@ -466,7 +466,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
         writer.Write('|');
         // Use TryFormat on a stack-allocated buffer to avoid allocating a string per WAL write.
         Span<char> tsBuffer = stackalloc char[32]; // "O" round-trip format is at most 28 chars
-        record.Timestamp.TryFormat(tsBuffer, out var tsWritten, "O");
+        if (!record.Timestamp.TryFormat(tsBuffer, out var tsWritten, "O"))
+            throw new InvalidOperationException("Failed to format WAL timestamp via TryFormat.");
         writer.Write(tsBuffer[..tsWritten]);
         writer.Write('|');
         writer.Write(record.RecordType);
@@ -477,8 +478,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         // Approximate size tracking — avoids expensive UTF-8 measurement on every write.
         // Payload dominates; the fixed-format prefix is typically ~80 ASCII bytes.
-        // Using Payload.Length is an O(1) approximation: exact for ASCII (all JSON market data),
-        // and a slight underestimate for rare non-ASCII chars in symbol names.
+        // string.Length counts UTF-16 code units; for ASCII (U+0000–U+007F) each char is
+        // exactly 1 UTF-8 byte, so Length equals the byte count. For non-ASCII chars (e.g.
+        // accented letters in European ticker symbols) each char may encode to 2–4 bytes,
+        // so Length slightly underestimates the true byte count. This is acceptable for the
+        // file-rotation size threshold: the error is bounded and does not affect data integrity.
         _currentFileSize += 80 + record.Payload.Length + Environment.NewLine.Length;
     }
 
