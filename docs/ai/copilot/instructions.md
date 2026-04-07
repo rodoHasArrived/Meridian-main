@@ -723,7 +723,6 @@ Meridian-main
 │   ├── docfx
 │   │   ├── api
 │   │   │   └── index.md
-│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   └── README.md
 │   ├── evaluations
@@ -3538,6 +3537,7 @@ Meridian-main
 ├── CLAUDE.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
+├── docfx.json
 ├── environment.yml
 ├── global.json
 ├── LICENSE
