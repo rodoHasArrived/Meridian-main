@@ -464,7 +464,10 @@ public sealed class WriteAheadLog : IAsyncDisposable
         var writer = _currentWriter;
         writer.Write(record.Sequence);
         writer.Write('|');
-        writer.Write(record.Timestamp.ToString("O"));
+        // Use TryFormat on a stack-allocated buffer to avoid allocating a string per WAL write.
+        Span<char> tsBuffer = stackalloc char[32]; // "O" round-trip format is at most 28 chars
+        record.Timestamp.TryFormat(tsBuffer, out var tsWritten, "O");
+        writer.Write(tsBuffer[..tsWritten]);
         writer.Write('|');
         writer.Write(record.RecordType);
         writer.Write('|');
@@ -474,7 +477,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         // Approximate size tracking — avoids expensive UTF-8 measurement on every write.
         // Payload dominates; the fixed-format prefix is typically ~80 ASCII bytes.
-        _currentFileSize += 80 + Encoding.UTF8.GetByteCount(record.Payload) + Environment.NewLine.Length;
+        // Using Payload.Length is an O(1) approximation: exact for ASCII (all JSON market data),
+        // and a slight underestimate for rare non-ASCII chars in symbol names.
+        _currentFileSize += 80 + record.Payload.Length + Environment.NewLine.Length;
     }
 
     private async Task<long> RecoverWalFileAsync(string walFile, CancellationToken ct)
