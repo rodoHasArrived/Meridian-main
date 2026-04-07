@@ -757,8 +757,9 @@ public partial class App : System.Windows.Application
         try
         {
 
-            // Close any floating tear-off quote panels before service shutdown
+            // Close any floating tear-off quote panels and floating page windows before service shutdown
             WpfServices.TearOffPanelService.Instance.CloseAll();
+            WpfServices.FloatingPageService.Instance.CloseAll();
 
             using var cts = new CancellationTokenSource(ShutdownTimeoutMs);
 
