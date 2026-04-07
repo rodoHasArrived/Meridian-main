@@ -563,6 +563,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── prometheus.yml
 │   └── systemd
 │       └── meridian.service
+├── docfx.json
 ├── docs
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -812,7 +813,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── README.md
 │   │   ├── api
 │   │   │   └── index.md
-│   │   ├── docfx.json
 │   │   └── filterConfig.yml
 │   ├── evaluations
 │   │   ├── 2026-03-brainstorm-next-frontier.md
