@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-06 22:18:06 UTC. Do not edit manually.
+> Auto-generated on 2026-04-07 02:57:29 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -612,7 +612,6 @@ Meridian-main
 │   ├── docfx
 │   │   ├── api
 │   │   │   └── index.md
-│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   └── README.md
 │   ├── evaluations
@@ -3427,6 +3426,7 @@ Meridian-main
 ├── CLAUDE.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
+├── docfx.json
 ├── environment.yml
 ├── global.json
 ├── LICENSE
