@@ -74,7 +74,7 @@ Located mainly in `docs/ai/claude/`.
 | [`agents/README.md`](agents/README.md) | GitHub and Claude agent overview, including navigation agents |
 | [`skills/README.md`](skills/README.md) | Portable Agent Skills overview |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
-| [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.codex/skills/README.md) | Codex repo-local skill catalog |
+| [`.codex/skills/README.md`](../../.codex/skills/README.md) | Codex repo-local skill catalog |
 
 ### Tier 5: Auto-Applied Instructions
 
