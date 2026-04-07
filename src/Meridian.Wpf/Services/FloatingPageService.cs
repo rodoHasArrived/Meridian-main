@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -137,8 +138,9 @@ public sealed class FloatingPageService
             foreach (var (key, value) in loaded)
                 _savedPositions[key] = value;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine($"[FloatingPageService] Failed to load positions from {PositionsFilePath}: {ex.Message}");
         }
     }
 
@@ -150,8 +152,9 @@ public sealed class FloatingPageService
             var json = JsonSerializer.Serialize(_savedPositions);
             File.WriteAllText(PositionsFilePath, json);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.WriteLine($"[FloatingPageService] Failed to save positions to {PositionsFilePath}: {ex.Message}");
         }
     }
 }

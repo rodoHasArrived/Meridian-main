@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Wpf.Models;
-using WpfFloatingPageService = Meridian.Wpf.Services.FloatingPageService;
 
 namespace Meridian.Wpf.Views;
 
@@ -66,7 +65,7 @@ public partial class MainPage
         if (e.Action == PaneDropAction.FloatWindow)
         {
             // Pop the dragged page out into a standalone floating window.
-            WpfFloatingPageService.Instance.OpenPage(
+            Services.FloatingPageService.Instance.OpenPage(
                 e.PageTag,
                 tag => _navigationService.CreatePageContent(tag));
             return;
