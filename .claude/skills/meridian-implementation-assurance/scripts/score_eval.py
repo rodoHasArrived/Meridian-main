@@ -54,9 +54,11 @@ def validate_scores(raw: dict[str, object]) -> dict[str, int]:
 
     scores: dict[str, int] = {}
     for k in CATEGORIES:
+        if k not in raw:
+            raise ValueError(f"Missing score for '{k}'")
         try:
             val = int(raw[k])
-        except Exception as exc:  # noqa: BLE001
+        except (ValueError, TypeError) as exc:
             raise ValueError(f"Score for '{k}' is not an integer: {raw[k]!r}") from exc
         if val < 0 or val > 2:
             raise ValueError(f"Score for '{k}' must be between 0 and 2. Got {val}.")
