@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-06
 **Status:** Active productization — workstation workflows are now materially in code, with provider trust, cockpit hardening, and governance integration on the critical path
-**Repository Snapshot (2026-04-04):** solution projects: 39 | `src/` project files: 28 | test projects: 8 | workflow files: 40
+**Repository Snapshot (2026-04-06):** solution projects: 40 | `src/` project files: 28 | test projects: 8 | workflow files: 42
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains a strong market-data, storage, backtesting, execution, ledger, and workstation baseline. The main delivery problem is now narrower and more product-shaped: closing the trust gaps, workflow gaps, and governance gaps that still separate a feature-rich platform from a genuinely operator-ready trading workstation and fund-operations product.
 
@@ -46,7 +46,7 @@ That changes the roadmap emphasis. Meridian does not need another broad foundati
 
 ### Complete
 
-These are conservative "in code and materially usable" claims as of 2026-04-04:
+These are conservative "in code and materially usable" claims as of 2026-04-06:
 
 - Core ingestion pipeline: bounded channels, backpressure handling, WAL durability, composite sinks, graceful shutdown, and structured metrics
 - Storage foundation: JSONL and Parquet sinks, tiered storage, replay, packaging, export, lineage, catalog, quota enforcement, and lifecycle policy support
@@ -61,6 +61,7 @@ These are conservative "in code and materially usable" claims as of 2026-04-04:
 - Governance workspace depth: reconciliation queue, break review and resolution, trial-balance drill-ins, reporting profile visibility, Security Master search, and identifier-conflict workflows in `governance-screen.tsx`
 - Shared run, portfolio, and ledger read-model baseline: `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` now normalize cross-workspace read paths
 - WPF workstation shell modernization: native Fluent theme, SVG icon set, candlestick charting, zero-API-key startup, workflow guide, and screenshot-refresh CI
+- Desktop delivery momentum: a `ScatterAnalysis` quickstart panel and standalone WPF export workflow now reinforce onboarding and packaging without changing the core wave ordering
 - Improvement portfolio A-G and J: the active improvement tracker marks the core platform-improvement set as complete, with Theme K active
 - Governance baseline: Security Master services and endpoints, run-scoped reconciliation, direct-lending APIs, export infrastructure, and blueprint-backed fund-ops planning are all present in the repo
 
@@ -68,7 +69,7 @@ These are conservative "in code and materially usable" claims as of 2026-04-04:
 
 These areas are real in code but not yet complete enough to treat as fully closed operator workflows:
 
-- Provider confidence remains uneven. Polygon, Interactive Brokers, StockSharp, and NYSE each have stronger evidence than earlier snapshots, but the validation matrix still includes partial or missing runtime proof.
+- Provider confidence remains uneven. Polygon, Interactive Brokers, StockSharp, and NYSE each have stronger replay, contract, and pipeline evidence than earlier snapshots, including the April 6 IB facade contract, NYSE pipeline, and StockSharp edge-case additions, but the validation matrix still includes partial or missing runtime proof.
 - Backfill reliability is broadly implemented but still needs longer-run checkpoint evidence and clearer operator confidence signals across providers and date ranges.
 - The React workstation is no longer just a shell, but it still needs hardening around real-vendor validation, richer audit depth, and stronger acceptance criteria for daily operator use.
 - Shared run coverage now spans backtest, paper, and live-aware models in contracts and UI, but portfolio, ledger, cash-flow, and reconciliation continuity are not yet equally deep in every mode.
@@ -282,7 +283,8 @@ Optional capabilities remain optional:
 
 **Focus:**
 
-- expand Polygon replay and live-path evidence
+- preserve the new IB contract, NYSE pipeline, and StockSharp converter evidence while extending it into clearer runtime and operator proof
+- expand Polygon replay and live-path evidence without overstating live-vendor validation
 - keep Interactive Brokers runtime guidance aligned with current vendor surfaces
 - harden NYSE lifecycle and auth/rate-limit evidence
 - expand validated StockSharp adapter coverage
@@ -368,6 +370,7 @@ Optional capabilities remain optional:
 ## Risks and Dependencies
 
 - **Provider trust is still the first dependency.** Without replay and runtime evidence, downstream workflow polish risks overstating readiness.
+- **Evidence-strengthening tests are not the same as live-vendor proof.** The April 6 provider additions materially improve confidence, but they do not close IB, StockSharp, Polygon live-runtime, or NYSE auth/rate-limit gaps by themselves.
 - **Cockpit hardening should precede live-readiness claims.** Meridian now has meaningful trading surfaces, but operator trust still matters more than feature count.
 - **The shared run model must remain the center of gravity.** If research, trading, portfolio, ledger, and governance drift apart again, the workstation migration loses its product logic.
 - **Security Master must integrate through shared read models.** It should enrich portfolio, ledger, reconciliation, and reporting flows rather than becoming a parallel subsystem.

@@ -1,9 +1,9 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-06
 **Status:** Combined stakeholder-facing roadmap refresh
 
-This document is the shortest complete entry point into Meridian's current roadmap. It combines the active roadmap refresh, the highest-value opportunities, and the target end-state product story into one repo-grounded snapshot.
+This document is the shortest complete entry point into Meridian's current roadmap. It combines the active roadmap refresh, the highest-value opportunities, and the target end-state product story into one repo-grounded snapshot. `ROADMAP.md` remains the authoritative wave-structured roadmap.
 
 Use this with:
 
@@ -16,7 +16,7 @@ Use this with:
 
 ## Summary
 
-Meridian is no longer mainly blocked on missing platform foundations. The repo already has a strong ingestion, storage, replay, backtesting, execution, and workstation baseline, plus visible governance seams. The roadmap priority is now to close trust gaps, finish workflow continuity, and turn the product surfaces already in code into a genuinely operator-ready trading workstation and fund-operations platform.
+Meridian is no longer mainly blocked on missing platform foundations. The repo already has a strong ingestion, storage, replay, backtesting, execution, and workstation baseline, plus visible governance seams. April 5-6 backlog and evidence updates strengthen that picture, but they do not change the delivery order: the roadmap priority is still to close trust gaps, finish workflow continuity, and turn the product surfaces already in code into a genuinely operator-ready trading workstation and fund-operations platform.
 
 ---
 
@@ -29,15 +29,16 @@ Meridian is no longer mainly blocked on missing platform foundations. The repo a
 - Research, Trading, Data Operations, and Governance each have real workflows in code, not only route placeholders.
 - Shared run, portfolio, and ledger read services exist and already feed workstation surfaces.
 - WPF shell modernization is complete and run-centered workstation pages are active in the desktop app.
+- Recent supporting momentum includes the new desktop Quickstart panel, standalone WPF export workflow, and cleared pre-existing test failures.
 - Security Master, reconciliation, direct lending, and governance-facing endpoints are already present in the repo.
 
 ### What Is Partial
 
-- Provider trust is still uneven across key providers.
+- Provider trust is still uneven across key providers even after stronger IB, NYSE, and StockSharp test evidence landed on April 6.
 - Backfill reliability needs stronger evidence across representative windows.
 - The web cockpit is real, but not yet fully hardened as a daily operator surface.
 - Shared run continuity is present, but not yet equally deep across every workspace and mode.
-- Security Master and governance workflows are visible, but not yet fully productized.
+- Security Master and governance workflows are visible, but not yet fully productized as the main cross-workspace governance seam.
 - WPF still needs deeper workflow-first page work and MVVM extraction on high-traffic surfaces.
 
 ---
@@ -58,7 +59,7 @@ Research, trading, portfolio, ledger, and governance should all keep converging 
 
 ### 4. Productize Security Master and governance
 
-Security Master, multi-ledger, reconciliation, cash-flow, and reporting are now differentiated product opportunities, not speculative ideas.
+Security Master, multi-ledger, reconciliation, cash-flow, and reporting are now differentiated product opportunities on the main delivery path, not speculative ideas or a separate future track.
 
 ### 5. Keep architecture simple while the UX expands
 
@@ -110,6 +111,7 @@ Controlled live integration readiness after paper and trust gates are genuinely 
 ## Risks and Dependencies
 
 - Provider trust remains the first dependency.
+- Stronger replay, contract, and pipeline tests should raise confidence without being described as full live-runtime closure.
 - Cockpit hardening should happen before live-readiness claims.
 - Shared run and Security Master seams must remain central as the product grows.
 - Governance should extend shared contracts instead of creating a parallel subsystem.
