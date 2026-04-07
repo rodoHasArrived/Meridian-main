@@ -1656,7 +1656,7 @@ jobs:
         continue-on-error: true
 
       - name: Build DocFX site
-        run: docfx docs/docfx/docfx.json
+        run: docfx docfx.json
 
       - name: Configure GitHub Pages
         id: configure-pages

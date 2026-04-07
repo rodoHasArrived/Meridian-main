@@ -81,31 +81,34 @@ public sealed class MarketDataPrompts
         [Description("Provider identifier (e.g. \"alpaca\", \"polygon\", \"tiingo\").")]
         string provider = "alpaca")
     {
+        var providerUpper = provider.ToUpperInvariant();
+        var apiKeyPlaceholder = "${env:" + providerUpper + "_API_KEY}";
+
         yield return new ChatMessage(ChatRole.User,
             $"How do I configure the {provider} provider in Meridian?");
 
-        yield return new ChatMessage(ChatRole.Assistant, $"""
-            Here is how to configure the **{provider}** provider:
+        yield return new ChatMessage(ChatRole.Assistant, $$"""
+            Here is how to configure the **{{provider}}** provider:
 
             ## Step 1 — Obtain API credentials
-            Visit the {provider} developer portal and create an API key.
+            Visit the {{provider}} developer portal and create an API key.
             Store the key in an **environment variable** — never hard-code it:
             ```bash
-            export {provider.ToUpperInvariant()}_API_KEY=your-key-here
+            export {{providerUpper}}_API_KEY=your-key-here
             # Some providers also need a secret:
-            export {provider.ToUpperInvariant()}_SECRET_KEY=your-secret-here
+            export {{providerUpper}}_SECRET_KEY=your-secret-here
             ```
 
             ## Step 2 — Update appsettings.json
             Open `config/appsettings.json` and set the active data source:
             ```json
-            {{
-              "DataSource": "{provider}",
-              "{provider}": {{
+            {
+              "DataSource": "{{provider}}",
+              "{{provider}}": {
                 "Enabled": true,
-                "ApiKey": "${{env:{provider.ToUpperInvariant()}_API_KEY}}"
-              }}
-            }}
+                "ApiKey": "{{apiKeyPlaceholder}}"
+              }
+            }
             ```
 
             ## Step 3 — Add symbols to collect
