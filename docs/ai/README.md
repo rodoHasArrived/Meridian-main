@@ -13,7 +13,7 @@ This document is the master index for AI guidance in the Meridian repository. It
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
 | GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/agents) |
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills) |
-| Codex repo-local skills | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.codex/skills/README.md) | [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian/tree/main/.codex/skills) |
+| Codex repo-local skills | [`.codex/skills/README.md`](../../.codex/skills/README.md) | [`.codex/skills/`](../../.codex/skills/) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/copilot-instructions.md) |
 
 ---
