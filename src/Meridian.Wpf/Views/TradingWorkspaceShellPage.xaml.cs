@@ -19,24 +19,28 @@ public partial class TradingWorkspaceShellPage : Page
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
     private readonly CashFinancingReadService _cashFinancingReadService;
+    private readonly WorkspaceShellContextService _shellContextService;
 
     public TradingWorkspaceShellPage(
         NavigationService navigationService,
         StrategyRunWorkspaceService runService,
         FundContextService fundContextService,
-        CashFinancingReadService cashFinancingReadService)
+        CashFinancingReadService cashFinancingReadService,
+        WorkspaceShellContextService shellContextService)
     {
         InitializeComponent();
         _navigationService = navigationService;
         _runService = runService;
         _fundContextService = fundContextService;
         _cashFinancingReadService = cashFinancingReadService;
+        _shellContextService = shellContextService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged += OnActiveRunContextChanged;
+        _shellContextService.SignalsChanged += OnSignalsChanged;
 
         UpdateActiveFundText();
         await RefreshAsync();
@@ -47,6 +51,7 @@ public partial class TradingWorkspaceShellPage : Page
     {
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged -= OnActiveRunContextChanged;
+        _shellContextService.SignalsChanged -= OnSignalsChanged;
         _ = SaveDockLayoutAsync();
     }
 
@@ -95,6 +100,34 @@ public partial class TradingWorkspaceShellPage : Page
                 CapitalFinancingText.Text = "—";
                 CapitalControlsDetailText.Text = "Select a fund to unlock capital, financing, and reconciliation posture.";
             }
+
+            ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
+            {
+                WorkspaceTitle = "Trading Workspace",
+                WorkspaceSubtitle = "Risk-aware trading shell for live posture, blotter review, safe staging, and docked execution detail.",
+                PrimaryScopeLabel = "Desk",
+                PrimaryScopeValue = summary.ActiveRunContext?.StrategyName ?? (_fundContextService.CurrentFundProfile?.DisplayName ?? "No active trading run"),
+                AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
+                FreshnessValue = summary.ActiveRunContext is null ? "Awaiting active run" : $"{summary.ActiveRunContext.ModeLabel} · {summary.ActiveRunContext.StatusLabel}",
+                ReviewStateLabel = "Risk",
+                ReviewStateValue = summary.ActivePositions.Count > 0 ? $"{summary.ActivePositions.Count} active position(s)" : "No live positions",
+                ReviewStateTone = summary.ActivePositions.Count > 0 ? WorkspaceTone.Warning : WorkspaceTone.Success,
+                CriticalLabel = "Critical",
+                CriticalValue = summary.LiveRunCount > 0 ? $"{summary.LiveRunCount} live run(s)" : "No live runs",
+                CriticalTone = summary.LiveRunCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info,
+                AdditionalBadges =
+                [
+                    new WorkspaceShellBadge
+                    {
+                        Label = "Equity",
+                        Value = summary.TotalEquityFormatted,
+                        Glyph = "\uE9F5",
+                        Tone = summary.LiveRunCount > 0 ? WorkspaceTone.Info : WorkspaceTone.Neutral
+                    }
+                ]
+            });
+
+            CommandBar.CommandGroup = BuildCommandGroup();
         }
         catch (Exception ex)
         {
@@ -203,6 +236,43 @@ public partial class TradingWorkspaceShellPage : Page
         OpenWorkspacePage(pageTag, action, activeRun?.RunId);
     }
 
+    private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
+    {
+        switch (e.Command.Id)
+        {
+            case "Pause":
+                PauseTrading_Click(sender, new RoutedEventArgs());
+                break;
+            case "Stop":
+                StopTrading_Click(sender, new RoutedEventArgs());
+                break;
+            case "Flatten":
+                FlattenPositions_Click(sender, new RoutedEventArgs());
+                break;
+            case "CancelAll":
+                CancelAll_Click(sender, new RoutedEventArgs());
+                break;
+            case "AcknowledgeRisk":
+                AcknowledgeRisk_Click(sender, new RoutedEventArgs());
+                break;
+            case "LiveData":
+                OpenLiveData_Click(sender, new RoutedEventArgs());
+                break;
+            case "PositionBlotter":
+                OpenBlotter_Click(sender, new RoutedEventArgs());
+                break;
+            case "RunRisk":
+                OpenRiskRail_Click(sender, new RoutedEventArgs());
+                break;
+            case "NotificationCenter":
+                OpenAlerts_Click(sender, new RoutedEventArgs());
+                break;
+            case "TradingHours":
+                _navigationService.NavigateTo("TradingHours");
+                break;
+        }
+    }
+
     private void PauseTrading_Click(object sender, RoutedEventArgs e)
     {
         DeskActionStatusText.Text = "Pause queued. Review blotter and risk rail before resuming.";
@@ -271,7 +341,18 @@ public partial class TradingWorkspaceShellPage : Page
             return;
         }
 
-        UpdateActiveRun(e);
+        _ = RefreshAsync();
+    }
+
+    private void OnSignalsChanged(object? sender, EventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(async () => await RefreshAsync());
+            return;
+        }
+
+        _ = RefreshAsync();
     }
 
     private void UpdateActiveFundText()
@@ -287,6 +368,27 @@ public partial class TradingWorkspaceShellPage : Page
         ActiveFundText.Text = profile.DisplayName;
         ActiveFundDetailText.Text = $"{profile.LegalEntityName} · {profile.BaseCurrency}";
     }
+
+    private static WorkspaceCommandGroup BuildCommandGroup() =>
+        new()
+        {
+            PrimaryCommands =
+            [
+                new WorkspaceCommandItem { Id = "Pause", Label = "Pause", Description = "Pause trading", ShortcutHint = "Desk", Glyph = "\uE769", Tone = WorkspaceTone.Primary },
+                new WorkspaceCommandItem { Id = "Stop", Label = "Stop", Description = "Stop trading", ShortcutHint = "Desk", Glyph = "\uE71A", Tone = WorkspaceTone.Secondary },
+                new WorkspaceCommandItem { Id = "Flatten", Label = "Flatten", Description = "Flatten positions", ShortcutHint = "Risk", Glyph = "\uE9F5", Tone = WorkspaceTone.Danger }
+            ],
+            SecondaryCommands =
+            [
+                new WorkspaceCommandItem { Id = "CancelAll", Label = "Cancel All", Description = "Cancel staged orders", Glyph = "\uE711" },
+                new WorkspaceCommandItem { Id = "AcknowledgeRisk", Label = "Acknowledge Risk", Description = "Acknowledge current risk posture", Glyph = "\uE73E" },
+                new WorkspaceCommandItem { Id = "LiveData", Label = "Live Data", Description = "Open live data", Glyph = "\uE9D2" },
+                new WorkspaceCommandItem { Id = "PositionBlotter", Label = "Blotter", Description = "Open position blotter", Glyph = "\uE8A5" },
+                new WorkspaceCommandItem { Id = "RunRisk", Label = "Risk Rail", Description = "Open risk rail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Alerts", Description = "Open alerts", Glyph = "\uE7F4" },
+                new WorkspaceCommandItem { Id = "TradingHours", Label = "Trading Hours", Description = "Open trading hours", Glyph = "\uE823" }
+            ]
+        };
 
     private static string BuildPageKey(string pageTag, object? parameter)
         => parameter is null ? pageTag : $"{pageTag}:{parameter}";

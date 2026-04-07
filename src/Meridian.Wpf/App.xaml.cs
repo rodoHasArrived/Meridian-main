@@ -257,6 +257,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
         services.AddSingleton(_ => WpfServices.FundContextService.Instance);
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
+        services.AddSingleton<WpfServices.WorkspaceShellContextService>();
 
         // ── Domain / feature services ───────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BackendServiceManager.Instance);

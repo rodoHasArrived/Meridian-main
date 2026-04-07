@@ -43,6 +43,10 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 [ImplementsAdr("ADR-001", "Robinhood historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("ROBINHOOD_ACCESS_TOKEN",
+    EnvironmentVariables = new[] { "ROBINHOOD_ACCESS_TOKEN" },
+    DisplayName = "Access Token",
+    Description = "Robinhood personal access token for the unofficial API")]
 public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.robinhood.com/marketdata/historicals/";
