@@ -222,12 +222,39 @@
                 <DockPanel Margin="16,0" LastChildFill="False">
                     <!-- Brand -->
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{StaticResource IconChart}"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="16"
-                                   Foreground="{StaticResource TopBarIconAccentBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0" />
+                        <Viewbox Width="18"
+                                 Height="18"
+                                 Margin="0,0,10,0"
+                                 Stretch="Uniform">
+                            <Grid Width="24" Height="24">
+                                <Ellipse Width="18"
+                                         Height="18"
+                                         Stroke="{StaticResource MeridianBrandHaloBrush}"
+                                         StrokeThickness="1.1"
+                                         Opacity="0.55" />
+                                <Path Data="{StaticResource MeridianBrandMeridianGeometry}"
+                                      Stroke="{StaticResource MeridianBrandBeamBrush}"
+                                      StrokeThickness="1.2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round" />
+                                <Path Data="{StaticResource MeridianBrandChartGeometry}"
+                                      Stroke="{StaticResource MeridianBrandGradientBrush}"
+                                      StrokeThickness="2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round" />
+                                <Path Data="{StaticResource MeridianBrandHorizonGeometry}"
+                                      Stroke="{StaticResource MeridianBrandHorizonBrush}"
+                                      StrokeThickness="1.15"
+                                      StrokeStartLineCap="Round"
+                                      Opacity="0.8" />
+                                <Ellipse Width="2.8"
+                                         Height="2.8"
+                                         Fill="{StaticResource MeridianBrandStarBrush}"
+                                         VerticalAlignment="Top"
+                                         Margin="0,1.1,0,0" />
+                            </Grid>
+                        </Viewbox>
                         <TextBlock Text="Meridian"
                                    FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                    FontSize="14"

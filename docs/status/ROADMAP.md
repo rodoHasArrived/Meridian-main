@@ -99,7 +99,7 @@ These remain valuable, but they are not on the shortest path to Meridian's core 
 - multi-instance coordination as a supported scale-out topology
 - Phase 16 assembly-level performance optimization
 - broader advanced research tooling after the core workstation workflows are operator-ready
-- Phase 1.5 preferred and convertible equity domain extension in `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- broader Phase 1.5 preferred and convertible equity productization beyond the new domain, event-model, and preferred-term read/write foundation
 
 ---
 
@@ -277,20 +277,23 @@ Optional capabilities remain optional:
 
 ## Recommended Next Waves
 
-### Wave 1: Provider trust and backfill evidence closure
+### Wave 1: Provider Reliability and Data Confidence (active)
 
 **Why now:** This is still the main dependency for every downstream readiness claim Meridian wants to make.
 
+**Blueprint:** [`../plans/provider-reliability-data-confidence-wave-1-blueprint.md`](../plans/provider-reliability-data-confidence-wave-1-blueprint.md)
+
 **Focus:**
 
-- preserve the new IB contract, NYSE pipeline, and StockSharp converter evidence while extending it into clearer runtime and operator proof
-- expand Polygon replay and live-path evidence without overstating live-vendor validation
-- keep Interactive Brokers runtime guidance aligned with current vendor surfaces
-- harden NYSE lifecycle and auth/rate-limit evidence
-- expand validated StockSharp adapter coverage
-- validate backfill checkpoints and gap handling across longer representative windows
+- expand Polygon replay coverage across feeds and edge cases
+- validate Interactive Brokers runtime and bootstrap behavior against real vendor surfaces without conflating simulation, smoke-build, and vendor-runtime modes
+- deepen NYSE shared-lifecycle and Level 2 depth coverage while hardening transport behavior around `IHttpClientFactory`, cancellation-safe websocket send, and resubscribe flows
+- keep StockSharp connector examples aligned with the adapters Meridian is prepared to validate
+- validate backfill checkpoint reliability and gap detection across representative providers and date ranges
+- harden the Parquet sink flush path and close remaining ADR-014 cleanup around L2 snapshot persistence
+- keep provider-confidence docs and the validation matrix synchronized with executable evidence rather than summary language
 
-**Exit signal:** Every major provider has documented replay or runtime evidence and backfill reliability is validated across representative ranges.
+**Exit signal:** Every major provider has documented replay or runtime evidence, each supported validation suite passes, and remaining entitlement-bound runtime gaps are explicitly bounded instead of implied away.
 
 ### Wave 2: Paper-trading cockpit hardening
 
@@ -361,7 +364,7 @@ Optional capabilities remain optional:
 - L3 inference and queue-aware simulation
 - multi-instance coordination
 - Phase 16 performance work
-- Phase 1.5 preferred and convertible equity domain extension
+- broader Phase 1.5 preferred and convertible equity productization beyond the new domain, event-model, and read-query foundation
 
 **Exit signal:** These deepen Meridian's ceiling after the core workstation product is trustworthy and coherent.
 

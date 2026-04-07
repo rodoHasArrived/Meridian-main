@@ -40,7 +40,31 @@ const data: TradingWorkspaceResponse = {
     { id: "m3", label: "Fills", value: "13", delta: "+3", tone: "success" },
     { id: "m4", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
   ],
-  positions: [{ symbol: "AAPL", side: "Long", quantity: "100", averagePrice: "188.10", markPrice: "189.00", dayPnl: "+$90", unrealizedPnl: "+$90", exposure: "$18,900" }],
+  positions: [{
+    symbol: "AAPL",
+    side: "Long",
+    quantity: "100",
+    averagePrice: "188.10",
+    markPrice: "189.00",
+    dayPnl: "+$90",
+    unrealizedPnl: "+$90",
+    exposure: "$18,900",
+    security: {
+      securityId: "security-aapl",
+      displayName: "Apple Inc.",
+      assetClass: "Equity",
+      subType: "CommonShare",
+      currency: "USD",
+      status: "Active",
+      primaryIdentifier: "AAPL",
+      coverageStatus: "Partial",
+      matchedIdentifierKind: "Ticker",
+      matchedIdentifierValue: "AAPL",
+      matchedProvider: "Polygon",
+      resolutionReason: "Matched by ticker only; upstream provider identifier family is missing."
+    },
+    securityDetailUrl: "/workstation/governance/security-master?securityId=security-aapl"
+  }],
   openOrders: [{ orderId: "PO-1", symbol: "MSFT", side: "Buy", type: "Limit", quantity: "20", limitPrice: "414.20", status: "Working", submittedAt: "09:42:00 ET" }],
   fills: [{ fillId: "FL-1", orderId: "PO-0", symbol: "NVDA", side: "Sell", quantity: "10", price: "948.20", venue: "NASDAQ", timestamp: "09:40:10 ET" }],
   risk: { state: "Observe", summary: "Guardrails are active.", netExposure: "$120,000", grossExposure: "$150,000", var95: "$9,000", maxDrawdown: "-1.1%", buyingPowerUsed: "58%", activeGuardrails: ["Cap per single-name", "Throttle at 70%"] },
@@ -53,6 +77,18 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Live positions")).toBeInTheDocument();
     expect(screen.getByText("Session replay controls")).toBeInTheDocument();
     expect(screen.getByText("Backtest → Paper promotion gate")).toBeInTheDocument();
+  });
+
+  it("renders inline security master coverage for trading positions", () => {
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    expect(screen.getByText("Apple Inc.")).toBeInTheDocument();
+    expect(screen.getByText("Partial")).toBeInTheDocument();
+    expect(screen.getByText("Matched by ticker only; upstream provider identifier family is missing.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open security master/i })).toHaveAttribute(
+      "href",
+      "/workstation/governance/security-master?securityId=security-aapl"
+    );
   });
 
   it("handles promotion happy path", async () => {

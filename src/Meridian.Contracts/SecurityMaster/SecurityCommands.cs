@@ -27,6 +27,23 @@ public sealed record AmendSecurityTermsRequest(
     string? SourceRecordId,
     string? Reason);
 
+public sealed record AmendPreferredEquityTermsRequest(
+    long ExpectedVersion,
+    decimal? DividendRate,
+    string DividendType,
+    decimal? RedemptionPrice,
+    DateOnly? RedemptionDate,
+    DateOnly? CallableDate,
+    bool ParticipatesInCommonDividends,
+    decimal? AdditionalDividendThreshold,
+    string LiquidationPreferenceKind,
+    decimal? LiquidationPreferenceMultiple,
+    DateTimeOffset EffectiveFrom,
+    string SourceSystem,
+    string UpdatedBy,
+    string? SourceRecordId,
+    string? Reason);
+
 public sealed record DeactivateSecurityRequest(
     Guid SecurityId,
     long ExpectedVersion,

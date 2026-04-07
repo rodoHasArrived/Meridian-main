@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-07 02:57:29 UTC. Do not edit manually.
+> Auto-generated on 2026-04-07 06:50:28 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -75,21 +75,32 @@ Meridian-main
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
+│   │   ├── meridian-archive-organizer
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── references
+│   │   │   │   └── archive-placement-guide.md
+│   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
+│   │   │   ├── agents
 │   │   │   ├── scripts
 │   │   │   │   └── repo-updater.ps1
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
+│   │   │   ├── agents
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
+│   │   │   ├── agents
 │   │   │   ├── evals
 │   │   │   │   ├── benchmark_baseline.json
 │   │   │   │   ├── evals.json
@@ -104,6 +115,7 @@ Meridian-main
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
@@ -112,10 +124,12 @@ Meridian-main
 │   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-roadmap-strategist
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
 │   │   │   └── SKILL.md
@@ -223,6 +237,9 @@ Meridian-main
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
+├── .playwright-cli
+│   └── page-2026-04-07T06-39-33-624Z.yml
+├── .vscode
 ├── benchmarks
 │   ├── Meridian.Benchmarks
 │   │   ├── Budget
@@ -335,6 +352,7 @@ Meridian-main
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
 ├── config
+│   ├── appsettings.json
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
 │   ├── condition-codes.json
@@ -729,6 +747,7 @@ Meridian-main
 │   │   └── stocksharp-connectors.md
 │   ├── reference
 │   │   ├── api-reference.md
+│   │   ├── brand-assets.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
@@ -791,7 +810,6 @@ Meridian-main
 │   │   ├── coverage-report.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
-│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
@@ -806,9 +824,9 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
-│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
 │   │   ├── TARGET_END_PRODUCT.md
+│   │   ├── todo-scan-results.json
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -832,6 +850,8 @@ Meridian-main
 │       │   └── main.cpp
 │       ├── CMakeLists.txt
 │       └── README.md
+├── output
+│   └── playwright
 ├── PROJECTS
 │   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── scripts
@@ -874,6 +894,7 @@ Meridian-main
 │   │   │       ├── credentials.html
 │   │   │       ├── index.html
 │   │   │       └── index.js
+│   │   ├── app.ico
 │   │   ├── app.manifest
 │   │   ├── DashboardServerBridge.cs
 │   │   ├── GlobalUsings.cs
@@ -2417,54 +2438,61 @@ Meridian-main
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── Assets
-│       │   └── Icons
-│       │       ├── account-portfolio.svg
-│       │       ├── admin-maintenance.svg
-│       │       ├── aggregate-portfolio.svg
-│       │       ├── archive-health.svg
-│       │       ├── backfill.svg
-│       │       ├── backtest.svg
-│       │       ├── charting.svg
-│       │       ├── collection-sessions.svg
-│       │       ├── dashboard.svg
-│       │       ├── data-browser.svg
-│       │       ├── data-calendar.svg
-│       │       ├── data-export.svg
-│       │       ├── data-operations.svg
-│       │       ├── data-quality.svg
-│       │       ├── data-sampling.svg
-│       │       ├── data-sources.svg
-│       │       ├── diagnostics.svg
-│       │       ├── event-replay.svg
-│       │       ├── governance.svg
-│       │       ├── help.svg
-│       │       ├── index-subscription.svg
-│       │       ├── keyboard-shortcuts.svg
-│       │       ├── lean-integration.svg
-│       │       ├── live-data.svg
-│       │       ├── order-book.svg
-│       │       ├── portfolio-import.svg
-│       │       ├── provider-health.svg
-│       │       ├── README.md
-│       │       ├── research.svg
-│       │       ├── retention-assurance.svg
-│       │       ├── run-detail.svg
-│       │       ├── run-ledger.svg
-│       │       ├── run-mat.svg
-│       │       ├── run-portfolio.svg
-│       │       ├── schedule-manager.svg
-│       │       ├── security-master.svg
-│       │       ├── service-manager.svg
-│       │       ├── settings.svg
-│       │       ├── storage-optimization.svg
-│       │       ├── storage.svg
-│       │       ├── strategy-runs.svg
-│       │       ├── symbol-storage.svg
-│       │       ├── symbols.svg
-│       │       ├── system-health.svg
-│       │       ├── trading-hours.svg
-│       │       ├── trading.svg
-│       │       └── watchlist.svg
+│       │   ├── Brand
+│       │   │   ├── meridian-hero.svg
+│       │   │   ├── meridian-mark.svg
+│       │   │   ├── meridian-tile-256.png
+│       │   │   ├── meridian-tile.svg
+│       │   │   └── meridian-wordmark.svg
+│       │   ├── Icons
+│       │   │   ├── account-portfolio.svg
+│       │   │   ├── admin-maintenance.svg
+│       │   │   ├── aggregate-portfolio.svg
+│       │   │   ├── archive-health.svg
+│       │   │   ├── backfill.svg
+│       │   │   ├── backtest.svg
+│       │   │   ├── charting.svg
+│       │   │   ├── collection-sessions.svg
+│       │   │   ├── dashboard.svg
+│       │   │   ├── data-browser.svg
+│       │   │   ├── data-calendar.svg
+│       │   │   ├── data-export.svg
+│       │   │   ├── data-operations.svg
+│       │   │   ├── data-quality.svg
+│       │   │   ├── data-sampling.svg
+│       │   │   ├── data-sources.svg
+│       │   │   ├── diagnostics.svg
+│       │   │   ├── event-replay.svg
+│       │   │   ├── governance.svg
+│       │   │   ├── help.svg
+│       │   │   ├── index-subscription.svg
+│       │   │   ├── keyboard-shortcuts.svg
+│       │   │   ├── lean-integration.svg
+│       │   │   ├── live-data.svg
+│       │   │   ├── order-book.svg
+│       │   │   ├── portfolio-import.svg
+│       │   │   ├── provider-health.svg
+│       │   │   ├── README.md
+│       │   │   ├── research.svg
+│       │   │   ├── retention-assurance.svg
+│       │   │   ├── run-detail.svg
+│       │   │   ├── run-ledger.svg
+│       │   │   ├── run-mat.svg
+│       │   │   ├── run-portfolio.svg
+│       │   │   ├── schedule-manager.svg
+│       │   │   ├── security-master.svg
+│       │   │   ├── service-manager.svg
+│       │   │   ├── settings.svg
+│       │   │   ├── storage-optimization.svg
+│       │   │   ├── storage.svg
+│       │   │   ├── strategy-runs.svg
+│       │   │   ├── symbol-storage.svg
+│       │   │   ├── symbols.svg
+│       │   │   ├── system-health.svg
+│       │   │   ├── trading-hours.svg
+│       │   │   ├── trading.svg
+│       │   │   └── watchlist.svg
+│       │   └── app.ico
 │       ├── Behaviors
 │       │   ├── AvalonEditNotebookBehavior.cs
 │       │   ├── ParameterTemplateSelector.cs
@@ -2567,6 +2595,7 @@ Meridian-main
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
+│       │   ├── BrandResources.xaml
 │       │   ├── IconResources.xaml
 │       │   ├── ThemeControls.xaml
 │       │   ├── ThemeSurfaces.xaml
@@ -2865,6 +2894,7 @@ Meridian-main
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.DirectLending.Tests
 │   │   ├── BankTransactionSeedTests.cs
+│   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
 │   │   ├── DirectLendingServiceTests.cs
@@ -3434,5 +3464,6 @@ Meridian-main
 ├── Meridian.sln
 ├── package-lock.json
 ├── package.json
-└── README.md
+├── README.md
+└── test-build.ps1
 ```

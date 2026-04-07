@@ -14,6 +14,7 @@ using Meridian.Application.FundAccounts;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
@@ -462,6 +463,7 @@ public partial class App : System.Windows.Application
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)
     {
         var securityMasterConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING");
+        var polygonApiKey = Environment.GetEnvironmentVariable("POLYGON_API_KEY");
         if (!string.IsNullOrWhiteSpace(securityMasterConnectionString))
         {
             services.AddSingleton(sp => new SecurityMasterOptions
@@ -477,10 +479,11 @@ public partial class App : System.Windows.Application
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, SecurityMasterService>();
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
-            services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+            services.AddSingleton<ISecurityMasterRuntimeStatus>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
 
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
@@ -493,7 +496,31 @@ public partial class App : System.Windows.Application
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
+
+            if (!string.IsNullOrWhiteSpace(polygonApiKey))
+            {
+                services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
+            }
+            else
+            {
+                services.AddSingleton<ITradingParametersBackfillService, NullTradingParametersBackfillService>();
+            }
         }
+        else
+        {
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
+            services.AddSingleton<NullSecurityMasterQueryService>();
+            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterRuntimeStatus>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
+            services.AddSingleton<ITradingParametersBackfillService, NullTradingParametersBackfillService>();
+        }
+
+        services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
 
         // Wire optional Security Master collaborators into the BacktestService singleton when available.
         services.AddSingleton(sp =>

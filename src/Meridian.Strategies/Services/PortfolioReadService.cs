@@ -44,8 +44,8 @@ public sealed class PortfolioReadService
             })
             .ToArray();
 
-        var resolvedCount = lookup.Values.Count(static value => value is not null);
-        var missingCount = lookup.Count - resolvedCount;
+        var resolvedCount = lookup.Values.Count(IsResolvedCoverage);
+        var missingCount = lookup.Values.Count(IsMissingCoverage);
 
         return summary with
         {
@@ -122,4 +122,13 @@ public sealed class PortfolioReadService
 
         return lookup;
     }
+
+    private static bool IsResolvedCoverage(WorkstationSecurityReference? reference)
+        => reference?.CoverageStatus is WorkstationSecurityCoverageStatus.Resolved
+            or WorkstationSecurityCoverageStatus.Partial;
+
+    private static bool IsMissingCoverage(WorkstationSecurityReference? reference)
+        => reference is null ||
+           reference.CoverageStatus is WorkstationSecurityCoverageStatus.Missing
+            or WorkstationSecurityCoverageStatus.Unavailable;
 }

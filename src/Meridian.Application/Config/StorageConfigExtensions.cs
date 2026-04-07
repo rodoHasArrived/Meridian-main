@@ -17,8 +17,8 @@ public static class StorageConfigExtensions
         {
             RootPath = rootPath,
             Compress = compress,
-            NamingConvention = ParseNamingConvention(config.NamingConvention),
-            DatePartition = ParseDatePartition(config.DatePartition),
+            NamingConvention = StorageConfigRules.ParseNamingConvention(config.NamingConvention),
+            DatePartition = StorageConfigRules.ParseDatePartition(config.DatePartition),
             IncludeProvider = config.IncludeProvider,
             FilePrefix = config.FilePrefix,
             RetentionDays = config.RetentionDays,
@@ -28,39 +28,5 @@ public static class StorageConfigExtensions
         };
 
         return StorageProfilePresets.ApplyProfile(config.Profile, options);
-    }
-
-    private static FileNamingConvention ParseNamingConvention(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return FileNamingConvention.BySymbol;
-
-        return value.ToLowerInvariant() switch
-        {
-            "flat" => FileNamingConvention.Flat,
-            "bysymbol" => FileNamingConvention.BySymbol,
-            "bydate" => FileNamingConvention.ByDate,
-            "bytype" => FileNamingConvention.ByType,
-            "bysource" => FileNamingConvention.BySource,
-            "byassetclass" => FileNamingConvention.ByAssetClass,
-            "hierarchical" => FileNamingConvention.Hierarchical,
-            "canonical" => FileNamingConvention.Canonical,
-            _ => FileNamingConvention.BySymbol
-        };
-    }
-
-    private static DatePartition ParseDatePartition(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return DatePartition.Daily;
-
-        return value.ToLowerInvariant() switch
-        {
-            "none" => DatePartition.None,
-            "daily" => DatePartition.Daily,
-            "hourly" => DatePartition.Hourly,
-            "monthly" => DatePartition.Monthly,
-            _ => DatePartition.Daily
-        };
     }
 }

@@ -151,6 +151,10 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/BrandResources.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary

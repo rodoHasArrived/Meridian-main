@@ -863,7 +863,6 @@ Meridian-main
 │   │   ├── coverage-report.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
-│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
@@ -878,7 +877,6 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
-│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   └── TODO.md
@@ -3611,11 +3609,12 @@ Project status, roadmap, and planning.
 - `IMPROVEMENTS.md` - Implemented and planned improvements
 - `FEATURE_INVENTORY.md` - Feature inventory and roadmap
 - `ROADMAP.md` - Project roadmap
-- `ROADMAP_NOW_NEXT_LATER_2026_03_25.md` - Now/Next/Later roadmap snapshot
 - `CHANGELOG.md` - Version change summaries
 - `TODO.md` - Pending work items
 - `health-dashboard.md` - Auto-generated health dashboard
 - `metrics-dashboard.md` - Auto-generated metrics dashboard
+
+Historical status snapshots move to `archive/docs/summaries/` once superseded.
 
 **When to Update:**
 

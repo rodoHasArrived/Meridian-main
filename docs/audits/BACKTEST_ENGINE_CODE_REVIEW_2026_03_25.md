@@ -13,7 +13,7 @@
 - `Metrics/XirrCalculator.cs`
 
 **Reviewer:** AI audit (Claude Sonnet 4.6)
-**Prior review context:** `docs/audits/CODE_REVIEW_2026-03-16.md` covers the broader codebase; this review goes deep on the backtesting subsystem only.
+**Prior review context:** [CODE_REVIEW_2026-03-16.md](../../archive/docs/assessments/CODE_REVIEW_2026-03-16.md) covers the broader codebase; this review goes deep on the backtesting subsystem only.
 
 ---
 

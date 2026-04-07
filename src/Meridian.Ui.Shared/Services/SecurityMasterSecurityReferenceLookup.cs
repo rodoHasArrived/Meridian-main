@@ -11,10 +11,12 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLookup
 {
     private readonly ISecurityMasterQueryService _queryService;
+    private readonly ISecurityMasterRuntimeStatus? _runtimeStatus;
 
     public SecurityMasterSecurityReferenceLookup(ISecurityMasterQueryService queryService)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
+        _runtimeStatus = queryService as ISecurityMasterRuntimeStatus;
     }
 
     public async Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
@@ -37,6 +39,9 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             var primaryIdentifier = detail.Identifiers
                 .FirstOrDefault(static identifier => identifier.IsPrimary)?.Value
                 ?? detail.Identifiers.FirstOrDefault()?.Value;
+            var coverageStatus = IsPartialMatch(candidate, symbol)
+                ? WorkstationSecurityCoverageStatus.Partial
+                : WorkstationSecurityCoverageStatus.Resolved;
 
             return new WorkstationSecurityReference(
                 SecurityId: detail.SecurityId,
@@ -45,10 +50,22 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
                 Currency: detail.Currency,
                 Status: detail.Status,
                 PrimaryIdentifier: primaryIdentifier,
-                SubType: DeriveSubType(detail.AssetClass));
+                SubType: DeriveSubType(detail.AssetClass),
+                CoverageStatus: coverageStatus,
+                MatchedIdentifierKind: candidate.Kind.ToString(),
+                MatchedIdentifierValue: candidate.Value,
+                MatchedProvider: candidate.Provider,
+                ResolutionReason: coverageStatus == WorkstationSecurityCoverageStatus.Partial
+                    ? $"Matched using normalized identifier '{candidate.Value}'."
+                    : null);
         }
 
-        return null;
+        if (_runtimeStatus?.IsAvailable == false)
+        {
+            return BuildUnavailableReference(symbol, _runtimeStatus.AvailabilityDescription);
+        }
+
+        return BuildMissingReference(symbol);
     }
 
     /// <summary>
@@ -214,6 +231,35 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
 
     private static bool IsFigi(string value)
         => Regex.IsMatch(value, "^BBG[A-Z0-9]{9}$", RegexOptions.IgnoreCase);
+
+    private static bool IsPartialMatch(LookupCandidate candidate, string rawSymbol)
+    {
+        var trimmed = rawSymbol.Trim();
+        return !string.Equals(candidate.Value, trimmed, StringComparison.OrdinalIgnoreCase)
+            || candidate.Kind == SecurityIdentifierKind.Ticker && trimmed.Contains(' ', StringComparison.Ordinal);
+    }
+
+    private static WorkstationSecurityReference BuildMissingReference(string symbol)
+        => new(
+            SecurityId: Guid.Empty,
+            DisplayName: symbol.Trim(),
+            AssetClass: string.Empty,
+            Currency: string.Empty,
+            Status: SecurityStatusDto.Inactive,
+            PrimaryIdentifier: symbol.Trim(),
+            CoverageStatus: WorkstationSecurityCoverageStatus.Missing,
+            ResolutionReason: $"No Security Master match was found for '{symbol.Trim()}'.");
+
+    private static WorkstationSecurityReference BuildUnavailableReference(string symbol, string reason)
+        => new(
+            SecurityId: Guid.Empty,
+            DisplayName: symbol.Trim(),
+            AssetClass: string.Empty,
+            Currency: string.Empty,
+            Status: SecurityStatusDto.Inactive,
+            PrimaryIdentifier: symbol.Trim(),
+            CoverageStatus: WorkstationSecurityCoverageStatus.Unavailable,
+            ResolutionReason: reason);
 
     private readonly record struct LookupCandidate(
         SecurityIdentifierKind Kind,

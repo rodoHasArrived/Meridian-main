@@ -45,9 +45,9 @@ This six-week plan starts from the current repo state:
 
 ### Outcome 1: Provider-confidence baseline is materially stronger
 
-- broader replay/runtime confidence for Polygon, NYSE, Interactive Brokers, and StockSharp
-- clearer operator/setup guidance aligned with what the repo actually validates
-- backfill checkpoint confidence narrowed to explicit pass/fail evidence instead of assumptions
+- Polygon replay coverage, IB runtime/bootstrap validation, NYSE lifecycle-depth coverage, and StockSharp validated-adapter guidance are materially stronger and tied to executable evidence
+- backfill checkpoints, gap detection, and Parquet L2 flush behavior move from assumed reliability to explicit pass/fail validation across representative windows
+- the active Wave 1 scope is locked in [`provider-reliability-data-confidence-wave-1-blueprint.md`](provider-reliability-data-confidence-wave-1-blueprint.md) and kept synchronized with the validation matrix and provider-confidence baseline
 
 ### Outcome 2: Paper-trading workflow is dependable, not just visible
 
@@ -76,7 +76,7 @@ This six-week plan starts from the current repo state:
 
 | Week | Focus | Goals | Deliverables |
 |---|---|---|---|
-| 1 | Provider evidence refresh | close ambiguity around validated provider/runtime paths and backfill evidence | refreshed provider/runtime evidence list; narrowed checkpoint test targets; exact open validation gaps |
+| 1 | Provider evidence refresh | close ambiguity around validated provider/runtime paths, checkpoint reliability, and L2 persistence evidence | Wave 1 blueprint; refreshed provider/runtime evidence list; narrowed checkpoint and Parquet test targets; exact open validation gaps |
 | 2 | Cockpit hardening slice | tighten the existing trading cockpit into a more dependable operator lane | cockpit hardening checklist; session/replay acceptance criteria; promotion workflow gap list |
 | 3 | Shared run continuity | reduce cross-workspace seams between research, trading, and governance | run-model continuity backlog; clearer fills/attribution/ledger/reconciliation linkage; query/read-model alignment notes |
 | 4 | WPF workflow refresh | keep the desktop migration focused on workflow-first orchestration | high-traffic WPF page priority order; MVVM extraction targets; workspace-first navigation refinements |
@@ -91,11 +91,13 @@ This six-week plan starts from the current repo state:
 
 Priorities:
 
-- expand Polygon replay/runtime evidence
-- strengthen NYSE lifecycle and explicit auth/rate-limit validation
-- keep Interactive Brokers vendor guidance aligned with current runtime reality
-- keep StockSharp validated connector guidance aligned with supported paths
+- expand Polygon replay coverage across feeds and edge cases
+- validate Interactive Brokers runtime and bootstrap behavior against real vendor surfaces
+- strengthen NYSE shared lifecycle, depth coverage, and explicit auth/rate-limit/cancellation proof
+- harden NYSE transport behavior around `IHttpClientFactory`, websocket send, and resubscribe shutdown paths
+- keep StockSharp examples aligned with the validated adapter set Meridian is prepared to recommend
 - validate backfill checkpoints and gap handling across representative windows
+- harden Parquet L2 flush-path behavior and close remaining ADR-014 cleanup tied to snapshot persistence
 
 ### Workstream B: Paper cockpit hardening
 

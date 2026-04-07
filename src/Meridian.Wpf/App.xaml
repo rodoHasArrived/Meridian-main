@@ -16,6 +16,7 @@
 
                 <!-- Core Styles: ThemeTokens must load first so AppStyles can resolve its StaticResource references -->
                 <ResourceDictionary Source="Styles/ThemeTokens.xaml" />
+                <ResourceDictionary Source="Styles/BrandResources.xaml" />
                 <ResourceDictionary Source="Styles/AppStyles.xaml" />
                 <ResourceDictionary Source="Styles/ThemeTypography.xaml" />
                 <ResourceDictionary Source="Styles/ThemeSurfaces.xaml" />

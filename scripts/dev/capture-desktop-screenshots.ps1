@@ -39,6 +39,179 @@ function Find-MeridianWindow {
   return $null
 }
 
+function Activate-MeridianWindow {
+  try {
+    $wshShell = Get-Variable -Scope Script -Name WshShell -ValueOnly -ErrorAction SilentlyContinue
+    if (-not $wshShell) {
+      $script:WshShell = New-Object -ComObject WScript.Shell
+      $wshShell = $script:WshShell
+    }
+
+    [void]$wshShell.AppActivate('Meridian')
+    Start-Sleep -Milliseconds 400
+    return $true
+  } catch {
+    Write-Warning "Failed to activate Meridian window: $_"
+    return $false
+  }
+}
+
+function Wait-ForElement {
+  param(
+    [Parameter(Mandatory = $true)]
+    [scriptblock]$Finder,
+
+    [int]$Attempts = 20,
+    [int]$DelayMilliseconds = 300
+  )
+
+  for ($i = 0; $i -lt $Attempts; $i++) {
+    try {
+      $element = & $Finder
+      if ($element) {
+        return $element
+      }
+    } catch {
+      # Ignore transient UI Automation timeouts while the tree is updating.
+    }
+
+    Start-Sleep -Milliseconds $DelayMilliseconds
+  }
+
+  return $null
+}
+
+function Ensure-EnteredFundProfile {
+  param(
+    [Parameter(Mandatory = $true)]
+    [System.Windows.Automation.AutomationElement]$Window
+  )
+
+  $shellAutomationCond = New-Object System.Windows.Automation.PropertyCondition(
+    [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+    'ShellAutomationState'
+  )
+  $pageTitleCond = New-Object System.Windows.Automation.PropertyCondition(
+    [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+    'PageTitleText'
+  )
+
+  function Find-ShellMarker {
+    $currentWindow = Find-MeridianWindow
+    if (-not $currentWindow) { return $null }
+
+    $shellAutomation = $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $shellAutomationCond)
+    if ($shellAutomation) {
+      return $shellAutomation
+    }
+
+    return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $pageTitleCond)
+  }
+
+  $shell = Wait-ForElement -Attempts 4 -DelayMilliseconds 250 -Finder {
+    return Find-ShellMarker
+  }
+
+  if ($shell) {
+    return $true
+  }
+
+  $buttonType = [System.Windows.Automation.ControlType]::Button
+  $enterFundCond = New-Object System.Windows.Automation.AndCondition(
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::NameProperty,
+      'Enter Fund'
+    )),
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+      $buttonType
+    ))
+  )
+  $seedProfilesCond = New-Object System.Windows.Automation.AndCondition(
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::NameProperty,
+      'Seed Sample Profiles'
+    )),
+    (New-Object System.Windows.Automation.PropertyCondition(
+      [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+      $buttonType
+    ))
+  )
+
+  $enterFund = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+    $currentWindow = Find-MeridianWindow
+    if (-not $currentWindow) { return $null }
+    return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $enterFundCond)
+  }
+
+  if ($enterFund -and -not $enterFund.Current.IsEnabled) {
+    $seedProfiles = Wait-ForElement -Attempts 5 -DelayMilliseconds 250 -Finder {
+      $currentWindow = Find-MeridianWindow
+      if (-not $currentWindow) { return $null }
+      return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $seedProfilesCond)
+    }
+
+    if ($seedProfiles) {
+      try {
+        $seedInvoke = $seedProfiles.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern) -as [System.Windows.Automation.InvokePattern]
+        $seedInvoke.Invoke()
+        Start-Sleep -Seconds 2
+      } catch {
+        Write-Warning "Failed to seed sample fund profiles: $_"
+      }
+    }
+
+    $enterFund = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+      $currentWindow = Find-MeridianWindow
+      if (-not $currentWindow) { return $null }
+      return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $enterFundCond)
+    }
+  }
+
+  if (-not $enterFund) {
+    Write-Warning 'Fund profile selection view did not expose an Enter Fund button.'
+    return $false
+  }
+
+  try {
+    Activate-MeridianWindow | Out-Null
+    $enterInvoke = $enterFund.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern) -as [System.Windows.Automation.InvokePattern]
+    $enterInvoke.Invoke()
+  } catch {
+    Write-Warning "Failed to enter the selected fund profile: $_"
+    return $false
+  }
+
+  $shell = Wait-ForElement -Attempts 20 -DelayMilliseconds 500 -Finder {
+    return Find-ShellMarker
+  }
+
+  if (-not $shell) {
+    Write-Warning 'Main workstation shell did not appear after entering the fund profile.'
+    return $false
+  }
+
+  Start-Sleep -Seconds 1
+  return $true
+}
+
+function Maximize-MeridianWindow {
+  param(
+    [Parameter(Mandatory = $true)]
+    [System.Windows.Automation.AutomationElement]$Window
+  )
+
+  try {
+    $pattern = $Window.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern) -as [System.Windows.Automation.WindowPattern]
+    if ($pattern -and $pattern.Current.WindowVisualState -ne [System.Windows.Automation.WindowVisualState]::Maximized) {
+      $pattern.SetWindowVisualState([System.Windows.Automation.WindowVisualState]::Maximized)
+      Start-Sleep -Milliseconds 700
+    }
+  } catch {
+    Write-Warning "Failed to maximize Meridian window: $_"
+  }
+}
+
 function Save-WindowCapture {
   param(
     [Parameter(Mandatory = $true)]
@@ -82,24 +255,19 @@ function Invoke-Navigate {
   )
 
   try {
-    $Window.SetFocus()
-    Start-Sleep -Milliseconds 300
+    Activate-MeridianWindow | Out-Null
 
     [System.Windows.Forms.SendKeys]::SendWait('^k')
-    Start-Sleep -Milliseconds 600
 
     $cond = New-Object System.Windows.Automation.PropertyCondition(
       [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
       'CommandPaletteInput'
     )
 
-    $inputEl = $null
-    for ($i = 0; $i -lt 12; $i++) {
-      $inputEl = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
-      if ($inputEl) {
-        break
-      }
-      Start-Sleep -Milliseconds 200
+    $inputEl = Wait-ForElement -Attempts 15 -DelayMilliseconds 250 -Finder {
+      $currentWindow = Find-MeridianWindow
+      if (-not $currentWindow) { return $null }
+      return $currentWindow.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $cond)
     }
 
     if (-not $inputEl) {
@@ -136,11 +304,11 @@ if (-not (Test-Path 'config/appsettings.json')) {
 }
 
 if (-not $SkipBuild) {
-  Write-Host "Restoring $ProjectPath ($Framework) ..."
-  dotnet restore $ProjectPath -p:TargetFramework=$Framework --verbosity minimal
+  Write-Host "Restoring $ProjectPath ..."
+  dotnet restore $ProjectPath -p:EnableFullWpfBuild=true --verbosity minimal
 
-  Write-Host "Building $ProjectPath ($Configuration, $Framework) ..."
-  dotnet build $ProjectPath -c $Configuration --no-restore -p:TargetFramework=$Framework --verbosity minimal
+  Write-Host "Building $ProjectPath ($Configuration) ..."
+  dotnet build $ProjectPath -c $Configuration --no-restore -p:EnableFullWpfBuild=true --verbosity minimal
 }
 
 $env:MDC_FIXTURE_MODE = '1'
@@ -184,8 +352,17 @@ try {
 
   Start-Sleep -Seconds 4
 
+  if (-not (Ensure-EnteredFundProfile -Window $window)) {
+    Write-Warning 'Unable to enter the fund profile selector. Continuing without page navigation.'
+  }
+
+  $window = Find-MeridianWindow
+  if ($window) {
+    Maximize-MeridianWindow -Window $window
+  }
+
   $pages = [ordered]@{
-    'dashboard' = 'Dashboard'
+    'dashboard' = 'System Overview'
     'providers' = 'Providers'
     'provider-health' = 'Provider Health'
     'backfill' = 'Backfill'
