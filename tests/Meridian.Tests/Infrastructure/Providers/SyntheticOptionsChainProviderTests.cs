@@ -21,7 +21,7 @@ public sealed class SyntheticOptionsChainProviderTests
         var provider = CreateProvider();
         var expirations = await provider.GetExpirationsAsync("SPY");
 
-        expirations.Should().HaveCountGreaterOrEqualTo(4, "monthly expirations should cover at least 4 months");
+        expirations.Should().HaveCountGreaterThanOrEqualTo(4, "monthly expirations should cover at least 4 months");
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class SyntheticOptionsChainProviderTests
         var calls = snapshot!.Calls.OrderBy(c => c.Contract.Strike).ToList();
         for (var i = 1; i < calls.Count; i++)
         {
-            calls[i].Mid.Should().BeLessOrEqualTo(calls[i - 1].Mid,
+            calls[i].MidPrice!.Value.Should().BeLessThanOrEqualTo(calls[i - 1].MidPrice!.Value,
                 "ITM calls have higher mid prices than OTM calls");
         }
     }
@@ -112,7 +112,7 @@ public sealed class SyntheticOptionsChainProviderTests
         var puts = snapshot!.Puts.OrderByDescending(p => p.Contract.Strike).ToList();
         for (var i = 1; i < puts.Count; i++)
         {
-            puts[i].Mid.Should().BeLessOrEqualTo(puts[i - 1].Mid,
+            puts[i].MidPrice!.Value.Should().BeLessThanOrEqualTo(puts[i - 1].MidPrice!.Value,
                 "ITM puts (low strike) have higher mid prices than OTM puts (high strike)");
         }
     }
@@ -127,10 +127,10 @@ public sealed class SyntheticOptionsChainProviderTests
         var snapshot = await provider.GetChainSnapshotAsync("AAPL", expiry);
 
         snapshot!.Calls.Should().OnlyContain(
-            c => c.Greeks != null && c.Greeks.Delta.HasValue,
+            c => c.Delta.HasValue,
             "call greeks must include delta");
         snapshot.Puts.Should().OnlyContain(
-            p => p.Greeks != null && p.Greeks.Delta.HasValue,
+            p => p.Delta.HasValue,
             "put greeks must include delta");
     }
 
@@ -144,7 +144,7 @@ public sealed class SyntheticOptionsChainProviderTests
         var snapshot = await provider.GetChainSnapshotAsync("SPY", expiry);
 
         snapshot!.Calls.Should().OnlyContain(
-            c => c.Greeks!.Delta >= 0m && c.Greeks.Delta <= 1m,
+            c => c.Delta >= 0m && c.Delta <= 1m,
             "call delta must be in [0, 1]");
     }
 
@@ -158,7 +158,7 @@ public sealed class SyntheticOptionsChainProviderTests
         var snapshot = await provider.GetChainSnapshotAsync("SPY", expiry);
 
         snapshot!.Puts.Should().OnlyContain(
-            p => p.Greeks!.Delta >= -1m && p.Greeks.Delta <= 0m,
+            p => p.Delta >= -1m && p.Delta <= 0m,
             "put delta must be in [-1, 0]");
     }
 
@@ -172,11 +172,11 @@ public sealed class SyntheticOptionsChainProviderTests
         var full = await provider.GetChainSnapshotAsync("SPY", expiry);
         var narrowed = await provider.GetChainSnapshotAsync("SPY", expiry, strikeRange: 3);
 
-        narrowed!.Calls.Should().HaveCountLessOrEqualTo(
+        narrowed!.Calls.Should().HaveCountLessThanOrEqualTo(
             full!.Calls.Count,
             "strikeRange=3 should return no more strikes than the full chain");
 
-        narrowed.Calls.Count.Should().BeLessOrEqualTo(
+        narrowed.Calls.Count.Should().BeLessThanOrEqualTo(
             7, // 3 below ATM + ATM + 3 above ATM
             "strikeRange=3 should return at most 7 call strikes");
     }
@@ -216,34 +216,34 @@ public sealed class SyntheticOptionsChainProviderTests
     }
 
     // ------------------------------------------------------------------ //
-    //  GetContractDetailsAsync                                             //
+    //  GetOptionQuoteAsync                                                 //
     // ------------------------------------------------------------------ //
 
     [Fact]
-    public async Task GetContractDetailsAsync_ReturnsNull_ForUnknownOccSymbol()
+    public async Task GetOptionQuoteAsync_ReturnsNull_ForUnknownContract()
     {
         var provider = CreateProvider();
+        var unknownSpec = new OptionContractSpec("SPY", 0m, DateOnly.FromDateTime(DateTime.Today.AddDays(30)), OptionRight.Call);
 
-        var details = await provider.GetContractDetailsAsync("INVALID_CONTRACT_SYMBOL");
+        var quote = await provider.GetOptionQuoteAsync(unknownSpec);
 
-        details.Should().BeNull("an unrecognised OCC symbol should return null");
+        quote.Should().BeNull("a contract with zero strike should not match any valid synthetic contract");
     }
 
     [Fact]
-    public async Task GetContractDetailsAsync_ReturnsQuote_ForKnownContract()
+    public async Task GetOptionQuoteAsync_ReturnsQuote_ForKnownContract()
     {
         var provider = CreateProvider();
         var expirations = await provider.GetExpirationsAsync("SPY");
         var expiry = expirations.First();
         var snapshot = await provider.GetChainSnapshotAsync("SPY", expiry);
         var firstCall = snapshot!.Calls.First();
-        var occSymbol = firstCall.Contract.ToOccSymbol();
 
-        var details = await provider.GetContractDetailsAsync(occSymbol);
+        var quote = await provider.GetOptionQuoteAsync(firstCall.Contract);
 
-        details.Should().NotBeNull("a known OCC symbol should return contract details");
-        details!.Contract.Right.Should().Be(OptionRight.Call);
-        details.Contract.Expiration.Should().Be(expiry);
+        quote.Should().NotBeNull("a known contract spec should return a quote");
+        quote!.Contract.Right.Should().Be(OptionRight.Call);
+        quote.Contract.Expiration.Should().Be(expiry);
     }
 
     // ------------------------------------------------------------------ //
@@ -261,7 +261,7 @@ public sealed class SyntheticOptionsChainProviderTests
     public void ProviderName_IsNonEmpty()
     {
         var provider = CreateProvider();
-        provider.ProviderName.Should().NotBeNullOrWhiteSpace();
+        provider.ProviderDisplayName.Should().NotBeNullOrWhiteSpace();
     }
 
     // ------------------------------------------------------------------ //
@@ -279,6 +279,6 @@ public sealed class SyntheticOptionsChainProviderTests
         var snap2 = await provider.GetChainSnapshotAsync("SPY", expiry);
 
         snap1!.Calls.Count.Should().Be(snap2!.Calls.Count, "deterministic provider must return same strike count");
-        snap1.Calls.First().Mid.Should().Be(snap2.Calls.First().Mid, "deterministic provider must return same mid price");
+        snap1.Calls.First().MidPrice.Should().Be(snap2.Calls.First().MidPrice, "deterministic provider must return same mid price");
     }
 }
