@@ -95,7 +95,7 @@ Located mainly in `docs/ai/claude/`.
 | Repo orientation | [`generated/repo-navigation.json`](generated/repo-navigation.json) |
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Portable skill catalog | [`skills/README.md`](skills/README.md) |
-| Codex skill catalog | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.codex/skills/README.md) |
+| Codex skill catalog | [`.codex/skills/README.md`](../../.codex/skills/README.md) |
 | Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
 
