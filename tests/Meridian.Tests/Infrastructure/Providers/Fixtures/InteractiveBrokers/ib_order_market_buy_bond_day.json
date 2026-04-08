@@ -1,0 +1,12 @@
+{
+  "description": "IB market buy order for a corporate bond (CUSIP 459200HU8 - IBM 3.5% 2046), face-value quantity. secType=BOND routes to the IB fixed income desk.",
+  "orderId": 2001,
+  "symbol": "459200HU8",
+  "secType": "BOND",
+  "orderType": "MKT",
+  "side": "BUY",
+  "quantity": 5000,
+  "tif": "DAY",
+  "exchange": "SMART",
+  "currency": "USD"
+}

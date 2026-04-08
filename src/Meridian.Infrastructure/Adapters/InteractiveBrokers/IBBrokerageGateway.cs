@@ -16,7 +16,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// <summary>
 /// Interactive Brokers brokerage gateway for live order execution via the TWS/Gateway API.
 /// Communicates with IB TWS or IB Gateway running locally. Supports equities, options,
-/// futures, and forex.
+/// futures, forex, and fixed income instruments (corporate bonds, US Treasuries).
 /// </summary>
 /// <remarks>
 /// IB TWS API:
@@ -25,6 +25,13 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// - Supports market, limit, stop, stop-limit, and many more order types
 /// - Supports partial fills and order modification
 /// - Rate limit: 50 messages/sec
+///
+/// Fixed income support:
+/// - Corporate bonds: use <c>Metadata["sec_type"] = "BOND"</c> on <see cref="OrderRequest"/>
+/// - US Treasuries/Government bonds: use <c>Metadata["sec_type"] = "GOVT"</c>
+/// - Bond quantity is face-value (par amount) in USD, not share count
+/// - Accrued interest is reported per position via the TWS <c>position()</c> callback
+///   and mapped to <see cref="BrokerPosition.AccruedInterest"/>
 ///
 /// This implementation provides the brokerage abstraction layer. The actual TWS API
 /// communication is delegated to the IB connection infrastructure. When IBAPI is not
@@ -88,8 +95,15 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         SupportsShortSelling = true,
         SupportsFractionalShares = false,
         SupportsExtendedHours = true,
-        SupportedAssetClasses = ["equity", "option", "futures", "forex"],
+        // IB supports corporate bonds (SecType=BOND) and US government bonds/treasuries (SecType=GOVT).
+        // Pass Metadata["sec_type"] = "BOND" or "GOVT" on the OrderRequest to route fixed income orders.
+        SupportedAssetClasses = ["equity", "option", "futures", "forex", "bond"],
         SupportedMarkets = ["US", "EU", "APAC"],
+        Extensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // Signals that this gateway routes IB bond/treasury contracts via sec_type metadata.
+            ["supportsFixedIncome"] = "true",
+        },
     };
 
     /// <inheritdoc />
@@ -130,13 +144,18 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
 
+        // Read optional IB-specific SecType metadata for fixed income routing.
+        // "BOND" = corporate bond, "GOVT" = US Treasury / government bond.
+        var secType = request.Metadata?.GetValueOrDefault("sec_type");
+
         _logger.LogInformation(
-            "IB submitting order {OrderId}: {Side} {Quantity} {Symbol} @ {Type}",
-            orderId, request.Side, request.Quantity, request.Symbol, request.Type);
+            "IB submitting order {OrderId}: {Side} {Quantity} {Symbol} @ {Type}{SecTypeSuffix}",
+            orderId, request.Side, request.Quantity, request.Symbol, request.Type,
+            secType is not null ? $" [secType={secType}]" : string.Empty);
 
         // Build IB contract and order via the TWS API
         // This is where the IB API placeOrder() call would go
-        var report = await SubmitToTwsAsync(orderId, request, ct).ConfigureAwait(false);
+        var report = await SubmitToTwsAsync(orderId, request, secType, ct).ConfigureAwait(false);
 
         // Track submitted order so cancel/modify reports can carry the correct symbol and side.
         _submittedOrders[orderId] = (request.Symbol, request.Side, request.ClientOrderId);
@@ -235,7 +254,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         EnsureConnected();
 
         // In a full implementation, this calls reqPositions() on the IB API
-        // and collects position() callbacks
+        // and collects position() callbacks. For bond and treasury positions the callback
+        // includes an accruedInterest field which maps to BrokerPosition.AccruedInterest.
         return Task.FromResult<IReadOnlyList<BrokerPosition>>(Array.Empty<BrokerPosition>());
     }
 
@@ -298,13 +318,21 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         return Task.CompletedTask;
     }
 
-    private Task<ExecutionReport> SubmitToTwsAsync(string orderId, OrderRequest request, CancellationToken ct)
+    private Task<ExecutionReport> SubmitToTwsAsync(string orderId, OrderRequest request, string? secType, CancellationToken ct)
     {
         // In a full IBAPI implementation, this would:
-        // 1. Build an IB Contract (symbol, secType, exchange, currency)
-        // 2. Build an IB Order (action, orderType, totalQuantity, lmtPrice, auxPrice, tif)
+        // 1. Build an IB Contract:
+        //    - secType = secType ?? "STK"  (use "BOND" for corporate bonds, "GOVT" for US Treasuries)
+        //    - For bonds: symbol = CUSIP, exchange = "SMART", currency = "USD"
+        //    - For US Treasuries: symbol = CUSIP, secType = "GOVT", exchange = "US-T-BOND"
+        // 2. Build an IB Order (action, orderType, totalQuantity, lmtPrice, tif)
+        //    - Note: for bonds/treasuries, totalQuantity is face value (par amount) in USD,
+        //      not share count (e.g., 1000 = $1,000 par amount).
         // 3. Call _client.placeOrder(nextValidOrderId, contract, order)
         // 4. Await the orderStatus() callback
+
+        if (secType is not null)
+            _logger.LogDebug("IB order {OrderId} using IB secType={SecType}", orderId, secType);
 
         // For now, return an accepted report. The actual fill will come via the
         // TWS callback pipeline when IBAPI is integrated.

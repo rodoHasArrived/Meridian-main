@@ -8,6 +8,17 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 ///
 /// This is split with conditional compilation so the project still builds without IBApi.
 /// Define compilation constant IBAPI and reference IBApi to enable the real builder.
+///
+/// <para>
+/// <strong>Fixed income / bond contracts:</strong><br/>
+/// Set <see cref="SymbolConfig.InstrumentType"/> to <c>InstrumentType.Bond</c> for corporate bonds
+/// (IB SecType = <c>"BOND"</c>).  For US Treasuries and other government securities use
+/// <c>SecurityType = "GOVT"</c> explicitly — IB routes these to a dedicated government-bond
+/// desk and the <c>"BOND"</c> SecType does not apply.<br/>
+/// For both cases, set <see cref="SymbolConfig.Symbol"/> to the nine-character CUSIP, e.g.
+/// <c>"912828YY0"</c>, and <c>Exchange = "SMART"</c>.  The TWS API uses face-value (par amount)
+/// as the order quantity — 1 unit = $1,000 par for most US fixed income.
+/// </para>
 /// </summary>
 public static class ContractFactory
 {
@@ -86,6 +97,11 @@ public static class ContractFactory
     /// <see cref="SymbolConfig.SecurityType"/> field but falling back to
     /// <see cref="SymbolConfig.InstrumentType"/> when the caller only sets the enum.
     /// </summary>
+    /// <remarks>
+    /// For US Treasuries and government bonds, set <c>cfg.SecurityType = "GOVT"</c> explicitly
+    /// — <see cref="Contracts.Domain.Enums.InstrumentType.Bond"/> maps to <c>"BOND"</c>
+    /// (corporate bonds) which uses a different IB routing desk.
+    /// </remarks>
     private static string ResolveSecType(SymbolConfig cfg)
     {
         // If the caller set an explicit SecType string (e.g. "FUT", "CASH"), honour it.
