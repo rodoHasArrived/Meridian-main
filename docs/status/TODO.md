@@ -33,8 +33,8 @@ Total items: **227**
 | `.github/agents/cleanup-agent.md` | 161 | `NOTE` | ❌ | ### PowerShell Note |
 | `.github/agents/cleanup-agent.md` | 188 | `NOTE` | ❌ | **Residual Risk / Handoff:** [none, bounded note, or target specialist] |
 | `.github/agents/documentation-agent.md` | 379 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 896 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3671 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/documentation-agent.md` | 897 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 3683 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/implementation-assurance-agent.md` | 88 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
@@ -61,7 +61,7 @@ Total items: **227**
 | `.github/workflows/validate-workflows.yml` | 233 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
 | `CLAUDE.md` | 433 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 950 | `TODO` | ❌ | │   │   └── TODO.md |
+| `CLAUDE.md` | 951 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 505 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `README.md` | 1016 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
@@ -80,8 +80,8 @@ Total items: **227**
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md). |
 | `docs/ai/copilot/instructions.md` | 418 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 935 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3619 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 936 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 3631 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/architecture/wpf-shell-mvvm.md` | 5 | `NOTE` | ❌ | This note defines the MVVM boundary for the Meridian desktop shell so workstation state, navigation, and operator actions stay testable and do not drift back into WPF code-behind. |
