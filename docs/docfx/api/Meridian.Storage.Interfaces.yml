@@ -1,0 +1,178 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  id: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.CatalogExportFormat
+  - Meridian.Storage.Interfaces.CatalogRebuildOptions
+  - Meridian.Storage.Interfaces.CatalogRebuildProgress
+  - Meridian.Storage.Interfaces.CatalogRebuildResult
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria
+  - Meridian.Storage.Interfaces.CatalogVerificationOptions
+  - Meridian.Storage.Interfaces.CatalogVerificationProgress
+  - Meridian.Storage.Interfaces.CatalogVerificationResult
+  - Meridian.Storage.Interfaces.IMarketDataStore
+  - Meridian.Storage.Interfaces.ISourceRegistry
+  - Meridian.Storage.Interfaces.IStorageCatalogService
+  - Meridian.Storage.Interfaces.IStoragePolicy
+  - Meridian.Storage.Interfaces.IStorageSink
+  - Meridian.Storage.Interfaces.ISymbolRegistryService
+  - Meridian.Storage.Interfaces.SourceInfo
+  - Meridian.Storage.Interfaces.SourceType
+  - Meridian.Storage.Interfaces.SymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.Interfaces.IMarketDataStore
+  commentId: T:Meridian.Storage.Interfaces.IMarketDataStore
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IMarketDataStore.html
+  name: IMarketDataStore
+  nameWithType: IMarketDataStore
+  fullName: Meridian.Storage.Interfaces.IMarketDataStore
+- uid: Meridian.Storage.Interfaces.ISourceRegistry
+  commentId: T:Meridian.Storage.Interfaces.ISourceRegistry
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html
+  name: ISourceRegistry
+  nameWithType: ISourceRegistry
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry
+- uid: Meridian.Storage.Interfaces.SourceInfo
+  commentId: T:Meridian.Storage.Interfaces.SourceInfo
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.SourceInfo.html
+  name: SourceInfo
+  nameWithType: SourceInfo
+  fullName: Meridian.Storage.Interfaces.SourceInfo
+- uid: Meridian.Storage.Interfaces.SourceType
+  commentId: T:Meridian.Storage.Interfaces.SourceType
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.SourceType.html
+  name: SourceType
+  nameWithType: SourceType
+  fullName: Meridian.Storage.Interfaces.SourceType
+- uid: Meridian.Storage.Interfaces.SymbolInfo
+  commentId: T:Meridian.Storage.Interfaces.SymbolInfo
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.SymbolInfo.html
+  name: SymbolInfo
+  nameWithType: SymbolInfo
+  fullName: Meridian.Storage.Interfaces.SymbolInfo
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService
+  commentId: T:Meridian.Storage.Interfaces.IStorageCatalogService
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html
+  name: IStorageCatalogService
+  nameWithType: IStorageCatalogService
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService
+- uid: Meridian.Storage.Interfaces.CatalogRebuildOptions
+  commentId: T:Meridian.Storage.Interfaces.CatalogRebuildOptions
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogRebuildOptions.html
+  name: CatalogRebuildOptions
+  nameWithType: CatalogRebuildOptions
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildOptions
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  commentId: T:Meridian.Storage.Interfaces.CatalogRebuildProgress
+  href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html
+  name: CatalogRebuildProgress
+  nameWithType: CatalogRebuildProgress
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress
+- uid: Meridian.Storage.Interfaces.CatalogRebuildResult
+  commentId: T:Meridian.Storage.Interfaces.CatalogRebuildResult
+  href: Meridian.Storage.Interfaces.CatalogRebuildResult.html
+  name: CatalogRebuildResult
+  nameWithType: CatalogRebuildResult
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildResult
+- uid: Meridian.Storage.Interfaces.CatalogVerificationOptions
+  commentId: T:Meridian.Storage.Interfaces.CatalogVerificationOptions
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogVerificationOptions.html
+  name: CatalogVerificationOptions
+  nameWithType: CatalogVerificationOptions
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationOptions
+- uid: Meridian.Storage.Interfaces.CatalogVerificationProgress
+  commentId: T:Meridian.Storage.Interfaces.CatalogVerificationProgress
+  href: Meridian.Storage.Interfaces.CatalogVerificationProgress.html
+  name: CatalogVerificationProgress
+  nameWithType: CatalogVerificationProgress
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationProgress
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult
+  commentId: T:Meridian.Storage.Interfaces.CatalogVerificationResult
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html
+  name: CatalogVerificationResult
+  nameWithType: CatalogVerificationResult
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  commentId: T:Meridian.Storage.Interfaces.CatalogSearchCriteria
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html
+  name: CatalogSearchCriteria
+  nameWithType: CatalogSearchCriteria
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria
+- uid: Meridian.Storage.Interfaces.CatalogExportFormat
+  commentId: T:Meridian.Storage.Interfaces.CatalogExportFormat
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogExportFormat.html
+  name: CatalogExportFormat
+  nameWithType: CatalogExportFormat
+  fullName: Meridian.Storage.Interfaces.CatalogExportFormat
+- uid: Meridian.Storage.Interfaces.IStoragePolicy
+  commentId: T:Meridian.Storage.Interfaces.IStoragePolicy
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStoragePolicy.html
+  name: IStoragePolicy
+  nameWithType: IStoragePolicy
+  fullName: Meridian.Storage.Interfaces.IStoragePolicy
+- uid: Meridian.Storage.Interfaces.IStorageSink
+  commentId: T:Meridian.Storage.Interfaces.IStorageSink
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStorageSink.html
+  name: IStorageSink
+  nameWithType: IStorageSink
+  fullName: Meridian.Storage.Interfaces.IStorageSink
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService
+  commentId: T:Meridian.Storage.Interfaces.ISymbolRegistryService
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html
+  name: ISymbolRegistryService
+  nameWithType: ISymbolRegistryService
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html

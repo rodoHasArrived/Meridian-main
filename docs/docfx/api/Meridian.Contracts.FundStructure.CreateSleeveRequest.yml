@@ -1,0 +1,815 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateSleeveRequest
+  id: CreateSleeveRequest
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.Guid})
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.Code
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.Name
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId
+  - Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds
+  langs:
+  - csharp
+  - vb
+  name: CreateSleeveRequest
+  nameWithType: CreateSleeveRequest
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSleeveRequest
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record CreateSleeveRequest : IEquatable<CreateSleeveRequest>'
+    content.vb: Public NotInheritable Class CreateSleeveRequest Implements IEquatable(Of CreateSleeveRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.CreateSleeveRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.Guid})
+  commentId: M:Meridian.Contracts.FundStructure.CreateSleeveRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.Guid})
+  id: '#ctor(System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.Guid})'
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: CreateSleeveRequest(Guid, Guid, string, string, DateTimeOffset, string, string?, IReadOnlyList<Guid>?)
+  nameWithType: CreateSleeveRequest.CreateSleeveRequest(Guid, Guid, string, string, DateTimeOffset, string, string?, IReadOnlyList<Guid>?)
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.CreateSleeveRequest(System.Guid, System.Guid, string, string, System.DateTimeOffset, string, string?, System.Collections.Generic.IReadOnlyList<System.Guid>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public CreateSleeveRequest(Guid SleeveId, Guid FundId, string Code, string Name, DateTimeOffset EffectiveFrom, string CreatedBy, string? Mandate = null, IReadOnlyList<Guid>? StrategyIds = null)
+    parameters:
+    - id: SleeveId
+      type: System.Guid
+    - id: FundId
+      type: System.Guid
+    - id: Code
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: CreatedBy
+      type: System.String
+    - id: Mandate
+      type: System.String
+    - id: StrategyIds
+      type: System.Collections.Generic.IReadOnlyList{System.Guid}
+    content.vb: Public Sub New(SleeveId As Guid, FundId As Guid, Code As String, Name As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, Mandate As String = Nothing, StrategyIds As IReadOnlyList(Of Guid) = Nothing)
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.#ctor*
+  nameWithType.vb: CreateSleeveRequest.New(Guid, Guid, String, String, DateTimeOffset, String, String, IReadOnlyList(Of Guid))
+  fullName.vb: Meridian.Contracts.FundStructure.CreateSleeveRequest.New(System.Guid, System.Guid, String, String, System.DateTimeOffset, String, String, System.Collections.Generic.IReadOnlyList(Of System.Guid))
+  name.vb: New(Guid, Guid, String, String, DateTimeOffset, String, String, IReadOnlyList(Of Guid))
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId
+  id: SleeveId
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: SleeveId
+  nameWithType: CreateSleeveRequest.SleeveId
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid SleeveId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SleeveId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId*
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId
+  id: FundId
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: FundId
+  nameWithType: CreateSleeveRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid FundId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property FundId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId*
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.Code
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.Code
+  id: Code
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: CreateSleeveRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.Code*
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.Name
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.Name
+  id: Name
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CreateSleeveRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.Name*
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: CreateSleeveRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom*
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy
+  id: CreatedBy
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: CreatedBy
+  nameWithType: CreateSleeveRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedBy
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string CreatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CreatedBy As String
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy*
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate
+  id: Mandate
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: Mandate
+  nameWithType: CreateSleeveRequest.Mandate
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mandate
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Mandate { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Mandate As String
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate*
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds
+  commentId: P:Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds
+  id: StrategyIds
+  parent: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  langs:
+  - csharp
+  - vb
+  name: StrategyIds
+  nameWithType: CreateSleeveRequest.StrategyIds
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyIds
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<Guid>? StrategyIds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.Guid}
+    content.vb: Public Property StrategyIds As IReadOnlyList(Of Guid)
+  overload: Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.CreateSleeveRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.CreateSleeveRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CreateSleeveRequest>
+  nameWithType: IEquatable<CreateSleeveRequest>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.CreateSleeveRequest>
+  nameWithType.vb: IEquatable(Of CreateSleeveRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.CreateSleeveRequest)
+  name.vb: IEquatable(Of CreateSleeveRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
+    name: CreateSleeveRequest
+    href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
+    name: CreateSleeveRequest
+    href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.#ctor
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest__ctor_System_Guid_System_Guid_System_String_System_String_System_DateTimeOffset_System_String_System_String_System_Collections_Generic_IReadOnlyList_System_Guid__
+  name: CreateSleeveRequest
+  nameWithType: CreateSleeveRequest.CreateSleeveRequest
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.CreateSleeveRequest
+  nameWithType.vb: CreateSleeveRequest.New
+  fullName.vb: Meridian.Contracts.FundStructure.CreateSleeveRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList{System.Guid}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.Guid}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<Guid>
+  nameWithType: IReadOnlyList<Guid>
+  fullName: System.Collections.Generic.IReadOnlyList<System.Guid>
+  nameWithType.vb: IReadOnlyList(Of Guid)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of System.Guid)
+  name.vb: IReadOnlyList(Of Guid)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_SleeveId
+  name: SleeveId
+  nameWithType: CreateSleeveRequest.SleeveId
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.SleeveId
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_FundId
+  name: FundId
+  nameWithType: CreateSleeveRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.FundId
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.Code*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.Code
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_Code
+  name: Code
+  nameWithType: CreateSleeveRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.Code
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.Name*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.Name
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_Name
+  name: Name
+  nameWithType: CreateSleeveRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.Name
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: CreateSleeveRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.EffectiveFrom
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_CreatedBy
+  name: CreatedBy
+  nameWithType: CreateSleeveRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.CreatedBy
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_Mandate
+  name: Mandate
+  nameWithType: CreateSleeveRequest.Mandate
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.Mandate
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html#Meridian_Contracts_FundStructure_CreateSleeveRequest_StrategyIds
+  name: StrategyIds
+  nameWithType: CreateSleeveRequest.StrategyIds
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest.StrategyIds

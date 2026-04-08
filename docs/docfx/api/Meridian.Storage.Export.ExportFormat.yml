@@ -1,0 +1,271 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.ExportFormat
+  commentId: T:Meridian.Storage.Export.ExportFormat
+  id: ExportFormat
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.ExportFormat.Arrow
+  - Meridian.Storage.Export.ExportFormat.Csv
+  - Meridian.Storage.Export.ExportFormat.Jsonl
+  - Meridian.Storage.Export.ExportFormat.Lean
+  - Meridian.Storage.Export.ExportFormat.Parquet
+  - Meridian.Storage.Export.ExportFormat.Sql
+  - Meridian.Storage.Export.ExportFormat.Xlsx
+  langs:
+  - csharp
+  - vb
+  name: ExportFormat
+  nameWithType: ExportFormat
+  fullName: Meridian.Storage.Export.ExportFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportFormat
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Supported export formats.
+  example: []
+  syntax:
+    content: 'public enum ExportFormat : byte'
+    content.vb: Public Enum ExportFormat As Byte
+- uid: Meridian.Storage.Export.ExportFormat.Parquet
+  commentId: F:Meridian.Storage.Export.ExportFormat.Parquet
+  id: Parquet
+  parent: Meridian.Storage.Export.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Parquet
+  nameWithType: ExportFormat.Parquet
+  fullName: Meridian.Storage.Export.ExportFormat.Parquet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parquet
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Apache Parquet - columnar format for analytics.
+  example: []
+  syntax:
+    content: Parquet = 0
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+- uid: Meridian.Storage.Export.ExportFormat.Csv
+  commentId: F:Meridian.Storage.Export.ExportFormat.Csv
+  id: Csv
+  parent: Meridian.Storage.Export.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Csv
+  nameWithType: ExportFormat.Csv
+  fullName: Meridian.Storage.Export.ExportFormat.Csv
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Csv
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Comma-separated values.
+  example: []
+  syntax:
+    content: Csv = 1
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+- uid: Meridian.Storage.Export.ExportFormat.Jsonl
+  commentId: F:Meridian.Storage.Export.ExportFormat.Jsonl
+  id: Jsonl
+  parent: Meridian.Storage.Export.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Jsonl
+  nameWithType: ExportFormat.Jsonl
+  fullName: Meridian.Storage.Export.ExportFormat.Jsonl
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Jsonl
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: JSON Lines - one JSON object per line.
+  example: []
+  syntax:
+    content: Jsonl = 2
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+- uid: Meridian.Storage.Export.ExportFormat.Lean
+  commentId: F:Meridian.Storage.Export.ExportFormat.Lean
+  id: Lean
+  parent: Meridian.Storage.Export.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Lean
+  nameWithType: ExportFormat.Lean
+  fullName: Meridian.Storage.Export.ExportFormat.Lean
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lean
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: QuantConnect Lean native format.
+  example: []
+  syntax:
+    content: Lean = 3
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+- uid: Meridian.Storage.Export.ExportFormat.Xlsx
+  commentId: F:Meridian.Storage.Export.ExportFormat.Xlsx
+  id: Xlsx
+  parent: Meridian.Storage.Export.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Xlsx
+  nameWithType: ExportFormat.Xlsx
+  fullName: Meridian.Storage.Export.ExportFormat.Xlsx
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Xlsx
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Microsoft Excel XLSX format.
+  example: []
+  syntax:
+    content: Xlsx = 4
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+- uid: Meridian.Storage.Export.ExportFormat.Sql
+  commentId: F:Meridian.Storage.Export.ExportFormat.Sql
+  id: Sql
+  parent: Meridian.Storage.Export.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Sql
+  nameWithType: ExportFormat.Sql
+  fullName: Meridian.Storage.Export.ExportFormat.Sql
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sql
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: SQL statements (INSERT or COPY).
+  example: []
+  syntax:
+    content: Sql = 5
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+- uid: Meridian.Storage.Export.ExportFormat.Arrow
+  commentId: F:Meridian.Storage.Export.ExportFormat.Arrow
+  id: Arrow
+  parent: Meridian.Storage.Export.ExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Arrow
+  nameWithType: ExportFormat.Arrow
+  fullName: Meridian.Storage.Export.ExportFormat.Arrow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Arrow
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Apache Arrow IPC format (Feather v2).
+  example: []
+  syntax:
+    content: Arrow = 6
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.ExportFormat
+  commentId: T:Meridian.Storage.Export.ExportFormat
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportFormat.html
+  name: ExportFormat
+  nameWithType: ExportFormat
+  fullName: Meridian.Storage.Export.ExportFormat

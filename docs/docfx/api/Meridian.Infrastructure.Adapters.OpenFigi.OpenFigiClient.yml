@@ -1,0 +1,1376 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  commentId: T:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  id: OpenFigiClient
+  parent: Meridian.Infrastructure.Adapters.OpenFigi
+  children:
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: OpenFigiClient
+  nameWithType: OpenFigiClient
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenFigiClient
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: >-
+    Client for the OpenFIGI API (https://www.openfigi.com/api).
+
+    Provides mapping between tickers, ISINs, CUSIPs, SEDOLs and FIGI identifiers.
+
+    Free tier: 25 requests/minute, 250 identifiers per request.
+  example: []
+  syntax:
+    content: 'public sealed class OpenFigiClient : IDisposable'
+    content.vb: Public NotInheritable Class OpenFigiClient Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name
+  commentId: P:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: OpenFigiClient.Name
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  syntax:
+    content: public string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Name As String
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name*
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: OpenFigiClient.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  syntax:
+    content: public string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property DisplayName As String
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName*
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  id: '#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: OpenFigiClient(string?, HttpClient?, ILogger?)
+  nameWithType: OpenFigiClient.OpenFigiClient(string?, HttpClient?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.OpenFigiClient(string?, System.Net.Http.HttpClient?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Creates a new OpenFIGI client.
+  example: []
+  syntax:
+    content: public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    parameters:
+    - id: apiKey
+      type: System.String
+      description: Optional API key for higher rate limits. Set OPENFIGI_API_KEY env var or pass directly.
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+      description: Optional HTTP client for testing.
+    - id: log
+      type: Serilog.ILogger
+      description: Optional logger.
+    content.vb: Public Sub New(apiKey As String = Nothing, httpClient As HttpClient = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.#ctor*
+  nameWithType.vb: OpenFigiClient.New(String, HttpClient, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.New(String, System.Net.Http.HttpClient, Serilog.ILogger)
+  name.vb: New(String, HttpClient, ILogger)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync(System.Threading.CancellationToken)
+  id: IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: OpenFigiClient.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailableAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Check if the OpenFIGI API is available.
+  example: []
+  syntax:
+    content: public Task<bool> IsAvailableAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function IsAvailableAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync*
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: LookupByTickerAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: LookupByTickerAsync(string, string?, string?, CancellationToken)
+  nameWithType: OpenFigiClient.LookupByTickerAsync(string, string?, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync(string, string?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookupByTickerAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Lookup FIGI mappings by ticker symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<FigiMapping>> LookupByTickerAsync(string ticker, string? exchangeCode = null, string? marketSector = "Equity", CancellationToken ct = default)
+    parameters:
+    - id: ticker
+      type: System.String
+      description: Ticker symbol (e.g., AAPL).
+    - id: exchangeCode
+      type: System.String
+      description: Optional exchange code to narrow results (e.g., US).
+    - id: marketSector
+      type: System.String
+      description: Optional market sector (Equity, Govt, Mtge, etc.).
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+    content.vb: Public Function LookupByTickerAsync(ticker As String, exchangeCode As String = Nothing, marketSector As String = "Equity", ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FigiMapping))
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync*
+  nameWithType.vb: OpenFigiClient.LookupByTickerAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: LookupByTickerAsync(String, String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: LookupByIsinAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: LookupByIsinAsync(string, string?, CancellationToken)
+  nameWithType: OpenFigiClient.LookupByIsinAsync(string, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookupByIsinAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Lookup FIGI mappings by ISIN.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<FigiMapping>> LookupByIsinAsync(string isin, string? marketSector = "Equity", CancellationToken ct = default)
+    parameters:
+    - id: isin
+      type: System.String
+    - id: marketSector
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+    content.vb: Public Function LookupByIsinAsync(isin As String, marketSector As String = "Equity", ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FigiMapping))
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync*
+  nameWithType.vb: OpenFigiClient.LookupByIsinAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync(String, String, System.Threading.CancellationToken)
+  name.vb: LookupByIsinAsync(String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: LookupByCusipAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: LookupByCusipAsync(string, string?, CancellationToken)
+  nameWithType: OpenFigiClient.LookupByCusipAsync(string, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookupByCusipAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Lookup FIGI mappings by CUSIP.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<FigiMapping>> LookupByCusipAsync(string cusip, string? marketSector = "Equity", CancellationToken ct = default)
+    parameters:
+    - id: cusip
+      type: System.String
+    - id: marketSector
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+    content.vb: Public Function LookupByCusipAsync(cusip As String, marketSector As String = "Equity", ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FigiMapping))
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync*
+  nameWithType.vb: OpenFigiClient.LookupByCusipAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync(String, String, System.Threading.CancellationToken)
+  name.vb: LookupByCusipAsync(String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: LookupBySedolAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: LookupBySedolAsync(string, string?, CancellationToken)
+  nameWithType: OpenFigiClient.LookupBySedolAsync(string, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookupBySedolAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Lookup FIGI mappings by SEDOL.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<FigiMapping>> LookupBySedolAsync(string sedol, string? marketSector = "Equity", CancellationToken ct = default)
+    parameters:
+    - id: sedol
+      type: System.String
+    - id: marketSector
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+    content.vb: Public Function LookupBySedolAsync(sedol As String, marketSector As String = "Equity", ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FigiMapping))
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync*
+  nameWithType.vb: OpenFigiClient.LookupBySedolAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync(String, String, System.Threading.CancellationToken)
+  name.vb: LookupBySedolAsync(String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.String,System.Threading.CancellationToken)
+  id: BulkLookupByTickersAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: BulkLookupByTickersAsync(IEnumerable<string>, string?, string?, CancellationToken)
+  nameWithType: OpenFigiClient.BulkLookupByTickersAsync(IEnumerable<string>, string?, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync(System.Collections.Generic.IEnumerable<string>, string?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BulkLookupByTickersAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Bulk lookup FIGI mappings for multiple tickers.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyDictionary<string, IReadOnlyList<FigiMapping>>> BulkLookupByTickersAsync(IEnumerable<string> tickers, string? exchangeCode = null, string? marketSector = "Equity", CancellationToken ct = default)
+    parameters:
+    - id: tickers
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: exchangeCode
+      type: System.String
+    - id: marketSector
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}}
+    content.vb: Public Function BulkLookupByTickersAsync(tickers As IEnumerable(Of String), exchangeCode As String = Nothing, marketSector As String = "Equity", ct As CancellationToken = Nothing) As Task(Of IReadOnlyDictionary(Of String, IReadOnlyList(Of FigiMapping)))
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync*
+  nameWithType.vb: OpenFigiClient.BulkLookupByTickersAsync(IEnumerable(Of String), String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync(System.Collections.Generic.IEnumerable(Of String), String, String, System.Threading.CancellationToken)
+  name.vb: BulkLookupByTickersAsync(IEnumerable(Of String), String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  id: SearchAsync(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(string, string?, string?, string?, int, CancellationToken)
+  nameWithType: OpenFigiClient.SearchAsync(string, string?, string?, string?, int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync(string, string?, string?, string?, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Search for securities by query string (uses filter endpoint).
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<FigiMapping>> SearchAsync(string query, string? exchangeCode = null, string? marketSector = "Equity", string? securityType = null, int limit = 20, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: System.String
+    - id: exchangeCode
+      type: System.String
+    - id: marketSector
+      type: System.String
+    - id: securityType
+      type: System.String
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+    content.vb: Public Function SearchAsync(query As String, exchangeCode As String = Nothing, marketSector As String = "Equity", securityType As String = Nothing, limit As Integer = 20, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FigiMapping))
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync*
+  nameWithType.vb: OpenFigiClient.SearchAsync(String, String, String, String, Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync(String, String, String, String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, String, String, String, Integer, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.Threading.CancellationToken)
+  id: EnrichWithFigiAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: EnrichWithFigiAsync(IEnumerable<SymbolSearchResult>, CancellationToken)
+  nameWithType: OpenFigiClient.EnrichWithFigiAsync(IEnumerable<SymbolSearchResult>, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync(System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolSearchResult>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnrichWithFigiAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Enrich symbol search results with FIGI information.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SymbolSearchResult>> EnrichWithFigiAsync(IEnumerable<SymbolSearchResult> results, CancellationToken ct = default)
+    parameters:
+    - id: results
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+    content.vb: Public Function EnrichWithFigiAsync(results As IEnumerable(Of SymbolSearchResult), ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SymbolSearchResult))
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync*
+  nameWithType.vb: OpenFigiClient.EnrichWithFigiAsync(IEnumerable(Of SymbolSearchResult), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync(System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult), System.Threading.CancellationToken)
+  name.vb: EnrichWithFigiAsync(IEnumerable(Of SymbolSearchResult), CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: OpenFigiClient.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.OpenFigi
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Infrastructure.Adapters.OpenFigi
+  commentId: N:Meridian.Infrastructure.Adapters.OpenFigi
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.OpenFigi
+  nameWithType: Meridian.Infrastructure.Adapters.OpenFigi
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.OpenFigi
+    name: OpenFigi
+    href: Meridian.Infrastructure.Adapters.OpenFigi.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.OpenFigi
+    name: OpenFigi
+    href: Meridian.Infrastructure.Adapters.OpenFigi.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_Name
+  name: Name
+  nameWithType: OpenFigiClient.Name
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_DisplayName
+  name: DisplayName
+  nameWithType: OpenFigiClient.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.DisplayName
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.#ctor
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient__ctor_System_String_System_Net_Http_HttpClient_Serilog_ILogger_
+  name: OpenFigiClient
+  nameWithType: OpenFigiClient.OpenFigiClient
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.OpenFigiClient
+  nameWithType.vb: OpenFigiClient.New
+  fullName.vb: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.New
+  name.vb: New
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync
+  nameWithType: OpenFigiClient.IsAvailableAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.IsAvailableAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_LookupByTickerAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: LookupByTickerAsync
+  nameWithType: OpenFigiClient.LookupByTickerAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByTickerAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<FigiMapping>>
+  nameWithType: Task<IReadOnlyList<FigiMapping>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.FigiMapping>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of FigiMapping))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.FigiMapping))
+  name.vb: Task(Of IReadOnlyList(Of FigiMapping))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_LookupByIsinAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: LookupByIsinAsync
+  nameWithType: OpenFigiClient.LookupByIsinAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByIsinAsync
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_LookupByCusipAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: LookupByCusipAsync
+  nameWithType: OpenFigiClient.LookupByCusipAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupByCusipAsync
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_LookupBySedolAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: LookupBySedolAsync
+  nameWithType: OpenFigiClient.LookupBySedolAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.LookupBySedolAsync
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_BulkLookupByTickersAsync_System_Collections_Generic_IEnumerable_System_String__System_String_System_String_System_Threading_CancellationToken_
+  name: BulkLookupByTickersAsync
+  nameWithType: OpenFigiClient.BulkLookupByTickersAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.BulkLookupByTickersAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyDictionary<string, IReadOnlyList<FigiMapping>>>
+  nameWithType: Task<IReadOnlyDictionary<string, IReadOnlyList<FigiMapping>>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.FigiMapping>>>
+  nameWithType.vb: Task(Of IReadOnlyDictionary(Of String, IReadOnlyList(Of FigiMapping)))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyDictionary(Of String, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.FigiMapping)))
+  name.vb: Task(Of IReadOnlyDictionary(Of String, IReadOnlyList(Of FigiMapping)))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: '>'
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: )
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_SearchAsync_System_String_System_String_System_String_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: OpenFigiClient.SearchAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.SearchAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_EnrichWithFigiAsync_System_Collections_Generic_IEnumerable_Meridian_Application_Subscriptions_Models_SymbolSearchResult__System_Threading_CancellationToken_
+  name: EnrichWithFigiAsync
+  nameWithType: OpenFigiClient.EnrichWithFigiAsync
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.EnrichWithFigiAsync
+- uid: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SymbolSearchResult>
+  nameWithType: IEnumerable<SymbolSearchResult>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolSearchResult>
+  nameWithType.vb: IEnumerable(Of SymbolSearchResult)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult)
+  name.vb: IEnumerable(Of SymbolSearchResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SymbolSearchResult>>
+  nameWithType: Task<IReadOnlyList<SymbolSearchResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.SymbolSearchResult>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult))
+  name.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html#Meridian_Infrastructure_Adapters_OpenFigi_OpenFigiClient_Dispose
+  name: Dispose
+  nameWithType: OpenFigiClient.Dispose
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

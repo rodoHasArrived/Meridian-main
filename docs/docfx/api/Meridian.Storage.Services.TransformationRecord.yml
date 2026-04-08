@@ -1,0 +1,714 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.TransformationRecord
+  commentId: T:Meridian.Storage.Services.TransformationRecord
+  id: TransformationRecord
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.TransformationRecord.#ctor(System.DateTime,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Storage.Services.TransformationRecord.Algorithm
+  - Meridian.Storage.Services.TransformationRecord.Description
+  - Meridian.Storage.Services.TransformationRecord.Parameters
+  - Meridian.Storage.Services.TransformationRecord.TimestampUtc
+  - Meridian.Storage.Services.TransformationRecord.Type
+  langs:
+  - csharp
+  - vb
+  name: TransformationRecord
+  nameWithType: TransformationRecord
+  fullName: Meridian.Storage.Services.TransformationRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TransformationRecord
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record TransformationRecord : IEquatable<TransformationRecord>'
+    content.vb: Public NotInheritable Class TransformationRecord Implements IEquatable(Of TransformationRecord)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.TransformationRecord}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.TransformationRecord.#ctor(System.DateTime,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Storage.Services.TransformationRecord.#ctor(System.DateTime,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: '#ctor(System.DateTime,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})'
+  parent: Meridian.Storage.Services.TransformationRecord
+  langs:
+  - csharp
+  - vb
+  name: TransformationRecord(DateTime, string, string, string?, IReadOnlyDictionary<string, string>?)
+  nameWithType: TransformationRecord.TransformationRecord(DateTime, string, string, string?, IReadOnlyDictionary<string, string>?)
+  fullName: Meridian.Storage.Services.TransformationRecord.TransformationRecord(System.DateTime, string, string, string?, System.Collections.Generic.IReadOnlyDictionary<string, string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TransformationRecord(DateTime TimestampUtc, string Type, string Description, string? Algorithm = null, IReadOnlyDictionary<string, string>? Parameters = null)
+    parameters:
+    - id: TimestampUtc
+      type: System.DateTime
+    - id: Type
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: Algorithm
+      type: System.String
+    - id: Parameters
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Sub New(TimestampUtc As Date, Type As String, Description As String, Algorithm As String = Nothing, Parameters As IReadOnlyDictionary(Of String, String) = Nothing)
+  overload: Meridian.Storage.Services.TransformationRecord.#ctor*
+  nameWithType.vb: TransformationRecord.New(Date, String, String, String, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Storage.Services.TransformationRecord.New(Date, String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: New(Date, String, String, String, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Storage.Services.TransformationRecord.TimestampUtc
+  commentId: P:Meridian.Storage.Services.TransformationRecord.TimestampUtc
+  id: TimestampUtc
+  parent: Meridian.Storage.Services.TransformationRecord
+  langs:
+  - csharp
+  - vb
+  name: TimestampUtc
+  nameWithType: TransformationRecord.TimestampUtc
+  fullName: Meridian.Storage.Services.TransformationRecord.TimestampUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampUtc
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTime TimestampUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property TimestampUtc As Date
+  overload: Meridian.Storage.Services.TransformationRecord.TimestampUtc*
+- uid: Meridian.Storage.Services.TransformationRecord.Type
+  commentId: P:Meridian.Storage.Services.TransformationRecord.Type
+  id: Type
+  parent: Meridian.Storage.Services.TransformationRecord
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: TransformationRecord.Type
+  fullName: Meridian.Storage.Services.TransformationRecord.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Type { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Type As String
+  overload: Meridian.Storage.Services.TransformationRecord.Type*
+- uid: Meridian.Storage.Services.TransformationRecord.Description
+  commentId: P:Meridian.Storage.Services.TransformationRecord.Description
+  id: Description
+  parent: Meridian.Storage.Services.TransformationRecord
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: TransformationRecord.Description
+  fullName: Meridian.Storage.Services.TransformationRecord.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Storage.Services.TransformationRecord.Description*
+- uid: Meridian.Storage.Services.TransformationRecord.Algorithm
+  commentId: P:Meridian.Storage.Services.TransformationRecord.Algorithm
+  id: Algorithm
+  parent: Meridian.Storage.Services.TransformationRecord
+  langs:
+  - csharp
+  - vb
+  name: Algorithm
+  nameWithType: TransformationRecord.Algorithm
+  fullName: Meridian.Storage.Services.TransformationRecord.Algorithm
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Algorithm
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? Algorithm { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Algorithm As String
+  overload: Meridian.Storage.Services.TransformationRecord.Algorithm*
+- uid: Meridian.Storage.Services.TransformationRecord.Parameters
+  commentId: P:Meridian.Storage.Services.TransformationRecord.Parameters
+  id: Parameters
+  parent: Meridian.Storage.Services.TransformationRecord
+  langs:
+  - csharp
+  - vb
+  name: Parameters
+  nameWithType: TransformationRecord.Parameters
+  fullName: Meridian.Storage.Services.TransformationRecord.Parameters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parameters
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 287
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? Parameters { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Parameters As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Storage.Services.TransformationRecord.Parameters*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.TransformationRecord}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.TransformationRecord}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TransformationRecord>
+  nameWithType: IEquatable<TransformationRecord>
+  fullName: System.IEquatable<Meridian.Storage.Services.TransformationRecord>
+  nameWithType.vb: IEquatable(Of TransformationRecord)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.TransformationRecord)
+  name.vb: IEquatable(Of TransformationRecord)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.TransformationRecord
+    name: TransformationRecord
+    href: Meridian.Storage.Services.TransformationRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.TransformationRecord
+    name: TransformationRecord
+    href: Meridian.Storage.Services.TransformationRecord.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.TransformationRecord.#ctor*
+  commentId: Overload:Meridian.Storage.Services.TransformationRecord.#ctor
+  href: Meridian.Storage.Services.TransformationRecord.html#Meridian_Storage_Services_TransformationRecord__ctor_System_DateTime_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: TransformationRecord
+  nameWithType: TransformationRecord.TransformationRecord
+  fullName: Meridian.Storage.Services.TransformationRecord.TransformationRecord
+  nameWithType.vb: TransformationRecord.New
+  fullName.vb: Meridian.Storage.Services.TransformationRecord.New
+  name.vb: New
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.TransformationRecord.TimestampUtc*
+  commentId: Overload:Meridian.Storage.Services.TransformationRecord.TimestampUtc
+  href: Meridian.Storage.Services.TransformationRecord.html#Meridian_Storage_Services_TransformationRecord_TimestampUtc
+  name: TimestampUtc
+  nameWithType: TransformationRecord.TimestampUtc
+  fullName: Meridian.Storage.Services.TransformationRecord.TimestampUtc
+- uid: Meridian.Storage.Services.TransformationRecord.Type*
+  commentId: Overload:Meridian.Storage.Services.TransformationRecord.Type
+  href: Meridian.Storage.Services.TransformationRecord.html#Meridian_Storage_Services_TransformationRecord_Type
+  name: Type
+  nameWithType: TransformationRecord.Type
+  fullName: Meridian.Storage.Services.TransformationRecord.Type
+- uid: Meridian.Storage.Services.TransformationRecord.Description*
+  commentId: Overload:Meridian.Storage.Services.TransformationRecord.Description
+  href: Meridian.Storage.Services.TransformationRecord.html#Meridian_Storage_Services_TransformationRecord_Description
+  name: Description
+  nameWithType: TransformationRecord.Description
+  fullName: Meridian.Storage.Services.TransformationRecord.Description
+- uid: Meridian.Storage.Services.TransformationRecord.Algorithm*
+  commentId: Overload:Meridian.Storage.Services.TransformationRecord.Algorithm
+  href: Meridian.Storage.Services.TransformationRecord.html#Meridian_Storage_Services_TransformationRecord_Algorithm
+  name: Algorithm
+  nameWithType: TransformationRecord.Algorithm
+  fullName: Meridian.Storage.Services.TransformationRecord.Algorithm
+- uid: Meridian.Storage.Services.TransformationRecord.Parameters*
+  commentId: Overload:Meridian.Storage.Services.TransformationRecord.Parameters
+  href: Meridian.Storage.Services.TransformationRecord.html#Meridian_Storage_Services_TransformationRecord_Parameters
+  name: Parameters
+  nameWithType: TransformationRecord.Parameters
+  fullName: Meridian.Storage.Services.TransformationRecord.Parameters

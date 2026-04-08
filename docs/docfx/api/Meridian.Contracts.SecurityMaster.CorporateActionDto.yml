@@ -1,0 +1,1038 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  commentId: T:Meridian.Contracts.SecurityMaster.CorporateActionDto
+  id: CorporateActionDto
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio
+  - Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionDto
+  nameWithType: CorporateActionDto
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActionDto
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: A single corporate action event envelope returned by the corporate actions query.
+  example: []
+  syntax:
+    content: 'public sealed record CorporateActionDto : IEquatable<CorporateActionDto>'
+    content.vb: Public NotInheritable Class CorporateActionDto Implements IEquatable(Of CorporateActionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.CorporateActionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  commentId: M:Meridian.Contracts.SecurityMaster.CorporateActionDto.#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  id: '#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})'
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionDto(Guid, Guid, string, DateOnly, DateOnly?, decimal?, string?, decimal?, Guid?, decimal?, Guid?, decimal?, decimal?, decimal?)
+  nameWithType: CorporateActionDto.CorporateActionDto(Guid, Guid, string, DateOnly, DateOnly?, decimal?, string?, decimal?, Guid?, decimal?, Guid?, decimal?, decimal?, decimal?)
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorporateActionDto(System.Guid, System.Guid, string, System.DateOnly, System.DateOnly?, decimal?, string?, decimal?, System.Guid?, decimal?, System.Guid?, decimal?, decimal?, decimal?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: A single corporate action event envelope returned by the corporate actions query.
+  example: []
+  syntax:
+    content: public CorporateActionDto(Guid CorpActId, Guid SecurityId, string EventType, DateOnly ExDate, DateOnly? PayDate, decimal? DividendPerShare, string? Currency, decimal? SplitRatio, Guid? NewSecurityId, decimal? DistributionRatio, Guid? AcquirerSecurityId, decimal? ExchangeRatio, decimal? SubscriptionPricePerShare, decimal? RightsPerShare)
+    parameters:
+    - id: CorpActId
+      type: System.Guid
+    - id: SecurityId
+      type: System.Guid
+    - id: EventType
+      type: System.String
+    - id: ExDate
+      type: System.DateOnly
+    - id: PayDate
+      type: System.Nullable{System.DateOnly}
+    - id: DividendPerShare
+      type: System.Nullable{System.Decimal}
+    - id: Currency
+      type: System.String
+    - id: SplitRatio
+      type: System.Nullable{System.Decimal}
+    - id: NewSecurityId
+      type: System.Nullable{System.Guid}
+    - id: DistributionRatio
+      type: System.Nullable{System.Decimal}
+    - id: AcquirerSecurityId
+      type: System.Nullable{System.Guid}
+    - id: ExchangeRatio
+      type: System.Nullable{System.Decimal}
+    - id: SubscriptionPricePerShare
+      type: System.Nullable{System.Decimal}
+    - id: RightsPerShare
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Sub New(CorpActId As Guid, SecurityId As Guid, EventType As String, ExDate As DateOnly, PayDate As DateOnly?, DividendPerShare As Decimal?, Currency As String, SplitRatio As Decimal?, NewSecurityId As Guid?, DistributionRatio As Decimal?, AcquirerSecurityId As Guid?, ExchangeRatio As Decimal?, SubscriptionPricePerShare As Decimal?, RightsPerShare As Decimal?)
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.#ctor*
+  nameWithType.vb: CorporateActionDto.New(Guid, Guid, String, DateOnly, DateOnly?, Decimal?, String, Decimal?, Guid?, Decimal?, Guid?, Decimal?, Decimal?, Decimal?)
+  fullName.vb: Meridian.Contracts.SecurityMaster.CorporateActionDto.New(System.Guid, System.Guid, String, System.DateOnly, System.DateOnly?, Decimal?, String, Decimal?, System.Guid?, Decimal?, System.Guid?, Decimal?, Decimal?, Decimal?)
+  name.vb: New(Guid, Guid, String, DateOnly, DateOnly?, Decimal?, String, Decimal?, Guid?, Decimal?, Guid?, Decimal?, Decimal?, Decimal?)
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  id: CorpActId
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: CorpActId
+  nameWithType: CorporateActionDto.CorpActId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorpActId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid CorpActId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property CorpActId As Guid
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: CorporateActionDto.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType
+  id: EventType
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: CorporateActionDto.EventType
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string EventType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EventType As String
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate
+  id: ExDate
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: ExDate
+  nameWithType: CorporateActionDto.ExDate
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExDate
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateOnly ExDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ExDate As DateOnly
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate
+  id: PayDate
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: PayDate
+  nameWithType: CorporateActionDto.PayDate
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PayDate
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateOnly? PayDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property PayDate As DateOnly?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare
+  id: DividendPerShare
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: DividendPerShare
+  nameWithType: CorporateActionDto.DividendPerShare
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendPerShare
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? DividendPerShare { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property DividendPerShare As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency
+  id: Currency
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: CorporateActionDto.Currency
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string? Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio
+  id: SplitRatio
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: SplitRatio
+  nameWithType: CorporateActionDto.SplitRatio
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitRatio
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? SplitRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property SplitRatio As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId
+  id: NewSecurityId
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: NewSecurityId
+  nameWithType: CorporateActionDto.NewSecurityId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NewSecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid? NewSecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property NewSecurityId As Guid?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio
+  id: DistributionRatio
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: DistributionRatio
+  nameWithType: CorporateActionDto.DistributionRatio
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DistributionRatio
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? DistributionRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property DistributionRatio As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId
+  id: AcquirerSecurityId
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: AcquirerSecurityId
+  nameWithType: CorporateActionDto.AcquirerSecurityId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AcquirerSecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid? AcquirerSecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property AcquirerSecurityId As Guid?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio
+  id: ExchangeRatio
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: ExchangeRatio
+  nameWithType: CorporateActionDto.ExchangeRatio
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExchangeRatio
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? ExchangeRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ExchangeRatio As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare
+  id: SubscriptionPricePerShare
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionPricePerShare
+  nameWithType: CorporateActionDto.SubscriptionPricePerShare
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionPricePerShare
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? SubscriptionPricePerShare { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property SubscriptionPricePerShare As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare*
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare
+  id: RightsPerShare
+  parent: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  langs:
+  - csharp
+  - vb
+  name: RightsPerShare
+  nameWithType: CorporateActionDto.RightsPerShare
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RightsPerShare
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? RightsPerShare { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property RightsPerShare As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.CorporateActionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.CorporateActionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CorporateActionDto>
+  nameWithType: IEquatable<CorporateActionDto>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.CorporateActionDto>
+  nameWithType.vb: IEquatable(Of CorporateActionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.CorporateActionDto)
+  name.vb: IEquatable(Of CorporateActionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.#ctor
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto__ctor_System_Guid_System_Guid_System_String_System_DateOnly_System_Nullable_System_DateOnly__System_Nullable_System_Decimal__System_String_System_Nullable_System_Decimal__System_Nullable_System_Guid__System_Nullable_System_Decimal__System_Nullable_System_Guid__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__
+  name: CorporateActionDto
+  nameWithType: CorporateActionDto.CorporateActionDto
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorporateActionDto
+  nameWithType.vb: CorporateActionDto.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.CorporateActionDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_CorpActId
+  name: CorpActId
+  nameWithType: CorporateActionDto.CorpActId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_SecurityId
+  name: SecurityId
+  nameWithType: CorporateActionDto.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.SecurityId
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_EventType
+  name: EventType
+  nameWithType: CorporateActionDto.EventType
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.EventType
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_ExDate
+  name: ExDate
+  nameWithType: CorporateActionDto.ExDate
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExDate
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_PayDate
+  name: PayDate
+  nameWithType: CorporateActionDto.PayDate
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.PayDate
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_DividendPerShare
+  name: DividendPerShare
+  nameWithType: CorporateActionDto.DividendPerShare
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.DividendPerShare
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_Currency
+  name: Currency
+  nameWithType: CorporateActionDto.Currency
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.Currency
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_SplitRatio
+  name: SplitRatio
+  nameWithType: CorporateActionDto.SplitRatio
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.SplitRatio
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_NewSecurityId
+  name: NewSecurityId
+  nameWithType: CorporateActionDto.NewSecurityId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.NewSecurityId
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_DistributionRatio
+  name: DistributionRatio
+  nameWithType: CorporateActionDto.DistributionRatio
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.DistributionRatio
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_AcquirerSecurityId
+  name: AcquirerSecurityId
+  nameWithType: CorporateActionDto.AcquirerSecurityId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.AcquirerSecurityId
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_ExchangeRatio
+  name: ExchangeRatio
+  nameWithType: CorporateActionDto.ExchangeRatio
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.ExchangeRatio
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_SubscriptionPricePerShare
+  name: SubscriptionPricePerShare
+  nameWithType: CorporateActionDto.SubscriptionPricePerShare
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.SubscriptionPricePerShare
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html#Meridian_Contracts_SecurityMaster_CorporateActionDto_RightsPerShare
+  name: RightsPerShare
+  nameWithType: CorporateActionDto.RightsPerShare
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.RightsPerShare

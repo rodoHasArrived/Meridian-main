@@ -1,0 +1,483 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+  commentId: T:Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+  id: StrategyStatusDto
+  parent: Meridian.Ui.Shared.Endpoints
+  children:
+  - Meridian.Ui.Shared.Endpoints.StrategyStatusDto.#ctor(System.String,System.String)
+  - Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status
+  - Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId
+  langs:
+  - csharp
+  - vb
+  name: StrategyStatusDto
+  nameWithType: StrategyStatusDto
+  fullName: Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyStatusDto
+    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: Snapshot of a strategy's current lifecycle state.
+  example: []
+  syntax:
+    content: 'public sealed record StrategyStatusDto : IEquatable<StrategyStatusDto>'
+    content.vb: Public NotInheritable Class StrategyStatusDto Implements IEquatable(Of StrategyStatusDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Shared.Endpoints.StrategyStatusDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.#ctor(System.String,System.String)
+  commentId: M:Meridian.Ui.Shared.Endpoints.StrategyStatusDto.#ctor(System.String,System.String)
+  id: '#ctor(System.String,System.String)'
+  parent: Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+  langs:
+  - csharp
+  - vb
+  name: StrategyStatusDto(string, string)
+  nameWithType: StrategyStatusDto.StrategyStatusDto(string, string)
+  fullName: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyStatusDto(string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: Snapshot of a strategy's current lifecycle state.
+  example: []
+  syntax:
+    content: public StrategyStatusDto(string StrategyId, string Status)
+    parameters:
+    - id: StrategyId
+      type: System.String
+    - id: Status
+      type: System.String
+    content.vb: Public Sub New(StrategyId As String, Status As String)
+  overload: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.#ctor*
+  nameWithType.vb: StrategyStatusDto.New(String, String)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.New(String, String)
+  name.vb: New(String, String)
+- uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId
+  commentId: P:Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId
+  id: StrategyId
+  parent: Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: StrategyStatusDto.StrategyId
+  fullName: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId*
+- uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status
+  commentId: P:Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status
+  id: Status
+  parent: Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: StrategyStatusDto.Status
+  fullName: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status*
+references:
+- uid: Meridian.Ui.Shared.Endpoints
+  commentId: N:Meridian.Ui.Shared.Endpoints
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Endpoints
+  nameWithType: Meridian.Ui.Shared.Endpoints
+  fullName: Meridian.Ui.Shared.Endpoints
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Shared.Endpoints.StrategyStatusDto}
+  commentId: T:System.IEquatable{Meridian.Ui.Shared.Endpoints.StrategyStatusDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StrategyStatusDto>
+  nameWithType: IEquatable<StrategyStatusDto>
+  fullName: System.IEquatable<Meridian.Ui.Shared.Endpoints.StrategyStatusDto>
+  nameWithType.vb: IEquatable(Of StrategyStatusDto)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Shared.Endpoints.StrategyStatusDto)
+  name.vb: IEquatable(Of StrategyStatusDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+    name: StrategyStatusDto
+    href: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto
+    name: StrategyStatusDto
+    href: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.StrategyStatusDto.#ctor
+  href: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.html#Meridian_Ui_Shared_Endpoints_StrategyStatusDto__ctor_System_String_System_String_
+  name: StrategyStatusDto
+  nameWithType: StrategyStatusDto.StrategyStatusDto
+  fullName: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyStatusDto
+  nameWithType.vb: StrategyStatusDto.New
+  fullName.vb: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId
+  href: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.html#Meridian_Ui_Shared_Endpoints_StrategyStatusDto_StrategyId
+  name: StrategyId
+  nameWithType: StrategyStatusDto.StrategyId
+  fullName: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.StrategyId
+- uid: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status
+  href: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.html#Meridian_Ui_Shared_Endpoints_StrategyStatusDto_Status
+  name: Status
+  nameWithType: StrategyStatusDto.Status
+  fullName: Meridian.Ui.Shared.Endpoints.StrategyStatusDto.Status

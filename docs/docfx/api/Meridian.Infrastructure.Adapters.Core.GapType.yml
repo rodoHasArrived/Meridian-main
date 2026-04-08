@@ -1,0 +1,250 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.GapType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.GapType
+  id: GapType
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.GapType.Halted
+  - Meridian.Infrastructure.Adapters.Core.GapType.Holiday
+  - Meridian.Infrastructure.Adapters.Core.GapType.Missing
+  - Meridian.Infrastructure.Adapters.Core.GapType.Partial
+  - Meridian.Infrastructure.Adapters.Core.GapType.Suspicious
+  - Meridian.Infrastructure.Adapters.Core.GapType.Weekend
+  langs:
+  - csharp
+  - vb
+  name: GapType
+  nameWithType: GapType
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapType
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Type of data gap detected.
+  example: []
+  syntax:
+    content: 'public enum GapType : byte'
+    content.vb: Public Enum GapType As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.GapType.Missing
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapType.Missing
+  id: Missing
+  parent: Meridian.Infrastructure.Adapters.Core.GapType
+  langs:
+  - csharp
+  - vb
+  name: Missing
+  nameWithType: GapType.Missing
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType.Missing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Missing
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: No data at all for the date.
+  example: []
+  syntax:
+    content: Missing = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapType
+- uid: Meridian.Infrastructure.Adapters.Core.GapType.Partial
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapType.Partial
+  id: Partial
+  parent: Meridian.Infrastructure.Adapters.Core.GapType
+  langs:
+  - csharp
+  - vb
+  name: Partial
+  nameWithType: GapType.Partial
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType.Partial
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Partial
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Some data missing (e.g., no volume).
+  example: []
+  syntax:
+    content: Partial = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapType
+- uid: Meridian.Infrastructure.Adapters.Core.GapType.Holiday
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapType.Holiday
+  id: Holiday
+  parent: Meridian.Infrastructure.Adapters.Core.GapType
+  langs:
+  - csharp
+  - vb
+  name: Holiday
+  nameWithType: GapType.Holiday
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType.Holiday
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Holiday
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Market holiday (expected gap).
+  example: []
+  syntax:
+    content: Holiday = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapType
+- uid: Meridian.Infrastructure.Adapters.Core.GapType.Weekend
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapType.Weekend
+  id: Weekend
+  parent: Meridian.Infrastructure.Adapters.Core.GapType
+  langs:
+  - csharp
+  - vb
+  name: Weekend
+  nameWithType: GapType.Weekend
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType.Weekend
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weekend
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Weekend (expected gap).
+  example: []
+  syntax:
+    content: Weekend = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapType
+- uid: Meridian.Infrastructure.Adapters.Core.GapType.Halted
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapType.Halted
+  id: Halted
+  parent: Meridian.Infrastructure.Adapters.Core.GapType
+  langs:
+  - csharp
+  - vb
+  name: Halted
+  nameWithType: GapType.Halted
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType.Halted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Halted
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Trading halt.
+  example: []
+  syntax:
+    content: Halted = 4
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapType
+- uid: Meridian.Infrastructure.Adapters.Core.GapType.Suspicious
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapType.Suspicious
+  id: Suspicious
+  parent: Meridian.Infrastructure.Adapters.Core.GapType
+  langs:
+  - csharp
+  - vb
+  name: Suspicious
+  nameWithType: GapType.Suspicious
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType.Suspicious
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Suspicious
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Data exists but looks anomalous.
+  example: []
+  syntax:
+    content: Suspicious = 5
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapType
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.GapType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.GapType
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.GapType.html
+  name: GapType
+  nameWithType: GapType
+  fullName: Meridian.Infrastructure.Adapters.Core.GapType

@@ -1,0 +1,486 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.HealthSummaryProviders
+  commentId: T:Meridian.Contracts.Api.HealthSummaryProviders
+  id: HealthSummaryProviders
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.HealthSummaryProviders.Backfill
+  - Meridian.Contracts.Api.HealthSummaryProviders.Streaming
+  - Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch
+  - Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled
+  langs:
+  - csharp
+  - vb
+  name: HealthSummaryProviders
+  nameWithType: HealthSummaryProviders
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthSummaryProviders
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Provider counts for health summary response (D7).
+  example: []
+  syntax:
+    content: public sealed class HealthSummaryProviders
+    content.vb: Public NotInheritable Class HealthSummaryProviders
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.Streaming
+  commentId: P:Meridian.Contracts.Api.HealthSummaryProviders.Streaming
+  id: Streaming
+  parent: Meridian.Contracts.Api.HealthSummaryProviders
+  langs:
+  - csharp
+  - vb
+  name: Streaming
+  nameWithType: HealthSummaryProviders.Streaming
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.Streaming
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Streaming
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("streaming")]
+
+      public int Streaming { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("streaming")>
+
+      Public Property Streaming As Integer
+  overload: Meridian.Contracts.Api.HealthSummaryProviders.Streaming*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: streaming
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.Backfill
+  commentId: P:Meridian.Contracts.Api.HealthSummaryProviders.Backfill
+  id: Backfill
+  parent: Meridian.Contracts.Api.HealthSummaryProviders
+  langs:
+  - csharp
+  - vb
+  name: Backfill
+  nameWithType: HealthSummaryProviders.Backfill
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.Backfill
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backfill
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("backfill")]
+
+      public int Backfill { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("backfill")>
+
+      Public Property Backfill As Integer
+  overload: Meridian.Contracts.Api.HealthSummaryProviders.Backfill*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: backfill
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch
+  commentId: P:Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch
+  id: SymbolSearch
+  parent: Meridian.Contracts.Api.HealthSummaryProviders
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearch
+  nameWithType: HealthSummaryProviders.SymbolSearch
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearch
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("symbolSearch")]
+
+      public int SymbolSearch { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("symbolSearch")>
+
+      Public Property SymbolSearch As Integer
+  overload: Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbolSearch
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled
+  commentId: P:Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled
+  id: TotalEnabled
+  parent: Meridian.Contracts.Api.HealthSummaryProviders
+  langs:
+  - csharp
+  - vb
+  name: TotalEnabled
+  nameWithType: HealthSummaryProviders.TotalEnabled
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEnabled
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("totalEnabled")]
+
+      public int TotalEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalEnabled")>
+
+      Public Property TotalEnabled As Integer
+  overload: Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalEnabled
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.Streaming*
+  commentId: Overload:Meridian.Contracts.Api.HealthSummaryProviders.Streaming
+  href: Meridian.Contracts.Api.HealthSummaryProviders.html#Meridian_Contracts_Api_HealthSummaryProviders_Streaming
+  name: Streaming
+  nameWithType: HealthSummaryProviders.Streaming
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.Streaming
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.Backfill*
+  commentId: Overload:Meridian.Contracts.Api.HealthSummaryProviders.Backfill
+  href: Meridian.Contracts.Api.HealthSummaryProviders.html#Meridian_Contracts_Api_HealthSummaryProviders_Backfill
+  name: Backfill
+  nameWithType: HealthSummaryProviders.Backfill
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.Backfill
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch*
+  commentId: Overload:Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch
+  href: Meridian.Contracts.Api.HealthSummaryProviders.html#Meridian_Contracts_Api_HealthSummaryProviders_SymbolSearch
+  name: SymbolSearch
+  nameWithType: HealthSummaryProviders.SymbolSearch
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.SymbolSearch
+- uid: Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled*
+  commentId: Overload:Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled
+  href: Meridian.Contracts.Api.HealthSummaryProviders.html#Meridian_Contracts_Api_HealthSummaryProviders_TotalEnabled
+  name: TotalEnabled
+  nameWithType: HealthSummaryProviders.TotalEnabled
+  fullName: Meridian.Contracts.Api.HealthSummaryProviders.TotalEnabled

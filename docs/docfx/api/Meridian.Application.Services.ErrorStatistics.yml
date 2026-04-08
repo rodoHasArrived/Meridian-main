@@ -1,0 +1,715 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ErrorStatistics
+  commentId: T:Meridian.Application.Services.ErrorStatistics
+  id: ErrorStatistics
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ErrorStatistics.ByContext
+  - Meridian.Application.Services.ErrorStatistics.ByExceptionType
+  - Meridian.Application.Services.ErrorStatistics.ByHour
+  - Meridian.Application.Services.ErrorStatistics.ErrorsInWindow
+  - Meridian.Application.Services.ErrorStatistics.MostRecentError
+  - Meridian.Application.Services.ErrorStatistics.TotalErrors
+  - Meridian.Application.Services.ErrorStatistics.WindowEnd
+  - Meridian.Application.Services.ErrorStatistics.WindowStart
+  langs:
+  - csharp
+  - vb
+  name: ErrorStatistics
+  nameWithType: ErrorStatistics
+  fullName: Meridian.Application.Services.ErrorStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorStatistics
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Error statistics.
+  example: []
+  syntax:
+    content: public sealed class ErrorStatistics
+    content.vb: Public NotInheritable Class ErrorStatistics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ErrorStatistics.TotalErrors
+  commentId: P:Meridian.Application.Services.ErrorStatistics.TotalErrors
+  id: TotalErrors
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalErrors
+  nameWithType: ErrorStatistics.TotalErrors
+  fullName: Meridian.Application.Services.ErrorStatistics.TotalErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalErrors
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int TotalErrors { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalErrors As Integer
+  overload: Meridian.Application.Services.ErrorStatistics.TotalErrors*
+- uid: Meridian.Application.Services.ErrorStatistics.ErrorsInWindow
+  commentId: P:Meridian.Application.Services.ErrorStatistics.ErrorsInWindow
+  id: ErrorsInWindow
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: ErrorsInWindow
+  nameWithType: ErrorStatistics.ErrorsInWindow
+  fullName: Meridian.Application.Services.ErrorStatistics.ErrorsInWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorsInWindow
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int ErrorsInWindow { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ErrorsInWindow As Integer
+  overload: Meridian.Application.Services.ErrorStatistics.ErrorsInWindow*
+- uid: Meridian.Application.Services.ErrorStatistics.WindowStart
+  commentId: P:Meridian.Application.Services.ErrorStatistics.WindowStart
+  id: WindowStart
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: WindowStart
+  nameWithType: ErrorStatistics.WindowStart
+  fullName: Meridian.Application.Services.ErrorStatistics.WindowStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WindowStart
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset WindowStart { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property WindowStart As DateTimeOffset
+  overload: Meridian.Application.Services.ErrorStatistics.WindowStart*
+- uid: Meridian.Application.Services.ErrorStatistics.WindowEnd
+  commentId: P:Meridian.Application.Services.ErrorStatistics.WindowEnd
+  id: WindowEnd
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: WindowEnd
+  nameWithType: ErrorStatistics.WindowEnd
+  fullName: Meridian.Application.Services.ErrorStatistics.WindowEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WindowEnd
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset WindowEnd { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property WindowEnd As DateTimeOffset
+  overload: Meridian.Application.Services.ErrorStatistics.WindowEnd*
+- uid: Meridian.Application.Services.ErrorStatistics.ByExceptionType
+  commentId: P:Meridian.Application.Services.ErrorStatistics.ByExceptionType
+  id: ByExceptionType
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: ByExceptionType
+  nameWithType: ErrorStatistics.ByExceptionType
+  fullName: Meridian.Application.Services.ErrorStatistics.ByExceptionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByExceptionType
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Dictionary<string, int> ByExceptionType { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: Public Property ByExceptionType As Dictionary(Of String, Integer)
+  overload: Meridian.Application.Services.ErrorStatistics.ByExceptionType*
+- uid: Meridian.Application.Services.ErrorStatistics.ByContext
+  commentId: P:Meridian.Application.Services.ErrorStatistics.ByContext
+  id: ByContext
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: ByContext
+  nameWithType: ErrorStatistics.ByContext
+  fullName: Meridian.Application.Services.ErrorStatistics.ByContext
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByContext
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Dictionary<string, int> ByContext { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: Public Property ByContext As Dictionary(Of String, Integer)
+  overload: Meridian.Application.Services.ErrorStatistics.ByContext*
+- uid: Meridian.Application.Services.ErrorStatistics.ByHour
+  commentId: P:Meridian.Application.Services.ErrorStatistics.ByHour
+  id: ByHour
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: ByHour
+  nameWithType: ErrorStatistics.ByHour
+  fullName: Meridian.Application.Services.ErrorStatistics.ByHour
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByHour
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Dictionary<string, int> ByHour { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: Public Property ByHour As Dictionary(Of String, Integer)
+  overload: Meridian.Application.Services.ErrorStatistics.ByHour*
+- uid: Meridian.Application.Services.ErrorStatistics.MostRecentError
+  commentId: P:Meridian.Application.Services.ErrorStatistics.MostRecentError
+  id: MostRecentError
+  parent: Meridian.Application.Services.ErrorStatistics
+  langs:
+  - csharp
+  - vb
+  name: MostRecentError
+  nameWithType: ErrorStatistics.MostRecentError
+  fullName: Meridian.Application.Services.ErrorStatistics.MostRecentError
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MostRecentError
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public TrackedError? MostRecentError { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.TrackedError
+    content.vb: Public Property MostRecentError As TrackedError
+  overload: Meridian.Application.Services.ErrorStatistics.MostRecentError*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ErrorStatistics.TotalErrors*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.TotalErrors
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_TotalErrors
+  name: TotalErrors
+  nameWithType: ErrorStatistics.TotalErrors
+  fullName: Meridian.Application.Services.ErrorStatistics.TotalErrors
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.ErrorStatistics.ErrorsInWindow*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.ErrorsInWindow
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_ErrorsInWindow
+  name: ErrorsInWindow
+  nameWithType: ErrorStatistics.ErrorsInWindow
+  fullName: Meridian.Application.Services.ErrorStatistics.ErrorsInWindow
+- uid: Meridian.Application.Services.ErrorStatistics.WindowStart*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.WindowStart
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_WindowStart
+  name: WindowStart
+  nameWithType: ErrorStatistics.WindowStart
+  fullName: Meridian.Application.Services.ErrorStatistics.WindowStart
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Services.ErrorStatistics.WindowEnd*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.WindowEnd
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_WindowEnd
+  name: WindowEnd
+  nameWithType: ErrorStatistics.WindowEnd
+  fullName: Meridian.Application.Services.ErrorStatistics.WindowEnd
+- uid: Meridian.Application.Services.ErrorStatistics.ByExceptionType*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.ByExceptionType
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_ByExceptionType
+  name: ByExceptionType
+  nameWithType: ErrorStatistics.ByExceptionType
+  fullName: Meridian.Application.Services.ErrorStatistics.ByExceptionType
+- uid: System.Collections.Generic.Dictionary{System.String,System.Int32}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, int>
+  nameWithType: Dictionary<string, int>
+  fullName: System.Collections.Generic.Dictionary<string, int>
+  nameWithType.vb: Dictionary(Of String, Integer)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Integer)
+  name.vb: Dictionary(Of String, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.ErrorStatistics.ByContext*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.ByContext
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_ByContext
+  name: ByContext
+  nameWithType: ErrorStatistics.ByContext
+  fullName: Meridian.Application.Services.ErrorStatistics.ByContext
+- uid: Meridian.Application.Services.ErrorStatistics.ByHour*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.ByHour
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_ByHour
+  name: ByHour
+  nameWithType: ErrorStatistics.ByHour
+  fullName: Meridian.Application.Services.ErrorStatistics.ByHour
+- uid: Meridian.Application.Services.ErrorStatistics.MostRecentError*
+  commentId: Overload:Meridian.Application.Services.ErrorStatistics.MostRecentError
+  href: Meridian.Application.Services.ErrorStatistics.html#Meridian_Application_Services_ErrorStatistics_MostRecentError
+  name: MostRecentError
+  nameWithType: ErrorStatistics.MostRecentError
+  fullName: Meridian.Application.Services.ErrorStatistics.MostRecentError
+- uid: Meridian.Application.Services.TrackedError
+  commentId: T:Meridian.Application.Services.TrackedError
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.TrackedError.html
+  name: TrackedError
+  nameWithType: TrackedError
+  fullName: Meridian.Application.Services.TrackedError

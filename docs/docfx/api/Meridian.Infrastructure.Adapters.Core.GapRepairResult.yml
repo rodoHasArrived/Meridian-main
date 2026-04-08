@@ -1,0 +1,799 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  commentId: T:Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  id: GapRepairResult
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult},System.TimeSpan)
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration
+  - Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps
+  langs:
+  - csharp
+  - vb
+  name: GapRepairResult
+  nameWithType: GapRepairResult
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapRepairResult
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Result of a gap repair operation.
+  example: []
+  syntax:
+    content: 'public sealed record GapRepairResult : IEquatable<GapRepairResult>'
+    content.vb: Public NotInheritable Class GapRepairResult Implements IEquatable(Of GapRepairResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.GapRepairResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult},System.TimeSpan)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.GapRepairResult.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult},System.TimeSpan)
+  id: '#ctor(System.String,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult},System.TimeSpan)'
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: GapRepairResult(string, int, int, int, IReadOnlyList<GapRepairItemResult>, TimeSpan)
+  nameWithType: GapRepairResult.GapRepairResult(string, int, int, int, IReadOnlyList<GapRepairItemResult>, TimeSpan)
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.GapRepairResult(string, int, int, int, System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.GapRepairItemResult>, System.TimeSpan)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Result of a gap repair operation.
+  example: []
+  syntax:
+    content: public GapRepairResult(string Symbol, int TotalGaps, int RepairedGaps, int FailedGaps, IReadOnlyList<GapRepairItemResult> Results, TimeSpan TotalDuration = default)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: TotalGaps
+      type: System.Int32
+    - id: RepairedGaps
+      type: System.Int32
+    - id: FailedGaps
+      type: System.Int32
+    - id: Results
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult}
+    - id: TotalDuration
+      type: System.TimeSpan
+    content.vb: Public Sub New(Symbol As String, TotalGaps As Integer, RepairedGaps As Integer, FailedGaps As Integer, Results As IReadOnlyList(Of GapRepairItemResult), TotalDuration As TimeSpan = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.#ctor*
+  nameWithType.vb: GapRepairResult.New(String, Integer, Integer, Integer, IReadOnlyList(Of GapRepairItemResult), TimeSpan)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.GapRepairResult.New(String, Integer, Integer, Integer, System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.GapRepairItemResult), System.TimeSpan)
+  name.vb: New(String, Integer, Integer, Integer, IReadOnlyList(Of GapRepairItemResult), TimeSpan)
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: GapRepairResult.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol*
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps
+  commentId: P:Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: GapRepairResult.TotalGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int TotalGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalGaps As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps*
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps
+  commentId: P:Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps
+  id: RepairedGaps
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: RepairedGaps
+  nameWithType: GapRepairResult.RepairedGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepairedGaps
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int RepairedGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RepairedGaps As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps*
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps
+  commentId: P:Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps
+  id: FailedGaps
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: FailedGaps
+  nameWithType: GapRepairResult.FailedGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedGaps
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int FailedGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedGaps As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps*
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results
+  commentId: P:Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results
+  id: Results
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: Results
+  nameWithType: GapRepairResult.Results
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Results
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public IReadOnlyList<GapRepairItemResult> Results { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult}
+    content.vb: Public Property Results As IReadOnlyList(Of GapRepairItemResult)
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results*
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration
+  commentId: P:Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration
+  id: TotalDuration
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: TotalDuration
+  nameWithType: GapRepairResult.TotalDuration
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDuration
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public TimeSpan TotalDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TotalDuration As TimeSpan
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration*
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate
+  commentId: P:Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate
+  id: SuccessRate
+  parent: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+  langs:
+  - csharp
+  - vb
+  name: SuccessRate
+  nameWithType: GapRepairResult.SuccessRate
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessRate
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double SuccessRate { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property SuccessRate As Double
+  overload: Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.GapRepairResult}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.GapRepairResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<GapRepairResult>
+  nameWithType: IEquatable<GapRepairResult>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.GapRepairResult>
+  nameWithType.vb: IEquatable(Of GapRepairResult)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.GapRepairResult)
+  name.vb: IEquatable(Of GapRepairResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+    name: GapRepairResult
+    href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult
+    name: GapRepairResult
+    href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult__ctor_System_String_System_Int32_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Meridian_Infrastructure_Adapters_Core_GapRepairItemResult__System_TimeSpan_
+  name: GapRepairResult
+  nameWithType: GapRepairResult.GapRepairResult
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.GapRepairResult
+  nameWithType.vb: GapRepairResult.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.GapRepairResult.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.GapRepairItemResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<GapRepairItemResult>
+  nameWithType: IReadOnlyList<GapRepairItemResult>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.GapRepairItemResult>
+  nameWithType.vb: IReadOnlyList(Of GapRepairItemResult)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.GapRepairItemResult)
+  name.vb: IReadOnlyList(Of GapRepairItemResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.GapRepairItemResult
+    name: GapRepairItemResult
+    href: Meridian.Infrastructure.Adapters.Core.GapRepairItemResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.GapRepairItemResult
+    name: GapRepairItemResult
+    href: Meridian.Infrastructure.Adapters.Core.GapRepairItemResult.html
+  - name: )
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult_Symbol
+  name: Symbol
+  nameWithType: GapRepairResult.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Symbol
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult_TotalGaps
+  name: TotalGaps
+  nameWithType: GapRepairResult.TotalGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalGaps
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult_RepairedGaps
+  name: RepairedGaps
+  nameWithType: GapRepairResult.RepairedGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.RepairedGaps
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult_FailedGaps
+  name: FailedGaps
+  nameWithType: GapRepairResult.FailedGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.FailedGaps
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult_Results
+  name: Results
+  nameWithType: GapRepairResult.Results
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.Results
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult_TotalDuration
+  name: TotalDuration
+  nameWithType: GapRepairResult.TotalDuration
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.TotalDuration
+- uid: Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate
+  href: Meridian.Infrastructure.Adapters.Core.GapRepairResult.html#Meridian_Infrastructure_Adapters_Core_GapRepairResult_SuccessRate
+  name: SuccessRate
+  nameWithType: GapRepairResult.SuccessRate
+  fullName: Meridian.Infrastructure.Adapters.Core.GapRepairResult.SuccessRate
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

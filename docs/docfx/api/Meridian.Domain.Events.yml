@@ -1,0 +1,86 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  id: Meridian.Domain.Events
+  children:
+  - Meridian.Domain.Events.IBackpressureSignal
+  - Meridian.Domain.Events.IMarketEventPublisher
+  - Meridian.Domain.Events.MarketEvent
+  - Meridian.Domain.Events.MarketEventPayload
+  - Meridian.Domain.Events.PublishResult
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  type: Namespace
+  assemblies:
+  - Meridian.Domain
+references:
+- uid: Meridian.Domain.Events.IBackpressureSignal
+  commentId: T:Meridian.Domain.Events.IBackpressureSignal
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IBackpressureSignal.html
+  name: IBackpressureSignal
+  nameWithType: IBackpressureSignal
+  fullName: Meridian.Domain.Events.IBackpressureSignal
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Domain.Events.MarketEventPayload
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Domain.Events.MarketEventPayload
+- uid: Meridian.Domain.Events.PublishResult
+  commentId: T:Meridian.Domain.Events.PublishResult
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.PublishResult.html
+  name: PublishResult
+  nameWithType: PublishResult
+  fullName: Meridian.Domain.Events.PublishResult
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html

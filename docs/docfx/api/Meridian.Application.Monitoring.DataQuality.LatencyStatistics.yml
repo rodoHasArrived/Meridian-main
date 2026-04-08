@@ -1,0 +1,946 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  id: LatencyStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Double},System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked
+  - Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples
+  langs:
+  - csharp
+  - vb
+  name: LatencyStatistics
+  nameWithType: LatencyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Overall latency statistics.
+  example: []
+  syntax:
+    content: 'public sealed record LatencyStatistics : IEquatable<LatencyStatistics>'
+    content.vb: Public NotInheritable Class LatencyStatistics Implements IEquatable(Of LatencyStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.LatencyStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Double},System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Double},System.DateTimeOffset)
+  id: '#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Double},System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: LatencyStatistics(int, long, double, double, double, double, string?, string?, Dictionary<string, double>, DateTimeOffset)
+  nameWithType: LatencyStatistics.LatencyStatistics(int, long, double, double, double, double, string?, string?, Dictionary<string, double>, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.LatencyStatistics(int, long, double, double, double, double, string?, string?, System.Collections.Generic.Dictionary<string, double>, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Overall latency statistics.
+  example: []
+  syntax:
+    content: public LatencyStatistics(int SymbolsTracked, long TotalSamples, double GlobalMeanMs, double GlobalP50Ms, double GlobalP90Ms, double GlobalP99Ms, string? FastestSymbol, string? SlowestSymbol, Dictionary<string, double> DistributionsBySymbol, DateTimeOffset CalculatedAt)
+    parameters:
+    - id: SymbolsTracked
+      type: System.Int32
+    - id: TotalSamples
+      type: System.Int64
+    - id: GlobalMeanMs
+      type: System.Double
+    - id: GlobalP50Ms
+      type: System.Double
+    - id: GlobalP90Ms
+      type: System.Double
+    - id: GlobalP99Ms
+      type: System.Double
+    - id: FastestSymbol
+      type: System.String
+    - id: SlowestSymbol
+      type: System.String
+    - id: DistributionsBySymbol
+      type: System.Collections.Generic.Dictionary{System.String,System.Double}
+    - id: CalculatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(SymbolsTracked As Integer, TotalSamples As Long, GlobalMeanMs As Double, GlobalP50Ms As Double, GlobalP90Ms As Double, GlobalP99Ms As Double, FastestSymbol As String, SlowestSymbol As String, DistributionsBySymbol As Dictionary(Of String, Double), CalculatedAt As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.#ctor*
+  nameWithType.vb: LatencyStatistics.New(Integer, Long, Double, Double, Double, Double, String, String, Dictionary(Of String, Double), DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.New(Integer, Long, Double, Double, Double, Double, String, String, System.Collections.Generic.Dictionary(Of String, Double), System.DateTimeOffset)
+  name.vb: New(Integer, Long, Double, Double, Double, Double, String, String, Dictionary(Of String, Double), DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked
+  id: SymbolsTracked
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: SymbolsTracked
+  nameWithType: LatencyStatistics.SymbolsTracked
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsTracked
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 429
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int SymbolsTracked { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolsTracked As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples
+  id: TotalSamples
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalSamples
+  nameWithType: LatencyStatistics.TotalSamples
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSamples
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 430
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long TotalSamples { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalSamples As Long
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs
+  id: GlobalMeanMs
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: GlobalMeanMs
+  nameWithType: LatencyStatistics.GlobalMeanMs
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalMeanMs
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 431
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double GlobalMeanMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalMeanMs As Double
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms
+  id: GlobalP50Ms
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: GlobalP50Ms
+  nameWithType: LatencyStatistics.GlobalP50Ms
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalP50Ms
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 432
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double GlobalP50Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalP50Ms As Double
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms
+  id: GlobalP90Ms
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: GlobalP90Ms
+  nameWithType: LatencyStatistics.GlobalP90Ms
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalP90Ms
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 433
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double GlobalP90Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalP90Ms As Double
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms
+  id: GlobalP99Ms
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: GlobalP99Ms
+  nameWithType: LatencyStatistics.GlobalP99Ms
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalP99Ms
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 434
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double GlobalP99Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalP99Ms As Double
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol
+  id: FastestSymbol
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: FastestSymbol
+  nameWithType: LatencyStatistics.FastestSymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FastestSymbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 435
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string? FastestSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FastestSymbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol
+  id: SlowestSymbol
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: SlowestSymbol
+  nameWithType: LatencyStatistics.SlowestSymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SlowestSymbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 436
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string? SlowestSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SlowestSymbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol
+  id: DistributionsBySymbol
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: DistributionsBySymbol
+  nameWithType: LatencyStatistics.DistributionsBySymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DistributionsBySymbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 437
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public Dictionary<string, double> DistributionsBySymbol { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Double}
+    content.vb: Public Property DistributionsBySymbol As Dictionary(Of String, Double)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt
+  commentId: P:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt
+  id: CalculatedAt
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: CalculatedAt
+  nameWithType: LatencyStatistics.CalculatedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculatedAt
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 438
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset CalculatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CalculatedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.LatencyStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.LatencyStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LatencyStatistics>
+  nameWithType: IEquatable<LatencyStatistics>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.LatencyStatistics>
+  nameWithType.vb: IEquatable(Of LatencyStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.LatencyStatistics)
+  name.vb: IEquatable(Of LatencyStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+    name: LatencyStatistics
+    href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+    name: LatencyStatistics
+    href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics__ctor_System_Int32_System_Int64_System_Double_System_Double_System_Double_System_Double_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_Double__System_DateTimeOffset_
+  name: LatencyStatistics
+  nameWithType: LatencyStatistics.LatencyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.LatencyStatistics
+  nameWithType.vb: LatencyStatistics.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.Dictionary{System.String,System.Double}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Double}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, double>
+  nameWithType: Dictionary<string, double>
+  fullName: System.Collections.Generic.Dictionary<string, double>
+  nameWithType.vb: Dictionary(Of String, Double)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Double)
+  name.vb: Dictionary(Of String, Double)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_SymbolsTracked
+  name: SymbolsTracked
+  nameWithType: LatencyStatistics.SymbolsTracked
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SymbolsTracked
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_TotalSamples
+  name: TotalSamples
+  nameWithType: LatencyStatistics.TotalSamples
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.TotalSamples
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_GlobalMeanMs
+  name: GlobalMeanMs
+  nameWithType: LatencyStatistics.GlobalMeanMs
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalMeanMs
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_GlobalP50Ms
+  name: GlobalP50Ms
+  nameWithType: LatencyStatistics.GlobalP50Ms
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP50Ms
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_GlobalP90Ms
+  name: GlobalP90Ms
+  nameWithType: LatencyStatistics.GlobalP90Ms
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP90Ms
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_GlobalP99Ms
+  name: GlobalP99Ms
+  nameWithType: LatencyStatistics.GlobalP99Ms
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.GlobalP99Ms
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_FastestSymbol
+  name: FastestSymbol
+  nameWithType: LatencyStatistics.FastestSymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.FastestSymbol
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_SlowestSymbol
+  name: SlowestSymbol
+  nameWithType: LatencyStatistics.SlowestSymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.SlowestSymbol
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_DistributionsBySymbol
+  name: DistributionsBySymbol
+  nameWithType: LatencyStatistics.DistributionsBySymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.DistributionsBySymbol
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html#Meridian_Application_Monitoring_DataQuality_LatencyStatistics_CalculatedAt
+  name: CalculatedAt
+  nameWithType: LatencyStatistics.CalculatedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.CalculatedAt

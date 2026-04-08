@@ -1,0 +1,365 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.ICorporateActionAdjustmentService
+  commentId: T:Meridian.Backtesting.ICorporateActionAdjustmentService
+  id: ICorporateActionAdjustmentService
+  parent: Meridian.Backtesting
+  children:
+  - Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ICorporateActionAdjustmentService
+  nameWithType: ICorporateActionAdjustmentService
+  fullName: Meridian.Backtesting.ICorporateActionAdjustmentService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICorporateActionAdjustmentService
+    path: ../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Service for adjusting historical bar prices and volumes for corporate actions (stock splits and dividends).
+  example: []
+  syntax:
+    content: public interface ICorporateActionAdjustmentService
+    content.vb: Public Interface ICorporateActionAdjustmentService
+  derivedClasses:
+  - Meridian.Backtesting.CorporateActionAdjustmentService
+- uid: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  id: AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.ICorporateActionAdjustmentService
+  langs:
+  - csharp
+  - vb
+  name: AdjustAsync(IReadOnlyList<HistoricalBar>, string, CancellationToken)
+  nameWithType: ICorporateActionAdjustmentService.AdjustAsync(IReadOnlyList<HistoricalBar>, string, CancellationToken)
+  fullName: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustAsync
+    path: ../../src/Meridian.Backtesting/ICorporateActionAdjustmentService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Adjusts historical bars for stock splits and dividends using Security Master data.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<HistoricalBar>> AdjustAsync(IReadOnlyList<HistoricalBar> bars, string ticker, CancellationToken ct = default)
+    parameters:
+    - id: bars
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+      description: Original historical bars (not modified).
+    - id: ticker
+      type: System.String
+      description: Ticker symbol to resolve to security ID.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+      description: New list of adjusted bars, or original bars if security not found or no actions recorded.
+    content.vb: Function AdjustAsync(bars As IReadOnlyList(Of HistoricalBar), ticker As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of HistoricalBar))
+  overload: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync*
+  nameWithType.vb: ICorporateActionAdjustmentService.AdjustAsync(IReadOnlyList(Of HistoricalBar), String, CancellationToken)
+  fullName.vb: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar), String, System.Threading.CancellationToken)
+  name.vb: AdjustAsync(IReadOnlyList(Of HistoricalBar), String, CancellationToken)
+references:
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  href: Meridian.html
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+- uid: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync*
+  commentId: Overload:Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync
+  href: Meridian.Backtesting.ICorporateActionAdjustmentService.html#Meridian_Backtesting_ICorporateActionAdjustmentService_AdjustAsync_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_HistoricalBar__System_String_System_Threading_CancellationToken_
+  name: AdjustAsync
+  nameWithType: ICorporateActionAdjustmentService.AdjustAsync
+  fullName: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<HistoricalBar>
+  nameWithType: IReadOnlyList<HistoricalBar>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>
+  nameWithType.vb: IReadOnlyList(Of HistoricalBar)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar)
+  name.vb: IReadOnlyList(Of HistoricalBar)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<HistoricalBar>>
+  nameWithType: Task<IReadOnlyList<HistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

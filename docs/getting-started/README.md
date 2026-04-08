@@ -68,6 +68,14 @@ dotnet run --project src/Meridian/Meridian.csproj -- --mode headless
 ### Windows WPF desktop shell
 
 ```powershell
+pwsh ./scripts/dev/run-desktop.ps1
+```
+
+This launcher is the recommended Windows desktop path. It starts the local Meridian host on `http://localhost:8080` when needed, waits for it to pass `/healthz`, then opens the WPF shell.
+
+Manual fallback:
+
+```powershell
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
 ```
 

@@ -1,0 +1,180 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ProviderConnectionMode
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionMode
+  id: ProviderConnectionMode
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ProviderConnectionMode.Live
+  - Meridian.ProviderSdk.ProviderConnectionMode.Paper
+  - Meridian.ProviderSdk.ProviderConnectionMode.ReadOnly
+  - Meridian.ProviderSdk.ProviderConnectionMode.Research
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnectionMode
+  nameWithType: ProviderConnectionMode
+  fullName: Meridian.ProviderSdk.ProviderConnectionMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnectionMode
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 58
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Operational mode for a provider connection.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ProviderConnectionMode>))]
+
+      public enum ProviderConnectionMode : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ProviderConnectionMode)))>
+
+      Public Enum ProviderConnectionMode As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.ProviderSdk.ProviderConnectionMode}
+- uid: Meridian.ProviderSdk.ProviderConnectionMode.ReadOnly
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionMode.ReadOnly
+  id: ReadOnly
+  parent: Meridian.ProviderSdk.ProviderConnectionMode
+  langs:
+  - csharp
+  - vb
+  name: ReadOnly
+  nameWithType: ProviderConnectionMode.ReadOnly
+  fullName: Meridian.ProviderSdk.ProviderConnectionMode.ReadOnly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadOnly
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 61
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ReadOnly = 0
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionMode
+- uid: Meridian.ProviderSdk.ProviderConnectionMode.Research
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionMode.Research
+  id: Research
+  parent: Meridian.ProviderSdk.ProviderConnectionMode
+  langs:
+  - csharp
+  - vb
+  name: Research
+  nameWithType: ProviderConnectionMode.Research
+  fullName: Meridian.ProviderSdk.ProviderConnectionMode.Research
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Research
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 62
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Research = 1
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionMode
+- uid: Meridian.ProviderSdk.ProviderConnectionMode.Paper
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionMode.Paper
+  id: Paper
+  parent: Meridian.ProviderSdk.ProviderConnectionMode
+  langs:
+  - csharp
+  - vb
+  name: Paper
+  nameWithType: ProviderConnectionMode.Paper
+  fullName: Meridian.ProviderSdk.ProviderConnectionMode.Paper
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paper
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Paper = 2
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionMode
+- uid: Meridian.ProviderSdk.ProviderConnectionMode.Live
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionMode.Live
+  id: Live
+  parent: Meridian.ProviderSdk.ProviderConnectionMode
+  langs:
+  - csharp
+  - vb
+  name: Live
+  nameWithType: ProviderConnectionMode.Live
+  fullName: Meridian.ProviderSdk.ProviderConnectionMode.Live
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Live
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 64
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Live = 3
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionMode
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.ProviderConnectionMode
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionMode
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderConnectionMode.html
+  name: ProviderConnectionMode
+  nameWithType: ProviderConnectionMode
+  fullName: Meridian.ProviderSdk.ProviderConnectionMode

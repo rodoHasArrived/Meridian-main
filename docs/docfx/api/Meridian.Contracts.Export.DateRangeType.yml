@@ -1,0 +1,300 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.DateRangeType
+  commentId: T:Meridian.Contracts.Export.DateRangeType
+  id: DateRangeType
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.DateRangeType.All
+  - Meridian.Contracts.Export.DateRangeType.Custom
+  - Meridian.Contracts.Export.DateRangeType.LastMonth
+  - Meridian.Contracts.Export.DateRangeType.LastQuarter
+  - Meridian.Contracts.Export.DateRangeType.LastWeek
+  - Meridian.Contracts.Export.DateRangeType.LastYear
+  - Meridian.Contracts.Export.DateRangeType.Today
+  - Meridian.Contracts.Export.DateRangeType.Yesterday
+  langs:
+  - csharp
+  - vb
+  name: DateRangeType
+  nameWithType: DateRangeType
+  fullName: Meridian.Contracts.Export.DateRangeType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRangeType
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Date range types for export presets.
+  example: []
+  syntax:
+    content: 'public enum DateRangeType : byte'
+    content.vb: Public Enum DateRangeType As Byte
+- uid: Meridian.Contracts.Export.DateRangeType.Today
+  commentId: F:Meridian.Contracts.Export.DateRangeType.Today
+  id: Today
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: Today
+  nameWithType: DateRangeType.Today
+  fullName: Meridian.Contracts.Export.DateRangeType.Today
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Today
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export today's data.
+  example: []
+  syntax:
+    content: Today = 0
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType.Yesterday
+  commentId: F:Meridian.Contracts.Export.DateRangeType.Yesterday
+  id: Yesterday
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: Yesterday
+  nameWithType: DateRangeType.Yesterday
+  fullName: Meridian.Contracts.Export.DateRangeType.Yesterday
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Yesterday
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export yesterday's data.
+  example: []
+  syntax:
+    content: Yesterday = 1
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType.LastWeek
+  commentId: F:Meridian.Contracts.Export.DateRangeType.LastWeek
+  id: LastWeek
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: LastWeek
+  nameWithType: DateRangeType.LastWeek
+  fullName: Meridian.Contracts.Export.DateRangeType.LastWeek
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastWeek
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export last 7 days.
+  example: []
+  syntax:
+    content: LastWeek = 2
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType.LastMonth
+  commentId: F:Meridian.Contracts.Export.DateRangeType.LastMonth
+  id: LastMonth
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: LastMonth
+  nameWithType: DateRangeType.LastMonth
+  fullName: Meridian.Contracts.Export.DateRangeType.LastMonth
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastMonth
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export last 30 days.
+  example: []
+  syntax:
+    content: LastMonth = 3
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType.LastQuarter
+  commentId: F:Meridian.Contracts.Export.DateRangeType.LastQuarter
+  id: LastQuarter
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: LastQuarter
+  nameWithType: DateRangeType.LastQuarter
+  fullName: Meridian.Contracts.Export.DateRangeType.LastQuarter
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastQuarter
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export last quarter (90 days).
+  example: []
+  syntax:
+    content: LastQuarter = 4
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType.LastYear
+  commentId: F:Meridian.Contracts.Export.DateRangeType.LastYear
+  id: LastYear
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: LastYear
+  nameWithType: DateRangeType.LastYear
+  fullName: Meridian.Contracts.Export.DateRangeType.LastYear
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastYear
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export last year.
+  example: []
+  syntax:
+    content: LastYear = 5
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType.All
+  commentId: F:Meridian.Contracts.Export.DateRangeType.All
+  id: All
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: All
+  nameWithType: DateRangeType.All
+  fullName: Meridian.Contracts.Export.DateRangeType.All
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: All
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export all available data.
+  example: []
+  syntax:
+    content: All = 6
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType.Custom
+  commentId: F:Meridian.Contracts.Export.DateRangeType.Custom
+  id: Custom
+  parent: Meridian.Contracts.Export.DateRangeType
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: DateRangeType.Custom
+  fullName: Meridian.Contracts.Export.DateRangeType.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Use custom date range.
+  example: []
+  syntax:
+    content: Custom = 7
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: Meridian.Contracts.Export.DateRangeType
+  commentId: T:Meridian.Contracts.Export.DateRangeType
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.DateRangeType.html
+  name: DateRangeType
+  nameWithType: DateRangeType
+  fullName: Meridian.Contracts.Export.DateRangeType

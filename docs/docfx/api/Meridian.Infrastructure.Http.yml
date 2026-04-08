@@ -1,0 +1,51 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Http
+  commentId: N:Meridian.Infrastructure.Http
+  id: Meridian.Infrastructure.Http
+  children:
+  - Meridian.Infrastructure.Http.HttpClientConfiguration
+  - Meridian.Infrastructure.Http.HttpClientFactoryProvider
+  - Meridian.Infrastructure.Http.HttpClientNames
+  - Meridian.Infrastructure.Http.ProviderHttpUtilities
+  - Meridian.Infrastructure.Http.SharedResiliencePolicies
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Http
+  nameWithType: Meridian.Infrastructure.Http
+  fullName: Meridian.Infrastructure.Http
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Http.HttpClientNames
+  commentId: T:Meridian.Infrastructure.Http.HttpClientNames
+  href: Meridian.Infrastructure.Http.HttpClientNames.html
+  name: HttpClientNames
+  nameWithType: HttpClientNames
+  fullName: Meridian.Infrastructure.Http.HttpClientNames
+- uid: Meridian.Infrastructure.Http.HttpClientConfiguration
+  commentId: T:Meridian.Infrastructure.Http.HttpClientConfiguration
+  href: Meridian.Infrastructure.Http.HttpClientConfiguration.html
+  name: HttpClientConfiguration
+  nameWithType: HttpClientConfiguration
+  fullName: Meridian.Infrastructure.Http.HttpClientConfiguration
+- uid: Meridian.Infrastructure.Http.HttpClientFactoryProvider
+  commentId: T:Meridian.Infrastructure.Http.HttpClientFactoryProvider
+  href: Meridian.Infrastructure.Http.HttpClientFactoryProvider.html
+  name: HttpClientFactoryProvider
+  nameWithType: HttpClientFactoryProvider
+  fullName: Meridian.Infrastructure.Http.HttpClientFactoryProvider
+- uid: Meridian.Infrastructure.Http.SharedResiliencePolicies
+  commentId: T:Meridian.Infrastructure.Http.SharedResiliencePolicies
+  href: Meridian.Infrastructure.Http.SharedResiliencePolicies.html
+  name: SharedResiliencePolicies
+  nameWithType: SharedResiliencePolicies
+  fullName: Meridian.Infrastructure.Http.SharedResiliencePolicies
+- uid: Meridian.Infrastructure.Http.ProviderHttpUtilities
+  commentId: T:Meridian.Infrastructure.Http.ProviderHttpUtilities
+  href: Meridian.Infrastructure.Http.ProviderHttpUtilities.html
+  name: ProviderHttpUtilities
+  nameWithType: ProviderHttpUtilities
+  fullName: Meridian.Infrastructure.Http.ProviderHttpUtilities

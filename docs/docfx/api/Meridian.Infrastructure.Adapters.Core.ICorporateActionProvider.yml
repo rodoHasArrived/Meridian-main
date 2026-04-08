@@ -1,0 +1,435 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  id: ICorporateActionProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+  langs:
+  - csharp
+  - vb
+  name: ICorporateActionProvider
+  nameWithType: ICorporateActionProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICorporateActionProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Provider-agnostic interface for fetching corporate action history (dividends and stock
+
+    splits) from a data source and merging it into the Security Master event store.
+  remarks: >-
+    <p>
+
+    Implementations should be decorated with <xref href="Meridian.Infrastructure.DataSources.DataSourceAttribute" data-throw-if-not-resolved="false"></xref> so they
+
+    are discoverable via the attribute-based provider registry (ADR-005).  The Security
+
+    Master aggregates results from all registered implementations with last-writer-wins
+
+    conflict resolution keyed by <code>(securityId, ex_date, corporateActionType)</code>.
+
+    </p>
+
+    <p>
+
+    Implementations must degrade gracefully (log and return empty) when the upstream
+
+    API is unavailable or the ticker is not recognised by the provider.
+
+    </p>
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Provider-agnostic corporate action abstraction follows IHistoricalDataProvider pattern")]
+
+      [ImplementsAdr("ADR-005", "Attribute-based discovery via DataSourceAttribute")]
+
+      public interface ICorporateActionProvider
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Provider-agnostic corporate action abstraction follows IHistoricalDataProvider pattern")>
+
+      <ImplementsAdr("ADR-005", "Attribute-based discovery via DataSourceAttribute")>
+
+      Public Interface ICorporateActionProvider
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Provider-agnostic corporate action abstraction follows IHistoricalDataProvider pattern
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based discovery via DataSourceAttribute
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: ICorporateActionProvider.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Returns the provider identifier string used to tag corporate action events when
+
+    multiple sources contribute data for the same security.
+  example: []
+  syntax:
+    content: string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId*
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  id: FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  langs:
+  - csharp
+  - vb
+  name: FetchAsync(string, Guid, CancellationToken)
+  nameWithType: ICorporateActionProvider.FetchAsync(string, Guid, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(string, System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FetchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Fetches all available corporate actions (dividends, splits, mergers, etc.) for
+
+    <code class="paramref">ticker</code> and <code class="paramref">securityId</code> from the upstream
+
+    data source.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(string ticker, Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: ticker
+      type: System.String
+      description: The canonical ticker string (e.g., "AAPL").
+    - id: securityId
+      type: System.Guid
+      description: The Security Master identifier for the security.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.CorporateActionCommand}}
+      description: >-
+        Zero or more <xref href="Meridian.Infrastructure.Adapters.Core.CorporateActionCommand" data-throw-if-not-resolved="false"></xref> objects ready to be dispatched
+
+        to the Security Master event store.  The caller is responsible for deduplication.
+    content.vb: Function FetchAsync(ticker As String, securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CorporateActionCommand))
+  overload: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync*
+  nameWithType.vb: ICorporateActionProvider.FetchAsync(String, Guid, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(String, System.Guid, System.Threading.CancellationToken)
+  name.vb: FetchAsync(String, Guid, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.DataSources.DataSourceAttribute
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceAttribute
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceAttribute.html
+  name: DataSourceAttribute
+  nameWithType: DataSourceAttribute
+  fullName: Meridian.Infrastructure.DataSources.DataSourceAttribute
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+  href: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.html#Meridian_Infrastructure_Adapters_Core_ICorporateActionProvider_ProviderId
+  name: ProviderId
+  nameWithType: ICorporateActionProvider.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+  commentId: T:Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+  href: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand.html
+  name: CorporateActionCommand
+  nameWithType: CorporateActionCommand
+  fullName: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync
+  href: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.html#Meridian_Infrastructure_Adapters_Core_ICorporateActionProvider_FetchAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  name: FetchAsync
+  nameWithType: ICorporateActionProvider.FetchAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.CorporateActionCommand}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.CorporateActionCommand}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CorporateActionCommand>>
+  nameWithType: Task<IReadOnlyList<CorporateActionCommand>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.CorporateActionCommand>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CorporateActionCommand))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.CorporateActionCommand))
+  name.vb: Task(Of IReadOnlyList(Of CorporateActionCommand))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+    name: CorporateActionCommand
+    href: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+    name: CorporateActionCommand
+    href: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

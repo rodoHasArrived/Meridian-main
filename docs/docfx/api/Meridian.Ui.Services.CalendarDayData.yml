@@ -1,0 +1,916 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.CalendarDayData
+  commentId: T:Meridian.Ui.Services.CalendarDayData
+  id: CalendarDayData
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.CalendarDayData.Completeness
+  - Meridian.Ui.Services.CalendarDayData.CompletenessLevel
+  - Meridian.Ui.Services.CalendarDayData.Date
+  - Meridian.Ui.Services.CalendarDayData.DayOfWeek
+  - Meridian.Ui.Services.CalendarDayData.EventCount
+  - Meridian.Ui.Services.CalendarDayData.ExpectedEvents
+  - Meridian.Ui.Services.CalendarDayData.GapCount
+  - Meridian.Ui.Services.CalendarDayData.HasData
+  - Meridian.Ui.Services.CalendarDayData.HasGaps
+  - Meridian.Ui.Services.CalendarDayData.IsHoliday
+  - Meridian.Ui.Services.CalendarDayData.IsTradingDay
+  - Meridian.Ui.Services.CalendarDayData.IsWeekend
+  - Meridian.Ui.Services.CalendarDayData.SymbolBreakdown
+  langs:
+  - csharp
+  - vb
+  name: CalendarDayData
+  nameWithType: CalendarDayData
+  fullName: Meridian.Ui.Services.CalendarDayData
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalendarDayData
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calendar data for a day.
+  example: []
+  syntax:
+    content: public sealed class CalendarDayData
+    content.vb: Public NotInheritable Class CalendarDayData
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.CalendarDayData.Date
+  commentId: P:Meridian.Ui.Services.CalendarDayData.Date
+  id: Date
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: CalendarDayData.Date
+  fullName: Meridian.Ui.Services.CalendarDayData.Date
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly Date { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property [Date] As DateOnly
+  overload: Meridian.Ui.Services.CalendarDayData.Date*
+- uid: Meridian.Ui.Services.CalendarDayData.DayOfWeek
+  commentId: P:Meridian.Ui.Services.CalendarDayData.DayOfWeek
+  id: DayOfWeek
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: DayOfWeek
+  nameWithType: CalendarDayData.DayOfWeek
+  fullName: Meridian.Ui.Services.CalendarDayData.DayOfWeek
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DayOfWeek
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DayOfWeek DayOfWeek { get; set; }
+    parameters: []
+    return:
+      type: System.DayOfWeek
+    content.vb: Public Property DayOfWeek As DayOfWeek
+  overload: Meridian.Ui.Services.CalendarDayData.DayOfWeek*
+- uid: Meridian.Ui.Services.CalendarDayData.IsWeekend
+  commentId: P:Meridian.Ui.Services.CalendarDayData.IsWeekend
+  id: IsWeekend
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: IsWeekend
+  nameWithType: CalendarDayData.IsWeekend
+  fullName: Meridian.Ui.Services.CalendarDayData.IsWeekend
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsWeekend
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 522
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsWeekend { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsWeekend As Boolean
+  overload: Meridian.Ui.Services.CalendarDayData.IsWeekend*
+- uid: Meridian.Ui.Services.CalendarDayData.IsHoliday
+  commentId: P:Meridian.Ui.Services.CalendarDayData.IsHoliday
+  id: IsHoliday
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: IsHoliday
+  nameWithType: CalendarDayData.IsHoliday
+  fullName: Meridian.Ui.Services.CalendarDayData.IsHoliday
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHoliday
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsHoliday { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsHoliday As Boolean
+  overload: Meridian.Ui.Services.CalendarDayData.IsHoliday*
+- uid: Meridian.Ui.Services.CalendarDayData.IsTradingDay
+  commentId: P:Meridian.Ui.Services.CalendarDayData.IsTradingDay
+  id: IsTradingDay
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: IsTradingDay
+  nameWithType: CalendarDayData.IsTradingDay
+  fullName: Meridian.Ui.Services.CalendarDayData.IsTradingDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTradingDay
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsTradingDay { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsTradingDay As Boolean
+  overload: Meridian.Ui.Services.CalendarDayData.IsTradingDay*
+- uid: Meridian.Ui.Services.CalendarDayData.HasData
+  commentId: P:Meridian.Ui.Services.CalendarDayData.HasData
+  id: HasData
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: HasData
+  nameWithType: CalendarDayData.HasData
+  fullName: Meridian.Ui.Services.CalendarDayData.HasData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasData
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool HasData { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HasData As Boolean
+  overload: Meridian.Ui.Services.CalendarDayData.HasData*
+- uid: Meridian.Ui.Services.CalendarDayData.Completeness
+  commentId: P:Meridian.Ui.Services.CalendarDayData.Completeness
+  id: Completeness
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: Completeness
+  nameWithType: CalendarDayData.Completeness
+  fullName: Meridian.Ui.Services.CalendarDayData.Completeness
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completeness
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 526
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double Completeness { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Completeness As Double
+  overload: Meridian.Ui.Services.CalendarDayData.Completeness*
+- uid: Meridian.Ui.Services.CalendarDayData.EventCount
+  commentId: P:Meridian.Ui.Services.CalendarDayData.EventCount
+  id: EventCount
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: CalendarDayData.EventCount
+  fullName: Meridian.Ui.Services.CalendarDayData.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 527
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long EventCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventCount As Long
+  overload: Meridian.Ui.Services.CalendarDayData.EventCount*
+- uid: Meridian.Ui.Services.CalendarDayData.ExpectedEvents
+  commentId: P:Meridian.Ui.Services.CalendarDayData.ExpectedEvents
+  id: ExpectedEvents
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: ExpectedEvents
+  nameWithType: CalendarDayData.ExpectedEvents
+  fullName: Meridian.Ui.Services.CalendarDayData.ExpectedEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedEvents
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long ExpectedEvents { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ExpectedEvents As Long
+  overload: Meridian.Ui.Services.CalendarDayData.ExpectedEvents*
+- uid: Meridian.Ui.Services.CalendarDayData.HasGaps
+  commentId: P:Meridian.Ui.Services.CalendarDayData.HasGaps
+  id: HasGaps
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: HasGaps
+  nameWithType: CalendarDayData.HasGaps
+  fullName: Meridian.Ui.Services.CalendarDayData.HasGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasGaps
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 529
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool HasGaps { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HasGaps As Boolean
+  overload: Meridian.Ui.Services.CalendarDayData.HasGaps*
+- uid: Meridian.Ui.Services.CalendarDayData.GapCount
+  commentId: P:Meridian.Ui.Services.CalendarDayData.GapCount
+  id: GapCount
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: GapCount
+  nameWithType: CalendarDayData.GapCount
+  fullName: Meridian.Ui.Services.CalendarDayData.GapCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapCount
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 530
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int GapCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapCount As Integer
+  overload: Meridian.Ui.Services.CalendarDayData.GapCount*
+- uid: Meridian.Ui.Services.CalendarDayData.CompletenessLevel
+  commentId: P:Meridian.Ui.Services.CalendarDayData.CompletenessLevel
+  id: CompletenessLevel
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: CompletenessLevel
+  nameWithType: CalendarDayData.CompletenessLevel
+  fullName: Meridian.Ui.Services.CalendarDayData.CompletenessLevel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessLevel
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 531
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public CompletenessLevel CompletenessLevel { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+    content.vb: Public Property CompletenessLevel As CompletenessLevel
+  overload: Meridian.Ui.Services.CalendarDayData.CompletenessLevel*
+- uid: Meridian.Ui.Services.CalendarDayData.SymbolBreakdown
+  commentId: P:Meridian.Ui.Services.CalendarDayData.SymbolBreakdown
+  id: SymbolBreakdown
+  parent: Meridian.Ui.Services.CalendarDayData
+  langs:
+  - csharp
+  - vb
+  name: SymbolBreakdown
+  nameWithType: CalendarDayData.SymbolBreakdown
+  fullName: Meridian.Ui.Services.CalendarDayData.SymbolBreakdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolBreakdown
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<SymbolDayData> SymbolBreakdown { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.SymbolDayData}
+    content.vb: Public ReadOnly Property SymbolBreakdown As List(Of SymbolDayData)
+  overload: Meridian.Ui.Services.CalendarDayData.SymbolBreakdown*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.CalendarDayData.Date*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.Date
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_Date
+  name: Date
+  nameWithType: CalendarDayData.Date
+  fullName: Meridian.Ui.Services.CalendarDayData.Date
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Ui.Services.CalendarDayData.DayOfWeek*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.DayOfWeek
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_DayOfWeek
+  name: DayOfWeek
+  nameWithType: CalendarDayData.DayOfWeek
+  fullName: Meridian.Ui.Services.CalendarDayData.DayOfWeek
+- uid: System.DayOfWeek
+  commentId: T:System.DayOfWeek
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dayofweek
+  name: DayOfWeek
+  nameWithType: DayOfWeek
+  fullName: System.DayOfWeek
+- uid: Meridian.Ui.Services.CalendarDayData.IsWeekend*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.IsWeekend
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_IsWeekend
+  name: IsWeekend
+  nameWithType: CalendarDayData.IsWeekend
+  fullName: Meridian.Ui.Services.CalendarDayData.IsWeekend
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.CalendarDayData.IsHoliday*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.IsHoliday
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_IsHoliday
+  name: IsHoliday
+  nameWithType: CalendarDayData.IsHoliday
+  fullName: Meridian.Ui.Services.CalendarDayData.IsHoliday
+- uid: Meridian.Ui.Services.CalendarDayData.IsTradingDay*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.IsTradingDay
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_IsTradingDay
+  name: IsTradingDay
+  nameWithType: CalendarDayData.IsTradingDay
+  fullName: Meridian.Ui.Services.CalendarDayData.IsTradingDay
+- uid: Meridian.Ui.Services.CalendarDayData.HasData*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.HasData
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_HasData
+  name: HasData
+  nameWithType: CalendarDayData.HasData
+  fullName: Meridian.Ui.Services.CalendarDayData.HasData
+- uid: Meridian.Ui.Services.CalendarDayData.Completeness*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.Completeness
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_Completeness
+  name: Completeness
+  nameWithType: CalendarDayData.Completeness
+  fullName: Meridian.Ui.Services.CalendarDayData.Completeness
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.CalendarDayData.EventCount*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.EventCount
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_EventCount
+  name: EventCount
+  nameWithType: CalendarDayData.EventCount
+  fullName: Meridian.Ui.Services.CalendarDayData.EventCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.CalendarDayData.ExpectedEvents*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.ExpectedEvents
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_ExpectedEvents
+  name: ExpectedEvents
+  nameWithType: CalendarDayData.ExpectedEvents
+  fullName: Meridian.Ui.Services.CalendarDayData.ExpectedEvents
+- uid: Meridian.Ui.Services.CalendarDayData.HasGaps*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.HasGaps
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_HasGaps
+  name: HasGaps
+  nameWithType: CalendarDayData.HasGaps
+  fullName: Meridian.Ui.Services.CalendarDayData.HasGaps
+- uid: Meridian.Ui.Services.CalendarDayData.GapCount*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.GapCount
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_GapCount
+  name: GapCount
+  nameWithType: CalendarDayData.GapCount
+  fullName: Meridian.Ui.Services.CalendarDayData.GapCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.CalendarDayData.CompletenessLevel*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.CompletenessLevel
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_CompletenessLevel
+  name: CompletenessLevel
+  nameWithType: CalendarDayData.CompletenessLevel
+  fullName: Meridian.Ui.Services.CalendarDayData.CompletenessLevel
+- uid: Meridian.Ui.Services.CompletenessLevel
+  commentId: T:Meridian.Ui.Services.CompletenessLevel
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.CompletenessLevel.html
+  name: CompletenessLevel
+  nameWithType: CompletenessLevel
+  fullName: Meridian.Ui.Services.CompletenessLevel
+- uid: Meridian.Ui.Services.CalendarDayData.SymbolBreakdown*
+  commentId: Overload:Meridian.Ui.Services.CalendarDayData.SymbolBreakdown
+  href: Meridian.Ui.Services.CalendarDayData.html#Meridian_Ui_Services_CalendarDayData_SymbolBreakdown
+  name: SymbolBreakdown
+  nameWithType: CalendarDayData.SymbolBreakdown
+  fullName: Meridian.Ui.Services.CalendarDayData.SymbolBreakdown
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.SymbolDayData}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.SymbolDayData}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<SymbolDayData>
+  nameWithType: List<SymbolDayData>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.SymbolDayData>
+  nameWithType.vb: List(Of SymbolDayData)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.SymbolDayData)
+  name.vb: List(Of SymbolDayData)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.SymbolDayData
+    name: SymbolDayData
+    href: Meridian.Ui.Services.SymbolDayData.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SymbolDayData
+    name: SymbolDayData
+    href: Meridian.Ui.Services.SymbolDayData.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

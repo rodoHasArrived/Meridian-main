@@ -1,0 +1,319 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  id: ConnectionErrorCategory
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.AuthenticationFailed
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.EndpointNotFound
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.NetworkUnreachable
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.None
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.RateLimited
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServerError
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServiceNotRunning
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Timeout
+  - Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Unknown
+  langs:
+  - csharp
+  - vb
+  name: ConnectionErrorCategory
+  nameWithType: ConnectionErrorCategory
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionErrorCategory
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Categorized connection error types for structured error handling and decision support.
+  example: []
+  syntax:
+    content: 'public enum ConnectionErrorCategory : byte'
+    content.vb: Public Enum ConnectionErrorCategory As Byte
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.None
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.None
+  id: None
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: ConnectionErrorCategory.None
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.NetworkUnreachable
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.NetworkUnreachable
+  id: NetworkUnreachable
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: NetworkUnreachable
+  nameWithType: ConnectionErrorCategory.NetworkUnreachable
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.NetworkUnreachable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetworkUnreachable
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: NetworkUnreachable = 1
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServiceNotRunning
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServiceNotRunning
+  id: ServiceNotRunning
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: ServiceNotRunning
+  nameWithType: ConnectionErrorCategory.ServiceNotRunning
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServiceNotRunning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceNotRunning
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: ServiceNotRunning = 2
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.AuthenticationFailed
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.AuthenticationFailed
+  id: AuthenticationFailed
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: AuthenticationFailed
+  nameWithType: ConnectionErrorCategory.AuthenticationFailed
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.AuthenticationFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuthenticationFailed
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: AuthenticationFailed = 3
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.RateLimited
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.RateLimited
+  id: RateLimited
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: RateLimited
+  nameWithType: ConnectionErrorCategory.RateLimited
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.RateLimited
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimited
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: RateLimited = 4
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Timeout
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Timeout
+  id: Timeout
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: Timeout
+  nameWithType: ConnectionErrorCategory.Timeout
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Timeout
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timeout
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Timeout = 5
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.EndpointNotFound
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.EndpointNotFound
+  id: EndpointNotFound
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: EndpointNotFound
+  nameWithType: ConnectionErrorCategory.EndpointNotFound
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.EndpointNotFound
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndpointNotFound
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: EndpointNotFound = 6
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServerError
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServerError
+  id: ServerError
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: ServerError
+  nameWithType: ConnectionErrorCategory.ServerError
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.ServerError
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServerError
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: ServerError = 7
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Unknown
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Unknown
+  id: Unknown
+  parent: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: ConnectionErrorCategory.Unknown
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Unknown = 8
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionErrorCategory
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.ConnectionErrorCategory.html
+  name: ConnectionErrorCategory
+  nameWithType: ConnectionErrorCategory
+  fullName: Meridian.Ui.Services.Contracts.ConnectionErrorCategory

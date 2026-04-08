@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  id: CppTraderSessionKind
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  children:
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Execution
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Ingest
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Replay
+  langs:
+  - csharp
+  - vb
+  name: CppTraderSessionKind
+  nameWithType: CppTraderSessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderSessionKind
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public enum CppTraderSessionKind
+    content.vb: Public Enum CppTraderSessionKind
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Execution
+  commentId: F:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Execution
+  id: Execution
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  langs:
+  - csharp
+  - vb
+  name: Execution
+  nameWithType: CppTraderSessionKind.Execution
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Execution
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Execution
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: Execution = 0
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Replay
+  commentId: F:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Replay
+  id: Replay
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  langs:
+  - csharp
+  - vb
+  name: Replay
+  nameWithType: CppTraderSessionKind.Replay
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Replay
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Replay
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: Replay = 1
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Ingest
+  commentId: F:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Ingest
+  id: Ingest
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  langs:
+  - csharp
+  - vb
+  name: Ingest
+  nameWithType: CppTraderSessionKind.Ingest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.Ingest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ingest
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: Ingest = 2
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+references:
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.html
+  name: CppTraderSessionKind
+  nameWithType: CppTraderSessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind

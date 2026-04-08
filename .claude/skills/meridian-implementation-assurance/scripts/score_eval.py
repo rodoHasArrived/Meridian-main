@@ -54,6 +54,8 @@ def validate_scores(raw: dict[str, object]) -> dict[str, int]:
 
     scores: dict[str, int] = {}
     for k in CATEGORIES:
+        if k not in raw:
+            raise ValueError(f"Missing score for '{k}'")
         try:
             val = int(raw[k])
         except (ValueError, TypeError) as exc:  # noqa: BLE001

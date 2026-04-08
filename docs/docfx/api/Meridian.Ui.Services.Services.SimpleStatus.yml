@@ -1,0 +1,772 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.SimpleStatus
+  commentId: T:Meridian.Ui.Services.Services.SimpleStatus
+  id: SimpleStatus
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds
+  - Meridian.Ui.Services.Services.SimpleStatus.DataProvenance
+  - Meridian.Ui.Services.Services.SimpleStatus.Dropped
+  - Meridian.Ui.Services.Services.SimpleStatus.Historical
+  - Meridian.Ui.Services.Services.SimpleStatus.Integrity
+  - Meridian.Ui.Services.Services.SimpleStatus.IsStale
+  - Meridian.Ui.Services.Services.SimpleStatus.Provider
+  - Meridian.Ui.Services.Services.SimpleStatus.Published
+  - Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc
+  - Meridian.Ui.Services.Services.SimpleStatus.SourceProvider
+  langs:
+  - csharp
+  - vb
+  name: SimpleStatus
+  nameWithType: SimpleStatus
+  fullName: Meridian.Ui.Services.Services.SimpleStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SimpleStatus
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Simplified status for display in the desktop UI.
+
+    Includes provenance and staleness tracking (P0: explicit staleness + source provenance).
+  example: []
+  syntax:
+    content: public sealed class SimpleStatus
+    content.vb: Public NotInheritable Class SimpleStatus
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Published
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.Published
+  id: Published
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: Published
+  nameWithType: SimpleStatus.Published
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Published
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Published
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public long Published { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Published As Long
+  overload: Meridian.Ui.Services.Services.SimpleStatus.Published*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Dropped
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.Dropped
+  id: Dropped
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: Dropped
+  nameWithType: SimpleStatus.Dropped
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Dropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dropped
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public long Dropped { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Dropped As Long
+  overload: Meridian.Ui.Services.Services.SimpleStatus.Dropped*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Integrity
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.Integrity
+  id: Integrity
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: Integrity
+  nameWithType: SimpleStatus.Integrity
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Integrity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Integrity
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public long Integrity { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Integrity As Long
+  overload: Meridian.Ui.Services.Services.SimpleStatus.Integrity*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Historical
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.Historical
+  id: Historical
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: Historical
+  nameWithType: SimpleStatus.Historical
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Historical
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Historical
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public long Historical { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Historical As Long
+  overload: Meridian.Ui.Services.Services.SimpleStatus.Historical*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Provider
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.Provider
+  id: Provider
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: SimpleStatus.Provider
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public StatusProviderInfo? Provider { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.StatusProviderInfo
+    content.vb: Public Property Provider As StatusProviderInfo
+  overload: Meridian.Ui.Services.Services.SimpleStatus.Provider*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc
+  id: RetrievedAtUtc
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: RetrievedAtUtc
+  nameWithType: SimpleStatus.RetrievedAtUtc
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetrievedAtUtc
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: UTC timestamp when this status snapshot was retrieved from the backend.
+  example: []
+  syntax:
+    content: public DateTime? RetrievedAtUtc { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property RetrievedAtUtc As Date?
+  overload: Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.SourceProvider
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.SourceProvider
+  id: SourceProvider
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: SourceProvider
+  nameWithType: SimpleStatus.SourceProvider
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.SourceProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceProvider
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Name of the data source provider that produced these metrics.
+
+    Null if sourced from fixture/offline data.
+  example: []
+  syntax:
+    content: public string? SourceProvider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceProvider As String
+  overload: Meridian.Ui.Services.Services.SimpleStatus.SourceProvider*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.IsStale
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.IsStale
+  id: IsStale
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: IsStale
+  nameWithType: SimpleStatus.IsStale
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.IsStale
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsStale
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Whether this status data is considered stale (backend reported stale or too old).
+  example: []
+  syntax:
+    content: public bool IsStale { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsStale As Boolean
+  overload: Meridian.Ui.Services.Services.SimpleStatus.IsStale*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds
+  id: AgeSeconds
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: AgeSeconds
+  nameWithType: SimpleStatus.AgeSeconds
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AgeSeconds
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Age of the data in seconds since last backend update.
+  example: []
+  syntax:
+    content: public double AgeSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AgeSeconds As Double
+  overload: Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds*
+- uid: Meridian.Ui.Services.Services.SimpleStatus.DataProvenance
+  commentId: P:Meridian.Ui.Services.Services.SimpleStatus.DataProvenance
+  id: DataProvenance
+  parent: Meridian.Ui.Services.Services.SimpleStatus
+  langs:
+  - csharp
+  - vb
+  name: DataProvenance
+  nameWithType: SimpleStatus.DataProvenance
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.DataProvenance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataProvenance
+    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Data provenance: "live", "cached", "fixture", or "offline".
+
+    Indicates the origin of the data being displayed.
+  example: []
+  syntax:
+    content: public string DataProvenance { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataProvenance As String
+  overload: Meridian.Ui.Services.Services.SimpleStatus.DataProvenance*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Published*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.Published
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_Published
+  name: Published
+  nameWithType: SimpleStatus.Published
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Published
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Dropped*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.Dropped
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_Dropped
+  name: Dropped
+  nameWithType: SimpleStatus.Dropped
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Dropped
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Integrity*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.Integrity
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_Integrity
+  name: Integrity
+  nameWithType: SimpleStatus.Integrity
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Integrity
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Historical*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.Historical
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_Historical
+  name: Historical
+  nameWithType: SimpleStatus.Historical
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Historical
+- uid: Meridian.Ui.Services.Services.SimpleStatus.Provider*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.Provider
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_Provider
+  name: Provider
+  nameWithType: SimpleStatus.Provider
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.Provider
+- uid: Meridian.Ui.Services.Services.StatusProviderInfo
+  commentId: T:Meridian.Ui.Services.Services.StatusProviderInfo
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.StatusProviderInfo.html
+  name: StatusProviderInfo
+  nameWithType: StatusProviderInfo
+  fullName: Meridian.Ui.Services.Services.StatusProviderInfo
+- uid: Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_RetrievedAtUtc
+  name: RetrievedAtUtc
+  nameWithType: SimpleStatus.RetrievedAtUtc
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.RetrievedAtUtc
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Services.SimpleStatus.SourceProvider*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.SourceProvider
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_SourceProvider
+  name: SourceProvider
+  nameWithType: SimpleStatus.SourceProvider
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.SourceProvider
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.SimpleStatus.IsStale*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.IsStale
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_IsStale
+  name: IsStale
+  nameWithType: SimpleStatus.IsStale
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.IsStale
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_AgeSeconds
+  name: AgeSeconds
+  nameWithType: SimpleStatus.AgeSeconds
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.AgeSeconds
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.Services.SimpleStatus.DataProvenance*
+  commentId: Overload:Meridian.Ui.Services.Services.SimpleStatus.DataProvenance
+  href: Meridian.Ui.Services.Services.SimpleStatus.html#Meridian_Ui_Services_Services_SimpleStatus_DataProvenance
+  name: DataProvenance
+  nameWithType: SimpleStatus.DataProvenance
+  fullName: Meridian.Ui.Services.Services.SimpleStatus.DataProvenance

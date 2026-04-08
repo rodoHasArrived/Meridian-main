@@ -1,0 +1,741 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ErrorStatsDto
+  commentId: T:Meridian.Contracts.Api.ErrorStatsDto
+  id: ErrorStatsDto
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ErrorStatsDto.CriticalCount
+  - Meridian.Contracts.Api.ErrorStatsDto.ErrorCount
+  - Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour
+  - Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute
+  - Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime
+  - Meridian.Contracts.Api.ErrorStatsDto.TotalErrors
+  - Meridian.Contracts.Api.ErrorStatsDto.WarningCount
+  langs:
+  - csharp
+  - vb
+  name: ErrorStatsDto
+  nameWithType: ErrorStatsDto
+  fullName: Meridian.Contracts.Api.ErrorStatsDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorStatsDto
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Error statistics.
+  example: []
+  syntax:
+    content: 'public sealed record ErrorStatsDto : IEquatable<ErrorStatsDto>'
+    content.vb: Public NotInheritable Class ErrorStatsDto Implements IEquatable(Of ErrorStatsDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.ErrorStatsDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.ErrorStatsDto.TotalErrors
+  commentId: P:Meridian.Contracts.Api.ErrorStatsDto.TotalErrors
+  id: TotalErrors
+  parent: Meridian.Contracts.Api.ErrorStatsDto
+  langs:
+  - csharp
+  - vb
+  name: TotalErrors
+  nameWithType: ErrorStatsDto.TotalErrors
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.TotalErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalErrors
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("totalErrors")]
+
+      public int TotalErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalErrors")>
+
+      Public Property TotalErrors As Integer
+  overload: Meridian.Contracts.Api.ErrorStatsDto.TotalErrors*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalErrors
+- uid: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute
+  commentId: P:Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute
+  id: ErrorsInLastMinute
+  parent: Meridian.Contracts.Api.ErrorStatsDto
+  langs:
+  - csharp
+  - vb
+  name: ErrorsInLastMinute
+  nameWithType: ErrorStatsDto.ErrorsInLastMinute
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorsInLastMinute
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("errorsInLastMinute")]
+
+      public int ErrorsInLastMinute { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("errorsInLastMinute")>
+
+      Public Property ErrorsInLastMinute As Integer
+  overload: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorsInLastMinute
+- uid: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour
+  commentId: P:Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour
+  id: ErrorsInLastHour
+  parent: Meridian.Contracts.Api.ErrorStatsDto
+  langs:
+  - csharp
+  - vb
+  name: ErrorsInLastHour
+  nameWithType: ErrorStatsDto.ErrorsInLastHour
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorsInLastHour
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("errorsInLastHour")]
+
+      public int ErrorsInLastHour { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("errorsInLastHour")>
+
+      Public Property ErrorsInLastHour As Integer
+  overload: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorsInLastHour
+- uid: Meridian.Contracts.Api.ErrorStatsDto.WarningCount
+  commentId: P:Meridian.Contracts.Api.ErrorStatsDto.WarningCount
+  id: WarningCount
+  parent: Meridian.Contracts.Api.ErrorStatsDto
+  langs:
+  - csharp
+  - vb
+  name: WarningCount
+  nameWithType: ErrorStatsDto.WarningCount
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.WarningCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WarningCount
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("warningCount")]
+
+      public int WarningCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("warningCount")>
+
+      Public Property WarningCount As Integer
+  overload: Meridian.Contracts.Api.ErrorStatsDto.WarningCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: warningCount
+- uid: Meridian.Contracts.Api.ErrorStatsDto.ErrorCount
+  commentId: P:Meridian.Contracts.Api.ErrorStatsDto.ErrorCount
+  id: ErrorCount
+  parent: Meridian.Contracts.Api.ErrorStatsDto
+  langs:
+  - csharp
+  - vb
+  name: ErrorCount
+  nameWithType: ErrorStatsDto.ErrorCount
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.ErrorCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorCount
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("errorCount")]
+
+      public int ErrorCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("errorCount")>
+
+      Public Property ErrorCount As Integer
+  overload: Meridian.Contracts.Api.ErrorStatsDto.ErrorCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorCount
+- uid: Meridian.Contracts.Api.ErrorStatsDto.CriticalCount
+  commentId: P:Meridian.Contracts.Api.ErrorStatsDto.CriticalCount
+  id: CriticalCount
+  parent: Meridian.Contracts.Api.ErrorStatsDto
+  langs:
+  - csharp
+  - vb
+  name: CriticalCount
+  nameWithType: ErrorStatsDto.CriticalCount
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.CriticalCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalCount
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("criticalCount")]
+
+      public int CriticalCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("criticalCount")>
+
+      Public Property CriticalCount As Integer
+  overload: Meridian.Contracts.Api.ErrorStatsDto.CriticalCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: criticalCount
+- uid: Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime
+  commentId: P:Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime
+  id: LastErrorTime
+  parent: Meridian.Contracts.Api.ErrorStatsDto
+  langs:
+  - csharp
+  - vb
+  name: LastErrorTime
+  nameWithType: ErrorStatsDto.LastErrorTime
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastErrorTime
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("lastErrorTime")]
+
+      public DateTimeOffset? LastErrorTime { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: >-
+      <JsonPropertyName("lastErrorTime")>
+
+      Public Property LastErrorTime As DateTimeOffset?
+  overload: Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastErrorTime
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.ErrorStatsDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.ErrorStatsDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ErrorStatsDto>
+  nameWithType: IEquatable<ErrorStatsDto>
+  fullName: System.IEquatable<Meridian.Contracts.Api.ErrorStatsDto>
+  nameWithType.vb: IEquatable(Of ErrorStatsDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.ErrorStatsDto)
+  name.vb: IEquatable(Of ErrorStatsDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ErrorStatsDto
+    name: ErrorStatsDto
+    href: Meridian.Contracts.Api.ErrorStatsDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ErrorStatsDto
+    name: ErrorStatsDto
+    href: Meridian.Contracts.Api.ErrorStatsDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.ErrorStatsDto.TotalErrors*
+  commentId: Overload:Meridian.Contracts.Api.ErrorStatsDto.TotalErrors
+  href: Meridian.Contracts.Api.ErrorStatsDto.html#Meridian_Contracts_Api_ErrorStatsDto_TotalErrors
+  name: TotalErrors
+  nameWithType: ErrorStatsDto.TotalErrors
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.TotalErrors
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute*
+  commentId: Overload:Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute
+  href: Meridian.Contracts.Api.ErrorStatsDto.html#Meridian_Contracts_Api_ErrorStatsDto_ErrorsInLastMinute
+  name: ErrorsInLastMinute
+  nameWithType: ErrorStatsDto.ErrorsInLastMinute
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastMinute
+- uid: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour*
+  commentId: Overload:Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour
+  href: Meridian.Contracts.Api.ErrorStatsDto.html#Meridian_Contracts_Api_ErrorStatsDto_ErrorsInLastHour
+  name: ErrorsInLastHour
+  nameWithType: ErrorStatsDto.ErrorsInLastHour
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.ErrorsInLastHour
+- uid: Meridian.Contracts.Api.ErrorStatsDto.WarningCount*
+  commentId: Overload:Meridian.Contracts.Api.ErrorStatsDto.WarningCount
+  href: Meridian.Contracts.Api.ErrorStatsDto.html#Meridian_Contracts_Api_ErrorStatsDto_WarningCount
+  name: WarningCount
+  nameWithType: ErrorStatsDto.WarningCount
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.WarningCount
+- uid: Meridian.Contracts.Api.ErrorStatsDto.ErrorCount*
+  commentId: Overload:Meridian.Contracts.Api.ErrorStatsDto.ErrorCount
+  href: Meridian.Contracts.Api.ErrorStatsDto.html#Meridian_Contracts_Api_ErrorStatsDto_ErrorCount
+  name: ErrorCount
+  nameWithType: ErrorStatsDto.ErrorCount
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.ErrorCount
+- uid: Meridian.Contracts.Api.ErrorStatsDto.CriticalCount*
+  commentId: Overload:Meridian.Contracts.Api.ErrorStatsDto.CriticalCount
+  href: Meridian.Contracts.Api.ErrorStatsDto.html#Meridian_Contracts_Api_ErrorStatsDto_CriticalCount
+  name: CriticalCount
+  nameWithType: ErrorStatsDto.CriticalCount
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.CriticalCount
+- uid: Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime*
+  commentId: Overload:Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime
+  href: Meridian.Contracts.Api.ErrorStatsDto.html#Meridian_Contracts_Api_ErrorStatsDto_LastErrorTime
+  name: LastErrorTime
+  nameWithType: ErrorStatsDto.LastErrorTime
+  fullName: Meridian.Contracts.Api.ErrorStatsDto.LastErrorTime
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

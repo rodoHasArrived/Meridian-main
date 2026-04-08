@@ -1,0 +1,1130 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ManifestService
+  commentId: T:Meridian.Ui.Services.ManifestService
+  id: ManifestService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync(System.DateTime,System.DateTime,System.String[],System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync(Meridian.Contracts.Session.CollectionSession,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ManifestService.GetAllManifestsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ManifestService.Instance
+  - Meridian.Ui.Services.ManifestService.LoadManifestAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ManifestService.ManifestGenerated
+  - Meridian.Ui.Services.ManifestService.ManifestVerified
+  - Meridian.Ui.Services.ManifestService.VerifyManifestAsync(Meridian.Contracts.Manifest.DataManifest,System.IProgress{System.Double},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ManifestService
+  nameWithType: ManifestService
+  fullName: Meridian.Ui.Services.ManifestService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManifestService
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for generating and managing data manifests (#56 - P0 Critical).
+
+    Creates comprehensive manifest files for collection sessions and archive packages.
+  example: []
+  syntax:
+    content: public sealed class ManifestService
+    content.vb: Public NotInheritable Class ManifestService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ManifestService.Instance
+  commentId: P:Meridian.Ui.Services.ManifestService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: ManifestService.Instance
+  fullName: Meridian.Ui.Services.ManifestService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ManifestService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ManifestService
+    content.vb: Public Shared ReadOnly Property Instance As ManifestService
+  overload: Meridian.Ui.Services.ManifestService.Instance*
+- uid: Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync(Meridian.Contracts.Session.CollectionSession,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync(Meridian.Contracts.Session.CollectionSession,System.Threading.CancellationToken)
+  id: GenerateManifestForSessionAsync(Meridian.Contracts.Session.CollectionSession,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: GenerateManifestForSessionAsync(CollectionSession, CancellationToken)
+  nameWithType: ManifestService.GenerateManifestForSessionAsync(CollectionSession, CancellationToken)
+  fullName: Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync(Meridian.Contracts.Session.CollectionSession, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateManifestForSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Generates a manifest for a collection session.
+  example: []
+  syntax:
+    content: public Task<(DataManifest, string)> GenerateManifestForSessionAsync(CollectionSession session, CancellationToken ct = default)
+    parameters:
+    - id: session
+      type: Meridian.Contracts.Session.CollectionSession
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{Meridian.Contracts.Manifest.DataManifest,System.String}}
+    content.vb: Public Function GenerateManifestForSessionAsync(session As CollectionSession, ct As CancellationToken = Nothing) As Task(Of (DataManifest, String))
+  overload: Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync*
+- uid: Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync(System.DateTime,System.DateTime,System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync(System.DateTime,System.DateTime,System.String[],System.Threading.CancellationToken)
+  id: GenerateManifestForDateRangeAsync(System.DateTime,System.DateTime,System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: GenerateManifestForDateRangeAsync(DateTime, DateTime, string[]?, CancellationToken)
+  nameWithType: ManifestService.GenerateManifestForDateRangeAsync(DateTime, DateTime, string[]?, CancellationToken)
+  fullName: Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync(System.DateTime, System.DateTime, string[]?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateManifestForDateRangeAsync
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Generates a manifest for a date range.
+  example: []
+  syntax:
+    content: public Task<(DataManifest, string)> GenerateManifestForDateRangeAsync(DateTime startDate, DateTime endDate, string[]? symbols = null, CancellationToken ct = default)
+    parameters:
+    - id: startDate
+      type: System.DateTime
+    - id: endDate
+      type: System.DateTime
+    - id: symbols
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{Meridian.Contracts.Manifest.DataManifest,System.String}}
+    content.vb: Public Function GenerateManifestForDateRangeAsync(startDate As Date, endDate As Date, symbols As String() = Nothing, ct As CancellationToken = Nothing) As Task(Of (DataManifest, String))
+  overload: Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync*
+  nameWithType.vb: ManifestService.GenerateManifestForDateRangeAsync(Date, Date, String(), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync(Date, Date, String(), System.Threading.CancellationToken)
+  name.vb: GenerateManifestForDateRangeAsync(Date, Date, String(), CancellationToken)
+- uid: Meridian.Ui.Services.ManifestService.LoadManifestAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ManifestService.LoadManifestAsync(System.String,System.Threading.CancellationToken)
+  id: LoadManifestAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: LoadManifestAsync(string, CancellationToken)
+  nameWithType: ManifestService.LoadManifestAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.ManifestService.LoadManifestAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadManifestAsync
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Loads an existing manifest from file.
+  example: []
+  syntax:
+    content: public Task<DataManifest?> LoadManifestAsync(string path, CancellationToken ct = default)
+    parameters:
+    - id: path
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Manifest.DataManifest}
+    content.vb: Public Function LoadManifestAsync(path As String, ct As CancellationToken = Nothing) As Task(Of DataManifest)
+  overload: Meridian.Ui.Services.ManifestService.LoadManifestAsync*
+  nameWithType.vb: ManifestService.LoadManifestAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ManifestService.LoadManifestAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadManifestAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.ManifestService.VerifyManifestAsync(Meridian.Contracts.Manifest.DataManifest,System.IProgress{System.Double},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ManifestService.VerifyManifestAsync(Meridian.Contracts.Manifest.DataManifest,System.IProgress{System.Double},System.Threading.CancellationToken)
+  id: VerifyManifestAsync(Meridian.Contracts.Manifest.DataManifest,System.IProgress{System.Double},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: VerifyManifestAsync(DataManifest, IProgress<double>?, CancellationToken)
+  nameWithType: ManifestService.VerifyManifestAsync(DataManifest, IProgress<double>?, CancellationToken)
+  fullName: Meridian.Ui.Services.ManifestService.VerifyManifestAsync(Meridian.Contracts.Manifest.DataManifest, System.IProgress<double>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyManifestAsync
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Verifies a manifest against actual files.
+  example: []
+  syntax:
+    content: public Task<ManifestVerificationResult> VerifyManifestAsync(DataManifest manifest, IProgress<double>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: manifest
+      type: Meridian.Contracts.Manifest.DataManifest
+    - id: progress
+      type: System.IProgress{System.Double}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ManifestVerificationResult}
+    content.vb: Public Function VerifyManifestAsync(manifest As DataManifest, progress As IProgress(Of Double) = Nothing, ct As CancellationToken = Nothing) As Task(Of ManifestVerificationResult)
+  overload: Meridian.Ui.Services.ManifestService.VerifyManifestAsync*
+  nameWithType.vb: ManifestService.VerifyManifestAsync(DataManifest, IProgress(Of Double), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ManifestService.VerifyManifestAsync(Meridian.Contracts.Manifest.DataManifest, System.IProgress(Of Double), System.Threading.CancellationToken)
+  name.vb: VerifyManifestAsync(DataManifest, IProgress(Of Double), CancellationToken)
+- uid: Meridian.Ui.Services.ManifestService.GetAllManifestsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ManifestService.GetAllManifestsAsync(System.Threading.CancellationToken)
+  id: GetAllManifestsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: GetAllManifestsAsync(CancellationToken)
+  nameWithType: ManifestService.GetAllManifestsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.ManifestService.GetAllManifestsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllManifestsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 276
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all manifests in the catalog.
+  example: []
+  syntax:
+    content: public Task<DataManifest[]> GetAllManifestsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Manifest.DataManifest[]}
+    content.vb: Public Function GetAllManifestsAsync(ct As CancellationToken = Nothing) As Task(Of DataManifest())
+  overload: Meridian.Ui.Services.ManifestService.GetAllManifestsAsync*
+- uid: Meridian.Ui.Services.ManifestService.ManifestGenerated
+  commentId: E:Meridian.Ui.Services.ManifestService.ManifestGenerated
+  id: ManifestGenerated
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: ManifestGenerated
+  nameWithType: ManifestService.ManifestGenerated
+  fullName: Meridian.Ui.Services.ManifestService.ManifestGenerated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManifestGenerated
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<ManifestEventArgs>? ManifestGenerated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ManifestEventArgs}
+    content.vb: Public Event ManifestGenerated As EventHandler(Of ManifestEventArgs)
+- uid: Meridian.Ui.Services.ManifestService.ManifestVerified
+  commentId: E:Meridian.Ui.Services.ManifestService.ManifestVerified
+  id: ManifestVerified
+  parent: Meridian.Ui.Services.ManifestService
+  langs:
+  - csharp
+  - vb
+  name: ManifestVerified
+  nameWithType: ManifestService.ManifestVerified
+  fullName: Meridian.Ui.Services.ManifestService.ManifestVerified
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ManifestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManifestVerified
+    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<ManifestVerificationEventArgs>? ManifestVerified
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ManifestVerificationEventArgs}
+    content.vb: Public Event ManifestVerified As EventHandler(Of ManifestVerificationEventArgs)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ManifestService.Instance*
+  commentId: Overload:Meridian.Ui.Services.ManifestService.Instance
+  href: Meridian.Ui.Services.ManifestService.html#Meridian_Ui_Services_ManifestService_Instance
+  name: Instance
+  nameWithType: ManifestService.Instance
+  fullName: Meridian.Ui.Services.ManifestService.Instance
+- uid: Meridian.Ui.Services.ManifestService
+  commentId: T:Meridian.Ui.Services.ManifestService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ManifestService.html
+  name: ManifestService
+  nameWithType: ManifestService
+  fullName: Meridian.Ui.Services.ManifestService
+- uid: Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync
+  href: Meridian.Ui.Services.ManifestService.html#Meridian_Ui_Services_ManifestService_GenerateManifestForSessionAsync_Meridian_Contracts_Session_CollectionSession_System_Threading_CancellationToken_
+  name: GenerateManifestForSessionAsync
+  nameWithType: ManifestService.GenerateManifestForSessionAsync
+  fullName: Meridian.Ui.Services.ManifestService.GenerateManifestForSessionAsync
+- uid: Meridian.Contracts.Session.CollectionSession
+  commentId: T:Meridian.Contracts.Session.CollectionSession
+  parent: Meridian.Contracts.Session
+  href: Meridian.Contracts.Session.CollectionSession.html
+  name: CollectionSession
+  nameWithType: CollectionSession
+  fullName: Meridian.Contracts.Session.CollectionSession
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.ValueTuple{Meridian.Contracts.Manifest.DataManifest,System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{Meridian.Contracts.Manifest.DataManifest,System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(DataManifest, string)>
+  nameWithType: Task<(DataManifest, string)>
+  fullName: System.Threading.Tasks.Task<(Meridian.Contracts.Manifest.DataManifest, string)>
+  nameWithType.vb: Task(Of (DataManifest, String))
+  fullName.vb: System.Threading.Tasks.Task(Of (Meridian.Contracts.Manifest.DataManifest, String))
+  name.vb: Task(Of (DataManifest, String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: Meridian.Contracts.Manifest.DataManifest
+    name: DataManifest
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: Meridian.Contracts.Manifest.DataManifest
+    name: DataManifest
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Session
+  commentId: N:Meridian.Contracts.Session
+  href: Meridian.html
+  name: Meridian.Contracts.Session
+  nameWithType: Meridian.Contracts.Session
+  fullName: Meridian.Contracts.Session
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync*
+  commentId: Overload:Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync
+  href: Meridian.Ui.Services.ManifestService.html#Meridian_Ui_Services_ManifestService_GenerateManifestForDateRangeAsync_System_DateTime_System_DateTime_System_String___System_Threading_CancellationToken_
+  name: GenerateManifestForDateRangeAsync
+  nameWithType: ManifestService.GenerateManifestForDateRangeAsync
+  fullName: Meridian.Ui.Services.ManifestService.GenerateManifestForDateRangeAsync
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.ManifestService.LoadManifestAsync*
+  commentId: Overload:Meridian.Ui.Services.ManifestService.LoadManifestAsync
+  href: Meridian.Ui.Services.ManifestService.html#Meridian_Ui_Services_ManifestService_LoadManifestAsync_System_String_System_Threading_CancellationToken_
+  name: LoadManifestAsync
+  nameWithType: ManifestService.LoadManifestAsync
+  fullName: Meridian.Ui.Services.ManifestService.LoadManifestAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Manifest.DataManifest}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Manifest.DataManifest}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataManifest>
+  nameWithType: Task<DataManifest>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Manifest.DataManifest>
+  nameWithType.vb: Task(Of DataManifest)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Manifest.DataManifest)
+  name.vb: Task(Of DataManifest)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Manifest.DataManifest
+    name: DataManifest
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Manifest.DataManifest
+    name: DataManifest
+  - name: )
+- uid: Meridian.Ui.Services.ManifestService.VerifyManifestAsync*
+  commentId: Overload:Meridian.Ui.Services.ManifestService.VerifyManifestAsync
+  href: Meridian.Ui.Services.ManifestService.html#Meridian_Ui_Services_ManifestService_VerifyManifestAsync_Meridian_Contracts_Manifest_DataManifest_System_IProgress_System_Double__System_Threading_CancellationToken_
+  name: VerifyManifestAsync
+  nameWithType: ManifestService.VerifyManifestAsync
+  fullName: Meridian.Ui.Services.ManifestService.VerifyManifestAsync
+- uid: Meridian.Contracts.Manifest.DataManifest
+  commentId: T:Meridian.Contracts.Manifest.DataManifest
+  parent: Meridian.Contracts.Manifest
+  href: Meridian.Contracts.Manifest.DataManifest.html
+  name: DataManifest
+  nameWithType: DataManifest
+  fullName: Meridian.Contracts.Manifest.DataManifest
+- uid: System.IProgress{System.Double}
+  commentId: T:System.IProgress{System.Double}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<double>
+  nameWithType: IProgress<double>
+  fullName: System.IProgress<double>
+  nameWithType.vb: IProgress(Of Double)
+  fullName.vb: System.IProgress(Of Double)
+  name.vb: IProgress(Of Double)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ManifestVerificationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ManifestVerificationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ManifestVerificationResult>
+  nameWithType: Task<ManifestVerificationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ManifestVerificationResult>
+  nameWithType.vb: Task(Of ManifestVerificationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ManifestVerificationResult)
+  name.vb: Task(Of ManifestVerificationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ManifestVerificationResult
+    name: ManifestVerificationResult
+    href: Meridian.Ui.Services.ManifestVerificationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ManifestVerificationResult
+    name: ManifestVerificationResult
+    href: Meridian.Ui.Services.ManifestVerificationResult.html
+  - name: )
+- uid: Meridian.Contracts.Manifest
+  commentId: N:Meridian.Contracts.Manifest
+  href: Meridian.html
+  name: Meridian.Contracts.Manifest
+  nameWithType: Meridian.Contracts.Manifest
+  fullName: Meridian.Contracts.Manifest
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.ManifestService.GetAllManifestsAsync*
+  commentId: Overload:Meridian.Ui.Services.ManifestService.GetAllManifestsAsync
+  href: Meridian.Ui.Services.ManifestService.html#Meridian_Ui_Services_ManifestService_GetAllManifestsAsync_System_Threading_CancellationToken_
+  name: GetAllManifestsAsync
+  nameWithType: ManifestService.GetAllManifestsAsync
+  fullName: Meridian.Ui.Services.ManifestService.GetAllManifestsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Manifest.DataManifest[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Manifest.DataManifest[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataManifest[]>
+  nameWithType: Task<DataManifest[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Manifest.DataManifest[]>
+  nameWithType.vb: Task(Of DataManifest())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Manifest.DataManifest())
+  name.vb: Task(Of DataManifest())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Manifest.DataManifest
+    name: DataManifest
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Manifest.DataManifest
+    name: DataManifest
+  - name: (
+  - name: )
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.ManifestEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.ManifestEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ManifestEventArgs>
+  nameWithType: EventHandler<ManifestEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.ManifestEventArgs>
+  nameWithType.vb: EventHandler(Of ManifestEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.ManifestEventArgs)
+  name.vb: EventHandler(Of ManifestEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.ManifestEventArgs
+    name: ManifestEventArgs
+    href: Meridian.Ui.Services.ManifestEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ManifestEventArgs
+    name: ManifestEventArgs
+    href: Meridian.Ui.Services.ManifestEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.ManifestVerificationEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.ManifestVerificationEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ManifestVerificationEventArgs>
+  nameWithType: EventHandler<ManifestVerificationEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.ManifestVerificationEventArgs>
+  nameWithType.vb: EventHandler(Of ManifestVerificationEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.ManifestVerificationEventArgs)
+  name.vb: EventHandler(Of ManifestVerificationEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.ManifestVerificationEventArgs
+    name: ManifestVerificationEventArgs
+    href: Meridian.Ui.Services.ManifestVerificationEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ManifestVerificationEventArgs
+    name: ManifestVerificationEventArgs
+    href: Meridian.Ui.Services.ManifestVerificationEventArgs.html
+  - name: )

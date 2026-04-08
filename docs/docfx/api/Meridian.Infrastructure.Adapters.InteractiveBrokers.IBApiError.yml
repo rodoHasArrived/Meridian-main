@@ -1,0 +1,689 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  id: IBApiError
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.#ctor(System.Int32,System.Int32,System.String,System.String)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId
+  langs:
+  - csharp
+  - vb
+  name: IBApiError
+  nameWithType: IBApiError
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBApiError
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 447
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Represents an error from the IB API.
+  example: []
+  syntax:
+    content: 'public sealed record IBApiError : IEquatable<IBApiError>'
+    content.vb: Public NotInheritable Class IBApiError Implements IEquatable(Of IBApiError)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.#ctor(System.Int32,System.Int32,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.#ctor(System.Int32,System.Int32,System.String,System.String)
+  id: '#ctor(System.Int32,System.Int32,System.String,System.String)'
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: IBApiError(int, int, string, string?)
+  nameWithType: IBApiError.IBApiError(int, int, string, string?)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IBApiError(int, int, string, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 447
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Represents an error from the IB API.
+  example: []
+  syntax:
+    content: public IBApiError(int RequestId, int ErrorCode, string ErrorMessage, string? AdvancedOrderRejectJson)
+    parameters:
+    - id: RequestId
+      type: System.Int32
+    - id: ErrorCode
+      type: System.Int32
+    - id: ErrorMessage
+      type: System.String
+    - id: AdvancedOrderRejectJson
+      type: System.String
+    content.vb: Public Sub New(RequestId As Integer, ErrorCode As Integer, ErrorMessage As String, AdvancedOrderRejectJson As String)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.#ctor*
+  nameWithType.vb: IBApiError.New(Integer, Integer, String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.New(Integer, Integer, String, String)
+  name.vb: New(Integer, Integer, String, String)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId
+  id: RequestId
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: RequestId
+  nameWithType: IBApiError.RequestId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestId
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 448
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public int RequestId { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RequestId As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode
+  id: ErrorCode
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: ErrorCode
+  nameWithType: IBApiError.ErrorCode
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorCode
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 449
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public int ErrorCode { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ErrorCode As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: IBApiError.ErrorMessage
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 450
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public string ErrorMessage { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson
+  id: AdvancedOrderRejectJson
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: AdvancedOrderRejectJson
+  nameWithType: IBApiError.AdvancedOrderRejectJson
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdvancedOrderRejectJson
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 451
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public string? AdvancedOrderRejectJson { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AdvancedOrderRejectJson As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation
+  id: IsPacingViolation
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: IsPacingViolation
+  nameWithType: IBApiError.IsPacingViolation
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsPacingViolation
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 454
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public bool IsPacingViolation { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsPacingViolation As Boolean
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError
+  id: IsMarketDataError
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: IsMarketDataError
+  nameWithType: IBApiError.IsMarketDataError
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsMarketDataError
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 458
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public bool IsMarketDataError { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsMarketDataError As Boolean
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound
+  id: IsSecurityNotFound
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+  langs:
+  - csharp
+  - vb
+  name: IsSecurityNotFound
+  nameWithType: IBApiError.IsSecurityNotFound
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSecurityNotFound
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 462
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public bool IsSecurityNotFound { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsSecurityNotFound As Boolean
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound*
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<IBApiError>
+  nameWithType: IEquatable<IBApiError>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError>
+  nameWithType.vb: IEquatable(Of IBApiError)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError)
+  name.vb: IEquatable(Of IBApiError)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+    name: IBApiError
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+    name: IBApiError
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.#ctor
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError__ctor_System_Int32_System_Int32_System_String_System_String_
+  name: IBApiError
+  nameWithType: IBApiError.IBApiError
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IBApiError
+  nameWithType.vb: IBApiError.New
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError_RequestId
+  name: RequestId
+  nameWithType: IBApiError.RequestId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.RequestId
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError_ErrorCode
+  name: ErrorCode
+  nameWithType: IBApiError.ErrorCode
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorCode
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError_ErrorMessage
+  name: ErrorMessage
+  nameWithType: IBApiError.ErrorMessage
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.ErrorMessage
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError_AdvancedOrderRejectJson
+  name: AdvancedOrderRejectJson
+  nameWithType: IBApiError.AdvancedOrderRejectJson
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.AdvancedOrderRejectJson
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError_IsPacingViolation
+  name: IsPacingViolation
+  nameWithType: IBApiError.IsPacingViolation
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsPacingViolation
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError_IsMarketDataError
+  name: IsMarketDataError
+  nameWithType: IBApiError.IsMarketDataError
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsMarketDataError
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBApiError_IsSecurityNotFound
+  name: IsSecurityNotFound
+  nameWithType: IBApiError.IsSecurityNotFound
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.IsSecurityNotFound

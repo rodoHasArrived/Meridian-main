@@ -1,0 +1,1193 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck
+  commentId: T:Meridian.Application.Monitoring.DetailedHealthCheck
+  id: DetailedHealthCheck
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.DetailedHealthCheck.#ctor(Meridian.Application.Monitoring.DetailedHealthCheckConfig)
+  - Meridian.Application.Monitoring.DetailedHealthCheck.Dispose
+  - Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyRecovered
+  - Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyUnhealthy
+  - Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency(System.String,System.String,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Boolean,System.Nullable{System.TimeSpan})
+  - Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot},System.Func{Meridian.Application.Monitoring.DataQuality.LatencyStatistics})
+  - Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency(System.String)
+  langs:
+  - csharp
+  - vb
+  name: DetailedHealthCheck
+  nameWithType: DetailedHealthCheck
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetailedHealthCheck
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Provides detailed health check information including dependencies, providers, and data quality.
+
+    Implements QW-32: Detailed Health Check Endpoint and QW-33: Dependency Health Checks.
+  example: []
+  syntax:
+    content: 'public sealed class DetailedHealthCheck : IDisposable'
+    content.vb: Public NotInheritable Class DetailedHealthCheck Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyUnhealthy
+  commentId: E:Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyUnhealthy
+  id: OnDependencyUnhealthy
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: OnDependencyUnhealthy
+  nameWithType: DetailedHealthCheck.OnDependencyUnhealthy
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyUnhealthy
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnDependencyUnhealthy
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a dependency becomes unhealthy.
+  example: []
+  syntax:
+    content: public event Action<DependencyUnhealthyEvent>? OnDependencyUnhealthy
+    return:
+      type: System.Action{Meridian.Application.Monitoring.DependencyUnhealthyEvent}
+    content.vb: Public Event OnDependencyUnhealthy As Action(Of DependencyUnhealthyEvent)
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyRecovered
+  commentId: E:Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyRecovered
+  id: OnDependencyRecovered
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: OnDependencyRecovered
+  nameWithType: DetailedHealthCheck.OnDependencyRecovered
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.OnDependencyRecovered
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnDependencyRecovered
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a dependency recovers.
+  example: []
+  syntax:
+    content: public event Action<DependencyRecoveredEvent>? OnDependencyRecovered
+    return:
+      type: System.Action{Meridian.Application.Monitoring.DependencyRecoveredEvent}
+    content.vb: Public Event OnDependencyRecovered As Action(Of DependencyRecoveredEvent)
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.#ctor(Meridian.Application.Monitoring.DetailedHealthCheckConfig)
+  commentId: M:Meridian.Application.Monitoring.DetailedHealthCheck.#ctor(Meridian.Application.Monitoring.DetailedHealthCheckConfig)
+  id: '#ctor(Meridian.Application.Monitoring.DetailedHealthCheckConfig)'
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: DetailedHealthCheck(DetailedHealthCheckConfig?)
+  nameWithType: DetailedHealthCheck.DetailedHealthCheck(DetailedHealthCheckConfig?)
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.DetailedHealthCheck(Meridian.Application.Monitoring.DetailedHealthCheckConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DetailedHealthCheck(DetailedHealthCheckConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.DetailedHealthCheckConfig
+    content.vb: Public Sub New(config As DetailedHealthCheckConfig = Nothing)
+  overload: Meridian.Application.Monitoring.DetailedHealthCheck.#ctor*
+  nameWithType.vb: DetailedHealthCheck.New(DetailedHealthCheckConfig)
+  fullName.vb: Meridian.Application.Monitoring.DetailedHealthCheck.New(Meridian.Application.Monitoring.DetailedHealthCheckConfig)
+  name.vb: New(DetailedHealthCheckConfig)
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot},System.Func{Meridian.Application.Monitoring.DataQuality.LatencyStatistics})
+  commentId: M:Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot},System.Func{Meridian.Application.Monitoring.DataQuality.LatencyStatistics})
+  id: RegisterProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot},System.Func{Meridian.Application.Monitoring.DataQuality.LatencyStatistics})
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: RegisterProviders(Func<PipelineStatistics>?, Func<SystemHealthSnapshot>?, Func<ConnectionHealthSnapshot>?, Func<LatencyStatistics>?)
+  nameWithType: DetailedHealthCheck.RegisterProviders(Func<PipelineStatistics>?, Func<SystemHealthSnapshot>?, Func<ConnectionHealthSnapshot>?, Func<LatencyStatistics>?)
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders(System.Func<Meridian.Application.Pipeline.PipelineStatistics>?, System.Func<Meridian.Application.Monitoring.SystemHealthSnapshot>?, System.Func<Meridian.Application.Monitoring.ConnectionHealthSnapshot>?, System.Func<Meridian.Application.Monitoring.DataQuality.LatencyStatistics>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterProviders
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Registers statistics providers for health checks.
+  example: []
+  syntax:
+    content: public void RegisterProviders(Func<PipelineStatistics>? pipelineStats = null, Func<SystemHealthSnapshot>? systemHealth = null, Func<ConnectionHealthSnapshot>? connectionHealth = null, Func<LatencyStatistics>? latencyStats = null)
+    parameters:
+    - id: pipelineStats
+      type: System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+    - id: systemHealth
+      type: System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot}
+    - id: connectionHealth
+      type: System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+    - id: latencyStats
+      type: System.Func{Meridian.Application.Monitoring.DataQuality.LatencyStatistics}
+    content.vb: Public Sub RegisterProviders(pipelineStats As Func(Of PipelineStatistics) = Nothing, systemHealth As Func(Of SystemHealthSnapshot) = Nothing, connectionHealth As Func(Of ConnectionHealthSnapshot) = Nothing, latencyStats As Func(Of LatencyStatistics) = Nothing)
+  overload: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders*
+  nameWithType.vb: DetailedHealthCheck.RegisterProviders(Func(Of PipelineStatistics), Func(Of SystemHealthSnapshot), Func(Of ConnectionHealthSnapshot), Func(Of LatencyStatistics))
+  fullName.vb: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders(System.Func(Of Meridian.Application.Pipeline.PipelineStatistics), System.Func(Of Meridian.Application.Monitoring.SystemHealthSnapshot), System.Func(Of Meridian.Application.Monitoring.ConnectionHealthSnapshot), System.Func(Of Meridian.Application.Monitoring.DataQuality.LatencyStatistics))
+  name.vb: RegisterProviders(Func(Of PipelineStatistics), Func(Of SystemHealthSnapshot), Func(Of ConnectionHealthSnapshot), Func(Of LatencyStatistics))
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency(System.String,System.String,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Boolean,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency(System.String,System.String,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Boolean,System.Nullable{System.TimeSpan})
+  id: RegisterDependency(System.String,System.String,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Boolean,System.Nullable{System.TimeSpan})
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: RegisterDependency(string, string, Func<CancellationToken, Task<bool>>, bool, TimeSpan?)
+  nameWithType: DetailedHealthCheck.RegisterDependency(string, string, Func<CancellationToken, Task<bool>>, bool, TimeSpan?)
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency(string, string, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, bool, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterDependency
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Registers an external dependency to monitor.
+  example: []
+  syntax:
+    content: public void RegisterDependency(string name, string type, Func<CancellationToken, Task<bool>> healthCheck, bool isCritical = true, TimeSpan? timeout = null)
+    parameters:
+    - id: name
+      type: System.String
+    - id: type
+      type: System.String
+    - id: healthCheck
+      type: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}}
+    - id: isCritical
+      type: System.Boolean
+    - id: timeout
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Sub RegisterDependency(name As String, type As String, healthCheck As Func(Of CancellationToken, Task(Of Boolean)), isCritical As Boolean = True, timeout As TimeSpan? = Nothing)
+  overload: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency*
+  nameWithType.vb: DetailedHealthCheck.RegisterDependency(String, String, Func(Of CancellationToken, Task(Of Boolean)), Boolean, TimeSpan?)
+  fullName.vb: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency(String, String, System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), Boolean, System.TimeSpan?)
+  name.vb: RegisterDependency(String, String, Func(Of CancellationToken, Task(Of Boolean)), Boolean, TimeSpan?)
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency(System.String)
+  commentId: M:Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency(System.String)
+  id: UnregisterDependency(System.String)
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: UnregisterDependency(string)
+  nameWithType: DetailedHealthCheck.UnregisterDependency(string)
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnregisterDependency
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Unregisters a dependency.
+  example: []
+  syntax:
+    content: public void UnregisterDependency(string name)
+    parameters:
+    - id: name
+      type: System.String
+    content.vb: Public Sub UnregisterDependency(name As String)
+  overload: Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency*
+  nameWithType.vb: DetailedHealthCheck.UnregisterDependency(String)
+  fullName.vb: Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency(String)
+  name.vb: UnregisterDependency(String)
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync(System.Threading.CancellationToken)
+  id: GetDetailedHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: GetDetailedHealthAsync(CancellationToken)
+  nameWithType: DetailedHealthCheck.GetDetailedHealthAsync(CancellationToken)
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDetailedHealthAsync
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets a comprehensive detailed health report.
+  example: []
+  syntax:
+    content: public Task<DetailedHealthReport> GetDetailedHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}
+    content.vb: Public Function GetDetailedHealthAsync(ct As CancellationToken = Nothing) As Task(Of DetailedHealthReport)
+  overload: Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync*
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.Dispose
+  commentId: M:Meridian.Application.Monitoring.DetailedHealthCheck.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.DetailedHealthCheck
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: DetailedHealthCheck.Dispose()
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 388
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.DetailedHealthCheck.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.DependencyUnhealthyEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.DependencyUnhealthyEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<DependencyUnhealthyEvent>
+  nameWithType: Action<DependencyUnhealthyEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.DependencyUnhealthyEvent>
+  nameWithType.vb: Action(Of DependencyUnhealthyEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.DependencyUnhealthyEvent)
+  name.vb: Action(Of DependencyUnhealthyEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+    name: DependencyUnhealthyEvent
+    href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+    name: DependencyUnhealthyEvent
+    href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action{Meridian.Application.Monitoring.DependencyRecoveredEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.DependencyRecoveredEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<DependencyRecoveredEvent>
+  nameWithType: Action<DependencyRecoveredEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.DependencyRecoveredEvent>
+  nameWithType.vb: Action(Of DependencyRecoveredEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.DependencyRecoveredEvent)
+  name.vb: Action(Of DependencyRecoveredEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DependencyRecoveredEvent
+    name: DependencyRecoveredEvent
+    href: Meridian.Application.Monitoring.DependencyRecoveredEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DependencyRecoveredEvent
+    name: DependencyRecoveredEvent
+    href: Meridian.Application.Monitoring.DependencyRecoveredEvent.html
+  - name: )
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DetailedHealthCheck.#ctor
+  href: Meridian.Application.Monitoring.DetailedHealthCheck.html#Meridian_Application_Monitoring_DetailedHealthCheck__ctor_Meridian_Application_Monitoring_DetailedHealthCheckConfig_
+  name: DetailedHealthCheck
+  nameWithType: DetailedHealthCheck.DetailedHealthCheck
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.DetailedHealthCheck
+  nameWithType.vb: DetailedHealthCheck.New
+  fullName.vb: Meridian.Application.Monitoring.DetailedHealthCheck.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DetailedHealthCheckConfig
+  commentId: T:Meridian.Application.Monitoring.DetailedHealthCheckConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.DetailedHealthCheckConfig.html
+  name: DetailedHealthCheckConfig
+  nameWithType: DetailedHealthCheckConfig
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheckConfig
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders*
+  commentId: Overload:Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders
+  href: Meridian.Application.Monitoring.DetailedHealthCheck.html#Meridian_Application_Monitoring_DetailedHealthCheck_RegisterProviders_System_Func_Meridian_Application_Pipeline_PipelineStatistics__System_Func_Meridian_Application_Monitoring_SystemHealthSnapshot__System_Func_Meridian_Application_Monitoring_ConnectionHealthSnapshot__System_Func_Meridian_Application_Monitoring_DataQuality_LatencyStatistics__
+  name: RegisterProviders
+  nameWithType: DetailedHealthCheck.RegisterProviders
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterProviders
+- uid: System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+  commentId: T:System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<PipelineStatistics>
+  nameWithType: Func<PipelineStatistics>
+  fullName: System.Func<Meridian.Application.Pipeline.PipelineStatistics>
+  nameWithType.vb: Func(Of PipelineStatistics)
+  fullName.vb: System.Func(Of Meridian.Application.Pipeline.PipelineStatistics)
+  name.vb: Func(Of PipelineStatistics)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot}
+  commentId: T:System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<SystemHealthSnapshot>
+  nameWithType: Func<SystemHealthSnapshot>
+  fullName: System.Func<Meridian.Application.Monitoring.SystemHealthSnapshot>
+  nameWithType.vb: Func(Of SystemHealthSnapshot)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.SystemHealthSnapshot)
+  name.vb: Func(Of SystemHealthSnapshot)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.SystemHealthSnapshot
+    name: SystemHealthSnapshot
+    href: Meridian.Application.Monitoring.SystemHealthSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.SystemHealthSnapshot
+    name: SystemHealthSnapshot
+    href: Meridian.Application.Monitoring.SystemHealthSnapshot.html
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+  commentId: T:System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<ConnectionHealthSnapshot>
+  nameWithType: Func<ConnectionHealthSnapshot>
+  fullName: System.Func<Meridian.Application.Monitoring.ConnectionHealthSnapshot>
+  nameWithType.vb: Func(Of ConnectionHealthSnapshot)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.ConnectionHealthSnapshot)
+  name.vb: Func(Of ConnectionHealthSnapshot)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+    name: ConnectionHealthSnapshot
+    href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+    name: ConnectionHealthSnapshot
+    href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.DataQuality.LatencyStatistics}
+  commentId: T:System.Func{Meridian.Application.Monitoring.DataQuality.LatencyStatistics}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<LatencyStatistics>
+  nameWithType: Func<LatencyStatistics>
+  fullName: System.Func<Meridian.Application.Monitoring.DataQuality.LatencyStatistics>
+  nameWithType.vb: Func(Of LatencyStatistics)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.DataQuality.LatencyStatistics)
+  name.vb: Func(Of LatencyStatistics)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+    name: LatencyStatistics
+    href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+    name: LatencyStatistics
+    href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html
+  - name: )
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency*
+  commentId: Overload:Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency
+  href: Meridian.Application.Monitoring.DetailedHealthCheck.html#Meridian_Application_Monitoring_DetailedHealthCheck_RegisterDependency_System_String_System_String_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task_System_Boolean___System_Boolean_System_Nullable_System_TimeSpan__
+  name: RegisterDependency
+  nameWithType: DetailedHealthCheck.RegisterDependency
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.RegisterDependency
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}}
+  commentId: T:System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<CancellationToken, Task<bool>>
+  nameWithType: Func<CancellationToken, Task<bool>>
+  fullName: System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>
+  nameWithType.vb: Func(Of CancellationToken, Task(Of Boolean))
+  fullName.vb: System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean))
+  name.vb: Func(Of CancellationToken, Task(Of Boolean))
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency*
+  commentId: Overload:Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency
+  href: Meridian.Application.Monitoring.DetailedHealthCheck.html#Meridian_Application_Monitoring_DetailedHealthCheck_UnregisterDependency_System_String_
+  name: UnregisterDependency
+  nameWithType: DetailedHealthCheck.UnregisterDependency
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.UnregisterDependency
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync
+  href: Meridian.Application.Monitoring.DetailedHealthCheck.html#Meridian_Application_Monitoring_DetailedHealthCheck_GetDetailedHealthAsync_System_Threading_CancellationToken_
+  name: GetDetailedHealthAsync
+  nameWithType: DetailedHealthCheck.GetDetailedHealthAsync
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.GetDetailedHealthAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DetailedHealthReport>
+  nameWithType: Task<DetailedHealthReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.DetailedHealthReport>
+  nameWithType.vb: Task(Of DetailedHealthReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DetailedHealthReport)
+  name.vb: Task(Of DetailedHealthReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DetailedHealthReport
+    name: DetailedHealthReport
+    href: Meridian.Application.Monitoring.DetailedHealthReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DetailedHealthReport
+    name: DetailedHealthReport
+    href: Meridian.Application.Monitoring.DetailedHealthReport.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.DetailedHealthCheck.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.DetailedHealthCheck.Dispose
+  href: Meridian.Application.Monitoring.DetailedHealthCheck.html#Meridian_Application_Monitoring_DetailedHealthCheck_Dispose
+  name: Dispose
+  nameWithType: DetailedHealthCheck.Dispose
+  fullName: Meridian.Application.Monitoring.DetailedHealthCheck.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

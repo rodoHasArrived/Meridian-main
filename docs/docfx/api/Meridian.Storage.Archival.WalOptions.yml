@@ -1,0 +1,718 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.WalOptions
+  commentId: T:Meridian.Storage.Archival.WalOptions
+  id: WalOptions
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate
+  - Meridian.Storage.Archival.WalOptions.CorruptionMode
+  - Meridian.Storage.Archival.WalOptions.MaxFlushDelay
+  - Meridian.Storage.Archival.WalOptions.MaxWalFileAge
+  - Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes
+  - Meridian.Storage.Archival.WalOptions.SyncBatchSize
+  - Meridian.Storage.Archival.WalOptions.SyncMode
+  - Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold
+  langs:
+  - csharp
+  - vb
+  name: WalOptions
+  nameWithType: WalOptions
+  fullName: Meridian.Storage.Archival.WalOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WalOptions
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 941
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: WAL configuration options.
+  example: []
+  syntax:
+    content: public sealed class WalOptions
+    content.vb: Public NotInheritable Class WalOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes
+  commentId: P:Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes
+  id: MaxWalFileSizeBytes
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxWalFileSizeBytes
+  nameWithType: WalOptions.MaxWalFileSizeBytes
+  fullName: Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxWalFileSizeBytes
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 946
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Maximum WAL file size before rotation.
+  example: []
+  syntax:
+    content: public long MaxWalFileSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MaxWalFileSizeBytes As Long
+  overload: Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes*
+- uid: Meridian.Storage.Archival.WalOptions.MaxWalFileAge
+  commentId: P:Meridian.Storage.Archival.WalOptions.MaxWalFileAge
+  id: MaxWalFileAge
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxWalFileAge
+  nameWithType: WalOptions.MaxWalFileAge
+  fullName: Meridian.Storage.Archival.WalOptions.MaxWalFileAge
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxWalFileAge
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 951
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Maximum WAL file age before rotation.
+  example: []
+  syntax:
+    content: public TimeSpan? MaxWalFileAge { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property MaxWalFileAge As TimeSpan?
+  overload: Meridian.Storage.Archival.WalOptions.MaxWalFileAge*
+- uid: Meridian.Storage.Archival.WalOptions.SyncMode
+  commentId: P:Meridian.Storage.Archival.WalOptions.SyncMode
+  id: SyncMode
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: SyncMode
+  nameWithType: WalOptions.SyncMode
+  fullName: Meridian.Storage.Archival.WalOptions.SyncMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SyncMode
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 956
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Sync mode for durability.
+  example: []
+  syntax:
+    content: public WalSyncMode SyncMode { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Archival.WalSyncMode
+    content.vb: Public Property SyncMode As WalSyncMode
+  overload: Meridian.Storage.Archival.WalOptions.SyncMode*
+- uid: Meridian.Storage.Archival.WalOptions.SyncBatchSize
+  commentId: P:Meridian.Storage.Archival.WalOptions.SyncBatchSize
+  id: SyncBatchSize
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: SyncBatchSize
+  nameWithType: WalOptions.SyncBatchSize
+  fullName: Meridian.Storage.Archival.WalOptions.SyncBatchSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SyncBatchSize
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 961
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Number of records to batch before syncing.
+  example: []
+  syntax:
+    content: public int SyncBatchSize { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SyncBatchSize As Integer
+  overload: Meridian.Storage.Archival.WalOptions.SyncBatchSize*
+- uid: Meridian.Storage.Archival.WalOptions.MaxFlushDelay
+  commentId: P:Meridian.Storage.Archival.WalOptions.MaxFlushDelay
+  id: MaxFlushDelay
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxFlushDelay
+  nameWithType: WalOptions.MaxFlushDelay
+  fullName: Meridian.Storage.Archival.WalOptions.MaxFlushDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxFlushDelay
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 966
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Maximum delay between flushes.
+  example: []
+  syntax:
+    content: public TimeSpan MaxFlushDelay { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MaxFlushDelay As TimeSpan
+  overload: Meridian.Storage.Archival.WalOptions.MaxFlushDelay*
+- uid: Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate
+  commentId: P:Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate
+  id: ArchiveAfterTruncate
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: ArchiveAfterTruncate
+  nameWithType: WalOptions.ArchiveAfterTruncate
+  fullName: Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveAfterTruncate
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 971
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Whether to archive WAL files after truncation.
+  example: []
+  syntax:
+    content: public bool ArchiveAfterTruncate { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ArchiveAfterTruncate As Boolean
+  overload: Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate*
+- uid: Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold
+  commentId: P:Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold
+  id: UncommittedSizeWarningThreshold
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: UncommittedSizeWarningThreshold
+  nameWithType: WalOptions.UncommittedSizeWarningThreshold
+  fullName: Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UncommittedSizeWarningThreshold
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 977
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Size threshold (bytes) at which a warning is logged about uncommitted WAL data.
+
+    Default is 50MB.
+  example: []
+  syntax:
+    content: public long UncommittedSizeWarningThreshold { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property UncommittedSizeWarningThreshold As Long
+  overload: Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold*
+- uid: Meridian.Storage.Archival.WalOptions.CorruptionMode
+  commentId: P:Meridian.Storage.Archival.WalOptions.CorruptionMode
+  id: CorruptionMode
+  parent: Meridian.Storage.Archival.WalOptions
+  langs:
+  - csharp
+  - vb
+  name: CorruptionMode
+  nameWithType: WalOptions.CorruptionMode
+  fullName: Meridian.Storage.Archival.WalOptions.CorruptionMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorruptionMode
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 985
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Controls how the WAL behaves when corrupted records are detected during recovery.
+
+    Defaults to <xref href="Meridian.Storage.Archival.WalCorruptionMode.Skip" data-throw-if-not-resolved="false"></xref> to preserve backwards compatibility.
+
+    Set to <xref href="Meridian.Storage.Archival.WalCorruptionMode.Alert" data-throw-if-not-resolved="false"></xref> in production so monitoring systems are
+
+    notified, or <xref href="Meridian.Storage.Archival.WalCorruptionMode.Halt" data-throw-if-not-resolved="false"></xref> to require manual operator review.
+  example: []
+  syntax:
+    content: public WalCorruptionMode CorruptionMode { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Archival.WalCorruptionMode
+    content.vb: Public Property CorruptionMode As WalCorruptionMode
+  overload: Meridian.Storage.Archival.WalOptions.CorruptionMode*
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_MaxWalFileSizeBytes
+  name: MaxWalFileSizeBytes
+  nameWithType: WalOptions.MaxWalFileSizeBytes
+  fullName: Meridian.Storage.Archival.WalOptions.MaxWalFileSizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Archival.WalOptions.MaxWalFileAge*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.MaxWalFileAge
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_MaxWalFileAge
+  name: MaxWalFileAge
+  nameWithType: WalOptions.MaxWalFileAge
+  fullName: Meridian.Storage.Archival.WalOptions.MaxWalFileAge
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Archival.WalOptions.SyncMode*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.SyncMode
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_SyncMode
+  name: SyncMode
+  nameWithType: WalOptions.SyncMode
+  fullName: Meridian.Storage.Archival.WalOptions.SyncMode
+- uid: Meridian.Storage.Archival.WalSyncMode
+  commentId: T:Meridian.Storage.Archival.WalSyncMode
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.WalSyncMode.html
+  name: WalSyncMode
+  nameWithType: WalSyncMode
+  fullName: Meridian.Storage.Archival.WalSyncMode
+- uid: Meridian.Storage.Archival.WalOptions.SyncBatchSize*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.SyncBatchSize
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_SyncBatchSize
+  name: SyncBatchSize
+  nameWithType: WalOptions.SyncBatchSize
+  fullName: Meridian.Storage.Archival.WalOptions.SyncBatchSize
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Archival.WalOptions.MaxFlushDelay*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.MaxFlushDelay
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_MaxFlushDelay
+  name: MaxFlushDelay
+  nameWithType: WalOptions.MaxFlushDelay
+  fullName: Meridian.Storage.Archival.WalOptions.MaxFlushDelay
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_ArchiveAfterTruncate
+  name: ArchiveAfterTruncate
+  nameWithType: WalOptions.ArchiveAfterTruncate
+  fullName: Meridian.Storage.Archival.WalOptions.ArchiveAfterTruncate
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_UncommittedSizeWarningThreshold
+  name: UncommittedSizeWarningThreshold
+  nameWithType: WalOptions.UncommittedSizeWarningThreshold
+  fullName: Meridian.Storage.Archival.WalOptions.UncommittedSizeWarningThreshold
+- uid: Meridian.Storage.Archival.WalCorruptionMode.Skip
+  commentId: F:Meridian.Storage.Archival.WalCorruptionMode.Skip
+  href: Meridian.Storage.Archival.WalCorruptionMode.html#Meridian_Storage_Archival_WalCorruptionMode_Skip
+  name: Skip
+  nameWithType: WalCorruptionMode.Skip
+  fullName: Meridian.Storage.Archival.WalCorruptionMode.Skip
+- uid: Meridian.Storage.Archival.WalCorruptionMode.Alert
+  commentId: F:Meridian.Storage.Archival.WalCorruptionMode.Alert
+  href: Meridian.Storage.Archival.WalCorruptionMode.html#Meridian_Storage_Archival_WalCorruptionMode_Alert
+  name: Alert
+  nameWithType: WalCorruptionMode.Alert
+  fullName: Meridian.Storage.Archival.WalCorruptionMode.Alert
+- uid: Meridian.Storage.Archival.WalCorruptionMode.Halt
+  commentId: F:Meridian.Storage.Archival.WalCorruptionMode.Halt
+  href: Meridian.Storage.Archival.WalCorruptionMode.html#Meridian_Storage_Archival_WalCorruptionMode_Halt
+  name: Halt
+  nameWithType: WalCorruptionMode.Halt
+  fullName: Meridian.Storage.Archival.WalCorruptionMode.Halt
+- uid: Meridian.Storage.Archival.WalOptions.CorruptionMode*
+  commentId: Overload:Meridian.Storage.Archival.WalOptions.CorruptionMode
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_CorruptionMode
+  name: CorruptionMode
+  nameWithType: WalOptions.CorruptionMode
+  fullName: Meridian.Storage.Archival.WalOptions.CorruptionMode
+- uid: Meridian.Storage.Archival.WalCorruptionMode
+  commentId: T:Meridian.Storage.Archival.WalCorruptionMode
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.WalCorruptionMode.html
+  name: WalCorruptionMode
+  nameWithType: WalCorruptionMode
+  fullName: Meridian.Storage.Archival.WalCorruptionMode

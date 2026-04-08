@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.LogLevel
+  commentId: T:Meridian.Ui.Services.Services.LogLevel
+  id: LogLevel
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.LogLevel.Debug
+  - Meridian.Ui.Services.Services.LogLevel.Error
+  - Meridian.Ui.Services.Services.LogLevel.Info
+  - Meridian.Ui.Services.Services.LogLevel.Warning
+  langs:
+  - csharp
+  - vb
+  name: LogLevel
+  nameWithType: LogLevel
+  fullName: Meridian.Ui.Services.Services.LogLevel
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogLevel
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Represents the severity level of a log entry.
+  example: []
+  syntax:
+    content: 'public enum LogLevel : byte'
+    content.vb: Public Enum LogLevel As Byte
+- uid: Meridian.Ui.Services.Services.LogLevel.Debug
+  commentId: F:Meridian.Ui.Services.Services.LogLevel.Debug
+  id: Debug
+  parent: Meridian.Ui.Services.Services.LogLevel
+  langs:
+  - csharp
+  - vb
+  name: Debug
+  nameWithType: LogLevel.Debug
+  fullName: Meridian.Ui.Services.Services.LogLevel.Debug
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Debug
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Debug = 0
+    return:
+      type: Meridian.Ui.Services.Services.LogLevel
+- uid: Meridian.Ui.Services.Services.LogLevel.Info
+  commentId: F:Meridian.Ui.Services.Services.LogLevel.Info
+  id: Info
+  parent: Meridian.Ui.Services.Services.LogLevel
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: LogLevel.Info
+  fullName: Meridian.Ui.Services.Services.LogLevel.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Info = 1
+    return:
+      type: Meridian.Ui.Services.Services.LogLevel
+- uid: Meridian.Ui.Services.Services.LogLevel.Warning
+  commentId: F:Meridian.Ui.Services.Services.LogLevel.Warning
+  id: Warning
+  parent: Meridian.Ui.Services.Services.LogLevel
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: LogLevel.Warning
+  fullName: Meridian.Ui.Services.Services.LogLevel.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Warning = 2
+    return:
+      type: Meridian.Ui.Services.Services.LogLevel
+- uid: Meridian.Ui.Services.Services.LogLevel.Error
+  commentId: F:Meridian.Ui.Services.Services.LogLevel.Error
+  id: Error
+  parent: Meridian.Ui.Services.Services.LogLevel
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: LogLevel.Error
+  fullName: Meridian.Ui.Services.Services.LogLevel.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Error = 3
+    return:
+      type: Meridian.Ui.Services.Services.LogLevel
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: Meridian.Ui.Services.Services.LogLevel
+  commentId: T:Meridian.Ui.Services.Services.LogLevel
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.LogLevel.html
+  name: LogLevel
+  nameWithType: LogLevel
+  fullName: Meridian.Ui.Services.Services.LogLevel

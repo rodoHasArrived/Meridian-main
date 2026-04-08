@@ -1,0 +1,825 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityGapResponse
+  id: QualityGapResponse
+  parent: Meridian.Contracts.Api.Quality
+  children:
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.TimeSpan,System.Int64,System.Int64,System.Int64,System.Byte,System.String)
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.Duration
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.EventType
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.Severity
+  - Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol
+  langs:
+  - csharp
+  - vb
+  name: QualityGapResponse
+  nameWithType: QualityGapResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityGapResponse
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Gap row returned by the quality gaps routes.
+  example: []
+  syntax:
+    content: 'public sealed record QualityGapResponse : IEquatable<QualityGapResponse>'
+    content.vb: Public NotInheritable Class QualityGapResponse Implements IEquatable(Of QualityGapResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.Quality.QualityGapResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.TimeSpan,System.Int64,System.Int64,System.Int64,System.Byte,System.String)
+  commentId: M:Meridian.Contracts.Api.Quality.QualityGapResponse.#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.TimeSpan,System.Int64,System.Int64,System.Int64,System.Byte,System.String)
+  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.TimeSpan,System.Int64,System.Int64,System.Int64,System.Byte,System.String)'
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: QualityGapResponse(string, string, DateTimeOffset, DateTimeOffset, TimeSpan, long, long, long, byte, string?)
+  nameWithType: QualityGapResponse.QualityGapResponse(string, string, DateTimeOffset, DateTimeOffset, TimeSpan, long, long, long, byte, string?)
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.QualityGapResponse(string, string, System.DateTimeOffset, System.DateTimeOffset, System.TimeSpan, long, long, long, byte, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Gap row returned by the quality gaps routes.
+  example: []
+  syntax:
+    content: public QualityGapResponse(string Symbol, string EventType, DateTimeOffset GapStart, DateTimeOffset GapEnd, TimeSpan Duration, long MissedSequenceStart, long MissedSequenceEnd, long EstimatedMissedEvents, byte Severity, string? PossibleCause)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: EventType
+      type: System.String
+    - id: GapStart
+      type: System.DateTimeOffset
+    - id: GapEnd
+      type: System.DateTimeOffset
+    - id: Duration
+      type: System.TimeSpan
+    - id: MissedSequenceStart
+      type: System.Int64
+    - id: MissedSequenceEnd
+      type: System.Int64
+    - id: EstimatedMissedEvents
+      type: System.Int64
+    - id: Severity
+      type: System.Byte
+    - id: PossibleCause
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, EventType As String, GapStart As DateTimeOffset, GapEnd As DateTimeOffset, Duration As TimeSpan, MissedSequenceStart As Long, MissedSequenceEnd As Long, EstimatedMissedEvents As Long, Severity As Byte, PossibleCause As String)
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.#ctor*
+  nameWithType.vb: QualityGapResponse.New(String, String, DateTimeOffset, DateTimeOffset, TimeSpan, Long, Long, Long, Byte, String)
+  fullName.vb: Meridian.Contracts.Api.Quality.QualityGapResponse.New(String, String, System.DateTimeOffset, System.DateTimeOffset, System.TimeSpan, Long, Long, Long, Byte, String)
+  name.vb: New(String, String, DateTimeOffset, DateTimeOffset, TimeSpan, Long, Long, Long, Byte, String)
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: QualityGapResponse.Symbol
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.EventType
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.EventType
+  id: EventType
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: QualityGapResponse.EventType
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string EventType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EventType As String
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.EventType*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart
+  id: GapStart
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: GapStart
+  nameWithType: QualityGapResponse.GapStart
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapStart
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public DateTimeOffset GapStart { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property GapStart As DateTimeOffset
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd
+  id: GapEnd
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: GapEnd
+  nameWithType: QualityGapResponse.GapEnd
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapEnd
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public DateTimeOffset GapEnd { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property GapEnd As DateTimeOffset
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.Duration
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.Duration
+  id: Duration
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: QualityGapResponse.Duration
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public TimeSpan Duration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Duration As TimeSpan
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.Duration*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart
+  id: MissedSequenceStart
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: MissedSequenceStart
+  nameWithType: QualityGapResponse.MissedSequenceStart
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissedSequenceStart
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public long MissedSequenceStart { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MissedSequenceStart As Long
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd
+  id: MissedSequenceEnd
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: MissedSequenceEnd
+  nameWithType: QualityGapResponse.MissedSequenceEnd
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissedSequenceEnd
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public long MissedSequenceEnd { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MissedSequenceEnd As Long
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents
+  id: EstimatedMissedEvents
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: EstimatedMissedEvents
+  nameWithType: QualityGapResponse.EstimatedMissedEvents
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedMissedEvents
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public long EstimatedMissedEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EstimatedMissedEvents As Long
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.Severity
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.Severity
+  id: Severity
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: QualityGapResponse.Severity
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public byte Severity { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property Severity As Byte
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.Severity*
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause
+  commentId: P:Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause
+  id: PossibleCause
+  parent: Meridian.Contracts.Api.Quality.QualityGapResponse
+  langs:
+  - csharp
+  - vb
+  name: PossibleCause
+  nameWithType: QualityGapResponse.PossibleCause
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PossibleCause
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string? PossibleCause { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PossibleCause As String
+  overload: Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause*
+references:
+- uid: Meridian.Contracts.Api.Quality
+  commentId: N:Meridian.Contracts.Api.Quality
+  href: Meridian.html
+  name: Meridian.Contracts.Api.Quality
+  nameWithType: Meridian.Contracts.Api.Quality
+  fullName: Meridian.Contracts.Api.Quality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.Quality.QualityGapResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.Quality.QualityGapResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualityGapResponse>
+  nameWithType: IEquatable<QualityGapResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.Quality.QualityGapResponse>
+  nameWithType.vb: IEquatable(Of QualityGapResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.Quality.QualityGapResponse)
+  name.vb: IEquatable(Of QualityGapResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.Quality.QualityGapResponse
+    name: QualityGapResponse
+    href: Meridian.Contracts.Api.Quality.QualityGapResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.Quality.QualityGapResponse
+    name: QualityGapResponse
+    href: Meridian.Contracts.Api.Quality.QualityGapResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.#ctor
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse__ctor_System_String_System_String_System_DateTimeOffset_System_DateTimeOffset_System_TimeSpan_System_Int64_System_Int64_System_Int64_System_Byte_System_String_
+  name: QualityGapResponse
+  nameWithType: QualityGapResponse.QualityGapResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.QualityGapResponse
+  nameWithType.vb: QualityGapResponse.New
+  fullName.vb: Meridian.Contracts.Api.Quality.QualityGapResponse.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_Symbol
+  name: Symbol
+  nameWithType: QualityGapResponse.Symbol
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.Symbol
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.EventType*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.EventType
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_EventType
+  name: EventType
+  nameWithType: QualityGapResponse.EventType
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.EventType
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_GapStart
+  name: GapStart
+  nameWithType: QualityGapResponse.GapStart
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.GapStart
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_GapEnd
+  name: GapEnd
+  nameWithType: QualityGapResponse.GapEnd
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.GapEnd
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.Duration*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.Duration
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_Duration
+  name: Duration
+  nameWithType: QualityGapResponse.Duration
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.Duration
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_MissedSequenceStart
+  name: MissedSequenceStart
+  nameWithType: QualityGapResponse.MissedSequenceStart
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceStart
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_MissedSequenceEnd
+  name: MissedSequenceEnd
+  nameWithType: QualityGapResponse.MissedSequenceEnd
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.MissedSequenceEnd
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_EstimatedMissedEvents
+  name: EstimatedMissedEvents
+  nameWithType: QualityGapResponse.EstimatedMissedEvents
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.EstimatedMissedEvents
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.Severity*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.Severity
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_Severity
+  name: Severity
+  nameWithType: QualityGapResponse.Severity
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.Severity
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html#Meridian_Contracts_Api_Quality_QualityGapResponse_PossibleCause
+  name: PossibleCause
+  nameWithType: QualityGapResponse.PossibleCause
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse.PossibleCause

@@ -1,0 +1,826 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.LeanSymbolMapper
+  commentId: T:Meridian.Ui.Shared.LeanSymbolMapper
+  id: LeanSymbolMapper
+  parent: Meridian.Ui.Shared
+  children:
+  - Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory(System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName(System.DateTime,System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.CryptoSecurityType
+  - Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket(System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType(System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.EquitySecurityType
+  - Meridian.Ui.Shared.LeanSymbolMapper.ForexSecurityType
+  - Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker(System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean(System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc(System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker(System.String)
+  - Meridian.Ui.Shared.LeanSymbolMapper.UsaMarket
+  langs:
+  - csharp
+  - vb
+  name: LeanSymbolMapper
+  nameWithType: LeanSymbolMapper
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeanSymbolMapper
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: >-
+    Maps between Meridian symbol format and QuantConnect Lean's SecurityIdentifier format.
+
+    Meridian symbols are plain tickers like "SPY" or "AAPL"; Lean uses qualified identifiers that
+
+    encode market, security type, and an exchange-specific sid component.
+  remarks: >-
+    Lean equity data paths follow the pattern:
+      data/{securityType}/{market}/{resolution}/{ticker}/{yyyyMMdd}_{eventType}.zip
+    This class converts Meridian tickers to the path components Lean expects and vice-versa.
+  example: []
+  syntax:
+    content: public static class LeanSymbolMapper
+    content.vb: Public Module LeanSymbolMapper
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.UsaMarket
+  commentId: F:Meridian.Ui.Shared.LeanSymbolMapper.UsaMarket
+  id: UsaMarket
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: UsaMarket
+  nameWithType: LeanSymbolMapper.UsaMarket
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.UsaMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsaMarket
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Lean market code for US equities.
+  example: []
+  syntax:
+    content: public const string UsaMarket = "usa"
+    return:
+      type: System.String
+    content.vb: Public Const UsaMarket As String = "usa"
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.EquitySecurityType
+  commentId: F:Meridian.Ui.Shared.LeanSymbolMapper.EquitySecurityType
+  id: EquitySecurityType
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: EquitySecurityType
+  nameWithType: LeanSymbolMapper.EquitySecurityType
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.EquitySecurityType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EquitySecurityType
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Lean security type folder for equities.
+  example: []
+  syntax:
+    content: public const string EquitySecurityType = "equity"
+    return:
+      type: System.String
+    content.vb: Public Const EquitySecurityType As String = "equity"
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.CryptoSecurityType
+  commentId: F:Meridian.Ui.Shared.LeanSymbolMapper.CryptoSecurityType
+  id: CryptoSecurityType
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: CryptoSecurityType
+  nameWithType: LeanSymbolMapper.CryptoSecurityType
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.CryptoSecurityType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CryptoSecurityType
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Lean security type folder for crypto.
+  example: []
+  syntax:
+    content: public const string CryptoSecurityType = "crypto"
+    return:
+      type: System.String
+    content.vb: Public Const CryptoSecurityType As String = "crypto"
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.ForexSecurityType
+  commentId: F:Meridian.Ui.Shared.LeanSymbolMapper.ForexSecurityType
+  id: ForexSecurityType
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ForexSecurityType
+  nameWithType: LeanSymbolMapper.ForexSecurityType
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.ForexSecurityType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForexSecurityType
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Lean security type folder for forex.
+  example: []
+  syntax:
+    content: public const string ForexSecurityType = "forex"
+    return:
+      type: System.String
+    content.vb: Public Const ForexSecurityType As String = "forex"
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker(System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker(System.String)
+  id: ToLeanTicker(System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ToLeanTicker(string)
+  nameWithType: LeanSymbolMapper.ToLeanTicker(string)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToLeanTicker
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: >-
+    Converts an Meridian ticker symbol to a lowercase Lean ticker (used in data paths).
+
+    Lean expects lower-case tickers in file/directory names.
+  example: []
+  syntax:
+    content: public static string ToLeanTicker(string mdcSymbol)
+    parameters:
+    - id: mdcSymbol
+      type: System.String
+      description: Meridian symbol such as "SPY" or "AAPL".
+    return:
+      type: System.String
+      description: Lean-compatible lower-case ticker, e.g. "spy".
+    content.vb: Public Shared Function ToLeanTicker(mdcSymbol As String) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker*
+  nameWithType.vb: LeanSymbolMapper.ToLeanTicker(String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker(String)
+  name.vb: ToLeanTicker(String)
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker(System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker(System.String)
+  id: FromLeanTicker(System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: FromLeanTicker(string)
+  nameWithType: LeanSymbolMapper.FromLeanTicker(string)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromLeanTicker
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts a Lean lower-case ticker back to an Meridian upper-case symbol.
+  example: []
+  syntax:
+    content: public static string FromLeanTicker(string leanTicker)
+    parameters:
+    - id: leanTicker
+      type: System.String
+      description: Lean ticker such as "spy".
+    return:
+      type: System.String
+      description: Meridian symbol such as "SPY".
+    content.vb: Public Shared Function FromLeanTicker(leanTicker As String) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker*
+  nameWithType.vb: LeanSymbolMapper.FromLeanTicker(String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker(String)
+  name.vb: FromLeanTicker(String)
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType(System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType(System.String)
+  id: DetectSecurityType(System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: DetectSecurityType(string)
+  nameWithType: LeanSymbolMapper.DetectSecurityType(string)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectSecurityType
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Detects the Lean security type folder name for the given Meridian symbol.
+  example: []
+  syntax:
+    content: public static string DetectSecurityType(string mdcSymbol)
+    parameters:
+    - id: mdcSymbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function DetectSecurityType(mdcSymbol As String) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType*
+  nameWithType.vb: LeanSymbolMapper.DetectSecurityType(String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType(String)
+  name.vb: DetectSecurityType(String)
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket(System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket(System.String)
+  id: DetectMarket(System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: DetectMarket(string)
+  nameWithType: LeanSymbolMapper.DetectMarket(string)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectMarket
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Detects the Lean market for the given symbol.
+  example: []
+  syntax:
+    content: public static string DetectMarket(string mdcSymbol)
+    parameters:
+    - id: mdcSymbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function DetectMarket(mdcSymbol As String) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket*
+  nameWithType.vb: LeanSymbolMapper.DetectMarket(String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket(String)
+  name.vb: DetectMarket(String)
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory(System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory(System.String,System.String,System.String,System.String,System.String)
+  id: BuildLeanDataDirectory(System.String,System.String,System.String,System.String,System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: BuildLeanDataDirectory(string, string, string, string?, string?)
+  nameWithType: LeanSymbolMapper.BuildLeanDataDirectory(string, string, string, string?, string?)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory(string, string, string, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildLeanDataDirectory
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: >-
+    Builds the Lean data directory path for a symbol, resolution, and data type.
+
+    Path pattern: {baseDir}/{securityType}/{market}/{resolution}/{ticker}
+  example: []
+  syntax:
+    content: public static string BuildLeanDataDirectory(string baseDir, string mdcSymbol, string resolution = "tick", string? securityType = null, string? market = null)
+    parameters:
+    - id: baseDir
+      type: System.String
+    - id: mdcSymbol
+      type: System.String
+    - id: resolution
+      type: System.String
+    - id: securityType
+      type: System.String
+    - id: market
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function BuildLeanDataDirectory(baseDir As String, mdcSymbol As String, resolution As String = "tick", securityType As String = Nothing, market As String = Nothing) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory*
+  nameWithType.vb: LeanSymbolMapper.BuildLeanDataDirectory(String, String, String, String, String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory(String, String, String, String, String)
+  name.vb: BuildLeanDataDirectory(String, String, String, String, String)
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName(System.DateTime,System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName(System.DateTime,System.String)
+  id: BuildLeanFileName(System.DateTime,System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: BuildLeanFileName(DateTime, string)
+  nameWithType: LeanSymbolMapper.BuildLeanFileName(DateTime, string)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName(System.DateTime, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildLeanFileName
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: >-
+    Builds the Lean zip file name for a given date and event type.
+
+    Lean names trade files "{yyyyMMdd}_trade.zip" and quote files "{yyyyMMdd}_quote.zip".
+  example: []
+  syntax:
+    content: public static string BuildLeanFileName(DateTime date, string mdcEventType)
+    parameters:
+    - id: date
+      type: System.DateTime
+    - id: mdcEventType
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function BuildLeanFileName([date] As Date, mdcEventType As String) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName*
+  nameWithType.vb: LeanSymbolMapper.BuildLeanFileName(Date, String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName(Date, String)
+  name.vb: BuildLeanFileName(Date, String)
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean(System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean(System.String)
+  id: MapEventTypeToLean(System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: MapEventTypeToLean(string)
+  nameWithType: LeanSymbolMapper.MapEventTypeToLean(string)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MapEventTypeToLean
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Maps an Meridian event type name to the Lean data type name used in file names.
+  example: []
+  syntax:
+    content: public static string MapEventTypeToLean(string mdcEventType)
+    parameters:
+    - id: mdcEventType
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function MapEventTypeToLean(mdcEventType As String) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean*
+  nameWithType.vb: LeanSymbolMapper.MapEventTypeToLean(String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean(String)
+  name.vb: MapEventTypeToLean(String)
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc(System.String)
+  commentId: M:Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc(System.String)
+  id: MapResolutionToMdc(System.String)
+  parent: Meridian.Ui.Shared.LeanSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: MapResolutionToMdc(string)
+  nameWithType: LeanSymbolMapper.MapResolutionToMdc(string)
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MapResolutionToMdc
+    path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Maps a Lean resolution string to an Meridian-friendly description.
+  example: []
+  syntax:
+    content: public static string MapResolutionToMdc(string leanResolution)
+    parameters:
+    - id: leanResolution
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function MapResolutionToMdc(leanResolution As String) As String
+  overload: Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc*
+  nameWithType.vb: LeanSymbolMapper.MapResolutionToMdc(String)
+  fullName.vb: Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc(String)
+  name.vb: MapResolutionToMdc(String)
+references:
+- uid: Meridian.Ui.Shared
+  commentId: N:Meridian.Ui.Shared
+  href: Meridian.html
+  name: Meridian.Ui.Shared
+  nameWithType: Meridian.Ui.Shared
+  fullName: Meridian.Ui.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_ToLeanTicker_System_String_
+  name: ToLeanTicker
+  nameWithType: LeanSymbolMapper.ToLeanTicker
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.ToLeanTicker
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_FromLeanTicker_System_String_
+  name: FromLeanTicker
+  nameWithType: LeanSymbolMapper.FromLeanTicker
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.FromLeanTicker
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_DetectSecurityType_System_String_
+  name: DetectSecurityType
+  nameWithType: LeanSymbolMapper.DetectSecurityType
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.DetectSecurityType
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_DetectMarket_System_String_
+  name: DetectMarket
+  nameWithType: LeanSymbolMapper.DetectMarket
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.DetectMarket
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_BuildLeanDataDirectory_System_String_System_String_System_String_System_String_System_String_
+  name: BuildLeanDataDirectory
+  nameWithType: LeanSymbolMapper.BuildLeanDataDirectory
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanDataDirectory
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_BuildLeanFileName_System_DateTime_System_String_
+  name: BuildLeanFileName
+  nameWithType: LeanSymbolMapper.BuildLeanFileName
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.BuildLeanFileName
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_MapEventTypeToLean_System_String_
+  name: MapEventTypeToLean
+  nameWithType: LeanSymbolMapper.MapEventTypeToLean
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.MapEventTypeToLean
+- uid: Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc*
+  commentId: Overload:Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html#Meridian_Ui_Shared_LeanSymbolMapper_MapResolutionToMdc_System_String_
+  name: MapResolutionToMdc
+  nameWithType: LeanSymbolMapper.MapResolutionToMdc
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper.MapResolutionToMdc

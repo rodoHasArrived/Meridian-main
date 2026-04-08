@@ -1,0 +1,2452 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.UiApiClient
+  commentId: T:Meridian.Contracts.Api.UiApiClient
+  id: UiApiClient
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.UiApiClient.#ctor(System.Net.Http.HttpClient,System.String,System.Text.Json.JsonSerializerOptions)
+  - Meridian.Contracts.Api.UiApiClient.BaseUrl
+  - Meridian.Contracts.Api.UiApiClient.GetAsync``1(System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync(System.String,System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync``1(System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync``1(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync``1(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync``1(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetStatusAsync(System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync``1(System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.PostAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync(Meridian.Contracts.Api.OptionsRefreshRequest,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.RunBackfillAsync(Meridian.Contracts.Api.BackfillRequest,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.RunGapFillAsync(Meridian.Contracts.Api.GapFillRequest,System.Threading.CancellationToken)
+  - Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl(System.String)
+  langs:
+  - csharp
+  - vb
+  name: UiApiClient
+  nameWithType: UiApiClient
+  fullName: Meridian.Contracts.Api.UiApiClient
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UiApiClient
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Shared HTTP client for UI-facing endpoints (web dashboard + desktop).
+  example: []
+  syntax:
+    content: public sealed class UiApiClient
+    content.vb: Public NotInheritable Class UiApiClient
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.UiApiClient.#ctor(System.Net.Http.HttpClient,System.String,System.Text.Json.JsonSerializerOptions)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.#ctor(System.Net.Http.HttpClient,System.String,System.Text.Json.JsonSerializerOptions)
+  id: '#ctor(System.Net.Http.HttpClient,System.String,System.Text.Json.JsonSerializerOptions)'
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: UiApiClient(HttpClient, string, JsonSerializerOptions?)
+  nameWithType: UiApiClient.UiApiClient(HttpClient, string, JsonSerializerOptions?)
+  fullName: Meridian.Contracts.Api.UiApiClient.UiApiClient(System.Net.Http.HttpClient, string, System.Text.Json.JsonSerializerOptions?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public UiApiClient(HttpClient httpClient, string baseUrl, JsonSerializerOptions? jsonOptions = null)
+    parameters:
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+    - id: baseUrl
+      type: System.String
+    - id: jsonOptions
+      type: System.Text.Json.JsonSerializerOptions
+    content.vb: Public Sub New(httpClient As HttpClient, baseUrl As String, jsonOptions As JsonSerializerOptions = Nothing)
+  overload: Meridian.Contracts.Api.UiApiClient.#ctor*
+  nameWithType.vb: UiApiClient.New(HttpClient, String, JsonSerializerOptions)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.New(System.Net.Http.HttpClient, String, System.Text.Json.JsonSerializerOptions)
+  name.vb: New(HttpClient, String, JsonSerializerOptions)
+- uid: Meridian.Contracts.Api.UiApiClient.BaseUrl
+  commentId: P:Meridian.Contracts.Api.UiApiClient.BaseUrl
+  id: BaseUrl
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: BaseUrl
+  nameWithType: UiApiClient.BaseUrl
+  fullName: Meridian.Contracts.Api.UiApiClient.BaseUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseUrl
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string BaseUrl { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property BaseUrl As String
+  overload: Meridian.Contracts.Api.UiApiClient.BaseUrl*
+- uid: Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl(System.String)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl(System.String)
+  id: UpdateBaseUrl(System.String)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: UpdateBaseUrl(string)
+  nameWithType: UiApiClient.UpdateBaseUrl(string)
+  fullName: Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateBaseUrl
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public void UpdateBaseUrl(string baseUrl)
+    parameters:
+    - id: baseUrl
+      type: System.String
+    content.vb: Public Sub UpdateBaseUrl(baseUrl As String)
+  overload: Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl*
+  nameWithType.vb: UiApiClient.UpdateBaseUrl(String)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl(String)
+  name.vb: UpdateBaseUrl(String)
+- uid: Meridian.Contracts.Api.UiApiClient.GetStatusAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetStatusAsync(System.Threading.CancellationToken)
+  id: GetStatusAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetStatusAsync(CancellationToken)
+  nameWithType: UiApiClient.GetStatusAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetStatusAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.StatusResponse}
+    content.vb: Public Function GetStatusAsync(ct As CancellationToken = Nothing) As Task(Of StatusResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetStatusAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetHealthAsync(System.Threading.CancellationToken)
+  id: GetHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetHealthAsync(CancellationToken)
+  nameWithType: UiApiClient.GetHealthAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHealthAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<HealthCheckResponse?> GetHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.HealthCheckResponse}
+    content.vb: Public Function GetHealthAsync(ct As CancellationToken = Nothing) As Task(Of HealthCheckResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetHealthAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync(System.Threading.CancellationToken)
+  id: GetHealthDetailedAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetHealthDetailedAsync(CancellationToken)
+  nameWithType: UiApiClient.GetHealthDetailedAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHealthDetailedAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<HealthCheckResponse?> GetHealthDetailedAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.HealthCheckResponse}
+    content.vb: Public Function GetHealthDetailedAsync(ct As CancellationToken = Nothing) As Task(Of HealthCheckResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync(System.Threading.CancellationToken)
+  id: GetBackfillProvidersAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillProvidersAsync(CancellationToken)
+  nameWithType: UiApiClient.GetBackfillProvidersAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillProvidersAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<List<BackfillProviderInfo>?> GetBackfillProvidersAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillProviderInfo}}
+    content.vb: Public Function GetBackfillProvidersAsync(ct As CancellationToken = Nothing) As Task(Of List(Of BackfillProviderInfo))
+  overload: Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync(System.Threading.CancellationToken)
+  id: GetBackfillStatusAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillStatusAsync(CancellationToken)
+  nameWithType: UiApiClient.GetBackfillStatusAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillStatusAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<BackfillResultDto?> GetBackfillStatusAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+    content.vb: Public Function GetBackfillStatusAsync(ct As CancellationToken = Nothing) As Task(Of BackfillResultDto)
+  overload: Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.RunBackfillAsync(Meridian.Contracts.Api.BackfillRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.RunBackfillAsync(Meridian.Contracts.Api.BackfillRequest,System.Threading.CancellationToken)
+  id: RunBackfillAsync(Meridian.Contracts.Api.BackfillRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: RunBackfillAsync(BackfillRequest, CancellationToken)
+  nameWithType: UiApiClient.RunBackfillAsync(BackfillRequest, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.RunBackfillAsync(Meridian.Contracts.Api.BackfillRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunBackfillAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<BackfillResultDto?> RunBackfillAsync(BackfillRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.Api.BackfillRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+    content.vb: Public Function RunBackfillAsync(request As BackfillRequest, ct As CancellationToken = Nothing) As Task(Of BackfillResultDto)
+  overload: Meridian.Contracts.Api.UiApiClient.RunBackfillAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync(System.Threading.CancellationToken)
+  id: GetBackfillHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillHealthAsync(CancellationToken)
+  nameWithType: UiApiClient.GetBackfillHealthAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillHealthAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<BackfillHealthResponse?> GetBackfillHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillHealthResponse}
+    content.vb: Public Function GetBackfillHealthAsync(ct As CancellationToken = Nothing) As Task(Of BackfillHealthResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync(System.String,System.Threading.CancellationToken)
+  id: ResolveSymbolAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: ResolveSymbolAsync(string, CancellationToken)
+  nameWithType: UiApiClient.ResolveSymbolAsync(string, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveSymbolAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<SymbolResolutionResponse?> ResolveSymbolAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.SymbolResolutionResponse}
+    content.vb: Public Function ResolveSymbolAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SymbolResolutionResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync*
+  nameWithType.vb: UiApiClient.ResolveSymbolAsync(String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync(String, System.Threading.CancellationToken)
+  name.vb: ResolveSymbolAsync(String, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.RunGapFillAsync(Meridian.Contracts.Api.GapFillRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.RunGapFillAsync(Meridian.Contracts.Api.GapFillRequest,System.Threading.CancellationToken)
+  id: RunGapFillAsync(Meridian.Contracts.Api.GapFillRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: RunGapFillAsync(GapFillRequest, CancellationToken)
+  nameWithType: UiApiClient.RunGapFillAsync(GapFillRequest, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.RunGapFillAsync(Meridian.Contracts.Api.GapFillRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunGapFillAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<BackfillResultDto?> RunGapFillAsync(GapFillRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.Api.GapFillRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+    content.vb: Public Function RunGapFillAsync(request As GapFillRequest, ct As CancellationToken = Nothing) As Task(Of BackfillResultDto)
+  overload: Meridian.Contracts.Api.UiApiClient.RunGapFillAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync(System.Threading.CancellationToken)
+  id: GetBackfillPresetsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillPresetsAsync(CancellationToken)
+  nameWithType: UiApiClient.GetBackfillPresetsAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillPresetsAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<List<BackfillPreset>?> GetBackfillPresetsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillPreset}}
+    content.vb: Public Function GetBackfillPresetsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of BackfillPreset))
+  overload: Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetBackfillExecutionsAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillExecutionsAsync(int, CancellationToken)
+  nameWithType: UiApiClient.GetBackfillExecutionsAsync(int, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillExecutionsAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<List<BackfillExecution>?> GetBackfillExecutionsAsync(int limit = 50, CancellationToken ct = default)
+    parameters:
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillExecution}}
+    content.vb: Public Function GetBackfillExecutionsAsync(limit As Integer = 50, ct As CancellationToken = Nothing) As Task(Of List(Of BackfillExecution))
+  overload: Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync*
+  nameWithType.vb: UiApiClient.GetBackfillExecutionsAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetBackfillExecutionsAsync(Integer, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  id: GetBackfillStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillStatisticsAsync(int?, CancellationToken)
+  nameWithType: UiApiClient.GetBackfillStatisticsAsync(int?, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync(int?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillStatisticsAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<BackfillStatistics?> GetBackfillStatisticsAsync(int? hours = null, CancellationToken ct = default)
+    parameters:
+    - id: hours
+      type: System.Nullable{System.Int32}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillStatistics}
+    content.vb: Public Function GetBackfillStatisticsAsync(hours As Integer? = Nothing, ct As CancellationToken = Nothing) As Task(Of BackfillStatistics)
+  overload: Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync*
+  nameWithType.vb: UiApiClient.GetBackfillStatisticsAsync(Integer?, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync(Integer?, System.Threading.CancellationToken)
+  name.vb: GetBackfillStatisticsAsync(Integer?, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync``1(System.Threading.CancellationToken)
+  id: GetProviderStatusAsync``1(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetProviderStatusAsync<T>(CancellationToken)
+  nameWithType: UiApiClient.GetProviderStatusAsync<T>(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync<T>(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderStatusAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<T?> GetProviderStatusAsync<T>(CancellationToken ct = default) where T : class'
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Public Function GetProviderStatusAsync(Of T As Class)(ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync*
+  nameWithType.vb: UiApiClient.GetProviderStatusAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: GetProviderStatusAsync(Of T)(CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync``1(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync``1(System.String,System.Threading.CancellationToken)
+  id: GetProviderByIdAsync``1(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetProviderByIdAsync<T>(string, CancellationToken)
+  nameWithType: UiApiClient.GetProviderByIdAsync<T>(string, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync<T>(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderByIdAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<T?> GetProviderByIdAsync<T>(string providerName, CancellationToken ct = default) where T : class'
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Public Function GetProviderByIdAsync(Of T As Class)(providerName As String, ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync*
+  nameWithType.vb: UiApiClient.GetProviderByIdAsync(Of T)(String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync(Of T)(String, System.Threading.CancellationToken)
+  name.vb: GetProviderByIdAsync(Of T)(String, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync``1(System.Threading.CancellationToken)
+  id: GetProviderRateLimitsAsync``1(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetProviderRateLimitsAsync<T>(CancellationToken)
+  nameWithType: UiApiClient.GetProviderRateLimitsAsync<T>(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync<T>(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderRateLimitsAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<T?> GetProviderRateLimitsAsync<T>(CancellationToken ct = default) where T : class'
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Public Function GetProviderRateLimitsAsync(Of T As Class)(ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync*
+  nameWithType.vb: UiApiClient.GetProviderRateLimitsAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: GetProviderRateLimitsAsync(Of T)(CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync``1(System.Threading.CancellationToken)
+  id: GetProviderCapabilitiesAsync``1(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetProviderCapabilitiesAsync<T>(CancellationToken)
+  nameWithType: UiApiClient.GetProviderCapabilitiesAsync<T>(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync<T>(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderCapabilitiesAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<T?> GetProviderCapabilitiesAsync<T>(CancellationToken ct = default) where T : class'
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Public Function GetProviderCapabilitiesAsync(Of T As Class)(ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync*
+  nameWithType.vb: UiApiClient.GetProviderCapabilitiesAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: GetProviderCapabilitiesAsync(Of T)(CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync(System.String,System.Threading.CancellationToken)
+  id: GetOptionsExpirationsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetOptionsExpirationsAsync(string, CancellationToken)
+  nameWithType: UiApiClient.GetOptionsExpirationsAsync(string, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOptionsExpirationsAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<OptionsExpirationsResponse?> GetOptionsExpirationsAsync(string underlyingSymbol, CancellationToken ct = default)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsExpirationsResponse}
+    content.vb: Public Function GetOptionsExpirationsAsync(underlyingSymbol As String, ct As CancellationToken = Nothing) As Task(Of OptionsExpirationsResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync*
+  nameWithType.vb: UiApiClient.GetOptionsExpirationsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetOptionsExpirationsAsync(String, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: GetOptionsStrikesAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetOptionsStrikesAsync(string, string, CancellationToken)
+  nameWithType: UiApiClient.GetOptionsStrikesAsync(string, string, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOptionsStrikesAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<OptionsStrikesResponse?> GetOptionsStrikesAsync(string underlyingSymbol, string expiration, CancellationToken ct = default)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+    - id: expiration
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsStrikesResponse}
+    content.vb: Public Function GetOptionsStrikesAsync(underlyingSymbol As String, expiration As String, ct As CancellationToken = Nothing) As Task(Of OptionsStrikesResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync*
+  nameWithType.vb: UiApiClient.GetOptionsStrikesAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync(String, String, System.Threading.CancellationToken)
+  name.vb: GetOptionsStrikesAsync(String, String, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync(System.String,System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync(System.String,System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  id: GetOptionsChainAsync(System.String,System.String,System.Nullable{System.Int32},System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetOptionsChainAsync(string, string?, int?, CancellationToken)
+  nameWithType: UiApiClient.GetOptionsChainAsync(string, string?, int?, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync(string, string?, int?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOptionsChainAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<OptionsChainResponse?> GetOptionsChainAsync(string underlyingSymbol, string? expiration = null, int? strikeRange = null, CancellationToken ct = default)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+    - id: expiration
+      type: System.String
+    - id: strikeRange
+      type: System.Nullable{System.Int32}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsChainResponse}
+    content.vb: Public Function GetOptionsChainAsync(underlyingSymbol As String, expiration As String = Nothing, strikeRange As Integer? = Nothing, ct As CancellationToken = Nothing) As Task(Of OptionsChainResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync*
+  nameWithType.vb: UiApiClient.GetOptionsChainAsync(String, String, Integer?, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync(String, String, Integer?, System.Threading.CancellationToken)
+  name.vb: GetOptionsChainAsync(String, String, Integer?, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync(System.String,System.Threading.CancellationToken)
+  id: GetOptionsQuotesByUnderlyingAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetOptionsQuotesByUnderlyingAsync(string, CancellationToken)
+  nameWithType: UiApiClient.GetOptionsQuotesByUnderlyingAsync(string, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOptionsQuotesByUnderlyingAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<List<OptionQuoteDto>?> GetOptionsQuotesByUnderlyingAsync(string underlyingSymbol, CancellationToken ct = default)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.OptionQuoteDto}}
+    content.vb: Public Function GetOptionsQuotesByUnderlyingAsync(underlyingSymbol As String, ct As CancellationToken = Nothing) As Task(Of List(Of OptionQuoteDto))
+  overload: Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync*
+  nameWithType.vb: UiApiClient.GetOptionsQuotesByUnderlyingAsync(String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync(String, System.Threading.CancellationToken)
+  name.vb: GetOptionsQuotesByUnderlyingAsync(String, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync(System.Threading.CancellationToken)
+  id: GetOptionsSummaryAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetOptionsSummaryAsync(CancellationToken)
+  nameWithType: UiApiClient.GetOptionsSummaryAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOptionsSummaryAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<OptionsSummaryResponse?> GetOptionsSummaryAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsSummaryResponse}
+    content.vb: Public Function GetOptionsSummaryAsync(ct As CancellationToken = Nothing) As Task(Of OptionsSummaryResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync(System.Threading.CancellationToken)
+  id: GetOptionsTrackedUnderlyingsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetOptionsTrackedUnderlyingsAsync(CancellationToken)
+  nameWithType: UiApiClient.GetOptionsTrackedUnderlyingsAsync(CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOptionsTrackedUnderlyingsAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<List<string>?> GetOptionsTrackedUnderlyingsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{System.String}}
+    content.vb: Public Function GetOptionsTrackedUnderlyingsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of String))
+  overload: Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync(Meridian.Contracts.Api.OptionsRefreshRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync(Meridian.Contracts.Api.OptionsRefreshRequest,System.Threading.CancellationToken)
+  id: RefreshOptionsChainAsync(Meridian.Contracts.Api.OptionsRefreshRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: RefreshOptionsChainAsync(OptionsRefreshRequest, CancellationToken)
+  nameWithType: UiApiClient.RefreshOptionsChainAsync(OptionsRefreshRequest, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync(Meridian.Contracts.Api.OptionsRefreshRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RefreshOptionsChainAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public Task<OptionsChainResponse?> RefreshOptionsChainAsync(OptionsRefreshRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.Api.OptionsRefreshRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsChainResponse}
+    content.vb: Public Function RefreshOptionsChainAsync(request As OptionsRefreshRequest, ct As CancellationToken = Nothing) As Task(Of OptionsChainResponse)
+  overload: Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync*
+- uid: Meridian.Contracts.Api.UiApiClient.GetAsync``1(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetAsync``1(System.String,System.Threading.CancellationToken)
+  id: GetAsync``1(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetAsync<T>(string, CancellationToken)
+  nameWithType: UiApiClient.GetAsync<T>(string, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetAsync<T>(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class'
+    parameters:
+    - id: endpoint
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Public Function GetAsync(Of T As Class)(endpoint As String, ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Contracts.Api.UiApiClient.GetAsync*
+  nameWithType.vb: UiApiClient.GetAsync(Of T)(String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetAsync(Of T)(String, System.Threading.CancellationToken)
+  name.vb: GetAsync(Of T)(String, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync``1(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync``1(System.String,System.Threading.CancellationToken)
+  id: GetWithResponseAsync``1(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetWithResponseAsync<T>(string, CancellationToken)
+  nameWithType: UiApiClient.GetWithResponseAsync<T>(string, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync<T>(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetWithResponseAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default) where T : class'
+    parameters:
+    - id: endpoint
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.ApiResponse{{T}}}
+    content.vb: Public Function GetWithResponseAsync(Of T As Class)(endpoint As String, ct As CancellationToken = Nothing) As Task(Of ApiResponse(Of T))
+  overload: Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync*
+  nameWithType.vb: UiApiClient.GetWithResponseAsync(Of T)(String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync(Of T)(String, System.Threading.CancellationToken)
+  name.vb: GetWithResponseAsync(Of T)(String, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.PostAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.PostAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  id: PostAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: PostAsync<T>(string, object?, CancellationToken)
+  nameWithType: UiApiClient.PostAsync<T>(string, object?, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.PostAsync<T>(string, object?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<T?> PostAsync<T>(string endpoint, object? payload = null, CancellationToken ct = default) where T : class'
+    parameters:
+    - id: endpoint
+      type: System.String
+    - id: payload
+      type: System.Object
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Public Function PostAsync(Of T As Class)(endpoint As String, payload As Object = Nothing, ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Contracts.Api.UiApiClient.PostAsync*
+  nameWithType.vb: UiApiClient.PostAsync(Of T)(String, Object, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.PostAsync(Of T)(String, Object, System.Threading.CancellationToken)
+  name.vb: PostAsync(Of T)(String, Object, CancellationToken)
+- uid: Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  id: PostWithResponseAsync``1(System.String,System.Object,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Api.UiApiClient
+  langs:
+  - csharp
+  - vb
+  name: PostWithResponseAsync<T>(string, object?, CancellationToken)
+  nameWithType: UiApiClient.PostWithResponseAsync<T>(string, object?, CancellationToken)
+  fullName: Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync<T>(string, object?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiApiClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostWithResponseAsync
+    path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: 'public Task<ApiResponse<T>> PostWithResponseAsync<T>(string endpoint, object? payload = null, CancellationToken ct = default) where T : class'
+    parameters:
+    - id: endpoint
+      type: System.String
+    - id: payload
+      type: System.Object
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.ApiResponse{{T}}}
+    content.vb: Public Function PostWithResponseAsync(Of T As Class)(endpoint As String, payload As Object = Nothing, ct As CancellationToken = Nothing) As Task(Of ApiResponse(Of T))
+  overload: Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync*
+  nameWithType.vb: UiApiClient.PostWithResponseAsync(Of T)(String, Object, CancellationToken)
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync(Of T)(String, Object, System.Threading.CancellationToken)
+  name.vb: PostWithResponseAsync(Of T)(String, Object, CancellationToken)
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.UiApiClient.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.#ctor
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient__ctor_System_Net_Http_HttpClient_System_String_System_Text_Json_JsonSerializerOptions_
+  name: UiApiClient
+  nameWithType: UiApiClient.UiApiClient
+  fullName: Meridian.Contracts.Api.UiApiClient.UiApiClient
+  nameWithType.vb: UiApiClient.New
+  fullName.vb: Meridian.Contracts.Api.UiApiClient.New
+  name.vb: New
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Text.Json.JsonSerializerOptions
+  commentId: T:System.Text.Json.JsonSerializerOptions
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonserializeroptions
+  name: JsonSerializerOptions
+  nameWithType: JsonSerializerOptions
+  fullName: System.Text.Json.JsonSerializerOptions
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: Meridian.Contracts.Api.UiApiClient.BaseUrl*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.BaseUrl
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_BaseUrl
+  name: BaseUrl
+  nameWithType: UiApiClient.BaseUrl
+  fullName: Meridian.Contracts.Api.UiApiClient.BaseUrl
+- uid: Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_UpdateBaseUrl_System_String_
+  name: UpdateBaseUrl
+  nameWithType: UiApiClient.UpdateBaseUrl
+  fullName: Meridian.Contracts.Api.UiApiClient.UpdateBaseUrl
+- uid: Meridian.Contracts.Api.UiApiClient.GetStatusAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetStatusAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetStatusAsync_System_Threading_CancellationToken_
+  name: GetStatusAsync
+  nameWithType: UiApiClient.GetStatusAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetStatusAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.StatusResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.StatusResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StatusResponse>
+  nameWithType: Task<StatusResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.StatusResponse>
+  nameWithType.vb: Task(Of StatusResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.StatusResponse)
+  name.vb: Task(Of StatusResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.StatusResponse
+    name: StatusResponse
+    href: Meridian.Contracts.Api.StatusResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.StatusResponse
+    name: StatusResponse
+    href: Meridian.Contracts.Api.StatusResponse.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Contracts.Api.UiApiClient.GetHealthAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetHealthAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetHealthAsync_System_Threading_CancellationToken_
+  name: GetHealthAsync
+  nameWithType: UiApiClient.GetHealthAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetHealthAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.HealthCheckResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.HealthCheckResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HealthCheckResponse>
+  nameWithType: Task<HealthCheckResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.HealthCheckResponse>
+  nameWithType.vb: Task(Of HealthCheckResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.HealthCheckResponse)
+  name.vb: Task(Of HealthCheckResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.HealthCheckResponse
+    name: HealthCheckResponse
+    href: Meridian.Contracts.Api.HealthCheckResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.HealthCheckResponse
+    name: HealthCheckResponse
+    href: Meridian.Contracts.Api.HealthCheckResponse.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetHealthDetailedAsync_System_Threading_CancellationToken_
+  name: GetHealthDetailedAsync
+  nameWithType: UiApiClient.GetHealthDetailedAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetHealthDetailedAsync
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetBackfillProvidersAsync_System_Threading_CancellationToken_
+  name: GetBackfillProvidersAsync
+  nameWithType: UiApiClient.GetBackfillProvidersAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillProvidersAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillProviderInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillProviderInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<BackfillProviderInfo>>
+  nameWithType: Task<List<BackfillProviderInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Contracts.Api.BackfillProviderInfo>>
+  nameWithType.vb: Task(Of List(Of BackfillProviderInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Contracts.Api.BackfillProviderInfo))
+  name.vb: Task(Of List(Of BackfillProviderInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillProviderInfo
+    name: BackfillProviderInfo
+    href: Meridian.Contracts.Api.BackfillProviderInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillProviderInfo
+    name: BackfillProviderInfo
+    href: Meridian.Contracts.Api.BackfillProviderInfo.html
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetBackfillStatusAsync_System_Threading_CancellationToken_
+  name: GetBackfillStatusAsync
+  nameWithType: UiApiClient.GetBackfillStatusAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillStatusAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillResultDto>
+  nameWithType: Task<BackfillResultDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillResultDto>
+  nameWithType.vb: Task(Of BackfillResultDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillResultDto)
+  name.vb: Task(Of BackfillResultDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillResultDto
+    name: BackfillResultDto
+    href: Meridian.Contracts.Api.BackfillResultDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillResultDto
+    name: BackfillResultDto
+    href: Meridian.Contracts.Api.BackfillResultDto.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.RunBackfillAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.RunBackfillAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_RunBackfillAsync_Meridian_Contracts_Api_BackfillRequest_System_Threading_CancellationToken_
+  name: RunBackfillAsync
+  nameWithType: UiApiClient.RunBackfillAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.RunBackfillAsync
+- uid: Meridian.Contracts.Api.BackfillRequest
+  commentId: T:Meridian.Contracts.Api.BackfillRequest
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.BackfillRequest.html
+  name: BackfillRequest
+  nameWithType: BackfillRequest
+  fullName: Meridian.Contracts.Api.BackfillRequest
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetBackfillHealthAsync_System_Threading_CancellationToken_
+  name: GetBackfillHealthAsync
+  nameWithType: UiApiClient.GetBackfillHealthAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillHealthAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillHealthResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillHealthResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillHealthResponse>
+  nameWithType: Task<BackfillHealthResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillHealthResponse>
+  nameWithType.vb: Task(Of BackfillHealthResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillHealthResponse)
+  name.vb: Task(Of BackfillHealthResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillHealthResponse
+    name: BackfillHealthResponse
+    href: Meridian.Contracts.Api.BackfillHealthResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillHealthResponse
+    name: BackfillHealthResponse
+    href: Meridian.Contracts.Api.BackfillHealthResponse.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_ResolveSymbolAsync_System_String_System_Threading_CancellationToken_
+  name: ResolveSymbolAsync
+  nameWithType: UiApiClient.ResolveSymbolAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.ResolveSymbolAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.SymbolResolutionResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.SymbolResolutionResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolResolutionResponse>
+  nameWithType: Task<SymbolResolutionResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.SymbolResolutionResponse>
+  nameWithType.vb: Task(Of SymbolResolutionResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.SymbolResolutionResponse)
+  name.vb: Task(Of SymbolResolutionResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.SymbolResolutionResponse
+    name: SymbolResolutionResponse
+    href: Meridian.Contracts.Api.SymbolResolutionResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.SymbolResolutionResponse
+    name: SymbolResolutionResponse
+    href: Meridian.Contracts.Api.SymbolResolutionResponse.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.RunGapFillAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.RunGapFillAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_RunGapFillAsync_Meridian_Contracts_Api_GapFillRequest_System_Threading_CancellationToken_
+  name: RunGapFillAsync
+  nameWithType: UiApiClient.RunGapFillAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.RunGapFillAsync
+- uid: Meridian.Contracts.Api.GapFillRequest
+  commentId: T:Meridian.Contracts.Api.GapFillRequest
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.GapFillRequest.html
+  name: GapFillRequest
+  nameWithType: GapFillRequest
+  fullName: Meridian.Contracts.Api.GapFillRequest
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetBackfillPresetsAsync_System_Threading_CancellationToken_
+  name: GetBackfillPresetsAsync
+  nameWithType: UiApiClient.GetBackfillPresetsAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillPresetsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillPreset}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillPreset}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<BackfillPreset>>
+  nameWithType: Task<List<BackfillPreset>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Contracts.Api.BackfillPreset>>
+  nameWithType.vb: Task(Of List(Of BackfillPreset))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Contracts.Api.BackfillPreset))
+  name.vb: Task(Of List(Of BackfillPreset))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillPreset
+    name: BackfillPreset
+    href: Meridian.Contracts.Api.BackfillPreset.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillPreset
+    name: BackfillPreset
+    href: Meridian.Contracts.Api.BackfillPreset.html
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetBackfillExecutionsAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetBackfillExecutionsAsync
+  nameWithType: UiApiClient.GetBackfillExecutionsAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillExecutionsAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillExecution}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.BackfillExecution}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<BackfillExecution>>
+  nameWithType: Task<List<BackfillExecution>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Contracts.Api.BackfillExecution>>
+  nameWithType.vb: Task(Of List(Of BackfillExecution))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Contracts.Api.BackfillExecution))
+  name.vb: Task(Of List(Of BackfillExecution))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillExecution
+    name: BackfillExecution
+    href: Meridian.Contracts.Api.BackfillExecution.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillExecution
+    name: BackfillExecution
+    href: Meridian.Contracts.Api.BackfillExecution.html
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetBackfillStatisticsAsync_System_Nullable_System_Int32__System_Threading_CancellationToken_
+  name: GetBackfillStatisticsAsync
+  nameWithType: UiApiClient.GetBackfillStatisticsAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetBackfillStatisticsAsync
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillStatistics}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillStatistics}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillStatistics>
+  nameWithType: Task<BackfillStatistics>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillStatistics>
+  nameWithType.vb: Task(Of BackfillStatistics)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillStatistics)
+  name.vb: Task(Of BackfillStatistics)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillStatistics
+    name: BackfillStatistics
+    href: Meridian.Contracts.Api.BackfillStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillStatistics
+    name: BackfillStatistics
+    href: Meridian.Contracts.Api.BackfillStatistics.html
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetProviderStatusAsync__1_System_Threading_CancellationToken_
+  name: GetProviderStatusAsync
+  nameWithType: UiApiClient.GetProviderStatusAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderStatusAsync
+- uid: System.Threading.Tasks.Task{{T}}
+  commentId: T:System.Threading.Tasks.Task{``0}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<T>
+  nameWithType: Task<T>
+  fullName: System.Threading.Tasks.Task<T>
+  nameWithType.vb: Task(Of T)
+  fullName.vb: System.Threading.Tasks.Task(Of T)
+  name.vb: Task(Of T)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetProviderByIdAsync__1_System_String_System_Threading_CancellationToken_
+  name: GetProviderByIdAsync
+  nameWithType: UiApiClient.GetProviderByIdAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderByIdAsync
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetProviderRateLimitsAsync__1_System_Threading_CancellationToken_
+  name: GetProviderRateLimitsAsync
+  nameWithType: UiApiClient.GetProviderRateLimitsAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderRateLimitsAsync
+- uid: Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetProviderCapabilitiesAsync__1_System_Threading_CancellationToken_
+  name: GetProviderCapabilitiesAsync
+  nameWithType: UiApiClient.GetProviderCapabilitiesAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetProviderCapabilitiesAsync
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetOptionsExpirationsAsync_System_String_System_Threading_CancellationToken_
+  name: GetOptionsExpirationsAsync
+  nameWithType: UiApiClient.GetOptionsExpirationsAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsExpirationsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsExpirationsResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsExpirationsResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OptionsExpirationsResponse>
+  nameWithType: Task<OptionsExpirationsResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.OptionsExpirationsResponse>
+  nameWithType.vb: Task(Of OptionsExpirationsResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.OptionsExpirationsResponse)
+  name.vb: Task(Of OptionsExpirationsResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OptionsExpirationsResponse
+    name: OptionsExpirationsResponse
+    href: Meridian.Contracts.Api.OptionsExpirationsResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OptionsExpirationsResponse
+    name: OptionsExpirationsResponse
+    href: Meridian.Contracts.Api.OptionsExpirationsResponse.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetOptionsStrikesAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: GetOptionsStrikesAsync
+  nameWithType: UiApiClient.GetOptionsStrikesAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsStrikesAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsStrikesResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsStrikesResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OptionsStrikesResponse>
+  nameWithType: Task<OptionsStrikesResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.OptionsStrikesResponse>
+  nameWithType.vb: Task(Of OptionsStrikesResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.OptionsStrikesResponse)
+  name.vb: Task(Of OptionsStrikesResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OptionsStrikesResponse
+    name: OptionsStrikesResponse
+    href: Meridian.Contracts.Api.OptionsStrikesResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OptionsStrikesResponse
+    name: OptionsStrikesResponse
+    href: Meridian.Contracts.Api.OptionsStrikesResponse.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetOptionsChainAsync_System_String_System_String_System_Nullable_System_Int32__System_Threading_CancellationToken_
+  name: GetOptionsChainAsync
+  nameWithType: UiApiClient.GetOptionsChainAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsChainAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsChainResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsChainResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OptionsChainResponse>
+  nameWithType: Task<OptionsChainResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.OptionsChainResponse>
+  nameWithType.vb: Task(Of OptionsChainResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.OptionsChainResponse)
+  name.vb: Task(Of OptionsChainResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OptionsChainResponse
+    name: OptionsChainResponse
+    href: Meridian.Contracts.Api.OptionsChainResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OptionsChainResponse
+    name: OptionsChainResponse
+    href: Meridian.Contracts.Api.OptionsChainResponse.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetOptionsQuotesByUnderlyingAsync_System_String_System_Threading_CancellationToken_
+  name: GetOptionsQuotesByUnderlyingAsync
+  nameWithType: UiApiClient.GetOptionsQuotesByUnderlyingAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsQuotesByUnderlyingAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.OptionQuoteDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Contracts.Api.OptionQuoteDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<OptionQuoteDto>>
+  nameWithType: Task<List<OptionQuoteDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Contracts.Api.OptionQuoteDto>>
+  nameWithType.vb: Task(Of List(Of OptionQuoteDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Contracts.Api.OptionQuoteDto))
+  name.vb: Task(Of List(Of OptionQuoteDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OptionQuoteDto
+    name: OptionQuoteDto
+    href: Meridian.Contracts.Api.OptionQuoteDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OptionQuoteDto
+    name: OptionQuoteDto
+    href: Meridian.Contracts.Api.OptionQuoteDto.html
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetOptionsSummaryAsync_System_Threading_CancellationToken_
+  name: GetOptionsSummaryAsync
+  nameWithType: UiApiClient.GetOptionsSummaryAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsSummaryAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsSummaryResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.OptionsSummaryResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OptionsSummaryResponse>
+  nameWithType: Task<OptionsSummaryResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.OptionsSummaryResponse>
+  nameWithType.vb: Task(Of OptionsSummaryResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.OptionsSummaryResponse)
+  name.vb: Task(Of OptionsSummaryResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OptionsSummaryResponse
+    name: OptionsSummaryResponse
+    href: Meridian.Contracts.Api.OptionsSummaryResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OptionsSummaryResponse
+    name: OptionsSummaryResponse
+    href: Meridian.Contracts.Api.OptionsSummaryResponse.html
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetOptionsTrackedUnderlyingsAsync_System_Threading_CancellationToken_
+  name: GetOptionsTrackedUnderlyingsAsync
+  nameWithType: UiApiClient.GetOptionsTrackedUnderlyingsAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetOptionsTrackedUnderlyingsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<string>>
+  nameWithType: Task<List<string>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<string>>
+  nameWithType.vb: Task(Of List(Of String))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of String))
+  name.vb: Task(Of List(Of String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_RefreshOptionsChainAsync_Meridian_Contracts_Api_OptionsRefreshRequest_System_Threading_CancellationToken_
+  name: RefreshOptionsChainAsync
+  nameWithType: UiApiClient.RefreshOptionsChainAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.RefreshOptionsChainAsync
+- uid: Meridian.Contracts.Api.OptionsRefreshRequest
+  commentId: T:Meridian.Contracts.Api.OptionsRefreshRequest
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.OptionsRefreshRequest.html
+  name: OptionsRefreshRequest
+  nameWithType: OptionsRefreshRequest
+  fullName: Meridian.Contracts.Api.OptionsRefreshRequest
+- uid: Meridian.Contracts.Api.UiApiClient.GetAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetAsync__1_System_String_System_Threading_CancellationToken_
+  name: GetAsync
+  nameWithType: UiApiClient.GetAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetAsync
+- uid: Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_GetWithResponseAsync__1_System_String_System_Threading_CancellationToken_
+  name: GetWithResponseAsync
+  nameWithType: UiApiClient.GetWithResponseAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.GetWithResponseAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.ApiResponse{{T}}}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.ApiResponse{``0}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ApiResponse<T>>
+  nameWithType: Task<ApiResponse<T>>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.ApiResponse<T>>
+  nameWithType.vb: Task(Of ApiResponse(Of T))
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.ApiResponse(Of T))
+  name.vb: Task(Of ApiResponse(Of T))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ApiResponse`1
+    name: ApiResponse
+    href: Meridian.Contracts.Api.ApiResponse-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ApiResponse`1
+    name: ApiResponse
+    href: Meridian.Contracts.Api.ApiResponse-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Api.UiApiClient.PostAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.PostAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_PostAsync__1_System_String_System_Object_System_Threading_CancellationToken_
+  name: PostAsync
+  nameWithType: UiApiClient.PostAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.PostAsync
+- uid: Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync*
+  commentId: Overload:Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync
+  href: Meridian.Contracts.Api.UiApiClient.html#Meridian_Contracts_Api_UiApiClient_PostWithResponseAsync__1_System_String_System_Object_System_Threading_CancellationToken_
+  name: PostWithResponseAsync
+  nameWithType: UiApiClient.PostWithResponseAsync
+  fullName: Meridian.Contracts.Api.UiApiClient.PostWithResponseAsync

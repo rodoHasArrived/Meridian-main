@@ -1,0 +1,946 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  id: QualityLatencyStatisticsResponse
+  parent: Meridian.Contracts.Api.Quality
+  children:
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.DateTimeOffset)
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples
+  langs:
+  - csharp
+  - vb
+  name: QualityLatencyStatisticsResponse
+  nameWithType: QualityLatencyStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityLatencyStatisticsResponse
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Latency statistics payload returned by the dashboard and latency statistics route.
+  example: []
+  syntax:
+    content: 'public sealed record QualityLatencyStatisticsResponse : IEquatable<QualityLatencyStatisticsResponse>'
+    content.vb: Public NotInheritable Class QualityLatencyStatisticsResponse Implements IEquatable(Of QualityLatencyStatisticsResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.DateTimeOffset)
+  id: '#ctor(System.Int32,System.Int64,System.Double,System.Double,System.Double,System.Double,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.DateTimeOffset)'
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: QualityLatencyStatisticsResponse(int, long, double, double, double, double, string?, string?, IReadOnlyDictionary<string, double>, DateTimeOffset)
+  nameWithType: QualityLatencyStatisticsResponse.QualityLatencyStatisticsResponse(int, long, double, double, double, double, string?, string?, IReadOnlyDictionary<string, double>, DateTimeOffset)
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.QualityLatencyStatisticsResponse(int, long, double, double, double, double, string?, string?, System.Collections.Generic.IReadOnlyDictionary<string, double>, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Latency statistics payload returned by the dashboard and latency statistics route.
+  example: []
+  syntax:
+    content: public QualityLatencyStatisticsResponse(int SymbolsTracked, long TotalSamples, double GlobalMeanMs, double GlobalP50Ms, double GlobalP90Ms, double GlobalP99Ms, string? FastestSymbol, string? SlowestSymbol, IReadOnlyDictionary<string, double> DistributionsBySymbol, DateTimeOffset CalculatedAt)
+    parameters:
+    - id: SymbolsTracked
+      type: System.Int32
+    - id: TotalSamples
+      type: System.Int64
+    - id: GlobalMeanMs
+      type: System.Double
+    - id: GlobalP50Ms
+      type: System.Double
+    - id: GlobalP90Ms
+      type: System.Double
+    - id: GlobalP99Ms
+      type: System.Double
+    - id: FastestSymbol
+      type: System.String
+    - id: SlowestSymbol
+      type: System.String
+    - id: DistributionsBySymbol
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double}
+    - id: CalculatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(SymbolsTracked As Integer, TotalSamples As Long, GlobalMeanMs As Double, GlobalP50Ms As Double, GlobalP90Ms As Double, GlobalP99Ms As Double, FastestSymbol As String, SlowestSymbol As String, DistributionsBySymbol As IReadOnlyDictionary(Of String, Double), CalculatedAt As DateTimeOffset)
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.#ctor*
+  nameWithType.vb: QualityLatencyStatisticsResponse.New(Integer, Long, Double, Double, Double, Double, String, String, IReadOnlyDictionary(Of String, Double), DateTimeOffset)
+  fullName.vb: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.New(Integer, Long, Double, Double, Double, Double, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, Double), System.DateTimeOffset)
+  name.vb: New(Integer, Long, Double, Double, Double, Double, String, String, IReadOnlyDictionary(Of String, Double), DateTimeOffset)
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked
+  id: SymbolsTracked
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: SymbolsTracked
+  nameWithType: QualityLatencyStatisticsResponse.SymbolsTracked
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsTracked
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public int SymbolsTracked { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolsTracked As Integer
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples
+  id: TotalSamples
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: TotalSamples
+  nameWithType: QualityLatencyStatisticsResponse.TotalSamples
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSamples
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public long TotalSamples { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalSamples As Long
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs
+  id: GlobalMeanMs
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: GlobalMeanMs
+  nameWithType: QualityLatencyStatisticsResponse.GlobalMeanMs
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalMeanMs
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public double GlobalMeanMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalMeanMs As Double
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms
+  id: GlobalP50Ms
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: GlobalP50Ms
+  nameWithType: QualityLatencyStatisticsResponse.GlobalP50Ms
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalP50Ms
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public double GlobalP50Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalP50Ms As Double
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms
+  id: GlobalP90Ms
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: GlobalP90Ms
+  nameWithType: QualityLatencyStatisticsResponse.GlobalP90Ms
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalP90Ms
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public double GlobalP90Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalP90Ms As Double
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms
+  id: GlobalP99Ms
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: GlobalP99Ms
+  nameWithType: QualityLatencyStatisticsResponse.GlobalP99Ms
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalP99Ms
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public double GlobalP99Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalP99Ms As Double
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol
+  id: FastestSymbol
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: FastestSymbol
+  nameWithType: QualityLatencyStatisticsResponse.FastestSymbol
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FastestSymbol
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string? FastestSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FastestSymbol As String
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol
+  id: SlowestSymbol
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: SlowestSymbol
+  nameWithType: QualityLatencyStatisticsResponse.SlowestSymbol
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SlowestSymbol
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string? SlowestSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SlowestSymbol As String
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol
+  id: DistributionsBySymbol
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: DistributionsBySymbol
+  nameWithType: QualityLatencyStatisticsResponse.DistributionsBySymbol
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DistributionsBySymbol
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public IReadOnlyDictionary<string, double> DistributionsBySymbol { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double}
+    content.vb: Public Property DistributionsBySymbol As IReadOnlyDictionary(Of String, Double)
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol*
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt
+  commentId: P:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt
+  id: CalculatedAt
+  parent: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: CalculatedAt
+  nameWithType: QualityLatencyStatisticsResponse.CalculatedAt
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculatedAt
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public DateTimeOffset CalculatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CalculatedAt As DateTimeOffset
+  overload: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt*
+references:
+- uid: Meridian.Contracts.Api.Quality
+  commentId: N:Meridian.Contracts.Api.Quality
+  href: Meridian.html
+  name: Meridian.Contracts.Api.Quality
+  nameWithType: Meridian.Contracts.Api.Quality
+  fullName: Meridian.Contracts.Api.Quality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualityLatencyStatisticsResponse>
+  nameWithType: IEquatable<QualityLatencyStatisticsResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse>
+  nameWithType.vb: IEquatable(Of QualityLatencyStatisticsResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse)
+  name.vb: IEquatable(Of QualityLatencyStatisticsResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+    name: QualityLatencyStatisticsResponse
+    href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+    name: QualityLatencyStatisticsResponse
+    href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.#ctor
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse__ctor_System_Int32_System_Int64_System_Double_System_Double_System_Double_System_Double_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Double__System_DateTimeOffset_
+  name: QualityLatencyStatisticsResponse
+  nameWithType: QualityLatencyStatisticsResponse.QualityLatencyStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.QualityLatencyStatisticsResponse
+  nameWithType.vb: QualityLatencyStatisticsResponse.New
+  fullName.vb: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, double>
+  nameWithType: IReadOnlyDictionary<string, double>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, double>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Double)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Double)
+  name.vb: IReadOnlyDictionary(Of String, Double)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_SymbolsTracked
+  name: SymbolsTracked
+  nameWithType: QualityLatencyStatisticsResponse.SymbolsTracked
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SymbolsTracked
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_TotalSamples
+  name: TotalSamples
+  nameWithType: QualityLatencyStatisticsResponse.TotalSamples
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.TotalSamples
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_GlobalMeanMs
+  name: GlobalMeanMs
+  nameWithType: QualityLatencyStatisticsResponse.GlobalMeanMs
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalMeanMs
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_GlobalP50Ms
+  name: GlobalP50Ms
+  nameWithType: QualityLatencyStatisticsResponse.GlobalP50Ms
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP50Ms
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_GlobalP90Ms
+  name: GlobalP90Ms
+  nameWithType: QualityLatencyStatisticsResponse.GlobalP90Ms
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP90Ms
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_GlobalP99Ms
+  name: GlobalP99Ms
+  nameWithType: QualityLatencyStatisticsResponse.GlobalP99Ms
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.GlobalP99Ms
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_FastestSymbol
+  name: FastestSymbol
+  nameWithType: QualityLatencyStatisticsResponse.FastestSymbol
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.FastestSymbol
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_SlowestSymbol
+  name: SlowestSymbol
+  nameWithType: QualityLatencyStatisticsResponse.SlowestSymbol
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.SlowestSymbol
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_DistributionsBySymbol
+  name: DistributionsBySymbol
+  nameWithType: QualityLatencyStatisticsResponse.DistributionsBySymbol
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.DistributionsBySymbol
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualityLatencyStatisticsResponse_CalculatedAt
+  name: CalculatedAt
+  nameWithType: QualityLatencyStatisticsResponse.CalculatedAt
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.CalculatedAt

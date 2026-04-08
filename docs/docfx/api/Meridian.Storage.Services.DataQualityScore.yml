@@ -1,0 +1,587 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.DataQualityScore
+  commentId: T:Meridian.Storage.Services.DataQualityScore
+  id: DataQualityScore
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.DataQualityScore.#ctor(System.String,System.DateTimeOffset,System.Double,Meridian.Storage.Services.QualityDimension[])
+  - Meridian.Storage.Services.DataQualityScore.Dimensions
+  - Meridian.Storage.Services.DataQualityScore.EvaluatedAt
+  - Meridian.Storage.Services.DataQualityScore.OverallScore
+  - Meridian.Storage.Services.DataQualityScore.Path
+  langs:
+  - csharp
+  - vb
+  name: DataQualityScore
+  nameWithType: DataQualityScore
+  fullName: Meridian.Storage.Services.DataQualityScore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityScore
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record DataQualityScore : IEquatable<DataQualityScore>'
+    content.vb: Public NotInheritable Class DataQualityScore Implements IEquatable(Of DataQualityScore)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.DataQualityScore}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.DataQualityScore.#ctor(System.String,System.DateTimeOffset,System.Double,Meridian.Storage.Services.QualityDimension[])
+  commentId: M:Meridian.Storage.Services.DataQualityScore.#ctor(System.String,System.DateTimeOffset,System.Double,Meridian.Storage.Services.QualityDimension[])
+  id: '#ctor(System.String,System.DateTimeOffset,System.Double,Meridian.Storage.Services.QualityDimension[])'
+  parent: Meridian.Storage.Services.DataQualityScore
+  langs:
+  - csharp
+  - vb
+  name: DataQualityScore(string, DateTimeOffset, double, QualityDimension[])
+  nameWithType: DataQualityScore.DataQualityScore(string, DateTimeOffset, double, QualityDimension[])
+  fullName: Meridian.Storage.Services.DataQualityScore.DataQualityScore(string, System.DateTimeOffset, double, Meridian.Storage.Services.QualityDimension[])
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DataQualityScore(string Path, DateTimeOffset EvaluatedAt, double OverallScore, QualityDimension[] Dimensions)
+    parameters:
+    - id: Path
+      type: System.String
+    - id: EvaluatedAt
+      type: System.DateTimeOffset
+    - id: OverallScore
+      type: System.Double
+    - id: Dimensions
+      type: Meridian.Storage.Services.QualityDimension[]
+    content.vb: Public Sub New(Path As String, EvaluatedAt As DateTimeOffset, OverallScore As Double, Dimensions As QualityDimension())
+  overload: Meridian.Storage.Services.DataQualityScore.#ctor*
+  nameWithType.vb: DataQualityScore.New(String, DateTimeOffset, Double, QualityDimension())
+  fullName.vb: Meridian.Storage.Services.DataQualityScore.New(String, System.DateTimeOffset, Double, Meridian.Storage.Services.QualityDimension())
+  name.vb: New(String, DateTimeOffset, Double, QualityDimension())
+- uid: Meridian.Storage.Services.DataQualityScore.Path
+  commentId: P:Meridian.Storage.Services.DataQualityScore.Path
+  id: Path
+  parent: Meridian.Storage.Services.DataQualityScore
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: DataQualityScore.Path
+  fullName: Meridian.Storage.Services.DataQualityScore.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 593
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Path { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.Storage.Services.DataQualityScore.Path*
+- uid: Meridian.Storage.Services.DataQualityScore.EvaluatedAt
+  commentId: P:Meridian.Storage.Services.DataQualityScore.EvaluatedAt
+  id: EvaluatedAt
+  parent: Meridian.Storage.Services.DataQualityScore
+  langs:
+  - csharp
+  - vb
+  name: EvaluatedAt
+  nameWithType: DataQualityScore.EvaluatedAt
+  fullName: Meridian.Storage.Services.DataQualityScore.EvaluatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EvaluatedAt
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 594
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset EvaluatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EvaluatedAt As DateTimeOffset
+  overload: Meridian.Storage.Services.DataQualityScore.EvaluatedAt*
+- uid: Meridian.Storage.Services.DataQualityScore.OverallScore
+  commentId: P:Meridian.Storage.Services.DataQualityScore.OverallScore
+  id: OverallScore
+  parent: Meridian.Storage.Services.DataQualityScore
+  langs:
+  - csharp
+  - vb
+  name: OverallScore
+  nameWithType: DataQualityScore.OverallScore
+  fullName: Meridian.Storage.Services.DataQualityScore.OverallScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallScore
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 595
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double OverallScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property OverallScore As Double
+  overload: Meridian.Storage.Services.DataQualityScore.OverallScore*
+- uid: Meridian.Storage.Services.DataQualityScore.Dimensions
+  commentId: P:Meridian.Storage.Services.DataQualityScore.Dimensions
+  id: Dimensions
+  parent: Meridian.Storage.Services.DataQualityScore
+  langs:
+  - csharp
+  - vb
+  name: Dimensions
+  nameWithType: DataQualityScore.Dimensions
+  fullName: Meridian.Storage.Services.DataQualityScore.Dimensions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dimensions
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 596
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public QualityDimension[] Dimensions { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.QualityDimension[]
+    content.vb: Public Property Dimensions As QualityDimension()
+  overload: Meridian.Storage.Services.DataQualityScore.Dimensions*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.DataQualityScore}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.DataQualityScore}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataQualityScore>
+  nameWithType: IEquatable<DataQualityScore>
+  fullName: System.IEquatable<Meridian.Storage.Services.DataQualityScore>
+  nameWithType.vb: IEquatable(Of DataQualityScore)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.DataQualityScore)
+  name.vb: IEquatable(Of DataQualityScore)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataQualityScore
+    name: DataQualityScore
+    href: Meridian.Storage.Services.DataQualityScore.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataQualityScore
+    name: DataQualityScore
+    href: Meridian.Storage.Services.DataQualityScore.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.DataQualityScore.#ctor*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScore.#ctor
+  href: Meridian.Storage.Services.DataQualityScore.html#Meridian_Storage_Services_DataQualityScore__ctor_System_String_System_DateTimeOffset_System_Double_Meridian_Storage_Services_QualityDimension___
+  name: DataQualityScore
+  nameWithType: DataQualityScore.DataQualityScore
+  fullName: Meridian.Storage.Services.DataQualityScore.DataQualityScore
+  nameWithType.vb: DataQualityScore.New
+  fullName.vb: Meridian.Storage.Services.DataQualityScore.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Services.QualityDimension[]
+  isExternal: true
+  href: Meridian.Storage.Services.QualityDimension.html
+  name: QualityDimension[]
+  nameWithType: QualityDimension[]
+  fullName: Meridian.Storage.Services.QualityDimension[]
+  nameWithType.vb: QualityDimension()
+  fullName.vb: Meridian.Storage.Services.QualityDimension()
+  name.vb: QualityDimension()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.QualityDimension
+    name: QualityDimension
+    href: Meridian.Storage.Services.QualityDimension.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Storage.Services.QualityDimension
+    name: QualityDimension
+    href: Meridian.Storage.Services.QualityDimension.html
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.DataQualityScore.Path*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScore.Path
+  href: Meridian.Storage.Services.DataQualityScore.html#Meridian_Storage_Services_DataQualityScore_Path
+  name: Path
+  nameWithType: DataQualityScore.Path
+  fullName: Meridian.Storage.Services.DataQualityScore.Path
+- uid: Meridian.Storage.Services.DataQualityScore.EvaluatedAt*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScore.EvaluatedAt
+  href: Meridian.Storage.Services.DataQualityScore.html#Meridian_Storage_Services_DataQualityScore_EvaluatedAt
+  name: EvaluatedAt
+  nameWithType: DataQualityScore.EvaluatedAt
+  fullName: Meridian.Storage.Services.DataQualityScore.EvaluatedAt
+- uid: Meridian.Storage.Services.DataQualityScore.OverallScore*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScore.OverallScore
+  href: Meridian.Storage.Services.DataQualityScore.html#Meridian_Storage_Services_DataQualityScore_OverallScore
+  name: OverallScore
+  nameWithType: DataQualityScore.OverallScore
+  fullName: Meridian.Storage.Services.DataQualityScore.OverallScore
+- uid: Meridian.Storage.Services.DataQualityScore.Dimensions*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScore.Dimensions
+  href: Meridian.Storage.Services.DataQualityScore.html#Meridian_Storage_Services_DataQualityScore_Dimensions
+  name: Dimensions
+  nameWithType: DataQualityScore.Dimensions
+  fullName: Meridian.Storage.Services.DataQualityScore.Dimensions

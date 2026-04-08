@@ -1,0 +1,2541 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  id: BaseSymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore(System.String,System.String,System.String,System.Int32)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson``1(System.String)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose(System.Boolean)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Disposed
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Http
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Log
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimiter
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed
+  langs:
+  - csharp
+  - vb
+  name: BaseSymbolSearchProvider
+  nameWithType: BaseSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseSymbolSearchProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Base class for symbol search providers that eliminates common boilerplate code.
+
+    Provides standardized handling of:
+
+    - HTTP client initialization via factory pattern
+
+    - Rate limiting with configurable limits
+
+    - Credential validation and header setup
+
+    - Disposal pattern
+
+    - Error handling and logging
+
+    - Match score calculation
+  remarks: >-
+    Derived classes should override abstract properties and implement the protected
+
+    abstract methods for provider-specific API integration.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Base symbol search provider implementation")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider, ISymbolSearchProvider, IProviderMetadata, IDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Base symbol search provider implementation")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      Public MustInherit Class BaseSymbolSearchProvider Implements IFilterableSymbolSearchProvider, ISymbolSearchProvider, IProviderMetadata, IDisposable
+  inheritance:
+  - System.Object
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProviderRefactored
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Base symbol search provider implementation
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Http
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Http
+  id: Http
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Http
+  nameWithType: BaseSymbolSearchProvider.Http
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Http
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Http
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: protected readonly HttpClient Http
+    return:
+      type: System.Net.Http.HttpClient
+    content.vb: Protected ReadOnly Http As HttpClient
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimiter
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimiter
+  id: RateLimiter
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: RateLimiter
+  nameWithType: BaseSymbolSearchProvider.RateLimiter
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimiter
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimiter
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: protected readonly RateLimiter RateLimiter
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.RateLimiter
+    content.vb: Protected ReadOnly RateLimiter As RateLimiter
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Log
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Log
+  id: Log
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Log
+  nameWithType: BaseSymbolSearchProvider.Log
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Log
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Log
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: protected readonly ILogger Log
+    return:
+      type: Serilog.ILogger
+    content.vb: Protected ReadOnly Log As ILogger
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Disposed
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Disposed
+  id: Disposed
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Disposed
+  nameWithType: BaseSymbolSearchProvider.Disposed
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Disposed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disposed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: protected bool Disposed
+    return:
+      type: System.Boolean
+    content.vb: Protected Disposed As Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: BaseSymbolSearchProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unique identifier for the provider (e.g., "alpaca", "finnhub").
+  example: []
+  syntax:
+    content: public abstract string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public MustOverride ReadOnly Property Name As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: BaseSymbolSearchProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Human-readable display name for the provider.
+  example: []
+  syntax:
+    content: public abstract string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public MustOverride ReadOnly Property DisplayName As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  id: HttpClientName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: HttpClientName
+  nameWithType: BaseSymbolSearchProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpClientName
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Named HTTP client identifier from HttpClientNames.
+  example: []
+  syntax:
+    content: protected abstract string HttpClientName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected MustOverride ReadOnly Property HttpClientName As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  id: BaseUrl
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: BaseUrl
+  nameWithType: BaseSymbolSearchProvider.BaseUrl
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Base URL for the provider's API.
+  example: []
+  syntax:
+    content: protected abstract string BaseUrl { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected MustOverride ReadOnly Property BaseUrl As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  id: ApiKeyEnvVar
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: ApiKeyEnvVar
+  nameWithType: BaseSymbolSearchProvider.ApiKeyEnvVar
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApiKeyEnvVar
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Environment variable name for the API key.
+  example: []
+  syntax:
+    content: protected abstract string ApiKeyEnvVar { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected MustOverride ReadOnly Property ApiKeyEnvVar As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  id: AlternateApiKeyEnvVars
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: AlternateApiKeyEnvVars
+  nameWithType: BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlternateApiKeyEnvVars
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Alternate environment variable names for the API key (using __ notation).
+  example: []
+  syntax:
+    content: protected virtual IReadOnlyList<string> AlternateApiKeyEnvVars { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Protected Overridable ReadOnly Property AlternateApiKeyEnvVars As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: BaseSymbolSearchProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Priority for this provider (lower = higher priority).
+
+    Default is 50.
+  example: []
+  syntax:
+    content: public virtual int Priority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overridable ReadOnly Property Priority As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: BaseSymbolSearchProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Maximum requests allowed per rate limit window.
+  example: []
+  syntax:
+    content: protected virtual int MaxRequestsPerWindow { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Protected Overridable ReadOnly Property MaxRequestsPerWindow As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  id: RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: RateLimitWindow
+  nameWithType: BaseSymbolSearchProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Duration of the rate limit window.
+  example: []
+  syntax:
+    content: protected virtual TimeSpan RateLimitWindow { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Protected Overridable ReadOnly Property RateLimitWindow As TimeSpan
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  id: MinRequestDelay
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: MinRequestDelay
+  nameWithType: BaseSymbolSearchProvider.MinRequestDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinRequestDelay
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Minimum delay between requests.
+  example: []
+  syntax:
+    content: protected virtual TimeSpan MinRequestDelay { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Protected Overridable ReadOnly Property MinRequestDelay As TimeSpan
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  id: SupportedAssetTypes
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedAssetTypes
+  nameWithType: BaseSymbolSearchProvider.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedAssetTypes
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supported asset types for filtering.
+  example: []
+  syntax:
+    content: public virtual IReadOnlyList<string> SupportedAssetTypes { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Overridable ReadOnly Property SupportedAssetTypes As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  id: SupportedExchanges
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedExchanges
+  nameWithType: BaseSymbolSearchProvider.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedExchanges
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supported exchanges for filtering.
+  example: []
+  syntax:
+    content: public virtual IReadOnlyList<string> SupportedExchanges { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Overridable ReadOnly Property SupportedExchanges As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey
+  id: ApiKey
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: ApiKey
+  nameWithType: BaseSymbolSearchProvider.ApiKey
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApiKey
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: API key loaded from environment variables.
+  example: []
+  syntax:
+    content: protected string? ApiKey { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected Property ApiKey As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  id: '#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: BaseSymbolSearchProvider(string?, HttpClient?, ILogger?)
+  nameWithType: BaseSymbolSearchProvider.BaseSymbolSearchProvider(string?, HttpClient?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseSymbolSearchProvider(string?, System.Net.Http.HttpClient?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Initialize the base provider with common infrastructure.
+  example: []
+  syntax:
+    content: protected BaseSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    parameters:
+    - id: apiKey
+      type: System.String
+      description: Optional API key (loads from environment if not provided).
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+      description: Optional HTTP client (uses factory if not provided).
+    - id: log
+      type: Serilog.ILogger
+      description: Optional logger.
+    content.vb: Protected Sub New(apiKey As String = Nothing, httpClient As HttpClient = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.#ctor*
+  nameWithType.vb: BaseSymbolSearchProvider.New(String, HttpClient, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.New(String, System.Net.Http.HttpClient, Serilog.ILogger)
+  name.vb: New(String, HttpClient, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  id: ConfigureHttpClientHeaders
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: ConfigureHttpClientHeaders()
+  nameWithType: BaseSymbolSearchProvider.ConfigureHttpClientHeaders()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureHttpClientHeaders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Configure HTTP client headers. Override to add provider-specific headers.
+  example: []
+  syntax:
+    content: protected virtual void ConfigureHttpClientHeaders()
+    content.vb: Protected Overridable Sub ConfigureHttpClientHeaders()
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+  id: HasValidCredentials
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: HasValidCredentials()
+  nameWithType: BaseSymbolSearchProvider.HasValidCredentials()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasValidCredentials
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Check if the provider has valid credentials configured.
+  example: []
+  syntax:
+    content: protected virtual bool HasValidCredentials()
+    return:
+      type: System.Boolean
+    content.vb: Protected Overridable Function HasValidCredentials() As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  id: IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailableAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Check if the provider is available (credentials configured and API reachable).
+  example: []
+  syntax:
+    content: public virtual Task<bool> IsAvailableAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Overridable Function IsAvailableAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(string, int, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.SearchAsync(string, int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Search for symbols matching the query (simple overload).
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int limit = 10, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: System.String
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+    content.vb: Public Function SearchAsync(query As String, limit As Integer = 10, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SymbolSearchResult))
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  nameWithType.vb: BaseSymbolSearchProvider.SearchAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  id: SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(string, int, string?, string?, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.SearchAsync(string, int, string?, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(string, int, string?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Search for symbols with filtering options.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int limit = 10, string? assetType = null, string? exchange = null, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: System.String
+    - id: limit
+      type: System.Int32
+    - id: assetType
+      type: System.String
+    - id: exchange
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+    content.vb: Public Function SearchAsync(query As String, limit As Integer = 10, assetType As String = Nothing, exchange As String = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SymbolSearchResult))
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  nameWithType.vb: BaseSymbolSearchProvider.SearchAsync(String, Integer, String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(String, Integer, String, String, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  id: GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: GetDetailsAsync(SymbolId, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.GetDetailsAsync(SymbolId, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDetailsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get detailed information about a specific symbol.
+  example: []
+  syntax:
+    content: public Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: Meridian.Contracts.Domain.SymbolId
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+    content.vb: Public Function GetDetailsAsync(symbol As SymbolId, ct As CancellationToken = Nothing) As Task(Of SymbolDetails)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+  id: BuildSearchUrl(System.String,System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: BuildSearchUrl(string, string?, string?)
+  nameWithType: BaseSymbolSearchProvider.BuildSearchUrl(string, string?, string?)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(string, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildSearchUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Build the URL for a search request.
+  example: []
+  syntax:
+    content: protected abstract string BuildSearchUrl(string query, string? assetType, string? exchange)
+    parameters:
+    - id: query
+      type: System.String
+      description: Search query.
+    - id: assetType
+      type: System.String
+      description: Optional asset type filter.
+    - id: exchange
+      type: System.String
+      description: Optional exchange filter.
+    return:
+      type: System.String
+      description: Complete URL for the search request.
+    content.vb: Protected MustOverride Function BuildSearchUrl(query As String, assetType As String, exchange As String) As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl*
+  nameWithType.vb: BaseSymbolSearchProvider.BuildSearchUrl(String, String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(String, String, String)
+  name.vb: BuildSearchUrl(String, String, String)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+  id: BuildDetailsUrl(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: BuildDetailsUrl(string)
+  nameWithType: BaseSymbolSearchProvider.BuildDetailsUrl(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildDetailsUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Build the URL for a symbol details request.
+  example: []
+  syntax:
+    content: protected abstract string BuildDetailsUrl(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Normalized symbol.
+    return:
+      type: System.String
+      description: Complete URL for the details request.
+    content.vb: Protected MustOverride Function BuildDetailsUrl(symbol As String) As String
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl*
+  nameWithType.vb: BaseSymbolSearchProvider.BuildDetailsUrl(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(String)
+  name.vb: BuildDetailsUrl(String)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+  id: DeserializeSearchResults(System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: DeserializeSearchResults(string, string)
+  nameWithType: BaseSymbolSearchProvider.DeserializeSearchResults(string, string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeserializeSearchResults
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 307
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Deserialize the search response JSON into results.
+  example: []
+  syntax:
+    content: protected abstract IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query)
+    parameters:
+    - id: json
+      type: System.String
+      description: Response JSON.
+    - id: query
+      type: System.String
+      description: Original search query (for match scoring).
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+      description: List of search results.
+    content.vb: Protected MustOverride Function DeserializeSearchResults(json As String, query As String) As IEnumerable(Of SymbolSearchResult)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults*
+  nameWithType.vb: BaseSymbolSearchProvider.DeserializeSearchResults(String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(String, String)
+  name.vb: DeserializeSearchResults(String, String)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: DeserializeDetailsAsync(string, string, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.DeserializeDetailsAsync(string, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeserializeDetailsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Deserialize the details response JSON into a SymbolDetails object.
+  example: []
+  syntax:
+    content: protected abstract Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct)
+    parameters:
+    - id: json
+      type: System.String
+      description: Response JSON.
+    - id: symbol
+      type: System.String
+      description: Normalized symbol.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+      description: Symbol details or null if not found.
+    content.vb: Protected MustOverride Function DeserializeDetailsAsync(json As String, symbol As String, ct As CancellationToken) As Task(Of SymbolDetails)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync*
+  nameWithType.vb: BaseSymbolSearchProvider.DeserializeDetailsAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(String, String, System.Threading.CancellationToken)
+  name.vb: DeserializeDetailsAsync(String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  id: ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: ApplyFilters(IEnumerable<SymbolSearchResult>, string?, string?)
+  nameWithType: BaseSymbolSearchProvider.ApplyFilters(IEnumerable<SymbolSearchResult>, string?, string?)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolSearchResult>, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyFilters
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 323
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Apply filters to results. Override if provider supports filtering natively.
+  example: []
+  syntax:
+    content: protected virtual IEnumerable<SymbolSearchResult> ApplyFilters(IEnumerable<SymbolSearchResult> results, string? assetType, string? exchange)
+    parameters:
+    - id: results
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+    - id: assetType
+      type: System.String
+    - id: exchange
+      type: System.String
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+    content.vb: Protected Overridable Function ApplyFilters(results As IEnumerable(Of SymbolSearchResult), assetType As String, exchange As String) As IEnumerable(Of SymbolSearchResult)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters*
+  nameWithType.vb: BaseSymbolSearchProvider.ApplyFilters(IEnumerable(Of SymbolSearchResult), String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult), String, String)
+  name.vb: ApplyFilters(IEnumerable(Of SymbolSearchResult), String, String)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore(System.String,System.String,System.String,System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore(System.String,System.String,System.String,System.Int32)
+  id: CalculateMatchScore(System.String,System.String,System.String,System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: CalculateMatchScore(string, string, string?, int)
+  nameWithType: BaseSymbolSearchProvider.CalculateMatchScore(string, string, string?, int)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore(string, string, string?, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateMatchScore
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Calculate match score using the shared utility.
+  example: []
+  syntax:
+    content: protected static int CalculateMatchScore(string query, string symbol, string? name, int position)
+    parameters:
+    - id: query
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: name
+      type: System.String
+    - id: position
+      type: System.Int32
+    return:
+      type: System.Int32
+    content.vb: Protected Shared Function CalculateMatchScore(query As String, symbol As String, name As String, position As Integer) As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore*
+  nameWithType.vb: BaseSymbolSearchProvider.CalculateMatchScore(String, String, String, Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore(String, String, String, Integer)
+  name.vb: CalculateMatchScore(String, String, String, Integer)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson``1(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson``1(System.String)
+  id: DeserializeJson``1(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: DeserializeJson<T>(string)
+  nameWithType: BaseSymbolSearchProvider.DeserializeJson<T>(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson<T>(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeserializeJson
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Deserialize JSON with error handling.
+  example: []
+  syntax:
+    content: 'protected T? DeserializeJson<T>(string json) where T : class'
+    parameters:
+    - id: json
+      type: System.String
+    typeParameters:
+    - id: T
+    return:
+      type: '{T}'
+    content.vb: Protected Function DeserializeJson(Of T As Class)(json As String) As T
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson*
+  nameWithType.vb: BaseSymbolSearchProvider.DeserializeJson(Of T)(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson(Of T)(String)
+  name.vb: DeserializeJson(Of T)(String)
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed
+  id: ThrowIfDisposed
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: ThrowIfDisposed()
+  nameWithType: BaseSymbolSearchProvider.ThrowIfDisposed()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ThrowIfDisposed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 370
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Throw if the provider has been disposed.
+  example: []
+  syntax:
+    content: protected void ThrowIfDisposed()
+    content.vb: Protected Sub ThrowIfDisposed()
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed*
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: BaseSymbolSearchProvider.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose(System.Boolean)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose(System.Boolean)
+  id: Dispose(System.Boolean)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Dispose(bool)
+  nameWithType: BaseSymbolSearchProvider.Dispose(bool)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose(bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: protected virtual void Dispose(bool disposing)
+    parameters:
+    - id: disposing
+      type: System.Boolean
+    content.vb: Protected Overridable Sub Dispose(disposing As Boolean)
+  overload: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose*
+  nameWithType.vb: BaseSymbolSearchProvider.Dispose(Boolean)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose(Boolean)
+  name.vb: Dispose(Boolean)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html
+  name: IFilterableSymbolSearchProvider
+  nameWithType: IFilterableSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  name: ISymbolSearchProvider
+  nameWithType: ISymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  commentId: T:Meridian.Infrastructure.Adapters.Core.RateLimiter
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.RateLimiter.html
+  name: RateLimiter
+  nameWithType: RateLimiter
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Name
+  name: Name
+  nameWithType: BaseSymbolSearchProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_Name
+  name: Name
+  nameWithType: ISymbolSearchProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DisplayName
+  name: DisplayName
+  nameWithType: BaseSymbolSearchProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_DisplayName
+  name: DisplayName
+  nameWithType: ISymbolSearchProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_HttpClientName
+  name: HttpClientName
+  nameWithType: BaseSymbolSearchProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BaseUrl
+  name: BaseUrl
+  nameWithType: BaseSymbolSearchProvider.BaseUrl
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ApiKeyEnvVar
+  name: ApiKeyEnvVar
+  nameWithType: BaseSymbolSearchProvider.ApiKeyEnvVar
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_AlternateApiKeyEnvVars
+  name: AlternateApiKeyEnvVars
+  nameWithType: BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Priority
+  name: Priority
+  nameWithType: BaseSymbolSearchProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_Priority
+  name: Priority
+  nameWithType: ISymbolSearchProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: BaseSymbolSearchProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: BaseSymbolSearchProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_MinRequestDelay
+  name: MinRequestDelay
+  nameWithType: BaseSymbolSearchProvider.MinRequestDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SupportedAssetTypes
+  name: SupportedAssetTypes
+  nameWithType: BaseSymbolSearchProvider.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+  parent: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SupportedAssetTypes
+  name: SupportedAssetTypes
+  nameWithType: IFilterableSymbolSearchProvider.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SupportedExchanges
+  name: SupportedExchanges
+  nameWithType: BaseSymbolSearchProvider.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+  parent: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SupportedExchanges
+  name: SupportedExchanges
+  nameWithType: IFilterableSymbolSearchProvider.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ApiKey
+  name: ApiKey
+  nameWithType: BaseSymbolSearchProvider.ApiKey
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKey
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider__ctor_System_String_System_Net_Http_HttpClient_Serilog_ILogger_
+  name: BaseSymbolSearchProvider
+  nameWithType: BaseSymbolSearchProvider.BaseSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseSymbolSearchProvider
+  nameWithType.vb: BaseSymbolSearchProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.New
+  name.vb: New
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ConfigureHttpClientHeaders
+  name: ConfigureHttpClientHeaders
+  nameWithType: BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_HasValidCredentials
+  name: HasValidCredentials
+  nameWithType: BaseSymbolSearchProvider.HasValidCredentials
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync
+  nameWithType: BaseSymbolSearchProvider.IsAvailableAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: ISymbolSearchProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: BaseSymbolSearchProvider.SearchAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchAsync(string, int, CancellationToken)
+  nameWithType: ISymbolSearchProvider.SearchAsync(string, int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(string, int, System.Threading.CancellationToken)
+  nameWithType.vb: ISymbolSearchProvider.SearchAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SymbolSearchResult>>
+  nameWithType: Task<IReadOnlyList<SymbolSearchResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.SymbolSearchResult>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult))
+  name.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  name: SearchAsync(string, int, string, string, CancellationToken)
+  nameWithType: IFilterableSymbolSearchProvider.SearchAsync(string, int, string, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(string, int, string, string, System.Threading.CancellationToken)
+  nameWithType.vb: IFilterableSymbolSearchProvider.SearchAsync(String, Integer, String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(String, Integer, String, String, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  name: GetDetailsAsync
+  nameWithType: BaseSymbolSearchProvider.GetDetailsAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  name: GetDetailsAsync(SymbolId, CancellationToken)
+  nameWithType: ISymbolSearchProvider.GetDetailsAsync(SymbolId, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+    name: GetDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+    name: GetDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Domain.SymbolId
+  commentId: T:Meridian.Contracts.Domain.SymbolId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.SymbolId.html
+  name: SymbolId
+  nameWithType: SymbolId
+  fullName: Meridian.Contracts.Domain.SymbolId
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolDetails>
+  nameWithType: Task<SymbolDetails>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SymbolDetails>
+  nameWithType.vb: Task(Of SymbolDetails)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SymbolDetails)
+  name.vb: Task(Of SymbolDetails)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: )
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildSearchUrl_System_String_System_String_System_String_
+  name: BuildSearchUrl
+  nameWithType: BaseSymbolSearchProvider.BuildSearchUrl
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildDetailsUrl_System_String_
+  name: BuildDetailsUrl
+  nameWithType: BaseSymbolSearchProvider.BuildDetailsUrl
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeSearchResults_System_String_System_String_
+  name: DeserializeSearchResults
+  nameWithType: BaseSymbolSearchProvider.DeserializeSearchResults
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults
+- uid: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SymbolSearchResult>
+  nameWithType: IEnumerable<SymbolSearchResult>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolSearchResult>
+  nameWithType.vb: IEnumerable(Of SymbolSearchResult)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult)
+  name.vb: IEnumerable(Of SymbolSearchResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeDetailsAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: DeserializeDetailsAsync
+  nameWithType: BaseSymbolSearchProvider.DeserializeDetailsAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ApplyFilters_System_Collections_Generic_IEnumerable_Meridian_Application_Subscriptions_Models_SymbolSearchResult__System_String_System_String_
+  name: ApplyFilters
+  nameWithType: BaseSymbolSearchProvider.ApplyFilters
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_CalculateMatchScore_System_String_System_String_System_String_System_Int32_
+  name: CalculateMatchScore
+  nameWithType: BaseSymbolSearchProvider.CalculateMatchScore
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.CalculateMatchScore
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeJson__1_System_String_
+  name: DeserializeJson
+  nameWithType: BaseSymbolSearchProvider.DeserializeJson
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeJson
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ThrowIfDisposed
+  name: ThrowIfDisposed
+  nameWithType: BaseSymbolSearchProvider.ThrowIfDisposed
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ThrowIfDisposed
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Dispose
+  name: Dispose
+  nameWithType: BaseSymbolSearchProvider.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

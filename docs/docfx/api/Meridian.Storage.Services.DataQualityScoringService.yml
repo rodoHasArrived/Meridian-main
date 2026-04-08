@@ -1,0 +1,1067 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.DataQualityScoringService
+  commentId: T:Meridian.Storage.Services.DataQualityScoringService
+  id: DataQualityScoringService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.DataQualityScoringService.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataQualityScoringService},Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Services.IMetadataTagService)
+  - Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: DataQualityScoringService
+  nameWithType: DataQualityScoringService
+  fullName: Meridian.Storage.Services.DataQualityScoringService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityScoringService
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Service that computes quality scores for stored data files and performs
+
+    best-of-breed selection when multiple sources provide overlapping data.
+
+    Quality scores are based on completeness, sequence integrity, latency,
+
+    and cross-source consistency.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Data quality scoring for multi-source environments")]
+
+      public sealed class DataQualityScoringService : IDataQualityScoringService
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Data quality scoring for multi-source environments")>
+
+      Public NotInheritable Class DataQualityScoringService Implements IDataQualityScoringService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Services.IDataQualityScoringService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Data quality scoring for multi-source environments
+- uid: Meridian.Storage.Services.DataQualityScoringService.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataQualityScoringService},Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Services.IMetadataTagService)
+  commentId: M:Meridian.Storage.Services.DataQualityScoringService.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataQualityScoringService},Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Services.IMetadataTagService)
+  id: '#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataQualityScoringService},Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Services.IMetadataTagService)'
+  parent: Meridian.Storage.Services.DataQualityScoringService
+  langs:
+  - csharp
+  - vb
+  name: DataQualityScoringService(StorageOptions, ILogger<DataQualityScoringService>, ISourceRegistry?, IMetadataTagService?)
+  nameWithType: DataQualityScoringService.DataQualityScoringService(StorageOptions, ILogger<DataQualityScoringService>, ISourceRegistry?, IMetadataTagService?)
+  fullName: Meridian.Storage.Services.DataQualityScoringService.DataQualityScoringService(Meridian.Storage.StorageOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Services.DataQualityScoringService>, Meridian.Storage.Interfaces.ISourceRegistry?, Meridian.Storage.Services.IMetadataTagService?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DataQualityScoringService(StorageOptions options, ILogger<DataQualityScoringService> logger, ISourceRegistry? sourceRegistry = null, IMetadataTagService? metadataService = null)
+    parameters:
+    - id: options
+      type: Meridian.Storage.StorageOptions
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataQualityScoringService}
+    - id: sourceRegistry
+      type: Meridian.Storage.Interfaces.ISourceRegistry
+    - id: metadataService
+      type: Meridian.Storage.Services.IMetadataTagService
+    content.vb: Public Sub New(options As StorageOptions, logger As ILogger(Of DataQualityScoringService), sourceRegistry As ISourceRegistry = Nothing, metadataService As IMetadataTagService = Nothing)
+  overload: Meridian.Storage.Services.DataQualityScoringService.#ctor*
+  nameWithType.vb: DataQualityScoringService.New(StorageOptions, ILogger(Of DataQualityScoringService), ISourceRegistry, IMetadataTagService)
+  fullName.vb: Meridian.Storage.Services.DataQualityScoringService.New(Meridian.Storage.StorageOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Services.DataQualityScoringService), Meridian.Storage.Interfaces.ISourceRegistry, Meridian.Storage.Services.IMetadataTagService)
+  name.vb: New(StorageOptions, ILogger(Of DataQualityScoringService), ISourceRegistry, IMetadataTagService)
+- uid: Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+  id: ScoreFileAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.DataQualityScoringService
+  langs:
+  - csharp
+  - vb
+  name: ScoreFileAsync(string, CancellationToken)
+  nameWithType: DataQualityScoringService.ScoreFileAsync(string, CancellationToken)
+  fullName: Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScoreFileAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<QualityAssessment> ScoreFileAsync(string filePath, CancellationToken ct = default)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.QualityAssessment}
+    content.vb: Public Function ScoreFileAsync(filePath As String, ct As CancellationToken = Nothing) As Task(Of QualityAssessment)
+  overload: Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync*
+  implements:
+  - Meridian.Storage.Services.IDataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: DataQualityScoringService.ScoreFileAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync(String, System.Threading.CancellationToken)
+  name.vb: ScoreFileAsync(String, CancellationToken)
+- uid: Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  id: SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.DataQualityScoringService
+  langs:
+  - csharp
+  - vb
+  name: SelectBestSourceAsync(string, string, DateTimeOffset?, CancellationToken)
+  nameWithType: DataQualityScoringService.SelectBestSourceAsync(string, string, DateTimeOffset?, CancellationToken)
+  fullName: Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync(string, string, System.DateTimeOffset?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SelectBestSourceAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<BestOfBreedResult> SelectBestSourceAsync(string symbol, string eventType, DateTimeOffset? date = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: eventType
+      type: System.String
+    - id: date
+      type: System.Nullable{System.DateTimeOffset}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.BestOfBreedResult}
+    content.vb: Public Function SelectBestSourceAsync(symbol As String, eventType As String, [date] As DateTimeOffset? = Nothing, ct As CancellationToken = Nothing) As Task(Of BestOfBreedResult)
+  overload: Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync*
+  implements:
+  - Meridian.Storage.Services.IDataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  nameWithType.vb: DataQualityScoringService.SelectBestSourceAsync(String, String, DateTimeOffset?, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync(String, String, System.DateTimeOffset?, System.Threading.CancellationToken)
+  name.vb: SelectBestSourceAsync(String, String, DateTimeOffset?, CancellationToken)
+- uid: Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+  id: GenerateReportAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.DataQualityScoringService
+  langs:
+  - csharp
+  - vb
+  name: GenerateReportAsync(CancellationToken)
+  nameWithType: DataQualityScoringService.GenerateReportAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateReportAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<DataQualityScoringReport> GenerateReportAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScoringReport}
+    content.vb: Public Function GenerateReportAsync(ct As CancellationToken = Nothing) As Task(Of DataQualityScoringReport)
+  overload: Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync*
+  implements:
+  - Meridian.Storage.Services.IDataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Services.IDataQualityScoringService
+  commentId: T:Meridian.Storage.Services.IDataQualityScoringService
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IDataQualityScoringService.html
+  name: IDataQualityScoringService
+  nameWithType: IDataQualityScoringService
+  fullName: Meridian.Storage.Services.IDataQualityScoringService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.DataQualityScoringService.#ctor*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScoringService.#ctor
+  href: Meridian.Storage.Services.DataQualityScoringService.html#Meridian_Storage_Services_DataQualityScoringService__ctor_Meridian_Storage_StorageOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Storage_Services_DataQualityScoringService__Meridian_Storage_Interfaces_ISourceRegistry_Meridian_Storage_Services_IMetadataTagService_
+  name: DataQualityScoringService
+  nameWithType: DataQualityScoringService.DataQualityScoringService
+  fullName: Meridian.Storage.Services.DataQualityScoringService.DataQualityScoringService
+  nameWithType.vb: DataQualityScoringService.New
+  fullName.vb: Meridian.Storage.Services.DataQualityScoringService.New
+  name.vb: New
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataQualityScoringService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataQualityScoringService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<DataQualityScoringService>
+  nameWithType: ILogger<DataQualityScoringService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Services.DataQualityScoringService>
+  nameWithType.vb: ILogger(Of DataQualityScoringService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Services.DataQualityScoringService)
+  name.vb: ILogger(Of DataQualityScoringService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataQualityScoringService
+    name: DataQualityScoringService
+    href: Meridian.Storage.Services.DataQualityScoringService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataQualityScoringService
+    name: DataQualityScoringService
+    href: Meridian.Storage.Services.DataQualityScoringService.html
+  - name: )
+- uid: Meridian.Storage.Interfaces.ISourceRegistry
+  commentId: T:Meridian.Storage.Interfaces.ISourceRegistry
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html
+  name: ISourceRegistry
+  nameWithType: ISourceRegistry
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry
+- uid: Meridian.Storage.Services.IMetadataTagService
+  commentId: T:Meridian.Storage.Services.IMetadataTagService
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IMetadataTagService.html
+  name: IMetadataTagService
+  nameWithType: IMetadataTagService
+  fullName: Meridian.Storage.Services.IMetadataTagService
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync
+  href: Meridian.Storage.Services.DataQualityScoringService.html#Meridian_Storage_Services_DataQualityScoringService_ScoreFileAsync_System_String_System_Threading_CancellationToken_
+  name: ScoreFileAsync
+  nameWithType: DataQualityScoringService.ScoreFileAsync
+  fullName: Meridian.Storage.Services.DataQualityScoringService.ScoreFileAsync
+- uid: Meridian.Storage.Services.IDataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityScoringService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_ScoreFileAsync_System_String_System_Threading_CancellationToken_
+  name: ScoreFileAsync(string, CancellationToken)
+  nameWithType: IDataQualityScoringService.ScoreFileAsync(string, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityScoringService.ScoreFileAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IDataQualityScoringService.ScoreFileAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IDataQualityScoringService.ScoreFileAsync(String, System.Threading.CancellationToken)
+  name.vb: ScoreFileAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+    name: ScoreFileAsync
+    href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_ScoreFileAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataQualityScoringService.ScoreFileAsync(System.String,System.Threading.CancellationToken)
+    name: ScoreFileAsync
+    href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_ScoreFileAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.QualityAssessment}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.QualityAssessment}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityAssessment>
+  nameWithType: Task<QualityAssessment>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.QualityAssessment>
+  nameWithType.vb: Task(Of QualityAssessment)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.QualityAssessment)
+  name.vb: Task(Of QualityAssessment)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.QualityAssessment
+    name: QualityAssessment
+    href: Meridian.Storage.Services.QualityAssessment.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QualityAssessment
+    name: QualityAssessment
+    href: Meridian.Storage.Services.QualityAssessment.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync
+  href: Meridian.Storage.Services.DataQualityScoringService.html#Meridian_Storage_Services_DataQualityScoringService_SelectBestSourceAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  name: SelectBestSourceAsync
+  nameWithType: DataQualityScoringService.SelectBestSourceAsync
+  fullName: Meridian.Storage.Services.DataQualityScoringService.SelectBestSourceAsync
+- uid: Meridian.Storage.Services.IDataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityScoringService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_SelectBestSourceAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  name: SelectBestSourceAsync(string, string, DateTimeOffset?, CancellationToken)
+  nameWithType: IDataQualityScoringService.SelectBestSourceAsync(string, string, DateTimeOffset?, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityScoringService.SelectBestSourceAsync(string, string, System.DateTimeOffset?, System.Threading.CancellationToken)
+  nameWithType.vb: IDataQualityScoringService.SelectBestSourceAsync(String, String, DateTimeOffset?, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IDataQualityScoringService.SelectBestSourceAsync(String, String, System.DateTimeOffset?, System.Threading.CancellationToken)
+  name.vb: SelectBestSourceAsync(String, String, DateTimeOffset?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+    name: SelectBestSourceAsync
+    href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_SelectBestSourceAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataQualityScoringService.SelectBestSourceAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+    name: SelectBestSourceAsync
+    href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_SelectBestSourceAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.BestOfBreedResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.BestOfBreedResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BestOfBreedResult>
+  nameWithType: Task<BestOfBreedResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.BestOfBreedResult>
+  nameWithType.vb: Task(Of BestOfBreedResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.BestOfBreedResult)
+  name.vb: Task(Of BestOfBreedResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.BestOfBreedResult
+    name: BestOfBreedResult
+    href: Meridian.Storage.Services.BestOfBreedResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.BestOfBreedResult
+    name: BestOfBreedResult
+    href: Meridian.Storage.Services.BestOfBreedResult.html
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync*
+  commentId: Overload:Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync
+  href: Meridian.Storage.Services.DataQualityScoringService.html#Meridian_Storage_Services_DataQualityScoringService_GenerateReportAsync_System_Threading_CancellationToken_
+  name: GenerateReportAsync
+  nameWithType: DataQualityScoringService.GenerateReportAsync
+  fullName: Meridian.Storage.Services.DataQualityScoringService.GenerateReportAsync
+- uid: Meridian.Storage.Services.IDataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityScoringService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_GenerateReportAsync_System_Threading_CancellationToken_
+  name: GenerateReportAsync(CancellationToken)
+  nameWithType: IDataQualityScoringService.GenerateReportAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+    name: GenerateReportAsync
+    href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_GenerateReportAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataQualityScoringService.GenerateReportAsync(System.Threading.CancellationToken)
+    name: GenerateReportAsync
+    href: Meridian.Storage.Services.IDataQualityScoringService.html#Meridian_Storage_Services_IDataQualityScoringService_GenerateReportAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScoringReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScoringReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataQualityScoringReport>
+  nameWithType: Task<DataQualityScoringReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.DataQualityScoringReport>
+  nameWithType.vb: Task(Of DataQualityScoringReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.DataQualityScoringReport)
+  name.vb: Task(Of DataQualityScoringReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataQualityScoringReport
+    name: DataQualityScoringReport
+    href: Meridian.Storage.Services.DataQualityScoringReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataQualityScoringReport
+    name: DataQualityScoringReport
+    href: Meridian.Storage.Services.DataQualityScoringReport.html
+  - name: )

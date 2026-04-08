@@ -1,0 +1,160 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  id: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.BlackScholesCalculator
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteScoring
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  type: Namespace
+  assemblies:
+  - Meridian.Backtesting.Sdk
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.BlackScholesCalculator
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.BlackScholesCalculator
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.BlackScholesCalculator.html
+  name: BlackScholesCalculator
+  nameWithType: BlackScholesCalculator
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.BlackScholesCalculator
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html
+  name: CoveredCallOverwriteStrategy
+  nameWithType: CoveredCallOverwriteStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html
+  name: OptionsOverwriteFilters
+  nameWithType: OptionsOverwriteFilters
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.html
+  name: OptionsOverwriteMetricsCalculator
+  nameWithType: OptionsOverwriteMetricsCalculator
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider.html
+  name: IOptionChainProvider
+  nameWithType: IOptionChainProvider
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html
+  name: OptionCandidateInfo
+  nameWithType: OptionCandidateInfo
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html
+  name: ShortCallPosition
+  nameWithType: ShortCallPosition
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.html
+  name: ShortCallExitReason
+  nameWithType: ShortCallExitReason
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord.html
+  name: OptionsOverwriteTradeRecord
+  nameWithType: OptionsOverwriteTradeRecord
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics.html
+  name: OptionsOverwriteMetrics
+  nameWithType: OptionsOverwriteMetrics
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.html
+  name: OverwriteScoringMode
+  nameWithType: OverwriteScoringMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  name: OptionsOverwriteParams
+  nameWithType: OptionsOverwriteParams
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteScoring
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteScoring
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteScoring.html
+  name: OptionsOverwriteScoring
+  nameWithType: OptionsOverwriteScoring
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteScoring
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html

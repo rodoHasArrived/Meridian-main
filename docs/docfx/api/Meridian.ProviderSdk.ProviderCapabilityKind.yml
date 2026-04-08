@@ -1,0 +1,504 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind
+  commentId: T:Meridian.ProviderSdk.ProviderCapabilityKind
+  id: ProviderCapabilityKind
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ProviderCapabilityKind.AccountBalances
+  - Meridian.ProviderSdk.ProviderCapabilityKind.AccountPositions
+  - Meridian.ProviderSdk.ProviderCapabilityKind.BankStatements
+  - Meridian.ProviderSdk.ProviderCapabilityKind.CashTransactions
+  - Meridian.ProviderSdk.ProviderCapabilityKind.CorporateActions
+  - Meridian.ProviderSdk.ProviderCapabilityKind.ExecutionHistory
+  - Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalBars
+  - Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalQuotes
+  - Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalTrades
+  - Meridian.ProviderSdk.ProviderCapabilityKind.OptionsChain
+  - Meridian.ProviderSdk.ProviderCapabilityKind.OrderExecution
+  - Meridian.ProviderSdk.ProviderCapabilityKind.RealtimeMarketData
+  - Meridian.ProviderSdk.ProviderCapabilityKind.ReconciliationFeed
+  - Meridian.ProviderSdk.ProviderCapabilityKind.ReferenceData
+  - Meridian.ProviderSdk.ProviderCapabilityKind.SecurityMasterSeed
+  - Meridian.ProviderSdk.ProviderCapabilityKind.SymbolSearch
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilityKind
+  nameWithType: ProviderCapabilityKind
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilityKind
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Canonical capability kinds routed by the relationship-aware provider layer.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ProviderCapabilityKind>))]
+
+      public enum ProviderCapabilityKind : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ProviderCapabilityKind)))>
+
+      Public Enum ProviderCapabilityKind As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.ProviderSdk.ProviderCapabilityKind}
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.RealtimeMarketData
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.RealtimeMarketData
+  id: RealtimeMarketData
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: RealtimeMarketData
+  nameWithType: ProviderCapabilityKind.RealtimeMarketData
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.RealtimeMarketData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeMarketData
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 10
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: RealtimeMarketData = 0
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalBars
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalBars
+  id: HistoricalBars
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: HistoricalBars
+  nameWithType: ProviderCapabilityKind.HistoricalBars
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalBars
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalBars
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 11
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: HistoricalBars = 1
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalTrades
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalTrades
+  id: HistoricalTrades
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: HistoricalTrades
+  nameWithType: ProviderCapabilityKind.HistoricalTrades
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalTrades
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalTrades
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: HistoricalTrades = 2
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalQuotes
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalQuotes
+  id: HistoricalQuotes
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: HistoricalQuotes
+  nameWithType: ProviderCapabilityKind.HistoricalQuotes
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.HistoricalQuotes
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalQuotes
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: HistoricalQuotes = 3
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.SymbolSearch
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.SymbolSearch
+  id: SymbolSearch
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearch
+  nameWithType: ProviderCapabilityKind.SymbolSearch
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.SymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearch
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 14
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: SymbolSearch = 4
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.ReferenceData
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.ReferenceData
+  id: ReferenceData
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: ReferenceData
+  nameWithType: ProviderCapabilityKind.ReferenceData
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.ReferenceData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReferenceData
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ReferenceData = 5
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.SecurityMasterSeed
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.SecurityMasterSeed
+  id: SecurityMasterSeed
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterSeed
+  nameWithType: ProviderCapabilityKind.SecurityMasterSeed
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.SecurityMasterSeed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterSeed
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: SecurityMasterSeed = 6
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.CorporateActions
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.CorporateActions
+  id: CorporateActions
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: CorporateActions
+  nameWithType: ProviderCapabilityKind.CorporateActions
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.CorporateActions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActions
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 17
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: CorporateActions = 7
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.OptionsChain
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.OptionsChain
+  id: OptionsChain
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: OptionsChain
+  nameWithType: ProviderCapabilityKind.OptionsChain
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.OptionsChain
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsChain
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 18
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: OptionsChain = 8
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.OrderExecution
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.OrderExecution
+  id: OrderExecution
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: OrderExecution
+  nameWithType: ProviderCapabilityKind.OrderExecution
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.OrderExecution
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderExecution
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: OrderExecution = 9
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.ExecutionHistory
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.ExecutionHistory
+  id: ExecutionHistory
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: ExecutionHistory
+  nameWithType: ProviderCapabilityKind.ExecutionHistory
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.ExecutionHistory
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionHistory
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 20
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ExecutionHistory = 10
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.AccountBalances
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.AccountBalances
+  id: AccountBalances
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: AccountBalances
+  nameWithType: ProviderCapabilityKind.AccountBalances
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.AccountBalances
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountBalances
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 21
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: AccountBalances = 11
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.AccountPositions
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.AccountPositions
+  id: AccountPositions
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: AccountPositions
+  nameWithType: ProviderCapabilityKind.AccountPositions
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.AccountPositions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountPositions
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 22
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: AccountPositions = 12
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.CashTransactions
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.CashTransactions
+  id: CashTransactions
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: CashTransactions
+  nameWithType: ProviderCapabilityKind.CashTransactions
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.CashTransactions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashTransactions
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: CashTransactions = 13
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.BankStatements
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.BankStatements
+  id: BankStatements
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: BankStatements
+  nameWithType: ProviderCapabilityKind.BankStatements
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.BankStatements
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankStatements
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: BankStatements = 14
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind.ReconciliationFeed
+  commentId: F:Meridian.ProviderSdk.ProviderCapabilityKind.ReconciliationFeed
+  id: ReconciliationFeed
+  parent: Meridian.ProviderSdk.ProviderCapabilityKind
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationFeed
+  nameWithType: ProviderCapabilityKind.ReconciliationFeed
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind.ReconciliationFeed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationFeed
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 25
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ReconciliationFeed = 15
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind
+  commentId: T:Meridian.ProviderSdk.ProviderCapabilityKind
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  name: ProviderCapabilityKind
+  nameWithType: ProviderCapabilityKind
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind

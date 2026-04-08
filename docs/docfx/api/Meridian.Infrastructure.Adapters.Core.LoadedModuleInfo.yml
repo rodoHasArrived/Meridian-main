@@ -1,0 +1,551 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+  commentId: T:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+  id: LoadedModuleInfo
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[])
+  - Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities
+  - Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName
+  - Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId
+  langs:
+  - csharp
+  - vb
+  name: LoadedModuleInfo
+  nameWithType: LoadedModuleInfo
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadedModuleInfo
+    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    startLine: 219
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Metadata for a module that was loaded successfully.
+  example: []
+  syntax:
+    content: 'public sealed record LoadedModuleInfo : IEquatable<LoadedModuleInfo>'
+    content.vb: Public NotInheritable Class LoadedModuleInfo Implements IEquatable(Of LoadedModuleInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[])
+  commentId: M:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[])
+  id: '#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[])'
+  parent: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+  langs:
+  - csharp
+  - vb
+  name: LoadedModuleInfo(string, string, ProviderCapabilities[])
+  nameWithType: LoadedModuleInfo.LoadedModuleInfo(string, string, ProviderCapabilities[])
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.LoadedModuleInfo(string, string, Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[])
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    startLine: 219
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Metadata for a module that was loaded successfully.
+  example: []
+  syntax:
+    content: public LoadedModuleInfo(string ModuleId, string DisplayName, ProviderCapabilities[] Capabilities)
+    parameters:
+    - id: ModuleId
+      type: System.String
+      description: Unique provider identifier (e.g., "alpaca").
+    - id: DisplayName
+      type: System.String
+      description: Human-readable provider name.
+    - id: Capabilities
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[]
+      description: Capabilities declared by the module before registration.
+    content.vb: Public Sub New(ModuleId As String, DisplayName As String, Capabilities As ProviderCapabilities())
+  overload: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.#ctor*
+  nameWithType.vb: LoadedModuleInfo.New(String, String, ProviderCapabilities())
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.New(String, String, Meridian.Infrastructure.Adapters.Core.ProviderCapabilities())
+  name.vb: New(String, String, ProviderCapabilities())
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId
+  id: ModuleId
+  parent: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+  langs:
+  - csharp
+  - vb
+  name: ModuleId
+  nameWithType: LoadedModuleInfo.ModuleId
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModuleId
+    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    startLine: 220
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unique provider identifier (e.g., "alpaca").
+  example: []
+  syntax:
+    content: public string ModuleId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ModuleId As String
+  overload: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId*
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: LoadedModuleInfo.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    startLine: 221
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Human-readable provider name.
+  example: []
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName*
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: LoadedModuleInfo.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
+    startLine: 222
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Capabilities declared by the module before registration.
+  example: []
+  syntax:
+    content: public ProviderCapabilities[] Capabilities { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[]
+    content.vb: Public Property Capabilities As ProviderCapabilities()
+  overload: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LoadedModuleInfo>
+  nameWithType: IEquatable<LoadedModuleInfo>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo>
+  nameWithType.vb: IEquatable(Of LoadedModuleInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo)
+  name.vb: IEquatable(Of LoadedModuleInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+    name: LoadedModuleInfo
+    href: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo
+    name: LoadedModuleInfo
+    href: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.html#Meridian_Infrastructure_Adapters_Core_LoadedModuleInfo__ctor_System_String_System_String_Meridian_Infrastructure_Adapters_Core_ProviderCapabilities___
+  name: LoadedModuleInfo
+  nameWithType: LoadedModuleInfo.LoadedModuleInfo
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.LoadedModuleInfo
+  nameWithType.vb: LoadedModuleInfo.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[]
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities[]
+  nameWithType: ProviderCapabilities[]
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[]
+  nameWithType.vb: ProviderCapabilities()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities()
+  name.vb: ProviderCapabilities()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId
+  href: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.html#Meridian_Infrastructure_Adapters_Core_LoadedModuleInfo_ModuleId
+  name: ModuleId
+  nameWithType: LoadedModuleInfo.ModuleId
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.ModuleId
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName
+  href: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.html#Meridian_Infrastructure_Adapters_Core_LoadedModuleInfo_DisplayName
+  name: DisplayName
+  nameWithType: LoadedModuleInfo.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities
+  href: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.html#Meridian_Infrastructure_Adapters_Core_LoadedModuleInfo_Capabilities
+  name: Capabilities
+  nameWithType: LoadedModuleInfo.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.LoadedModuleInfo.Capabilities

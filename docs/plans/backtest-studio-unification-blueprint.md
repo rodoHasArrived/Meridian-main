@@ -19,10 +19,10 @@ The central design decision is:
 
 That direction fits the repository's current shape:
 
-- native runs already produce a rich [`BacktestResult`](../../src/Meridian.Backtesting.Sdk/BacktestResult.cs)
-- strategy-run persistence already stores that result on [`StrategyRunEntry`](../../src/Meridian.Strategies/Models/StrategyRunEntry.cs)
-- workstation comparison and diff already flow through [`StrategyRunReadService`](../../src/Meridian.Strategies/Services/StrategyRunReadService.cs) and [`WorkstationEndpoints.cs`](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs)
-- Lean integration currently exposes a separate UI-facing result type in [`LeanIntegrationService.cs`](../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs) and lightweight launcher-style endpoints in [`LeanEndpoints.cs`](../../src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs)
+- native runs already produce a rich [`BacktestResult`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Backtesting.Sdk/BacktestResult.cs)
+- strategy-run persistence already stores that result on [`StrategyRunEntry`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Strategies/Models/StrategyRunEntry.cs)
+- workstation comparison and diff already flow through [`StrategyRunReadService`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Strategies/Services/StrategyRunReadService.cs) and [`WorkstationEndpoints.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs)
+- Lean integration currently exposes a separate UI-facing result type in [`LeanIntegrationService.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Services/Services/LeanIntegrationService.cs) and lightweight launcher-style endpoints in [`LeanEndpoints.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs)
 
 Wave 4 should therefore finish the unification by making engine choice an execution detail inside one Backtest Studio workflow.
 
@@ -141,7 +141,7 @@ This lets the product say "Lean result imported successfully, fill tape partial,
 
 ### 4. Shared run model stays primary
 
-Do not replace the workstation contracts in [`StrategyRunReadModels.cs`](../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs). Instead, extend them with research-facing additions that preserve the existing cross-workflow object model.
+Do not replace the workstation contracts in [`StrategyRunReadModels.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs). Instead, extend them with research-facing additions that preserve the existing cross-workflow object model.
 
 Recommended additions:
 
@@ -174,7 +174,7 @@ Use `StrategyRunDetail` as the umbrella object and make research drill-ins fetch
 
 ### 5. Comparison and diff should build on existing workstation seams
 
-[`WorkstationEndpoints.cs`](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs) already exposes `/runs/compare` and `/runs/diff`, but the current diff is intentionally shallow.
+[`WorkstationEndpoints.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs) already exposes `/runs/compare` and `/runs/diff`, but the current diff is intentionally shallow.
 
 Wave 4 should extend the current `StrategyRunReadService` path rather than invent a second comparison system.
 
@@ -203,7 +203,7 @@ The native engine already has:
 - `BarMidpointFillModel`
 - `MarketImpactFillModel`
 
-in [`src/Meridian.Backtesting/FillModels/`](../../src/Meridian.Backtesting/FillModels).
+in [`src/Meridian.Backtesting/FillModels/`](https://github.com/rodoHasArrived/Meridian/tree/main/src/Meridian.Backtesting/FillModels).
 
 Wave 4 should not add more booleans to `BacktestRequest`. Instead, introduce named fill profiles:
 
@@ -311,7 +311,7 @@ That keeps the translation layer explicit and testable.
 
 ### Additions to workstation contracts
 
-Extend [`StrategyRunReadModels.cs`](../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs) with additive research models only:
+Extend [`StrategyRunReadModels.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs) with additive research models only:
 
 - `StrategyRunResearchSummary`
 - `StrategyRunMetricDelta`

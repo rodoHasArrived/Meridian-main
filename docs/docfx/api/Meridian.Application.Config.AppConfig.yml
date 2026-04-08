@@ -1,0 +1,1557 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  id: AppConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)
+  - Meridian.Application.Config.AppConfig.Alpaca
+  - Meridian.Application.Config.AppConfig.Backfill
+  - Meridian.Application.Config.AppConfig.Canonicalization
+  - Meridian.Application.Config.AppConfig.CoLocationProfile
+  - Meridian.Application.Config.AppConfig.Compress
+  - Meridian.Application.Config.AppConfig.Coordination
+  - Meridian.Application.Config.AppConfig.DataRoot
+  - Meridian.Application.Config.AppConfig.DataSource
+  - Meridian.Application.Config.AppConfig.DataSources
+  - Meridian.Application.Config.AppConfig.Derivatives
+  - Meridian.Application.Config.AppConfig.IB
+  - Meridian.Application.Config.AppConfig.OfflineFirstMode
+  - Meridian.Application.Config.AppConfig.PluginsPath
+  - Meridian.Application.Config.AppConfig.Polygon
+  - Meridian.Application.Config.AppConfig.ProviderConnections
+  - Meridian.Application.Config.AppConfig.ProviderRegistry
+  - Meridian.Application.Config.AppConfig.Sources
+  - Meridian.Application.Config.AppConfig.StockSharp
+  - Meridian.Application.Config.AppConfig.Storage
+  - Meridian.Application.Config.AppConfig.Symbols
+  - Meridian.Application.Config.AppConfig.Synthetic
+  - Meridian.Application.Config.AppConfig.Validation
+  langs:
+  - csharp
+  - vb
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppConfig
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Root configuration model loaded from appsettings.json.
+  example: []
+  syntax:
+    content: 'public sealed record AppConfig : IEquatable<AppConfig>'
+    content.vb: Public NotInheritable Class AppConfig Implements IEquatable(Of AppConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.AppConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)
+  commentId: M:Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)
+  id: '#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)'
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: AppConfig(string, bool?, DataSourceKind, AlpacaOptions?, IBOptions?, PolygonOptions?, StockSharpConfig?, SyntheticMarketDataConfig?, StorageConfig?, SymbolConfig[]?, BackfillConfig?, SourceRegistryConfig?, DataSourcesConfig?, ProviderConnectionsConfig?, DerivativesConfig?, ProviderRegistryConfig?, CoordinationConfig?, CanonicalizationConfig?, ValidationPipelineConfig?, bool, string?, bool)
+  nameWithType: AppConfig.AppConfig(string, bool?, DataSourceKind, AlpacaOptions?, IBOptions?, PolygonOptions?, StockSharpConfig?, SyntheticMarketDataConfig?, StorageConfig?, SymbolConfig[]?, BackfillConfig?, SourceRegistryConfig?, DataSourcesConfig?, ProviderConnectionsConfig?, DerivativesConfig?, ProviderRegistryConfig?, CoordinationConfig?, CanonicalizationConfig?, ValidationPipelineConfig?, bool, string?, bool)
+  fullName: Meridian.Application.Config.AppConfig.AppConfig(string, bool?, Meridian.Application.Config.DataSourceKind, Meridian.Application.Config.AlpacaOptions?, Meridian.Application.Config.IBOptions?, Meridian.Application.Config.PolygonOptions?, Meridian.Application.Config.StockSharpConfig?, Meridian.Application.Config.SyntheticMarketDataConfig?, Meridian.Application.Config.StorageConfig?, Meridian.Contracts.Configuration.SymbolConfig[]?, Meridian.Application.Config.BackfillConfig?, Meridian.Application.Config.SourceRegistryConfig?, Meridian.Application.Config.DataSourcesConfig?, Meridian.Application.Config.ProviderConnectionsConfig?, Meridian.Application.Config.DerivativesConfig?, Meridian.Application.Config.ProviderRegistryConfig?, Meridian.Application.Config.CoordinationConfig?, Meridian.Application.Config.CanonicalizationConfig?, Meridian.Application.Config.ValidationPipelineConfig?, bool, string?, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Root configuration model loaded from appsettings.json.
+  example: []
+  syntax:
+    content: public AppConfig(string DataRoot = "data", bool? Compress = null, DataSourceKind DataSource = DataSourceKind.Synthetic, AlpacaOptions? Alpaca = null, IBOptions? IB = null, PolygonOptions? Polygon = null, StockSharpConfig? StockSharp = null, SyntheticMarketDataConfig? Synthetic = null, StorageConfig? Storage = null, SymbolConfig[]? Symbols = null, BackfillConfig? Backfill = null, SourceRegistryConfig? Sources = null, DataSourcesConfig? DataSources = null, ProviderConnectionsConfig? ProviderConnections = null, DerivativesConfig? Derivatives = null, ProviderRegistryConfig? ProviderRegistry = null, CoordinationConfig? Coordination = null, CanonicalizationConfig? Canonicalization = null, ValidationPipelineConfig? Validation = null, bool OfflineFirstMode = false, string? PluginsPath = null, bool CoLocationProfile = false)
+    parameters:
+    - id: DataRoot
+      type: System.String
+      description: Output directory root for storage sinks.
+    - id: Compress
+      type: System.Nullable{System.Boolean}
+      description: Whether JSONL sinks should gzip. Null means use base configuration/default.
+    - id: DataSource
+      type: Meridian.Application.Config.DataSourceKind
+      description: >-
+        Market data provider selector:
+
+        - <xref href="Meridian.Application.Config.DataSourceKind.IB" data-throw-if-not-resolved="false"></xref> uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
+
+        - <xref href="Meridian.Application.Config.DataSourceKind.Alpaca" data-throw-if-not-resolved="false"></xref> uses Alpaca market data via WebSocket (trades; quotes optional in future).
+
+        - <xref href="Meridian.Application.Config.DataSourceKind.StockSharp" data-throw-if-not-resolved="false"></xref> uses StockSharp connectors (Rithmic, IQFeed, CQG, IB, etc.).
+
+        - <xref href="Meridian.Application.Config.DataSourceKind.NYSE" data-throw-if-not-resolved="false"></xref> uses the NYSE market data feed.
+
+        - <xref href="Meridian.Application.Config.DataSourceKind.Synthetic" data-throw-if-not-resolved="false"></xref> uses the built-in synthetic historical/reference dataset for offline development.
+    - id: Alpaca
+      type: Meridian.Application.Config.AlpacaOptions
+      description: Alpaca provider options (required if DataSource == DataSourceKind.Alpaca).
+    - id: IB
+      type: Meridian.Application.Config.IBOptions
+      description: Interactive Brokers provider options (required if DataSource == DataSourceKind.IB).
+    - id: Polygon
+      type: Meridian.Application.Config.PolygonOptions
+      description: Polygon provider options (required if DataSource == DataSourceKind.Polygon).
+    - id: StockSharp
+      type: Meridian.Application.Config.StockSharpConfig
+      description: StockSharp connector configuration (required if DataSource == DataSourceKind.StockSharp).
+    - id: Synthetic
+      type: Meridian.Application.Config.SyntheticMarketDataConfig
+      description: Synthetic market-data provider configuration for offline/backtest development.
+    - id: Storage
+      type: Meridian.Application.Config.StorageConfig
+      description: Storage configuration options (naming convention, partitioning, etc.).
+    - id: Symbols
+      type: Meridian.Contracts.Configuration.SymbolConfig[]
+      description: Symbol subscriptions.
+    - id: Backfill
+      type: Meridian.Application.Config.BackfillConfig
+      description: Optional historical backfill defaults.
+    - id: Sources
+      type: Meridian.Application.Config.SourceRegistryConfig
+      description: Source registry persistence path.
+    - id: DataSources
+      type: Meridian.Application.Config.DataSourcesConfig
+      description: Multiple data source configurations for real-time and historical data.
+    - id: ProviderConnections
+      type: Meridian.Application.Config.ProviderConnectionsConfig
+      description: Relationship-aware provider connections, bindings, policies, presets, and certifications.
+    - id: Derivatives
+      type: Meridian.Application.Config.DerivativesConfig
+      description: Derivatives (options) data collection configuration.
+    - id: ProviderRegistry
+      type: Meridian.Application.Config.ProviderRegistryConfig
+      description: Unified provider registry configuration controlling attribute-based discovery.
+    - id: Coordination
+      type: Meridian.Application.Config.CoordinationConfig
+      description: Multi-instance coordination configuration.
+    - id: Canonicalization
+      type: Meridian.Application.Config.CanonicalizationConfig
+      description: Canonicalization configuration for condition codes and venue MICs.
+    - id: Validation
+      type: Meridian.Application.Config.ValidationPipelineConfig
+      description: Configuration for the F# validation pipeline stage.
+    - id: OfflineFirstMode
+      type: System.Boolean
+      description: 'When true, enables air-gapped offline-first mode: backfill requests are queued and deferred until connectivity is restored. Default is false.'
+    - id: PluginsPath
+      type: System.String
+      description: Optional directory path for loading external data source plugins. When set, plugins are loaded and registered dynamically.
+    - id: CoLocationProfile
+      type: System.Boolean
+      description: 'When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.'
+    content.vb: Public Sub New(DataRoot As String = "data", Compress As Boolean? = Nothing, DataSource As DataSourceKind = DataSourceKind.Synthetic, Alpaca As AlpacaOptions = Nothing, IB As IBOptions = Nothing, Polygon As PolygonOptions = Nothing, StockSharp As StockSharpConfig = Nothing, Synthetic As SyntheticMarketDataConfig = Nothing, Storage As StorageConfig = Nothing, Symbols As SymbolConfig() = Nothing, Backfill As BackfillConfig = Nothing, Sources As SourceRegistryConfig = Nothing, DataSources As DataSourcesConfig = Nothing, ProviderConnections As ProviderConnectionsConfig = Nothing, Derivatives As DerivativesConfig = Nothing, ProviderRegistry As ProviderRegistryConfig = Nothing, Coordination As CoordinationConfig = Nothing, Canonicalization As CanonicalizationConfig = Nothing, Validation As ValidationPipelineConfig = Nothing, OfflineFirstMode As Boolean = False, PluginsPath As String = Nothing, CoLocationProfile As Boolean = False)
+  overload: Meridian.Application.Config.AppConfig.#ctor*
+  nameWithType.vb: AppConfig.New(String, Boolean?, DataSourceKind, AlpacaOptions, IBOptions, PolygonOptions, StockSharpConfig, SyntheticMarketDataConfig, StorageConfig, SymbolConfig(), BackfillConfig, SourceRegistryConfig, DataSourcesConfig, ProviderConnectionsConfig, DerivativesConfig, ProviderRegistryConfig, CoordinationConfig, CanonicalizationConfig, ValidationPipelineConfig, Boolean, String, Boolean)
+  fullName.vb: Meridian.Application.Config.AppConfig.New(String, Boolean?, Meridian.Application.Config.DataSourceKind, Meridian.Application.Config.AlpacaOptions, Meridian.Application.Config.IBOptions, Meridian.Application.Config.PolygonOptions, Meridian.Application.Config.StockSharpConfig, Meridian.Application.Config.SyntheticMarketDataConfig, Meridian.Application.Config.StorageConfig, Meridian.Contracts.Configuration.SymbolConfig(), Meridian.Application.Config.BackfillConfig, Meridian.Application.Config.SourceRegistryConfig, Meridian.Application.Config.DataSourcesConfig, Meridian.Application.Config.ProviderConnectionsConfig, Meridian.Application.Config.DerivativesConfig, Meridian.Application.Config.ProviderRegistryConfig, Meridian.Application.Config.CoordinationConfig, Meridian.Application.Config.CanonicalizationConfig, Meridian.Application.Config.ValidationPipelineConfig, Boolean, String, Boolean)
+  name.vb: New(String, Boolean?, DataSourceKind, AlpacaOptions, IBOptions, PolygonOptions, StockSharpConfig, SyntheticMarketDataConfig, StorageConfig, SymbolConfig(), BackfillConfig, SourceRegistryConfig, DataSourcesConfig, ProviderConnectionsConfig, DerivativesConfig, ProviderRegistryConfig, CoordinationConfig, CanonicalizationConfig, ValidationPipelineConfig, Boolean, String, Boolean)
+- uid: Meridian.Application.Config.AppConfig.DataRoot
+  commentId: P:Meridian.Application.Config.AppConfig.DataRoot
+  id: DataRoot
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: DataRoot
+  nameWithType: AppConfig.DataRoot
+  fullName: Meridian.Application.Config.AppConfig.DataRoot
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataRoot
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Output directory root for storage sinks.
+  example: []
+  syntax:
+    content: public string DataRoot { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataRoot As String
+  overload: Meridian.Application.Config.AppConfig.DataRoot*
+- uid: Meridian.Application.Config.AppConfig.Compress
+  commentId: P:Meridian.Application.Config.AppConfig.Compress
+  id: Compress
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Compress
+  nameWithType: AppConfig.Compress
+  fullName: Meridian.Application.Config.AppConfig.Compress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compress
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Whether JSONL sinks should gzip. Null means use base configuration/default.
+  example: []
+  syntax:
+    content: public bool? Compress { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property Compress As Boolean?
+  overload: Meridian.Application.Config.AppConfig.Compress*
+- uid: Meridian.Application.Config.AppConfig.DataSource
+  commentId: P:Meridian.Application.Config.AppConfig.DataSource
+  id: DataSource
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: DataSource
+  nameWithType: AppConfig.DataSource
+  fullName: Meridian.Application.Config.AppConfig.DataSource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSource
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Market data provider selector:
+
+    - <xref href="Meridian.Application.Config.DataSourceKind.IB" data-throw-if-not-resolved="false"></xref> uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
+
+    - <xref href="Meridian.Application.Config.DataSourceKind.Alpaca" data-throw-if-not-resolved="false"></xref> uses Alpaca market data via WebSocket (trades; quotes optional in future).
+
+    - <xref href="Meridian.Application.Config.DataSourceKind.StockSharp" data-throw-if-not-resolved="false"></xref> uses StockSharp connectors (Rithmic, IQFeed, CQG, IB, etc.).
+
+    - <xref href="Meridian.Application.Config.DataSourceKind.NYSE" data-throw-if-not-resolved="false"></xref> uses the NYSE market data feed.
+
+    - <xref href="Meridian.Application.Config.DataSourceKind.Synthetic" data-throw-if-not-resolved="false"></xref> uses the built-in synthetic historical/reference dataset for offline development.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(DataSourceKindConverter))]
+
+      public DataSourceKind DataSource { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.DataSourceKind
+    content.vb: >-
+      <JsonConverter(GetType(DataSourceKindConverter))>
+
+      Public Property DataSource As DataSourceKind
+  overload: Meridian.Application.Config.AppConfig.DataSource*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: Meridian.Application.Config.DataSourceKindConverter
+- uid: Meridian.Application.Config.AppConfig.Alpaca
+  commentId: P:Meridian.Application.Config.AppConfig.Alpaca
+  id: Alpaca
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: AppConfig.Alpaca
+  fullName: Meridian.Application.Config.AppConfig.Alpaca
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Alpaca provider options (required if DataSource == DataSourceKind.Alpaca).
+  example: []
+  syntax:
+    content: public AlpacaOptions? Alpaca { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.AlpacaOptions
+    content.vb: Public Property Alpaca As AlpacaOptions
+  overload: Meridian.Application.Config.AppConfig.Alpaca*
+- uid: Meridian.Application.Config.AppConfig.IB
+  commentId: P:Meridian.Application.Config.AppConfig.IB
+  id: IB
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: IB
+  nameWithType: AppConfig.IB
+  fullName: Meridian.Application.Config.AppConfig.IB
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IB
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Interactive Brokers provider options (required if DataSource == DataSourceKind.IB).
+  example: []
+  syntax:
+    content: public IBOptions? IB { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.IBOptions
+    content.vb: Public Property IB As IBOptions
+  overload: Meridian.Application.Config.AppConfig.IB*
+- uid: Meridian.Application.Config.AppConfig.Polygon
+  commentId: P:Meridian.Application.Config.AppConfig.Polygon
+  id: Polygon
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: AppConfig.Polygon
+  fullName: Meridian.Application.Config.AppConfig.Polygon
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Polygon provider options (required if DataSource == DataSourceKind.Polygon).
+  example: []
+  syntax:
+    content: public PolygonOptions? Polygon { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.PolygonOptions
+    content.vb: Public Property Polygon As PolygonOptions
+  overload: Meridian.Application.Config.AppConfig.Polygon*
+- uid: Meridian.Application.Config.AppConfig.StockSharp
+  commentId: P:Meridian.Application.Config.AppConfig.StockSharp
+  id: StockSharp
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: StockSharp
+  nameWithType: AppConfig.StockSharp
+  fullName: Meridian.Application.Config.AppConfig.StockSharp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StockSharp
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: StockSharp connector configuration (required if DataSource == DataSourceKind.StockSharp).
+  example: []
+  syntax:
+    content: public StockSharpConfig? StockSharp { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.StockSharpConfig
+    content.vb: Public Property StockSharp As StockSharpConfig
+  overload: Meridian.Application.Config.AppConfig.StockSharp*
+- uid: Meridian.Application.Config.AppConfig.Synthetic
+  commentId: P:Meridian.Application.Config.AppConfig.Synthetic
+  id: Synthetic
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Synthetic
+  nameWithType: AppConfig.Synthetic
+  fullName: Meridian.Application.Config.AppConfig.Synthetic
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Synthetic
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Synthetic market-data provider configuration for offline/backtest development.
+  example: []
+  syntax:
+    content: public SyntheticMarketDataConfig? Synthetic { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.SyntheticMarketDataConfig
+    content.vb: Public Property Synthetic As SyntheticMarketDataConfig
+  overload: Meridian.Application.Config.AppConfig.Synthetic*
+- uid: Meridian.Application.Config.AppConfig.Storage
+  commentId: P:Meridian.Application.Config.AppConfig.Storage
+  id: Storage
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Storage
+  nameWithType: AppConfig.Storage
+  fullName: Meridian.Application.Config.AppConfig.Storage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Storage
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Storage configuration options (naming convention, partitioning, etc.).
+  example: []
+  syntax:
+    content: public StorageConfig? Storage { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.StorageConfig
+    content.vb: Public Property Storage As StorageConfig
+  overload: Meridian.Application.Config.AppConfig.Storage*
+- uid: Meridian.Application.Config.AppConfig.Symbols
+  commentId: P:Meridian.Application.Config.AppConfig.Symbols
+  id: Symbols
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: AppConfig.Symbols
+  fullName: Meridian.Application.Config.AppConfig.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Symbol subscriptions.
+  example: []
+  syntax:
+    content: public SymbolConfig[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.SymbolConfig[]
+    content.vb: Public Property Symbols As SymbolConfig()
+  overload: Meridian.Application.Config.AppConfig.Symbols*
+- uid: Meridian.Application.Config.AppConfig.Backfill
+  commentId: P:Meridian.Application.Config.AppConfig.Backfill
+  id: Backfill
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Backfill
+  nameWithType: AppConfig.Backfill
+  fullName: Meridian.Application.Config.AppConfig.Backfill
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backfill
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Optional historical backfill defaults.
+  example: []
+  syntax:
+    content: public BackfillConfig? Backfill { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.BackfillConfig
+    content.vb: Public Property Backfill As BackfillConfig
+  overload: Meridian.Application.Config.AppConfig.Backfill*
+- uid: Meridian.Application.Config.AppConfig.Sources
+  commentId: P:Meridian.Application.Config.AppConfig.Sources
+  id: Sources
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: AppConfig.Sources
+  fullName: Meridian.Application.Config.AppConfig.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Source registry persistence path.
+  example: []
+  syntax:
+    content: public SourceRegistryConfig? Sources { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.SourceRegistryConfig
+    content.vb: Public Property Sources As SourceRegistryConfig
+  overload: Meridian.Application.Config.AppConfig.Sources*
+- uid: Meridian.Application.Config.AppConfig.DataSources
+  commentId: P:Meridian.Application.Config.AppConfig.DataSources
+  id: DataSources
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: DataSources
+  nameWithType: AppConfig.DataSources
+  fullName: Meridian.Application.Config.AppConfig.DataSources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSources
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Multiple data source configurations for real-time and historical data.
+  example: []
+  syntax:
+    content: public DataSourcesConfig? DataSources { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.DataSourcesConfig
+    content.vb: Public Property DataSources As DataSourcesConfig
+  overload: Meridian.Application.Config.AppConfig.DataSources*
+- uid: Meridian.Application.Config.AppConfig.ProviderConnections
+  commentId: P:Meridian.Application.Config.AppConfig.ProviderConnections
+  id: ProviderConnections
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnections
+  nameWithType: AppConfig.ProviderConnections
+  fullName: Meridian.Application.Config.AppConfig.ProviderConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnections
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Relationship-aware provider connections, bindings, policies, presets, and certifications.
+  example: []
+  syntax:
+    content: public ProviderConnectionsConfig? ProviderConnections { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.ProviderConnectionsConfig
+    content.vb: Public Property ProviderConnections As ProviderConnectionsConfig
+  overload: Meridian.Application.Config.AppConfig.ProviderConnections*
+- uid: Meridian.Application.Config.AppConfig.Derivatives
+  commentId: P:Meridian.Application.Config.AppConfig.Derivatives
+  id: Derivatives
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Derivatives
+  nameWithType: AppConfig.Derivatives
+  fullName: Meridian.Application.Config.AppConfig.Derivatives
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Derivatives
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Derivatives (options) data collection configuration.
+  example: []
+  syntax:
+    content: public DerivativesConfig? Derivatives { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.DerivativesConfig
+    content.vb: Public Property Derivatives As DerivativesConfig
+  overload: Meridian.Application.Config.AppConfig.Derivatives*
+- uid: Meridian.Application.Config.AppConfig.ProviderRegistry
+  commentId: P:Meridian.Application.Config.AppConfig.ProviderRegistry
+  id: ProviderRegistry
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: ProviderRegistry
+  nameWithType: AppConfig.ProviderRegistry
+  fullName: Meridian.Application.Config.AppConfig.ProviderRegistry
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRegistry
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Unified provider registry configuration controlling attribute-based discovery.
+  example: []
+  syntax:
+    content: public ProviderRegistryConfig? ProviderRegistry { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.ProviderRegistryConfig
+    content.vb: Public Property ProviderRegistry As ProviderRegistryConfig
+  overload: Meridian.Application.Config.AppConfig.ProviderRegistry*
+- uid: Meridian.Application.Config.AppConfig.Coordination
+  commentId: P:Meridian.Application.Config.AppConfig.Coordination
+  id: Coordination
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Coordination
+  nameWithType: AppConfig.Coordination
+  fullName: Meridian.Application.Config.AppConfig.Coordination
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Coordination
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Multi-instance coordination configuration.
+  example: []
+  syntax:
+    content: public CoordinationConfig? Coordination { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.CoordinationConfig
+    content.vb: Public Property Coordination As CoordinationConfig
+  overload: Meridian.Application.Config.AppConfig.Coordination*
+- uid: Meridian.Application.Config.AppConfig.Canonicalization
+  commentId: P:Meridian.Application.Config.AppConfig.Canonicalization
+  id: Canonicalization
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Canonicalization
+  nameWithType: AppConfig.Canonicalization
+  fullName: Meridian.Application.Config.AppConfig.Canonicalization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Canonicalization
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Canonicalization configuration for condition codes and venue MICs.
+  example: []
+  syntax:
+    content: public CanonicalizationConfig? Canonicalization { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.CanonicalizationConfig
+    content.vb: Public Property Canonicalization As CanonicalizationConfig
+  overload: Meridian.Application.Config.AppConfig.Canonicalization*
+- uid: Meridian.Application.Config.AppConfig.Validation
+  commentId: P:Meridian.Application.Config.AppConfig.Validation
+  id: Validation
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Validation
+  nameWithType: AppConfig.Validation
+  fullName: Meridian.Application.Config.AppConfig.Validation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validation
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration for the F# validation pipeline stage.
+  example: []
+  syntax:
+    content: public ValidationPipelineConfig? Validation { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.ValidationPipelineConfig
+    content.vb: Public Property Validation As ValidationPipelineConfig
+  overload: Meridian.Application.Config.AppConfig.Validation*
+- uid: Meridian.Application.Config.AppConfig.OfflineFirstMode
+  commentId: P:Meridian.Application.Config.AppConfig.OfflineFirstMode
+  id: OfflineFirstMode
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: OfflineFirstMode
+  nameWithType: AppConfig.OfflineFirstMode
+  fullName: Meridian.Application.Config.AppConfig.OfflineFirstMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OfflineFirstMode
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: 'When true, enables air-gapped offline-first mode: backfill requests are queued and deferred until connectivity is restored. Default is false.'
+  example: []
+  syntax:
+    content: public bool OfflineFirstMode { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property OfflineFirstMode As Boolean
+  overload: Meridian.Application.Config.AppConfig.OfflineFirstMode*
+- uid: Meridian.Application.Config.AppConfig.PluginsPath
+  commentId: P:Meridian.Application.Config.AppConfig.PluginsPath
+  id: PluginsPath
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: PluginsPath
+  nameWithType: AppConfig.PluginsPath
+  fullName: Meridian.Application.Config.AppConfig.PluginsPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PluginsPath
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Optional directory path for loading external data source plugins. When set, plugins are loaded and registered dynamically.
+  example: []
+  syntax:
+    content: public string? PluginsPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PluginsPath As String
+  overload: Meridian.Application.Config.AppConfig.PluginsPath*
+- uid: Meridian.Application.Config.AppConfig.CoLocationProfile
+  commentId: P:Meridian.Application.Config.AppConfig.CoLocationProfile
+  id: CoLocationProfile
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: CoLocationProfile
+  nameWithType: AppConfig.CoLocationProfile
+  fullName: Meridian.Application.Config.AppConfig.CoLocationProfile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoLocationProfile
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: 'When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.'
+  example: []
+  syntax:
+    content: public bool CoLocationProfile { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property CoLocationProfile As Boolean
+  overload: Meridian.Application.Config.AppConfig.CoLocationProfile*
+references:
+- uid: Meridian.Application.Config.DataSourceKind.IB
+  commentId: F:Meridian.Application.Config.DataSourceKind.IB
+  href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_IB
+  name: IB
+  nameWithType: DataSourceKind.IB
+  fullName: Meridian.Application.Config.DataSourceKind.IB
+- uid: Meridian.Application.Config.DataSourceKind.Alpaca
+  commentId: F:Meridian.Application.Config.DataSourceKind.Alpaca
+  href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_Alpaca
+  name: Alpaca
+  nameWithType: DataSourceKind.Alpaca
+  fullName: Meridian.Application.Config.DataSourceKind.Alpaca
+- uid: Meridian.Application.Config.DataSourceKind.StockSharp
+  commentId: F:Meridian.Application.Config.DataSourceKind.StockSharp
+  href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_StockSharp
+  name: StockSharp
+  nameWithType: DataSourceKind.StockSharp
+  fullName: Meridian.Application.Config.DataSourceKind.StockSharp
+- uid: Meridian.Application.Config.DataSourceKind.NYSE
+  commentId: F:Meridian.Application.Config.DataSourceKind.NYSE
+  href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_NYSE
+  name: NYSE
+  nameWithType: DataSourceKind.NYSE
+  fullName: Meridian.Application.Config.DataSourceKind.NYSE
+- uid: Meridian.Application.Config.DataSourceKind.Synthetic
+  commentId: F:Meridian.Application.Config.DataSourceKind.Synthetic
+  href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_Synthetic
+  name: Synthetic
+  nameWithType: DataSourceKind.Synthetic
+  fullName: Meridian.Application.Config.DataSourceKind.Synthetic
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.AppConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.AppConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AppConfig>
+  nameWithType: IEquatable<AppConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.AppConfig>
+  nameWithType.vb: IEquatable(Of AppConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.AppConfig)
+  name.vb: IEquatable(Of AppConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+    href: Meridian.Application.Config.AppConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+    href: Meridian.Application.Config.AppConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.AppConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.AppConfig.#ctor
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig__ctor_System_String_System_Nullable_System_Boolean__Meridian_Application_Config_DataSourceKind_Meridian_Application_Config_AlpacaOptions_Meridian_Application_Config_IBOptions_Meridian_Application_Config_PolygonOptions_Meridian_Application_Config_StockSharpConfig_Meridian_Application_Config_SyntheticMarketDataConfig_Meridian_Application_Config_StorageConfig_Meridian_Contracts_Configuration_SymbolConfig___Meridian_Application_Config_BackfillConfig_Meridian_Application_Config_SourceRegistryConfig_Meridian_Application_Config_DataSourcesConfig_Meridian_Application_Config_ProviderConnectionsConfig_Meridian_Application_Config_DerivativesConfig_Meridian_Application_Config_ProviderRegistryConfig_Meridian_Application_Config_CoordinationConfig_Meridian_Application_Config_CanonicalizationConfig_Meridian_Application_Config_ValidationPipelineConfig_System_Boolean_System_String_System_Boolean_
+  name: AppConfig
+  nameWithType: AppConfig.AppConfig
+  fullName: Meridian.Application.Config.AppConfig.AppConfig
+  nameWithType.vb: AppConfig.New
+  fullName.vb: Meridian.Application.Config.AppConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: Meridian.Application.Config.DataSourceKind
+  commentId: T:Meridian.Application.Config.DataSourceKind
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourceKind.html
+  name: DataSourceKind
+  nameWithType: DataSourceKind
+  fullName: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Application.Config.AlpacaOptions
+  commentId: T:Meridian.Application.Config.AlpacaOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AlpacaOptions.html
+  name: AlpacaOptions
+  nameWithType: AlpacaOptions
+  fullName: Meridian.Application.Config.AlpacaOptions
+- uid: Meridian.Application.Config.IBOptions
+  commentId: T:Meridian.Application.Config.IBOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBOptions.html
+  name: IBOptions
+  nameWithType: IBOptions
+  fullName: Meridian.Application.Config.IBOptions
+- uid: Meridian.Application.Config.PolygonOptions
+  commentId: T:Meridian.Application.Config.PolygonOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.PolygonOptions.html
+  name: PolygonOptions
+  nameWithType: PolygonOptions
+  fullName: Meridian.Application.Config.PolygonOptions
+- uid: Meridian.Application.Config.StockSharpConfig
+  commentId: T:Meridian.Application.Config.StockSharpConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.StockSharpConfig.html
+  name: StockSharpConfig
+  nameWithType: StockSharpConfig
+  fullName: Meridian.Application.Config.StockSharpConfig
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig
+  commentId: T:Meridian.Application.Config.SyntheticMarketDataConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html
+  name: SyntheticMarketDataConfig
+  nameWithType: SyntheticMarketDataConfig
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig
+- uid: Meridian.Application.Config.StorageConfig
+  commentId: T:Meridian.Application.Config.StorageConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.StorageConfig.html
+  name: StorageConfig
+  nameWithType: StorageConfig
+  fullName: Meridian.Application.Config.StorageConfig
+- uid: Meridian.Contracts.Configuration.SymbolConfig[]
+  isExternal: true
+  name: SymbolConfig[]
+  nameWithType: SymbolConfig[]
+  fullName: Meridian.Contracts.Configuration.SymbolConfig[]
+  nameWithType.vb: SymbolConfig()
+  fullName.vb: Meridian.Contracts.Configuration.SymbolConfig()
+  name.vb: SymbolConfig()
+  spec.csharp:
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: (
+  - name: )
+- uid: Meridian.Application.Config.BackfillConfig
+  commentId: T:Meridian.Application.Config.BackfillConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.BackfillConfig.html
+  name: BackfillConfig
+  nameWithType: BackfillConfig
+  fullName: Meridian.Application.Config.BackfillConfig
+- uid: Meridian.Application.Config.SourceRegistryConfig
+  commentId: T:Meridian.Application.Config.SourceRegistryConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.SourceRegistryConfig.html
+  name: SourceRegistryConfig
+  nameWithType: SourceRegistryConfig
+  fullName: Meridian.Application.Config.SourceRegistryConfig
+- uid: Meridian.Application.Config.DataSourcesConfig
+  commentId: T:Meridian.Application.Config.DataSourcesConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourcesConfig.html
+  name: DataSourcesConfig
+  nameWithType: DataSourcesConfig
+  fullName: Meridian.Application.Config.DataSourcesConfig
+- uid: Meridian.Application.Config.ProviderConnectionsConfig
+  commentId: T:Meridian.Application.Config.ProviderConnectionsConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderConnectionsConfig.html
+  name: ProviderConnectionsConfig
+  nameWithType: ProviderConnectionsConfig
+  fullName: Meridian.Application.Config.ProviderConnectionsConfig
+- uid: Meridian.Application.Config.DerivativesConfig
+  commentId: T:Meridian.Application.Config.DerivativesConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DerivativesConfig.html
+  name: DerivativesConfig
+  nameWithType: DerivativesConfig
+  fullName: Meridian.Application.Config.DerivativesConfig
+- uid: Meridian.Application.Config.ProviderRegistryConfig
+  commentId: T:Meridian.Application.Config.ProviderRegistryConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderRegistryConfig.html
+  name: ProviderRegistryConfig
+  nameWithType: ProviderRegistryConfig
+  fullName: Meridian.Application.Config.ProviderRegistryConfig
+- uid: Meridian.Application.Config.CoordinationConfig
+  commentId: T:Meridian.Application.Config.CoordinationConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.CoordinationConfig.html
+  name: CoordinationConfig
+  nameWithType: CoordinationConfig
+  fullName: Meridian.Application.Config.CoordinationConfig
+- uid: Meridian.Application.Config.CanonicalizationConfig
+  commentId: T:Meridian.Application.Config.CanonicalizationConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.CanonicalizationConfig.html
+  name: CanonicalizationConfig
+  nameWithType: CanonicalizationConfig
+  fullName: Meridian.Application.Config.CanonicalizationConfig
+- uid: Meridian.Application.Config.ValidationPipelineConfig
+  commentId: T:Meridian.Application.Config.ValidationPipelineConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ValidationPipelineConfig.html
+  name: ValidationPipelineConfig
+  nameWithType: ValidationPipelineConfig
+  fullName: Meridian.Application.Config.ValidationPipelineConfig
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.AppConfig.DataRoot*
+  commentId: Overload:Meridian.Application.Config.AppConfig.DataRoot
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_DataRoot
+  name: DataRoot
+  nameWithType: AppConfig.DataRoot
+  fullName: Meridian.Application.Config.AppConfig.DataRoot
+- uid: Meridian.Application.Config.AppConfig.Compress*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Compress
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Compress
+  name: Compress
+  nameWithType: AppConfig.Compress
+  fullName: Meridian.Application.Config.AppConfig.Compress
+- uid: Meridian.Application.Config.AppConfig.DataSource*
+  commentId: Overload:Meridian.Application.Config.AppConfig.DataSource
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_DataSource
+  name: DataSource
+  nameWithType: AppConfig.DataSource
+  fullName: Meridian.Application.Config.AppConfig.DataSource
+- uid: Meridian.Application.Config.AppConfig.Alpaca*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Alpaca
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Alpaca
+  name: Alpaca
+  nameWithType: AppConfig.Alpaca
+  fullName: Meridian.Application.Config.AppConfig.Alpaca
+- uid: Meridian.Application.Config.AppConfig.IB*
+  commentId: Overload:Meridian.Application.Config.AppConfig.IB
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_IB
+  name: IB
+  nameWithType: AppConfig.IB
+  fullName: Meridian.Application.Config.AppConfig.IB
+- uid: Meridian.Application.Config.AppConfig.Polygon*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Polygon
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Polygon
+  name: Polygon
+  nameWithType: AppConfig.Polygon
+  fullName: Meridian.Application.Config.AppConfig.Polygon
+- uid: Meridian.Application.Config.AppConfig.StockSharp*
+  commentId: Overload:Meridian.Application.Config.AppConfig.StockSharp
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_StockSharp
+  name: StockSharp
+  nameWithType: AppConfig.StockSharp
+  fullName: Meridian.Application.Config.AppConfig.StockSharp
+- uid: Meridian.Application.Config.AppConfig.Synthetic*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Synthetic
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Synthetic
+  name: Synthetic
+  nameWithType: AppConfig.Synthetic
+  fullName: Meridian.Application.Config.AppConfig.Synthetic
+- uid: Meridian.Application.Config.AppConfig.Storage*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Storage
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Storage
+  name: Storage
+  nameWithType: AppConfig.Storage
+  fullName: Meridian.Application.Config.AppConfig.Storage
+- uid: Meridian.Application.Config.AppConfig.Symbols*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Symbols
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Symbols
+  name: Symbols
+  nameWithType: AppConfig.Symbols
+  fullName: Meridian.Application.Config.AppConfig.Symbols
+- uid: Meridian.Application.Config.AppConfig.Backfill*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Backfill
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Backfill
+  name: Backfill
+  nameWithType: AppConfig.Backfill
+  fullName: Meridian.Application.Config.AppConfig.Backfill
+- uid: Meridian.Application.Config.AppConfig.Sources*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Sources
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Sources
+  name: Sources
+  nameWithType: AppConfig.Sources
+  fullName: Meridian.Application.Config.AppConfig.Sources
+- uid: Meridian.Application.Config.AppConfig.DataSources*
+  commentId: Overload:Meridian.Application.Config.AppConfig.DataSources
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_DataSources
+  name: DataSources
+  nameWithType: AppConfig.DataSources
+  fullName: Meridian.Application.Config.AppConfig.DataSources
+- uid: Meridian.Application.Config.AppConfig.ProviderConnections*
+  commentId: Overload:Meridian.Application.Config.AppConfig.ProviderConnections
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_ProviderConnections
+  name: ProviderConnections
+  nameWithType: AppConfig.ProviderConnections
+  fullName: Meridian.Application.Config.AppConfig.ProviderConnections
+- uid: Meridian.Application.Config.AppConfig.Derivatives*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Derivatives
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Derivatives
+  name: Derivatives
+  nameWithType: AppConfig.Derivatives
+  fullName: Meridian.Application.Config.AppConfig.Derivatives
+- uid: Meridian.Application.Config.AppConfig.ProviderRegistry*
+  commentId: Overload:Meridian.Application.Config.AppConfig.ProviderRegistry
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_ProviderRegistry
+  name: ProviderRegistry
+  nameWithType: AppConfig.ProviderRegistry
+  fullName: Meridian.Application.Config.AppConfig.ProviderRegistry
+- uid: Meridian.Application.Config.AppConfig.Coordination*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Coordination
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Coordination
+  name: Coordination
+  nameWithType: AppConfig.Coordination
+  fullName: Meridian.Application.Config.AppConfig.Coordination
+- uid: Meridian.Application.Config.AppConfig.Canonicalization*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Canonicalization
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Canonicalization
+  name: Canonicalization
+  nameWithType: AppConfig.Canonicalization
+  fullName: Meridian.Application.Config.AppConfig.Canonicalization
+- uid: Meridian.Application.Config.AppConfig.Validation*
+  commentId: Overload:Meridian.Application.Config.AppConfig.Validation
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Validation
+  name: Validation
+  nameWithType: AppConfig.Validation
+  fullName: Meridian.Application.Config.AppConfig.Validation
+- uid: Meridian.Application.Config.AppConfig.OfflineFirstMode*
+  commentId: Overload:Meridian.Application.Config.AppConfig.OfflineFirstMode
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_OfflineFirstMode
+  name: OfflineFirstMode
+  nameWithType: AppConfig.OfflineFirstMode
+  fullName: Meridian.Application.Config.AppConfig.OfflineFirstMode
+- uid: Meridian.Application.Config.AppConfig.PluginsPath*
+  commentId: Overload:Meridian.Application.Config.AppConfig.PluginsPath
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_PluginsPath
+  name: PluginsPath
+  nameWithType: AppConfig.PluginsPath
+  fullName: Meridian.Application.Config.AppConfig.PluginsPath
+- uid: Meridian.Application.Config.AppConfig.CoLocationProfile*
+  commentId: Overload:Meridian.Application.Config.AppConfig.CoLocationProfile
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_CoLocationProfile
+  name: CoLocationProfile
+  nameWithType: AppConfig.CoLocationProfile
+  fullName: Meridian.Application.Config.AppConfig.CoLocationProfile

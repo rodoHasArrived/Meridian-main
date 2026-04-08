@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.HealthSeverity
+  id: HealthSeverity
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.HealthSeverity.Degraded
+  - Meridian.Application.Monitoring.Core.HealthSeverity.Healthy
+  - Meridian.Application.Monitoring.Core.HealthSeverity.Unhealthy
+  - Meridian.Application.Monitoring.Core.HealthSeverity.Unknown
+  langs:
+  - csharp
+  - vb
+  name: HealthSeverity
+  nameWithType: HealthSeverity
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthSeverity
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Represents the severity of a health status.
+  example: []
+  syntax:
+    content: 'public enum HealthSeverity : byte'
+    content.vb: Public Enum HealthSeverity As Byte
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity.Healthy
+  commentId: F:Meridian.Application.Monitoring.Core.HealthSeverity.Healthy
+  id: Healthy
+  parent: Meridian.Application.Monitoring.Core.HealthSeverity
+  langs:
+  - csharp
+  - vb
+  name: Healthy
+  nameWithType: HealthSeverity.Healthy
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity.Healthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Component is healthy and fully operational.
+  example: []
+  syntax:
+    content: Healthy = 0
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity.Degraded
+  commentId: F:Meridian.Application.Monitoring.Core.HealthSeverity.Degraded
+  id: Degraded
+  parent: Meridian.Application.Monitoring.Core.HealthSeverity
+  langs:
+  - csharp
+  - vb
+  name: Degraded
+  nameWithType: HealthSeverity.Degraded
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity.Degraded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Degraded
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Component is operational but with minor issues.
+  example: []
+  syntax:
+    content: Degraded = 1
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity.Unhealthy
+  commentId: F:Meridian.Application.Monitoring.Core.HealthSeverity.Unhealthy
+  id: Unhealthy
+  parent: Meridian.Application.Monitoring.Core.HealthSeverity
+  langs:
+  - csharp
+  - vb
+  name: Unhealthy
+  nameWithType: HealthSeverity.Unhealthy
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity.Unhealthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unhealthy
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Component has critical issues affecting functionality.
+  example: []
+  syntax:
+    content: Unhealthy = 2
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity.Unknown
+  commentId: F:Meridian.Application.Monitoring.Core.HealthSeverity.Unknown
+  id: Unknown
+  parent: Meridian.Application.Monitoring.Core.HealthSeverity
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: HealthSeverity.Unknown
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Component status is unknown or cannot be determined.
+  example: []
+  syntax:
+    content: Unknown = 3
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.HealthSeverity
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.HealthSeverity.html
+  name: HealthSeverity
+  nameWithType: HealthSeverity
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity

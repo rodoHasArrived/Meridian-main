@@ -1,0 +1,731 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.OperationalScheduleConfig
+  commentId: T:Meridian.Storage.Services.OperationalScheduleConfig
+  id: OperationalScheduleConfig
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.OperationalScheduleConfig.#ctor
+  - Meridian.Storage.Services.OperationalScheduleConfig.#ctor(System.String,Meridian.Storage.Services.TradingSession[],Meridian.Storage.Services.MaintenanceWindow[],System.String[],System.TimeZoneInfo)
+  - Meridian.Storage.Services.OperationalScheduleConfig.Default
+  - Meridian.Storage.Services.OperationalScheduleConfig.Holidays
+  - Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows
+  - Meridian.Storage.Services.OperationalScheduleConfig.Name
+  - Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone
+  - Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions
+  langs:
+  - csharp
+  - vb
+  name: OperationalScheduleConfig
+  nameWithType: OperationalScheduleConfig
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OperationalScheduleConfig
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record OperationalScheduleConfig : IEquatable<OperationalScheduleConfig>'
+    content.vb: Public NotInheritable Class OperationalScheduleConfig Implements IEquatable(Of OperationalScheduleConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.OperationalScheduleConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.#ctor(System.String,Meridian.Storage.Services.TradingSession[],Meridian.Storage.Services.MaintenanceWindow[],System.String[],System.TimeZoneInfo)
+  commentId: M:Meridian.Storage.Services.OperationalScheduleConfig.#ctor(System.String,Meridian.Storage.Services.TradingSession[],Meridian.Storage.Services.MaintenanceWindow[],System.String[],System.TimeZoneInfo)
+  id: '#ctor(System.String,Meridian.Storage.Services.TradingSession[],Meridian.Storage.Services.MaintenanceWindow[],System.String[],System.TimeZoneInfo)'
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: OperationalScheduleConfig(string, TradingSession[], MaintenanceWindow[], string[], TimeZoneInfo)
+  nameWithType: OperationalScheduleConfig.OperationalScheduleConfig(string, TradingSession[], MaintenanceWindow[], string[], TimeZoneInfo)
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.OperationalScheduleConfig(string, Meridian.Storage.Services.TradingSession[], Meridian.Storage.Services.MaintenanceWindow[], string[], System.TimeZoneInfo)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public OperationalScheduleConfig(string Name = "Default", TradingSession[] TradingSessions = null, MaintenanceWindow[] MaintenanceWindows = null, string[] Holidays = null, TimeZoneInfo PrimaryTimeZone = null)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: TradingSessions
+      type: Meridian.Storage.Services.TradingSession[]
+    - id: MaintenanceWindows
+      type: Meridian.Storage.Services.MaintenanceWindow[]
+    - id: Holidays
+      type: System.String[]
+    - id: PrimaryTimeZone
+      type: System.TimeZoneInfo
+    content.vb: Public Sub New(Name As String = "Default", TradingSessions As TradingSession() = Nothing, MaintenanceWindows As MaintenanceWindow() = Nothing, Holidays As String() = Nothing, PrimaryTimeZone As TimeZoneInfo = Nothing)
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.#ctor*
+  nameWithType.vb: OperationalScheduleConfig.New(String, TradingSession(), MaintenanceWindow(), String(), TimeZoneInfo)
+  fullName.vb: Meridian.Storage.Services.OperationalScheduleConfig.New(String, Meridian.Storage.Services.TradingSession(), Meridian.Storage.Services.MaintenanceWindow(), String(), System.TimeZoneInfo)
+  name.vb: New(String, TradingSession(), MaintenanceWindow(), String(), TimeZoneInfo)
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.Name
+  commentId: P:Meridian.Storage.Services.OperationalScheduleConfig.Name
+  id: Name
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: OperationalScheduleConfig.Name
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.Name*
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions
+  commentId: P:Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions
+  id: TradingSessions
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: TradingSessions
+  nameWithType: OperationalScheduleConfig.TradingSessions
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingSessions
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 526
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TradingSession[] TradingSessions { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.TradingSession[]
+    content.vb: Public Property TradingSessions As TradingSession()
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions*
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows
+  commentId: P:Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows
+  id: MaintenanceWindows
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceWindows
+  nameWithType: OperationalScheduleConfig.MaintenanceWindows
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceWindows
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 527
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MaintenanceWindow[] MaintenanceWindows { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.MaintenanceWindow[]
+    content.vb: Public Property MaintenanceWindows As MaintenanceWindow()
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows*
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.Holidays
+  commentId: P:Meridian.Storage.Services.OperationalScheduleConfig.Holidays
+  id: Holidays
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Holidays
+  nameWithType: OperationalScheduleConfig.Holidays
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.Holidays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Holidays
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string[] Holidays { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Holidays As String()
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.Holidays*
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone
+  commentId: P:Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone
+  id: PrimaryTimeZone
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: PrimaryTimeZone
+  nameWithType: OperationalScheduleConfig.PrimaryTimeZone
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryTimeZone
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 529
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeZoneInfo PrimaryTimeZone { get; init; }
+    parameters: []
+    return:
+      type: System.TimeZoneInfo
+    content.vb: Public Property PrimaryTimeZone As TimeZoneInfo
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone*
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.#ctor
+  commentId: M:Meridian.Storage.Services.OperationalScheduleConfig.#ctor
+  id: '#ctor'
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: OperationalScheduleConfig()
+  nameWithType: OperationalScheduleConfig.OperationalScheduleConfig()
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.OperationalScheduleConfig()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public OperationalScheduleConfig()
+    content.vb: Public Sub New()
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.#ctor*
+  nameWithType.vb: OperationalScheduleConfig.New()
+  fullName.vb: Meridian.Storage.Services.OperationalScheduleConfig.New()
+  name.vb: New()
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.Default
+  commentId: P:Meridian.Storage.Services.OperationalScheduleConfig.Default
+  id: Default
+  parent: Meridian.Storage.Services.OperationalScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: OperationalScheduleConfig.Default
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 534
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public static OperationalScheduleConfig Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.OperationalScheduleConfig
+    content.vb: Public Shared ReadOnly Property [Default] As OperationalScheduleConfig
+  overload: Meridian.Storage.Services.OperationalScheduleConfig.Default*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.OperationalScheduleConfig}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.OperationalScheduleConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OperationalScheduleConfig>
+  nameWithType: IEquatable<OperationalScheduleConfig>
+  fullName: System.IEquatable<Meridian.Storage.Services.OperationalScheduleConfig>
+  nameWithType.vb: IEquatable(Of OperationalScheduleConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.OperationalScheduleConfig)
+  name.vb: IEquatable(Of OperationalScheduleConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.OperationalScheduleConfig
+    name: OperationalScheduleConfig
+    href: Meridian.Storage.Services.OperationalScheduleConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.OperationalScheduleConfig
+    name: OperationalScheduleConfig
+    href: Meridian.Storage.Services.OperationalScheduleConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.#ctor*
+  commentId: Overload:Meridian.Storage.Services.OperationalScheduleConfig.#ctor
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html#Meridian_Storage_Services_OperationalScheduleConfig__ctor_System_String_Meridian_Storage_Services_TradingSession___Meridian_Storage_Services_MaintenanceWindow___System_String___System_TimeZoneInfo_
+  name: OperationalScheduleConfig
+  nameWithType: OperationalScheduleConfig.OperationalScheduleConfig
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.OperationalScheduleConfig
+  nameWithType.vb: OperationalScheduleConfig.New
+  fullName.vb: Meridian.Storage.Services.OperationalScheduleConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.TradingSession[]
+  isExternal: true
+  href: Meridian.Storage.Services.TradingSession.html
+  name: TradingSession[]
+  nameWithType: TradingSession[]
+  fullName: Meridian.Storage.Services.TradingSession[]
+  nameWithType.vb: TradingSession()
+  fullName.vb: Meridian.Storage.Services.TradingSession()
+  name.vb: TradingSession()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.TradingSession
+    name: TradingSession
+    href: Meridian.Storage.Services.TradingSession.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Storage.Services.TradingSession
+    name: TradingSession
+    href: Meridian.Storage.Services.TradingSession.html
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.MaintenanceWindow[]
+  isExternal: true
+  href: Meridian.Storage.Services.MaintenanceWindow.html
+  name: MaintenanceWindow[]
+  nameWithType: MaintenanceWindow[]
+  fullName: Meridian.Storage.Services.MaintenanceWindow[]
+  nameWithType.vb: MaintenanceWindow()
+  fullName.vb: Meridian.Storage.Services.MaintenanceWindow()
+  name.vb: MaintenanceWindow()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.MaintenanceWindow
+    name: MaintenanceWindow
+    href: Meridian.Storage.Services.MaintenanceWindow.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Storage.Services.MaintenanceWindow
+    name: MaintenanceWindow
+    href: Meridian.Storage.Services.MaintenanceWindow.html
+  - name: (
+  - name: )
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.TimeZoneInfo
+  commentId: T:System.TimeZoneInfo
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timezoneinfo
+  name: TimeZoneInfo
+  nameWithType: TimeZoneInfo
+  fullName: System.TimeZoneInfo
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.Name*
+  commentId: Overload:Meridian.Storage.Services.OperationalScheduleConfig.Name
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html#Meridian_Storage_Services_OperationalScheduleConfig_Name
+  name: Name
+  nameWithType: OperationalScheduleConfig.Name
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.Name
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions*
+  commentId: Overload:Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html#Meridian_Storage_Services_OperationalScheduleConfig_TradingSessions
+  name: TradingSessions
+  nameWithType: OperationalScheduleConfig.TradingSessions
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.TradingSessions
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows*
+  commentId: Overload:Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html#Meridian_Storage_Services_OperationalScheduleConfig_MaintenanceWindows
+  name: MaintenanceWindows
+  nameWithType: OperationalScheduleConfig.MaintenanceWindows
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.MaintenanceWindows
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.Holidays*
+  commentId: Overload:Meridian.Storage.Services.OperationalScheduleConfig.Holidays
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html#Meridian_Storage_Services_OperationalScheduleConfig_Holidays
+  name: Holidays
+  nameWithType: OperationalScheduleConfig.Holidays
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.Holidays
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone*
+  commentId: Overload:Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html#Meridian_Storage_Services_OperationalScheduleConfig_PrimaryTimeZone
+  name: PrimaryTimeZone
+  nameWithType: OperationalScheduleConfig.PrimaryTimeZone
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.PrimaryTimeZone
+- uid: Meridian.Storage.Services.OperationalScheduleConfig.Default*
+  commentId: Overload:Meridian.Storage.Services.OperationalScheduleConfig.Default
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html#Meridian_Storage_Services_OperationalScheduleConfig_Default
+  name: Default
+  nameWithType: OperationalScheduleConfig.Default
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig.Default
+- uid: Meridian.Storage.Services.OperationalScheduleConfig
+  commentId: T:Meridian.Storage.Services.OperationalScheduleConfig
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.OperationalScheduleConfig.html
+  name: OperationalScheduleConfig
+  nameWithType: OperationalScheduleConfig
+  fullName: Meridian.Storage.Services.OperationalScheduleConfig

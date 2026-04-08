@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  id: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.AggressorSide
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  - Meridian.Contracts.Domain.Enums.ConnectionStatus
+  - Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  - Meridian.Contracts.Domain.Enums.DepthOperation
+  - Meridian.Contracts.Domain.Enums.InstrumentType
+  - Meridian.Contracts.Domain.Enums.IntegritySeverity
+  - Meridian.Contracts.Domain.Enums.LiquidityProfile
+  - Meridian.Contracts.Domain.Enums.MarketEventTier
+  - Meridian.Contracts.Domain.Enums.MarketEventType
+  - Meridian.Contracts.Domain.Enums.MarketState
+  - Meridian.Contracts.Domain.Enums.OptionRight
+  - Meridian.Contracts.Domain.Enums.OptionStyle
+  - Meridian.Contracts.Domain.Enums.OrderBookSide
+  - Meridian.Contracts.Domain.Enums.OrderSide
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Domain.Enums.AggressorSide
+  commentId: T:Meridian.Contracts.Domain.Enums.AggressorSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.AggressorSide.html
+  name: AggressorSide
+  nameWithType: AggressorSide
+  fullName: Meridian.Contracts.Domain.Enums.AggressorSide
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  commentId: T:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.html
+  name: CanonicalTradeCondition
+  nameWithType: CanonicalTradeCondition
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  commentId: T:Meridian.Contracts.Domain.Enums.ConnectionStatus
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.ConnectionStatus.html
+  name: ConnectionStatus
+  nameWithType: ConnectionStatus
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  commentId: T:Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.html
+  name: DepthIntegrityKind
+  nameWithType: DepthIntegrityKind
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+- uid: Meridian.Contracts.Domain.Enums.DepthOperation
+  commentId: T:Meridian.Contracts.Domain.Enums.DepthOperation
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.DepthOperation.html
+  name: DepthOperation
+  nameWithType: DepthOperation
+  fullName: Meridian.Contracts.Domain.Enums.DepthOperation
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType
+  commentId: T:Meridian.Contracts.Domain.Enums.InstrumentType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.InstrumentType.html
+  name: InstrumentType
+  nameWithType: InstrumentType
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  commentId: T:Meridian.Contracts.Domain.Enums.IntegritySeverity
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.IntegritySeverity.html
+  name: IntegritySeverity
+  nameWithType: IntegritySeverity
+  fullName: Meridian.Contracts.Domain.Enums.IntegritySeverity
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  commentId: T:Meridian.Contracts.Domain.Enums.LiquidityProfile
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  name: LiquidityProfile
+  nameWithType: LiquidityProfile
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventTier
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventTier.html
+  name: MarketEventTier
+  nameWithType: MarketEventTier
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  name: MarketEventType
+  nameWithType: MarketEventType
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketState
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketState
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketState.html
+  name: MarketState
+  nameWithType: MarketState
+  fullName: Meridian.Contracts.Domain.Enums.MarketState
+- uid: Meridian.Contracts.Domain.Enums.OptionRight
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionRight
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionRight.html
+  name: OptionRight
+  nameWithType: OptionRight
+  fullName: Meridian.Contracts.Domain.Enums.OptionRight
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionStyle
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  name: OptionStyle
+  nameWithType: OptionStyle
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle
+- uid: Meridian.Contracts.Domain.Enums.OrderBookSide
+  commentId: T:Meridian.Contracts.Domain.Enums.OrderBookSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OrderBookSide.html
+  name: OrderBookSide
+  nameWithType: OrderBookSide
+  fullName: Meridian.Contracts.Domain.Enums.OrderBookSide
+- uid: Meridian.Contracts.Domain.Enums.OrderSide
+  commentId: T:Meridian.Contracts.Domain.Enums.OrderSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OrderSide.html
+  name: OrderSide
+  nameWithType: OrderSide
+  fullName: Meridian.Contracts.Domain.Enums.OrderSide
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html

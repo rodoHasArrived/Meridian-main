@@ -1,0 +1,834 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+  commentId: T:Meridian.ProviderSdk.IProviderFamilyAdapter
+  id: IProviderFamilyAdapter
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.Description
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync(System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.Threading.CancellationToken)
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync(Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability(Meridian.ProviderSdk.ProviderCapabilityKind)
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IProviderFamilyAdapter
+  nameWithType: IProviderFamilyAdapter
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IProviderFamilyAdapter
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 5
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Top-level runtime abstraction representing a provider family that can expose many capabilities.
+  example: []
+  syntax:
+    content: public interface IProviderFamilyAdapter
+    content.vb: Public Interface IProviderFamilyAdapter
+  extensionMethods:
+  - Meridian.ProviderSdk.IProviderFamilyAdapter.Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId
+  commentId: P:Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId
+  id: ProviderFamilyId
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: ProviderFamilyId
+  nameWithType: IProviderFamilyAdapter.ProviderFamilyId
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderFamilyId
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 7
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: string ProviderFamilyId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ProviderFamilyId As String
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId*
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName
+  commentId: P:Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName
+  id: DisplayName
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: IProviderFamilyAdapter.DisplayName
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 9
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property DisplayName As String
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName*
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.Description
+  commentId: P:Meridian.ProviderSdk.IProviderFamilyAdapter.Description
+  id: Description
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: IProviderFamilyAdapter.Description
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 11
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: string Description { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Description As String
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.Description*
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors
+  commentId: P:Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors
+  id: CapabilityDescriptors
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: CapabilityDescriptors
+  nameWithType: IProviderFamilyAdapter.CapabilityDescriptors
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CapabilityDescriptors
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 13
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: IReadOnlyList<ProviderCapabilityDescriptor> CapabilityDescriptors { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.ProviderSdk.ProviderCapabilityDescriptor}
+    content.vb: ReadOnly Property CapabilityDescriptors As IReadOnlyList(Of ProviderCapabilityDescriptor)
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors*
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability(Meridian.ProviderSdk.ProviderCapabilityKind)
+  commentId: M:Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability(Meridian.ProviderSdk.ProviderCapabilityKind)
+  id: SupportsCapability(Meridian.ProviderSdk.ProviderCapabilityKind)
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: SupportsCapability(ProviderCapabilityKind)
+  nameWithType: IProviderFamilyAdapter.SupportsCapability(ProviderCapabilityKind)
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability(Meridian.ProviderSdk.ProviderCapabilityKind)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsCapability
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 15
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: bool SupportsCapability(ProviderCapabilityKind capability)
+    parameters:
+    - id: capability
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+    return:
+      type: System.Boolean
+    content.vb: Function SupportsCapability(capability As ProviderCapabilityKind) As Boolean
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability*
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync(System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync(System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.Threading.CancellationToken)
+  id: InitializeConnectionAsync(System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.Threading.CancellationToken)
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: InitializeConnectionAsync(string, ProviderConnectionScope, CancellationToken)
+  nameWithType: IProviderFamilyAdapter.InitializeConnectionAsync(string, ProviderConnectionScope, CancellationToken)
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync(string, Meridian.ProviderSdk.ProviderConnectionScope, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeConnectionAsync
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 17
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Task InitializeConnectionAsync(string connectionId, ProviderConnectionScope scope, CancellationToken ct = default)
+    parameters:
+    - id: connectionId
+      type: System.String
+    - id: scope
+      type: Meridian.ProviderSdk.ProviderConnectionScope
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InitializeConnectionAsync(connectionId As String, scope As ProviderConnectionScope, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync*
+  nameWithType.vb: IProviderFamilyAdapter.InitializeConnectionAsync(String, ProviderConnectionScope, CancellationToken)
+  fullName.vb: Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync(String, Meridian.ProviderSdk.ProviderConnectionScope, System.Threading.CancellationToken)
+  name.vb: InitializeConnectionAsync(String, ProviderConnectionScope, CancellationToken)
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync(System.String,System.Threading.CancellationToken)
+  id: TestConnectionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: TestConnectionAsync(string, CancellationToken)
+  nameWithType: IProviderFamilyAdapter.TestConnectionAsync(string, CancellationToken)
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestConnectionAsync
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 19
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Task<ProviderConnectionTestResult> TestConnectionAsync(string connectionId, CancellationToken ct = default)
+    parameters:
+    - id: connectionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.ProviderSdk.ProviderConnectionTestResult}
+    content.vb: Function TestConnectionAsync(connectionId As String, ct As CancellationToken = Nothing) As Task(Of ProviderConnectionTestResult)
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync*
+  nameWithType.vb: IProviderFamilyAdapter.TestConnectionAsync(String, CancellationToken)
+  fullName.vb: Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync(String, System.Threading.CancellationToken)
+  name.vb: TestConnectionAsync(String, CancellationToken)
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync(Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync(Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  id: ResolveCapabilityAsync(Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  parent: Meridian.ProviderSdk.IProviderFamilyAdapter
+  langs:
+  - csharp
+  - vb
+  name: ResolveCapabilityAsync(ProviderCapabilityKind, CancellationToken)
+  nameWithType: IProviderFamilyAdapter.ResolveCapabilityAsync(ProviderCapabilityKind, CancellationToken)
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync(Meridian.ProviderSdk.ProviderCapabilityKind, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveCapabilityAsync
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 21
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ValueTask<object?> ResolveCapabilityAsync(ProviderCapabilityKind capability, CancellationToken ct = default)
+    parameters:
+    - id: capability
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask{System.Object}
+    content.vb: Function ResolveCapabilityAsync(capability As ProviderCapabilityKind, ct As CancellationToken = Nothing) As ValueTask(Of Object)
+  overload: Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync*
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  parent: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions
+  definition: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  href: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.html#Meridian_ProviderSdk_ProviderFamilyAdapterExtensions_ResolveCapabilityAsync__1_Meridian_ProviderSdk_IProviderFamilyAdapter_Meridian_ProviderSdk_ProviderCapabilityKind_System_Threading_CancellationToken_
+  name: ResolveCapabilityAsync<TCapability>(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  nameWithType: ProviderFamilyAdapterExtensions.ResolveCapabilityAsync<TCapability>(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  fullName: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync<TCapability>(Meridian.ProviderSdk.IProviderFamilyAdapter, Meridian.ProviderSdk.ProviderCapabilityKind, System.Threading.CancellationToken)
+  nameWithType.vb: ProviderFamilyAdapterExtensions.ResolveCapabilityAsync(Of TCapability)(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  fullName.vb: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync(Of TCapability)(Meridian.ProviderSdk.IProviderFamilyAdapter, Meridian.ProviderSdk.ProviderCapabilityKind, System.Threading.CancellationToken)
+  name.vb: ResolveCapabilityAsync(Of TCapability)(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+    name: ResolveCapabilityAsync
+    href: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.html#Meridian_ProviderSdk_ProviderFamilyAdapterExtensions_ResolveCapabilityAsync__1_Meridian_ProviderSdk_IProviderFamilyAdapter_Meridian_ProviderSdk_ProviderCapabilityKind_System_Threading_CancellationToken_
+  - name: <
+  - name: TCapability
+  - name: '>'
+  - name: (
+  - uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+    name: IProviderFamilyAdapter
+    href: Meridian.ProviderSdk.IProviderFamilyAdapter.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderCapabilityKind
+    name: ProviderCapabilityKind
+    href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+    name: ResolveCapabilityAsync
+    href: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.html#Meridian_ProviderSdk_ProviderFamilyAdapterExtensions_ResolveCapabilityAsync__1_Meridian_ProviderSdk_IProviderFamilyAdapter_Meridian_ProviderSdk_ProviderCapabilityKind_System_Threading_CancellationToken_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCapability
+  - name: )
+  - name: (
+  - uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+    name: IProviderFamilyAdapter
+    href: Meridian.ProviderSdk.IProviderFamilyAdapter.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderCapabilityKind
+    name: ProviderCapabilityKind
+    href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.html#Meridian_ProviderSdk_ProviderFamilyAdapterExtensions_ResolveCapabilityAsync__1_Meridian_ProviderSdk_IProviderFamilyAdapter_Meridian_ProviderSdk_ProviderCapabilityKind_System_Threading_CancellationToken_
+  name: ResolveCapabilityAsync<TCapability>(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  nameWithType: ProviderFamilyAdapterExtensions.ResolveCapabilityAsync<TCapability>(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  fullName: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync<TCapability>(Meridian.ProviderSdk.IProviderFamilyAdapter, Meridian.ProviderSdk.ProviderCapabilityKind, System.Threading.CancellationToken)
+  nameWithType.vb: ProviderFamilyAdapterExtensions.ResolveCapabilityAsync(Of TCapability)(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  fullName.vb: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync(Of TCapability)(Meridian.ProviderSdk.IProviderFamilyAdapter, Meridian.ProviderSdk.ProviderCapabilityKind, System.Threading.CancellationToken)
+  name.vb: ResolveCapabilityAsync(Of TCapability)(IProviderFamilyAdapter, ProviderCapabilityKind, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+    name: ResolveCapabilityAsync
+    href: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.html#Meridian_ProviderSdk_ProviderFamilyAdapterExtensions_ResolveCapabilityAsync__1_Meridian_ProviderSdk_IProviderFamilyAdapter_Meridian_ProviderSdk_ProviderCapabilityKind_System_Threading_CancellationToken_
+  - name: <
+  - name: TCapability
+  - name: '>'
+  - name: (
+  - uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+    name: IProviderFamilyAdapter
+    href: Meridian.ProviderSdk.IProviderFamilyAdapter.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderCapabilityKind
+    name: ProviderCapabilityKind
+    href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.ResolveCapabilityAsync``1(Meridian.ProviderSdk.IProviderFamilyAdapter,Meridian.ProviderSdk.ProviderCapabilityKind,System.Threading.CancellationToken)
+    name: ResolveCapabilityAsync
+    href: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.html#Meridian_ProviderSdk_ProviderFamilyAdapterExtensions_ResolveCapabilityAsync__1_Meridian_ProviderSdk_IProviderFamilyAdapter_Meridian_ProviderSdk_ProviderCapabilityKind_System_Threading_CancellationToken_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCapability
+  - name: )
+  - name: (
+  - uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+    name: IProviderFamilyAdapter
+    href: Meridian.ProviderSdk.IProviderFamilyAdapter.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderCapabilityKind
+    name: ProviderCapabilityKind
+    href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions
+  commentId: T:Meridian.ProviderSdk.ProviderFamilyAdapterExtensions
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions.html
+  name: ProviderFamilyAdapterExtensions
+  nameWithType: ProviderFamilyAdapterExtensions
+  fullName: Meridian.ProviderSdk.ProviderFamilyAdapterExtensions
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_ProviderFamilyId
+  name: ProviderFamilyId
+  nameWithType: IProviderFamilyAdapter.ProviderFamilyId
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.ProviderFamilyId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_DisplayName
+  name: DisplayName
+  nameWithType: IProviderFamilyAdapter.DisplayName
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.DisplayName
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.Description*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.Description
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_Description
+  name: Description
+  nameWithType: IProviderFamilyAdapter.Description
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.Description
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_CapabilityDescriptors
+  name: CapabilityDescriptors
+  nameWithType: IProviderFamilyAdapter.CapabilityDescriptors
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.CapabilityDescriptors
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.ProviderSdk.ProviderCapabilityDescriptor}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.ProviderSdk.ProviderCapabilityDescriptor}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderCapabilityDescriptor>
+  nameWithType: IReadOnlyList<ProviderCapabilityDescriptor>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.ProviderSdk.ProviderCapabilityDescriptor>
+  nameWithType.vb: IReadOnlyList(Of ProviderCapabilityDescriptor)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.ProviderSdk.ProviderCapabilityDescriptor)
+  name.vb: IReadOnlyList(Of ProviderCapabilityDescriptor)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.ProviderSdk.ProviderCapabilityDescriptor
+    name: ProviderCapabilityDescriptor
+    href: Meridian.ProviderSdk.ProviderCapabilityDescriptor.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderCapabilityDescriptor
+    name: ProviderCapabilityDescriptor
+    href: Meridian.ProviderSdk.ProviderCapabilityDescriptor.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_SupportsCapability_Meridian_ProviderSdk_ProviderCapabilityKind_
+  name: SupportsCapability
+  nameWithType: IProviderFamilyAdapter.SupportsCapability
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.SupportsCapability
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind
+  commentId: T:Meridian.ProviderSdk.ProviderCapabilityKind
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  name: ProviderCapabilityKind
+  nameWithType: ProviderCapabilityKind
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_InitializeConnectionAsync_System_String_Meridian_ProviderSdk_ProviderConnectionScope_System_Threading_CancellationToken_
+  name: InitializeConnectionAsync
+  nameWithType: IProviderFamilyAdapter.InitializeConnectionAsync
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.InitializeConnectionAsync
+- uid: Meridian.ProviderSdk.ProviderConnectionScope
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionScope
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderConnectionScope.html
+  name: ProviderConnectionScope
+  nameWithType: ProviderConnectionScope
+  fullName: Meridian.ProviderSdk.ProviderConnectionScope
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_TestConnectionAsync_System_String_System_Threading_CancellationToken_
+  name: TestConnectionAsync
+  nameWithType: IProviderFamilyAdapter.TestConnectionAsync
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.TestConnectionAsync
+- uid: System.Threading.Tasks.Task{Meridian.ProviderSdk.ProviderConnectionTestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.ProviderSdk.ProviderConnectionTestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderConnectionTestResult>
+  nameWithType: Task<ProviderConnectionTestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.ProviderSdk.ProviderConnectionTestResult>
+  nameWithType.vb: Task(Of ProviderConnectionTestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.ProviderSdk.ProviderConnectionTestResult)
+  name.vb: Task(Of ProviderConnectionTestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.ProviderSdk.ProviderConnectionTestResult
+    name: ProviderConnectionTestResult
+    href: Meridian.ProviderSdk.ProviderConnectionTestResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderConnectionTestResult
+    name: ProviderConnectionTestResult
+    href: Meridian.ProviderSdk.ProviderConnectionTestResult.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync*
+  commentId: Overload:Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html#Meridian_ProviderSdk_IProviderFamilyAdapter_ResolveCapabilityAsync_Meridian_ProviderSdk_ProviderCapabilityKind_System_Threading_CancellationToken_
+  name: ResolveCapabilityAsync
+  nameWithType: IProviderFamilyAdapter.ResolveCapabilityAsync
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter.ResolveCapabilityAsync
+- uid: System.Threading.Tasks.ValueTask{System.Object}
+  commentId: T:System.Threading.Tasks.ValueTask{System.Object}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.ValueTask`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<object>
+  nameWithType: ValueTask<object>
+  fullName: System.Threading.Tasks.ValueTask<object>
+  nameWithType.vb: ValueTask(Of Object)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of Object)
+  name.vb: ValueTask(Of Object)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Threading.Tasks.ValueTask`1
+  commentId: T:System.Threading.Tasks.ValueTask`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<TResult>
+  nameWithType: ValueTask<TResult>
+  fullName: System.Threading.Tasks.ValueTask<TResult>
+  nameWithType.vb: ValueTask(Of TResult)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of TResult)
+  name.vb: ValueTask(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )

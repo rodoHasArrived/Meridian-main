@@ -1,0 +1,61 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.FundAccounts
+  commentId: N:Meridian.Application.FundAccounts
+  id: Meridian.Application.FundAccounts
+  children:
+  - Meridian.Application.FundAccounts.IFundAccountService
+  - Meridian.Application.FundAccounts.InMemoryFundAccountService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.FundAccounts
+  nameWithType: Meridian.Application.FundAccounts
+  fullName: Meridian.Application.FundAccounts
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.FundAccounts.IFundAccountService
+  commentId: T:Meridian.Application.FundAccounts.IFundAccountService
+  parent: Meridian.Application.FundAccounts
+  href: Meridian.Application.FundAccounts.IFundAccountService.html
+  name: IFundAccountService
+  nameWithType: IFundAccountService
+  fullName: Meridian.Application.FundAccounts.IFundAccountService
+- uid: Meridian.Application.FundAccounts.InMemoryFundAccountService
+  commentId: T:Meridian.Application.FundAccounts.InMemoryFundAccountService
+  href: Meridian.Application.FundAccounts.InMemoryFundAccountService.html
+  name: InMemoryFundAccountService
+  nameWithType: InMemoryFundAccountService
+  fullName: Meridian.Application.FundAccounts.InMemoryFundAccountService
+- uid: Meridian.Application.FundAccounts
+  commentId: N:Meridian.Application.FundAccounts
+  href: Meridian.html
+  name: Meridian.Application.FundAccounts
+  nameWithType: Meridian.Application.FundAccounts
+  fullName: Meridian.Application.FundAccounts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundAccounts
+    name: FundAccounts
+    href: Meridian.Application.FundAccounts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundAccounts
+    name: FundAccounts
+    href: Meridian.Application.FundAccounts.html

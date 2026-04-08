@@ -1,0 +1,906 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.ArchivalStorageService
+  commentId: T:Meridian.Storage.Archival.ArchivalStorageService
+  id: ArchivalStorageService
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.ArchivalStorageService.#ctor(System.String,Meridian.Storage.Interfaces.IStorageSink,Meridian.Storage.Archival.ArchivalStorageOptions)
+  - Meridian.Storage.Archival.ArchivalStorageService.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync
+  - Meridian.Storage.Archival.ArchivalStorageService.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.ArchivalStorageService.GetStats
+  - Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ArchivalStorageService
+  nameWithType: ArchivalStorageService
+  fullName: Meridian.Storage.Archival.ArchivalStorageService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchivalStorageService
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Archival-first storage service with Write-Ahead Logging for crash-safe persistence.
+
+    Implements the storage pipeline pattern: WAL -&gt; Buffer -&gt; Primary Storage -&gt; Archive.
+  example: []
+  syntax:
+    content: >-
+      [StorageSink("archival", "Archival storage with WAL durability", EnabledByDefault = false, Description = "WAL-backed archival sink; buffer events in memory and flush to a primary IStorageSink with crash-safe Write-Ahead Logging.")]
+
+      public sealed class ArchivalStorageService : IStorageSink, IAsyncDisposable, IFlushable
+    content.vb: >-
+      <StorageSink("archival", "Archival storage with WAL durability", EnabledByDefault:=False, Description:="WAL-backed archival sink; buffer events in memory and flush to a primary IStorageSink with crash-safe Write-Ahead Logging.")>
+
+      Public NotInheritable Class ArchivalStorageService Implements IStorageSink, IAsyncDisposable, IFlushable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink
+  - System.IAsyncDisposable
+  - Meridian.Application.Services.IFlushable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Storage.StorageSinkAttribute
+    ctor: Meridian.Storage.StorageSinkAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: archival
+    - type: System.String
+      value: Archival storage with WAL durability
+    namedArguments:
+    - name: EnabledByDefault
+      type: System.Boolean
+      value: false
+    - name: Description
+      type: System.String
+      value: WAL-backed archival sink; buffer events in memory and flush to a primary IStorageSink with crash-safe Write-Ahead Logging.
+- uid: Meridian.Storage.Archival.ArchivalStorageService.#ctor(System.String,Meridian.Storage.Interfaces.IStorageSink,Meridian.Storage.Archival.ArchivalStorageOptions)
+  commentId: M:Meridian.Storage.Archival.ArchivalStorageService.#ctor(System.String,Meridian.Storage.Interfaces.IStorageSink,Meridian.Storage.Archival.ArchivalStorageOptions)
+  id: '#ctor(System.String,Meridian.Storage.Interfaces.IStorageSink,Meridian.Storage.Archival.ArchivalStorageOptions)'
+  parent: Meridian.Storage.Archival.ArchivalStorageService
+  langs:
+  - csharp
+  - vb
+  name: ArchivalStorageService(string, IStorageSink, ArchivalStorageOptions?)
+  nameWithType: ArchivalStorageService.ArchivalStorageService(string, IStorageSink, ArchivalStorageOptions?)
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.ArchivalStorageService(string, Meridian.Storage.Interfaces.IStorageSink, Meridian.Storage.Archival.ArchivalStorageOptions?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public ArchivalStorageService(string dataRoot, IStorageSink primaryStorage, ArchivalStorageOptions? options = null)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    - id: primaryStorage
+      type: Meridian.Storage.Interfaces.IStorageSink
+    - id: options
+      type: Meridian.Storage.Archival.ArchivalStorageOptions
+    content.vb: Public Sub New(dataRoot As String, primaryStorage As IStorageSink, options As ArchivalStorageOptions = Nothing)
+  overload: Meridian.Storage.Archival.ArchivalStorageService.#ctor*
+  nameWithType.vb: ArchivalStorageService.New(String, IStorageSink, ArchivalStorageOptions)
+  fullName.vb: Meridian.Storage.Archival.ArchivalStorageService.New(String, Meridian.Storage.Interfaces.IStorageSink, Meridian.Storage.Archival.ArchivalStorageOptions)
+  name.vb: New(String, IStorageSink, ArchivalStorageOptions)
+- uid: Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.ArchivalStorageService
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: ArchivalStorageService.InitializeAsync(CancellationToken)
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Initialize the service and recover any uncommitted data.
+  example: []
+  syntax:
+    content: public Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync*
+- uid: Meridian.Storage.Archival.ArchivalStorageService.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.ArchivalStorageService.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.ArchivalStorageService
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(MarketEvent, CancellationToken)
+  nameWithType: ArchivalStorageService.AppendAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.AppendAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  example: []
+  syntax:
+    content: public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask
+    content.vb: Public Function AppendAsync(evt As MarketEvent, ct As CancellationToken = Nothing) As ValueTask
+  overload: Meridian.Storage.Archival.ArchivalStorageService.AppendAsync*
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Archival.ArchivalStorageService.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.ArchivalStorageService.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.ArchivalStorageService
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: ArchivalStorageService.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  example: []
+  syntax:
+    content: public Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.ArchivalStorageService.FlushAsync*
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+- uid: Meridian.Storage.Archival.ArchivalStorageService.GetStats
+  commentId: M:Meridian.Storage.Archival.ArchivalStorageService.GetStats
+  id: GetStats
+  parent: Meridian.Storage.Archival.ArchivalStorageService
+  langs:
+  - csharp
+  - vb
+  name: GetStats()
+  nameWithType: ArchivalStorageService.GetStats()
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.GetStats()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStats
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Get storage statistics.
+  example: []
+  syntax:
+    content: public ArchivalStorageStats GetStats()
+    return:
+      type: Meridian.Storage.Archival.ArchivalStorageStats
+    content.vb: Public Function GetStats() As ArchivalStorageStats
+  overload: Meridian.Storage.Archival.ArchivalStorageService.GetStats*
+- uid: Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync
+  commentId: M:Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Storage.Archival.ArchivalStorageService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: ArchivalStorageService.DisposeAsync()
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Interfaces.IStorageSink
+  commentId: T:Meridian.Storage.Interfaces.IStorageSink
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStorageSink.html
+  name: IStorageSink
+  nameWithType: IStorageSink
+  fullName: Meridian.Storage.Interfaces.IStorageSink
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: Meridian.Application.Services.IFlushable
+  commentId: T:Meridian.Application.Services.IFlushable
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IFlushable.html
+  name: IFlushable
+  nameWithType: IFlushable
+  fullName: Meridian.Application.Services.IFlushable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Storage.Archival.ArchivalStorageService.#ctor*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageService.#ctor
+  href: Meridian.Storage.Archival.ArchivalStorageService.html#Meridian_Storage_Archival_ArchivalStorageService__ctor_System_String_Meridian_Storage_Interfaces_IStorageSink_Meridian_Storage_Archival_ArchivalStorageOptions_
+  name: ArchivalStorageService
+  nameWithType: ArchivalStorageService.ArchivalStorageService
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.ArchivalStorageService
+  nameWithType.vb: ArchivalStorageService.New
+  fullName.vb: Meridian.Storage.Archival.ArchivalStorageService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Archival.ArchivalStorageOptions
+  commentId: T:Meridian.Storage.Archival.ArchivalStorageOptions
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.ArchivalStorageOptions.html
+  name: ArchivalStorageOptions
+  nameWithType: ArchivalStorageOptions
+  fullName: Meridian.Storage.Archival.ArchivalStorageOptions
+- uid: Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync
+  href: Meridian.Storage.Archival.ArchivalStorageService.html#Meridian_Storage_Archival_ArchivalStorageService_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: ArchivalStorageService.InitializeAsync
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Archival.ArchivalStorageService.AppendAsync*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageService.AppendAsync
+  href: Meridian.Storage.Archival.ArchivalStorageService.html#Meridian_Storage_Archival_ArchivalStorageService_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: ArchivalStorageService.AppendAsync
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.AppendAsync
+- uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  isExternal: true
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: AppendAsync(MarketEvent, CancellationToken)
+  nameWithType: IStorageSink.AppendAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Storage.Archival.ArchivalStorageService.FlushAsync*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageService.FlushAsync
+  href: Meridian.Storage.Archival.ArchivalStorageService.html#Meridian_Storage_Archival_ArchivalStorageService_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: ArchivalStorageService.FlushAsync
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.FlushAsync
+- uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  isExternal: true
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync(CancellationToken)
+  nameWithType: IStorageSink.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.IFlushable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: FlushAsync(CancellationToken)
+  nameWithType: IFlushable.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Storage.Archival.ArchivalStorageService.GetStats*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageService.GetStats
+  href: Meridian.Storage.Archival.ArchivalStorageService.html#Meridian_Storage_Archival_ArchivalStorageService_GetStats
+  name: GetStats
+  nameWithType: ArchivalStorageService.GetStats
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.GetStats
+- uid: Meridian.Storage.Archival.ArchivalStorageStats
+  commentId: T:Meridian.Storage.Archival.ArchivalStorageStats
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.ArchivalStorageStats.html
+  name: ArchivalStorageStats
+  nameWithType: ArchivalStorageStats
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats
+- uid: Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync
+  href: Meridian.Storage.Archival.ArchivalStorageService.html#Meridian_Storage_Archival_ArchivalStorageService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: ArchivalStorageService.DisposeAsync
+  fullName: Meridian.Storage.Archival.ArchivalStorageService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )

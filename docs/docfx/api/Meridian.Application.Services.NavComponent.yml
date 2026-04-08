@@ -1,0 +1,638 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.NavComponent
+  commentId: T:Meridian.Application.Services.NavComponent
+  id: NavComponent
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.NavComponent.#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal)
+  - Meridian.Application.Services.NavComponent.AccountName
+  - Meridian.Application.Services.NavComponent.AccountType
+  - Meridian.Application.Services.NavComponent.AssetClass
+  - Meridian.Application.Services.NavComponent.Balance
+  - Meridian.Application.Services.NavComponent.DisplayName
+  - Meridian.Application.Services.NavComponent.Symbol
+  langs:
+  - csharp
+  - vb
+  name: NavComponent
+  nameWithType: NavComponent
+  fullName: Meridian.Application.Services.NavComponent
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NavComponent
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: NAV contribution from a single ledger account.
+  example: []
+  syntax:
+    content: 'public sealed record NavComponent : IEquatable<NavComponent>'
+    content.vb: Public NotInheritable Class NavComponent Implements IEquatable(Of NavComponent)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Services.NavComponent}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.NavComponent.#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal)
+  commentId: M:Meridian.Application.Services.NavComponent.#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal)'
+  parent: Meridian.Application.Services.NavComponent
+  langs:
+  - csharp
+  - vb
+  name: NavComponent(string, string, string?, string?, string?, decimal)
+  nameWithType: NavComponent.NavComponent(string, string, string?, string?, string?, decimal)
+  fullName: Meridian.Application.Services.NavComponent.NavComponent(string, string, string?, string?, string?, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: NAV contribution from a single ledger account.
+  example: []
+  syntax:
+    content: public NavComponent(string AccountName, string AccountType, string? Symbol, string? AssetClass, string? DisplayName, decimal Balance)
+    parameters:
+    - id: AccountName
+      type: System.String
+    - id: AccountType
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: AssetClass
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: Balance
+      type: System.Decimal
+    content.vb: Public Sub New(AccountName As String, AccountType As String, Symbol As String, AssetClass As String, DisplayName As String, Balance As Decimal)
+  overload: Meridian.Application.Services.NavComponent.#ctor*
+  nameWithType.vb: NavComponent.New(String, String, String, String, String, Decimal)
+  fullName.vb: Meridian.Application.Services.NavComponent.New(String, String, String, String, String, Decimal)
+  name.vb: New(String, String, String, String, String, Decimal)
+- uid: Meridian.Application.Services.NavComponent.AccountName
+  commentId: P:Meridian.Application.Services.NavComponent.AccountName
+  id: AccountName
+  parent: Meridian.Application.Services.NavComponent
+  langs:
+  - csharp
+  - vb
+  name: AccountName
+  nameWithType: NavComponent.AccountName
+  fullName: Meridian.Application.Services.NavComponent.AccountName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountName
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string AccountName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountName As String
+  overload: Meridian.Application.Services.NavComponent.AccountName*
+- uid: Meridian.Application.Services.NavComponent.AccountType
+  commentId: P:Meridian.Application.Services.NavComponent.AccountType
+  id: AccountType
+  parent: Meridian.Application.Services.NavComponent
+  langs:
+  - csharp
+  - vb
+  name: AccountType
+  nameWithType: NavComponent.AccountType
+  fullName: Meridian.Application.Services.NavComponent.AccountType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountType
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string AccountType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountType As String
+  overload: Meridian.Application.Services.NavComponent.AccountType*
+- uid: Meridian.Application.Services.NavComponent.Symbol
+  commentId: P:Meridian.Application.Services.NavComponent.Symbol
+  id: Symbol
+  parent: Meridian.Application.Services.NavComponent
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: NavComponent.Symbol
+  fullName: Meridian.Application.Services.NavComponent.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Services.NavComponent.Symbol*
+- uid: Meridian.Application.Services.NavComponent.AssetClass
+  commentId: P:Meridian.Application.Services.NavComponent.AssetClass
+  id: AssetClass
+  parent: Meridian.Application.Services.NavComponent
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: NavComponent.AssetClass
+  fullName: Meridian.Application.Services.NavComponent.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Application.Services.NavComponent.AssetClass*
+- uid: Meridian.Application.Services.NavComponent.DisplayName
+  commentId: P:Meridian.Application.Services.NavComponent.DisplayName
+  id: DisplayName
+  parent: Meridian.Application.Services.NavComponent
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: NavComponent.DisplayName
+  fullName: Meridian.Application.Services.NavComponent.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Application.Services.NavComponent.DisplayName*
+- uid: Meridian.Application.Services.NavComponent.Balance
+  commentId: P:Meridian.Application.Services.NavComponent.Balance
+  id: Balance
+  parent: Meridian.Application.Services.NavComponent
+  langs:
+  - csharp
+  - vb
+  name: Balance
+  nameWithType: NavComponent.Balance
+  fullName: Meridian.Application.Services.NavComponent.Balance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/NavAttributionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balance
+    path: ../../src/Meridian.Application/Services/NavAttributionService.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public decimal Balance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Balance As Decimal
+  overload: Meridian.Application.Services.NavComponent.Balance*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Services.NavComponent}
+  commentId: T:System.IEquatable{Meridian.Application.Services.NavComponent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<NavComponent>
+  nameWithType: IEquatable<NavComponent>
+  fullName: System.IEquatable<Meridian.Application.Services.NavComponent>
+  nameWithType.vb: IEquatable(Of NavComponent)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.NavComponent)
+  name.vb: IEquatable(Of NavComponent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.NavComponent
+    name: NavComponent
+    href: Meridian.Application.Services.NavComponent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.NavComponent
+    name: NavComponent
+    href: Meridian.Application.Services.NavComponent.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.NavComponent.#ctor*
+  commentId: Overload:Meridian.Application.Services.NavComponent.#ctor
+  href: Meridian.Application.Services.NavComponent.html#Meridian_Application_Services_NavComponent__ctor_System_String_System_String_System_String_System_String_System_String_System_Decimal_
+  name: NavComponent
+  nameWithType: NavComponent.NavComponent
+  fullName: Meridian.Application.Services.NavComponent.NavComponent
+  nameWithType.vb: NavComponent.New
+  fullName.vb: Meridian.Application.Services.NavComponent.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Application.Services.NavComponent.AccountName*
+  commentId: Overload:Meridian.Application.Services.NavComponent.AccountName
+  href: Meridian.Application.Services.NavComponent.html#Meridian_Application_Services_NavComponent_AccountName
+  name: AccountName
+  nameWithType: NavComponent.AccountName
+  fullName: Meridian.Application.Services.NavComponent.AccountName
+- uid: Meridian.Application.Services.NavComponent.AccountType*
+  commentId: Overload:Meridian.Application.Services.NavComponent.AccountType
+  href: Meridian.Application.Services.NavComponent.html#Meridian_Application_Services_NavComponent_AccountType
+  name: AccountType
+  nameWithType: NavComponent.AccountType
+  fullName: Meridian.Application.Services.NavComponent.AccountType
+- uid: Meridian.Application.Services.NavComponent.Symbol*
+  commentId: Overload:Meridian.Application.Services.NavComponent.Symbol
+  href: Meridian.Application.Services.NavComponent.html#Meridian_Application_Services_NavComponent_Symbol
+  name: Symbol
+  nameWithType: NavComponent.Symbol
+  fullName: Meridian.Application.Services.NavComponent.Symbol
+- uid: Meridian.Application.Services.NavComponent.AssetClass*
+  commentId: Overload:Meridian.Application.Services.NavComponent.AssetClass
+  href: Meridian.Application.Services.NavComponent.html#Meridian_Application_Services_NavComponent_AssetClass
+  name: AssetClass
+  nameWithType: NavComponent.AssetClass
+  fullName: Meridian.Application.Services.NavComponent.AssetClass
+- uid: Meridian.Application.Services.NavComponent.DisplayName*
+  commentId: Overload:Meridian.Application.Services.NavComponent.DisplayName
+  href: Meridian.Application.Services.NavComponent.html#Meridian_Application_Services_NavComponent_DisplayName
+  name: DisplayName
+  nameWithType: NavComponent.DisplayName
+  fullName: Meridian.Application.Services.NavComponent.DisplayName
+- uid: Meridian.Application.Services.NavComponent.Balance*
+  commentId: Overload:Meridian.Application.Services.NavComponent.Balance
+  href: Meridian.Application.Services.NavComponent.html#Meridian_Application_Services_NavComponent_Balance
+  name: Balance
+  nameWithType: NavComponent.Balance
+  fullName: Meridian.Application.Services.NavComponent.Balance

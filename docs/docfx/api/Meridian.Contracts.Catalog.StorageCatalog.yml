@@ -1,0 +1,1170 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.StorageCatalog
+  commentId: T:Meridian.Contracts.Catalog.StorageCatalog
+  id: StorageCatalog
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.StorageCatalog.CatalogId
+  - Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion
+  - Meridian.Contracts.Catalog.StorageCatalog.Configuration
+  - Meridian.Contracts.Catalog.StorageCatalog.CreatedAt
+  - Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion
+  - Meridian.Contracts.Catalog.StorageCatalog.DateRange
+  - Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes
+  - Meridian.Contracts.Catalog.StorageCatalog.Integrity
+  - Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt
+  - Meridian.Contracts.Catalog.StorageCatalog.Schemas
+  - Meridian.Contracts.Catalog.StorageCatalog.Sources
+  - Meridian.Contracts.Catalog.StorageCatalog.Statistics
+  - Meridian.Contracts.Catalog.StorageCatalog.Symbols
+  langs:
+  - csharp
+  - vb
+  name: StorageCatalog
+  nameWithType: StorageCatalog
+  fullName: Meridian.Contracts.Catalog.StorageCatalog
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageCatalog
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Root storage catalog manifest stored at _catalog/manifest.json.
+
+    Provides a comprehensive index of all stored data with integrity metadata.
+  example: []
+  syntax:
+    content: public sealed class StorageCatalog
+    content.vb: Public NotInheritable Class StorageCatalog
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion
+  id: CatalogVersion
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: CatalogVersion
+  nameWithType: StorageCatalog.CatalogVersion
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatalogVersion
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Catalog format version for compatibility checking.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("catalogVersion")]
+
+      public string CatalogVersion { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("catalogVersion")>
+
+      Public Property CatalogVersion As String
+  overload: Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: catalogVersion
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CatalogId
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.CatalogId
+  id: CatalogId
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: CatalogId
+  nameWithType: StorageCatalog.CatalogId
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CatalogId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatalogId
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Unique identifier for this catalog instance.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("catalogId")]
+
+      public string CatalogId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("catalogId")>
+
+      Public Property CatalogId As String
+  overload: Meridian.Contracts.Catalog.StorageCatalog.CatalogId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: catalogId
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CreatedAt
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: StorageCatalog.CreatedAt
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: When the catalog was created.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("createdAt")]
+
+      public DateTime CreatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("createdAt")>
+
+      Public Property CreatedAt As Date
+  overload: Meridian.Contracts.Catalog.StorageCatalog.CreatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: createdAt
+- uid: Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt
+  id: LastUpdatedAt
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: LastUpdatedAt
+  nameWithType: StorageCatalog.LastUpdatedAt
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdatedAt
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: When the catalog was last updated.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastUpdatedAt")]
+
+      public DateTime LastUpdatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("lastUpdatedAt")>
+
+      Public Property LastUpdatedAt As Date
+  overload: Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastUpdatedAt
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion
+  id: CreatorVersion
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: CreatorVersion
+  nameWithType: StorageCatalog.CreatorVersion
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatorVersion
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Version of Meridian that created this catalog.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("creatorVersion")]
+
+      public string CreatorVersion { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("creatorVersion")>
+
+      Public Property CreatorVersion As String
+  overload: Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: creatorVersion
+- uid: Meridian.Contracts.Catalog.StorageCatalog.DateRange
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.DateRange
+  id: DateRange
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: DateRange
+  nameWithType: StorageCatalog.DateRange
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.DateRange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRange
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Global date range across all stored data.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("dateRange")]
+
+      public CatalogDateRange? DateRange { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Catalog.CatalogDateRange
+    content.vb: >-
+      <JsonPropertyName("dateRange")>
+
+      Public Property DateRange As CatalogDateRange
+  overload: Meridian.Contracts.Catalog.StorageCatalog.DateRange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dateRange
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Statistics
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.Statistics
+  id: Statistics
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: Statistics
+  nameWithType: StorageCatalog.Statistics
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Statistics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Statistics
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Storage statistics summary.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("statistics")]
+
+      public CatalogStatistics Statistics { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Catalog.CatalogStatistics
+    content.vb: >-
+      <JsonPropertyName("statistics")>
+
+      Public Property Statistics As CatalogStatistics
+  overload: Meridian.Contracts.Catalog.StorageCatalog.Statistics*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: statistics
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Symbols
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: StorageCatalog.Symbols
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Symbol-level entries with per-symbol statistics.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbols")]
+
+      public Dictionary<string, SymbolCatalogEntry> Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Contracts.Catalog.SymbolCatalogEntry}
+    content.vb: >-
+      <JsonPropertyName("symbols")>
+
+      Public Property Symbols As Dictionary(Of String, SymbolCatalogEntry)
+  overload: Meridian.Contracts.Catalog.StorageCatalog.Symbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbols
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Sources
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.Sources
+  id: Sources
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: StorageCatalog.Sources
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Data source metadata (references _catalog/sources.json).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sources")]
+
+      public string[] Sources { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("sources")>
+
+      Public Property Sources As String()
+  overload: Meridian.Contracts.Catalog.StorageCatalog.Sources*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sources
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Schemas
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.Schemas
+  id: Schemas
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: Schemas
+  nameWithType: StorageCatalog.Schemas
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Schemas
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Schemas
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Schema versions in use (references _catalog/schemas/).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("schemas")]
+
+      public Dictionary<string, SchemaReference> Schemas { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Contracts.Catalog.SchemaReference}
+    content.vb: >-
+      <JsonPropertyName("schemas")>
+
+      Public Property Schemas As Dictionary(Of String, SchemaReference)
+  overload: Meridian.Contracts.Catalog.StorageCatalog.Schemas*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: schemas
+- uid: Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes
+  id: DirectoryIndexes
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: DirectoryIndexes
+  nameWithType: StorageCatalog.DirectoryIndexes
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectoryIndexes
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Directory index references.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("directoryIndexes")]
+
+      public string[] DirectoryIndexes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("directoryIndexes")>
+
+      Public Property DirectoryIndexes As String()
+  overload: Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: directoryIndexes
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Integrity
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.Integrity
+  id: Integrity
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: Integrity
+  nameWithType: StorageCatalog.Integrity
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Integrity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Integrity
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Integrity verification status.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("integrity")]
+
+      public CatalogIntegrity Integrity { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Catalog.CatalogIntegrity
+    content.vb: >-
+      <JsonPropertyName("integrity")>
+
+      Public Property Integrity As CatalogIntegrity
+  overload: Meridian.Contracts.Catalog.StorageCatalog.Integrity*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: integrity
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Configuration
+  commentId: P:Meridian.Contracts.Catalog.StorageCatalog.Configuration
+  id: Configuration
+  parent: Meridian.Contracts.Catalog.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: Configuration
+  nameWithType: StorageCatalog.Configuration
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Configuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Configuration
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Configuration snapshot when catalog was created.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("configuration")]
+
+      public CatalogConfiguration? Configuration { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Catalog.CatalogConfiguration
+    content.vb: >-
+      <JsonPropertyName("configuration")>
+
+      Public Property Configuration As CatalogConfiguration
+  overload: Meridian.Contracts.Catalog.StorageCatalog.Configuration*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: configuration
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_CatalogVersion
+  name: CatalogVersion
+  nameWithType: StorageCatalog.CatalogVersion
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CatalogVersion
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CatalogId*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.CatalogId
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_CatalogId
+  name: CatalogId
+  nameWithType: StorageCatalog.CatalogId
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CatalogId
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CreatedAt*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.CreatedAt
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_CreatedAt
+  name: CreatedAt
+  nameWithType: StorageCatalog.CreatedAt
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CreatedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_LastUpdatedAt
+  name: LastUpdatedAt
+  nameWithType: StorageCatalog.LastUpdatedAt
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.LastUpdatedAt
+- uid: Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_CreatorVersion
+  name: CreatorVersion
+  nameWithType: StorageCatalog.CreatorVersion
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.CreatorVersion
+- uid: Meridian.Contracts.Catalog.StorageCatalog.DateRange*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.DateRange
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_DateRange
+  name: DateRange
+  nameWithType: StorageCatalog.DateRange
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.DateRange
+- uid: Meridian.Contracts.Catalog.CatalogDateRange
+  commentId: T:Meridian.Contracts.Catalog.CatalogDateRange
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.CatalogDateRange.html
+  name: CatalogDateRange
+  nameWithType: CatalogDateRange
+  fullName: Meridian.Contracts.Catalog.CatalogDateRange
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Statistics*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.Statistics
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_Statistics
+  name: Statistics
+  nameWithType: StorageCatalog.Statistics
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Statistics
+- uid: Meridian.Contracts.Catalog.CatalogStatistics
+  commentId: T:Meridian.Contracts.Catalog.CatalogStatistics
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.CatalogStatistics.html
+  name: CatalogStatistics
+  nameWithType: CatalogStatistics
+  fullName: Meridian.Contracts.Catalog.CatalogStatistics
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Symbols*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.Symbols
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_Symbols
+  name: Symbols
+  nameWithType: StorageCatalog.Symbols
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Symbols
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Contracts.Catalog.SymbolCatalogEntry}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Contracts.Catalog.SymbolCatalogEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, SymbolCatalogEntry>
+  nameWithType: Dictionary<string, SymbolCatalogEntry>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Contracts.Catalog.SymbolCatalogEntry>
+  nameWithType.vb: Dictionary(Of String, SymbolCatalogEntry)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Contracts.Catalog.SymbolCatalogEntry)
+  name.vb: Dictionary(Of String, SymbolCatalogEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.SymbolCatalogEntry
+    name: SymbolCatalogEntry
+    href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.SymbolCatalogEntry
+    name: SymbolCatalogEntry
+    href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Sources*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.Sources
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_Sources
+  name: Sources
+  nameWithType: StorageCatalog.Sources
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Sources
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Schemas*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.Schemas
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_Schemas
+  name: Schemas
+  nameWithType: StorageCatalog.Schemas
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Schemas
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Contracts.Catalog.SchemaReference}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Contracts.Catalog.SchemaReference}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, SchemaReference>
+  nameWithType: Dictionary<string, SchemaReference>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Contracts.Catalog.SchemaReference>
+  nameWithType.vb: Dictionary(Of String, SchemaReference)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Contracts.Catalog.SchemaReference)
+  name.vb: Dictionary(Of String, SchemaReference)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.SchemaReference
+    name: SchemaReference
+    href: Meridian.Contracts.Catalog.SchemaReference.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.SchemaReference
+    name: SchemaReference
+    href: Meridian.Contracts.Catalog.SchemaReference.html
+  - name: )
+- uid: Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_DirectoryIndexes
+  name: DirectoryIndexes
+  nameWithType: StorageCatalog.DirectoryIndexes
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.DirectoryIndexes
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Integrity*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.Integrity
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_Integrity
+  name: Integrity
+  nameWithType: StorageCatalog.Integrity
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Integrity
+- uid: Meridian.Contracts.Catalog.CatalogIntegrity
+  commentId: T:Meridian.Contracts.Catalog.CatalogIntegrity
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.CatalogIntegrity.html
+  name: CatalogIntegrity
+  nameWithType: CatalogIntegrity
+  fullName: Meridian.Contracts.Catalog.CatalogIntegrity
+- uid: Meridian.Contracts.Catalog.StorageCatalog.Configuration*
+  commentId: Overload:Meridian.Contracts.Catalog.StorageCatalog.Configuration
+  href: Meridian.Contracts.Catalog.StorageCatalog.html#Meridian_Contracts_Catalog_StorageCatalog_Configuration
+  name: Configuration
+  nameWithType: StorageCatalog.Configuration
+  fullName: Meridian.Contracts.Catalog.StorageCatalog.Configuration
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration
+  commentId: T:Meridian.Contracts.Catalog.CatalogConfiguration
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.CatalogConfiguration.html
+  name: CatalogConfiguration
+  nameWithType: CatalogConfiguration
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration

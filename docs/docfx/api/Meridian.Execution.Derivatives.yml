@@ -1,0 +1,78 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Derivatives
+  commentId: N:Meridian.Execution.Derivatives
+  id: Meridian.Execution.Derivatives
+  children:
+  - Meridian.Execution.Derivatives.DerivativeKind
+  - Meridian.Execution.Derivatives.FuturePosition
+  - Meridian.Execution.Derivatives.IDerivativePosition
+  - Meridian.Execution.Derivatives.OptionPosition
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Derivatives
+  nameWithType: Meridian.Execution.Derivatives
+  fullName: Meridian.Execution.Derivatives
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Derivatives.FuturePosition
+  commentId: T:Meridian.Execution.Derivatives.FuturePosition
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.FuturePosition.html
+  name: FuturePosition
+  nameWithType: FuturePosition
+  fullName: Meridian.Execution.Derivatives.FuturePosition
+- uid: Meridian.Execution.Derivatives.DerivativeKind
+  commentId: T:Meridian.Execution.Derivatives.DerivativeKind
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.DerivativeKind.html
+  name: DerivativeKind
+  nameWithType: DerivativeKind
+  fullName: Meridian.Execution.Derivatives.DerivativeKind
+- uid: Meridian.Execution.Derivatives.IDerivativePosition
+  commentId: T:Meridian.Execution.Derivatives.IDerivativePosition
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html
+  name: IDerivativePosition
+  nameWithType: IDerivativePosition
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition
+- uid: Meridian.Execution.Derivatives.OptionPosition
+  commentId: T:Meridian.Execution.Derivatives.OptionPosition
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.OptionPosition.html
+  name: OptionPosition
+  nameWithType: OptionPosition
+  fullName: Meridian.Execution.Derivatives.OptionPosition
+- uid: Meridian.Execution.Derivatives
+  commentId: N:Meridian.Execution.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Derivatives
+  nameWithType: Meridian.Execution.Derivatives
+  fullName: Meridian.Execution.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html

@@ -1,0 +1,287 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.IHistoricalBarWriter
+  commentId: T:Meridian.ProviderSdk.IHistoricalBarWriter
+  id: IHistoricalBarWriter
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IHistoricalBarWriter
+  nameWithType: IHistoricalBarWriter
+  fullName: Meridian.ProviderSdk.IHistoricalBarWriter
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalBarWriter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IHistoricalBarWriter
+    path: ../../src/Meridian.ProviderSdk/IHistoricalBarWriter.cs
+    startLine: 14
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: >-
+    Abstraction for writing historical bar data to storage.
+
+    Defined in ProviderSdk to break the circular dependency between
+
+    Infrastructure and Storage projects. Storage implementations provide
+
+    concrete writers; Infrastructure consumers inject this interface.
+  remarks: >-
+    Resolves Phase 0.1: DataGapRepair.StoreBarsAsync was a no-op because
+
+    Infrastructure could not reference Storage directly.
+  example: []
+  syntax:
+    content: public interface IHistoricalBarWriter
+    content.vb: Public Interface IHistoricalBarWriter
+- uid: Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.Threading.CancellationToken)
+  id: WriteBarsAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.Threading.CancellationToken)
+  parent: Meridian.ProviderSdk.IHistoricalBarWriter
+  langs:
+  - csharp
+  - vb
+  name: WriteBarsAsync(IReadOnlyList<HistoricalBar>, CancellationToken)
+  nameWithType: IHistoricalBarWriter.WriteBarsAsync(IReadOnlyList<HistoricalBar>, CancellationToken)
+  fullName: Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync(System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalBarWriter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteBarsAsync
+    path: ../../src/Meridian.ProviderSdk/IHistoricalBarWriter.cs
+    startLine: 21
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Persists a batch of historical bars to the configured storage backend.
+  example: []
+  syntax:
+    content: Task WriteBarsAsync(IReadOnlyList<HistoricalBar> bars, CancellationToken ct = default)
+    parameters:
+    - id: bars
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+      description: The bars to write.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function WriteBarsAsync(bars As IReadOnlyList(Of HistoricalBar), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync*
+  nameWithType.vb: IHistoricalBarWriter.WriteBarsAsync(IReadOnlyList(Of HistoricalBar), CancellationToken)
+  fullName.vb: Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync(System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar), System.Threading.CancellationToken)
+  name.vb: WriteBarsAsync(IReadOnlyList(Of HistoricalBar), CancellationToken)
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync*
+  commentId: Overload:Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync
+  href: Meridian.ProviderSdk.IHistoricalBarWriter.html#Meridian_ProviderSdk_IHistoricalBarWriter_WriteBarsAsync_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_HistoricalBar__System_Threading_CancellationToken_
+  name: WriteBarsAsync
+  nameWithType: IHistoricalBarWriter.WriteBarsAsync
+  fullName: Meridian.ProviderSdk.IHistoricalBarWriter.WriteBarsAsync
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<HistoricalBar>
+  nameWithType: IReadOnlyList<HistoricalBar>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>
+  nameWithType.vb: IReadOnlyList(Of HistoricalBar)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar)
+  name.vb: IReadOnlyList(Of HistoricalBar)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

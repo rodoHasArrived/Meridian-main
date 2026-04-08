@@ -1,0 +1,741 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.TradingSession
+  commentId: T:Meridian.Storage.Services.TradingSession
+  id: TradingSession
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.TradingSession.#ctor(System.String,System.DayOfWeek[],System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)
+  - Meridian.Storage.Services.TradingSession.ActiveDays
+  - Meridian.Storage.Services.TradingSession.AfterHoursEnd
+  - Meridian.Storage.Services.TradingSession.IncludesAfterHours
+  - Meridian.Storage.Services.TradingSession.IncludesPreMarket
+  - Meridian.Storage.Services.TradingSession.Name
+  - Meridian.Storage.Services.TradingSession.PreMarketStart
+  - Meridian.Storage.Services.TradingSession.RegularEnd
+  - Meridian.Storage.Services.TradingSession.RegularStart
+  langs:
+  - csharp
+  - vb
+  name: TradingSession
+  nameWithType: TradingSession
+  fullName: Meridian.Storage.Services.TradingSession
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingSession
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 584
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record TradingSession : IEquatable<TradingSession>'
+    content.vb: Public NotInheritable Class TradingSession Implements IEquatable(Of TradingSession)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.TradingSession}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.TradingSession.#ctor(System.String,System.DayOfWeek[],System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Storage.Services.TradingSession.#ctor(System.String,System.DayOfWeek[],System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)
+  id: '#ctor(System.String,System.DayOfWeek[],System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)'
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: TradingSession(string, DayOfWeek[], TimeSpan, TimeSpan, TimeSpan, TimeSpan, bool, bool)
+  nameWithType: TradingSession.TradingSession(string, DayOfWeek[], TimeSpan, TimeSpan, TimeSpan, TimeSpan, bool, bool)
+  fullName: Meridian.Storage.Services.TradingSession.TradingSession(string, System.DayOfWeek[], System.TimeSpan, System.TimeSpan, System.TimeSpan, System.TimeSpan, bool, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 584
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TradingSession(string Name, DayOfWeek[] ActiveDays, TimeSpan PreMarketStart, TimeSpan RegularStart, TimeSpan RegularEnd, TimeSpan AfterHoursEnd, bool IncludesPreMarket = true, bool IncludesAfterHours = true)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: ActiveDays
+      type: System.DayOfWeek[]
+    - id: PreMarketStart
+      type: System.TimeSpan
+    - id: RegularStart
+      type: System.TimeSpan
+    - id: RegularEnd
+      type: System.TimeSpan
+    - id: AfterHoursEnd
+      type: System.TimeSpan
+    - id: IncludesPreMarket
+      type: System.Boolean
+    - id: IncludesAfterHours
+      type: System.Boolean
+    content.vb: Public Sub New(Name As String, ActiveDays As DayOfWeek(), PreMarketStart As TimeSpan, RegularStart As TimeSpan, RegularEnd As TimeSpan, AfterHoursEnd As TimeSpan, IncludesPreMarket As Boolean = True, IncludesAfterHours As Boolean = True)
+  overload: Meridian.Storage.Services.TradingSession.#ctor*
+  nameWithType.vb: TradingSession.New(String, DayOfWeek(), TimeSpan, TimeSpan, TimeSpan, TimeSpan, Boolean, Boolean)
+  fullName.vb: Meridian.Storage.Services.TradingSession.New(String, System.DayOfWeek(), System.TimeSpan, System.TimeSpan, System.TimeSpan, System.TimeSpan, Boolean, Boolean)
+  name.vb: New(String, DayOfWeek(), TimeSpan, TimeSpan, TimeSpan, TimeSpan, Boolean, Boolean)
+- uid: Meridian.Storage.Services.TradingSession.Name
+  commentId: P:Meridian.Storage.Services.TradingSession.Name
+  id: Name
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: TradingSession.Name
+  fullName: Meridian.Storage.Services.TradingSession.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 585
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Storage.Services.TradingSession.Name*
+- uid: Meridian.Storage.Services.TradingSession.ActiveDays
+  commentId: P:Meridian.Storage.Services.TradingSession.ActiveDays
+  id: ActiveDays
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: ActiveDays
+  nameWithType: TradingSession.ActiveDays
+  fullName: Meridian.Storage.Services.TradingSession.ActiveDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveDays
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 586
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DayOfWeek[] ActiveDays { get; init; }
+    parameters: []
+    return:
+      type: System.DayOfWeek[]
+    content.vb: Public Property ActiveDays As DayOfWeek()
+  overload: Meridian.Storage.Services.TradingSession.ActiveDays*
+- uid: Meridian.Storage.Services.TradingSession.PreMarketStart
+  commentId: P:Meridian.Storage.Services.TradingSession.PreMarketStart
+  id: PreMarketStart
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: PreMarketStart
+  nameWithType: TradingSession.PreMarketStart
+  fullName: Meridian.Storage.Services.TradingSession.PreMarketStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreMarketStart
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 587
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan PreMarketStart { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property PreMarketStart As TimeSpan
+  overload: Meridian.Storage.Services.TradingSession.PreMarketStart*
+- uid: Meridian.Storage.Services.TradingSession.RegularStart
+  commentId: P:Meridian.Storage.Services.TradingSession.RegularStart
+  id: RegularStart
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: RegularStart
+  nameWithType: TradingSession.RegularStart
+  fullName: Meridian.Storage.Services.TradingSession.RegularStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegularStart
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 588
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan RegularStart { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property RegularStart As TimeSpan
+  overload: Meridian.Storage.Services.TradingSession.RegularStart*
+- uid: Meridian.Storage.Services.TradingSession.RegularEnd
+  commentId: P:Meridian.Storage.Services.TradingSession.RegularEnd
+  id: RegularEnd
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: RegularEnd
+  nameWithType: TradingSession.RegularEnd
+  fullName: Meridian.Storage.Services.TradingSession.RegularEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegularEnd
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 589
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan RegularEnd { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property RegularEnd As TimeSpan
+  overload: Meridian.Storage.Services.TradingSession.RegularEnd*
+- uid: Meridian.Storage.Services.TradingSession.AfterHoursEnd
+  commentId: P:Meridian.Storage.Services.TradingSession.AfterHoursEnd
+  id: AfterHoursEnd
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: AfterHoursEnd
+  nameWithType: TradingSession.AfterHoursEnd
+  fullName: Meridian.Storage.Services.TradingSession.AfterHoursEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AfterHoursEnd
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 590
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan AfterHoursEnd { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property AfterHoursEnd As TimeSpan
+  overload: Meridian.Storage.Services.TradingSession.AfterHoursEnd*
+- uid: Meridian.Storage.Services.TradingSession.IncludesPreMarket
+  commentId: P:Meridian.Storage.Services.TradingSession.IncludesPreMarket
+  id: IncludesPreMarket
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: IncludesPreMarket
+  nameWithType: TradingSession.IncludesPreMarket
+  fullName: Meridian.Storage.Services.TradingSession.IncludesPreMarket
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludesPreMarket
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 591
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public bool IncludesPreMarket { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludesPreMarket As Boolean
+  overload: Meridian.Storage.Services.TradingSession.IncludesPreMarket*
+- uid: Meridian.Storage.Services.TradingSession.IncludesAfterHours
+  commentId: P:Meridian.Storage.Services.TradingSession.IncludesAfterHours
+  id: IncludesAfterHours
+  parent: Meridian.Storage.Services.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: IncludesAfterHours
+  nameWithType: TradingSession.IncludesAfterHours
+  fullName: Meridian.Storage.Services.TradingSession.IncludesAfterHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludesAfterHours
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public bool IncludesAfterHours { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludesAfterHours As Boolean
+  overload: Meridian.Storage.Services.TradingSession.IncludesAfterHours*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.TradingSession}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.TradingSession}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TradingSession>
+  nameWithType: IEquatable<TradingSession>
+  fullName: System.IEquatable<Meridian.Storage.Services.TradingSession>
+  nameWithType.vb: IEquatable(Of TradingSession)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.TradingSession)
+  name.vb: IEquatable(Of TradingSession)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.TradingSession
+    name: TradingSession
+    href: Meridian.Storage.Services.TradingSession.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.TradingSession
+    name: TradingSession
+    href: Meridian.Storage.Services.TradingSession.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.TradingSession.#ctor*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.#ctor
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession__ctor_System_String_System_DayOfWeek___System_TimeSpan_System_TimeSpan_System_TimeSpan_System_TimeSpan_System_Boolean_System_Boolean_
+  name: TradingSession
+  nameWithType: TradingSession.TradingSession
+  fullName: Meridian.Storage.Services.TradingSession.TradingSession
+  nameWithType.vb: TradingSession.New
+  fullName.vb: Meridian.Storage.Services.TradingSession.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DayOfWeek[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dayofweek
+  name: DayOfWeek[]
+  nameWithType: DayOfWeek[]
+  fullName: System.DayOfWeek[]
+  nameWithType.vb: DayOfWeek()
+  fullName.vb: System.DayOfWeek()
+  name.vb: DayOfWeek()
+  spec.csharp:
+  - uid: System.DayOfWeek
+    name: DayOfWeek
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dayofweek
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.DayOfWeek
+    name: DayOfWeek
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dayofweek
+  - name: (
+  - name: )
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Services.TradingSession.Name*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.Name
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_Name
+  name: Name
+  nameWithType: TradingSession.Name
+  fullName: Meridian.Storage.Services.TradingSession.Name
+- uid: Meridian.Storage.Services.TradingSession.ActiveDays*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.ActiveDays
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_ActiveDays
+  name: ActiveDays
+  nameWithType: TradingSession.ActiveDays
+  fullName: Meridian.Storage.Services.TradingSession.ActiveDays
+- uid: Meridian.Storage.Services.TradingSession.PreMarketStart*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.PreMarketStart
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_PreMarketStart
+  name: PreMarketStart
+  nameWithType: TradingSession.PreMarketStart
+  fullName: Meridian.Storage.Services.TradingSession.PreMarketStart
+- uid: Meridian.Storage.Services.TradingSession.RegularStart*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.RegularStart
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_RegularStart
+  name: RegularStart
+  nameWithType: TradingSession.RegularStart
+  fullName: Meridian.Storage.Services.TradingSession.RegularStart
+- uid: Meridian.Storage.Services.TradingSession.RegularEnd*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.RegularEnd
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_RegularEnd
+  name: RegularEnd
+  nameWithType: TradingSession.RegularEnd
+  fullName: Meridian.Storage.Services.TradingSession.RegularEnd
+- uid: Meridian.Storage.Services.TradingSession.AfterHoursEnd*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.AfterHoursEnd
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_AfterHoursEnd
+  name: AfterHoursEnd
+  nameWithType: TradingSession.AfterHoursEnd
+  fullName: Meridian.Storage.Services.TradingSession.AfterHoursEnd
+- uid: Meridian.Storage.Services.TradingSession.IncludesPreMarket*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.IncludesPreMarket
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_IncludesPreMarket
+  name: IncludesPreMarket
+  nameWithType: TradingSession.IncludesPreMarket
+  fullName: Meridian.Storage.Services.TradingSession.IncludesPreMarket
+- uid: Meridian.Storage.Services.TradingSession.IncludesAfterHours*
+  commentId: Overload:Meridian.Storage.Services.TradingSession.IncludesAfterHours
+  href: Meridian.Storage.Services.TradingSession.html#Meridian_Storage_Services_TradingSession_IncludesAfterHours
+  name: IncludesAfterHours
+  nameWithType: TradingSession.IncludesAfterHours
+  fullName: Meridian.Storage.Services.TradingSession.IncludesAfterHours

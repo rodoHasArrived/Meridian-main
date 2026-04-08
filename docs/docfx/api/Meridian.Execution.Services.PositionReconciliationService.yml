@@ -1,0 +1,924 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.PositionReconciliationService
+  commentId: T:Meridian.Execution.Services.PositionReconciliationService
+  id: PositionReconciliationService
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.PositionReconciliationService.#ctor(System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}},Meridian.Execution.Services.PortfolioRegistry,Microsoft.Extensions.Options.IOptions{Meridian.Execution.Services.PositionSyncOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PositionReconciliationService})
+  - Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport
+  - Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: PositionReconciliationService
+  nameWithType: PositionReconciliationService
+  fullName: Meridian.Execution.Services.PositionReconciliationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PositionReconciliationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionReconciliationService
+    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Periodically reconciles live paper/brokerage portfolio positions against
+
+    the positions reported by a connected <xref href="Meridian.Execution.Sdk.IBrokeragePositionSync" data-throw-if-not-resolved="false"></xref> provider.
+
+
+    <p>
+
+    Which provider is queried first is controlled by <xref href="Meridian.Execution.Services.PositionSyncOptions.ProviderPriority" data-throw-if-not-resolved="false"></xref>,
+
+    allowing users to set <code>InteractiveBrokers</code> or <code>Alpaca</code> as the primary source.
+
+    </p>
+  example: []
+  syntax:
+    content: public sealed class PositionReconciliationService
+    content.vb: Public NotInheritable Class PositionReconciliationService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport
+  commentId: M:Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport
+  id: GetLastReconciliationReport
+  parent: Meridian.Execution.Services.PositionReconciliationService
+  langs:
+  - csharp
+  - vb
+  name: GetLastReconciliationReport()
+  nameWithType: PositionReconciliationService.GetLastReconciliationReport()
+  fullName: Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PositionReconciliationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastReconciliationReport
+    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Exposes the report from the most recent reconciliation pass.
+  example: []
+  syntax:
+    content: public ReconciliationReport? GetLastReconciliationReport()
+    return:
+      type: Meridian.Execution.Services.ReconciliationReport
+    content.vb: Public Function GetLastReconciliationReport() As ReconciliationReport
+  overload: Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport*
+- uid: Meridian.Execution.Services.PositionReconciliationService.#ctor(System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}},Meridian.Execution.Services.PortfolioRegistry,Microsoft.Extensions.Options.IOptions{Meridian.Execution.Services.PositionSyncOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PositionReconciliationService})
+  commentId: M:Meridian.Execution.Services.PositionReconciliationService.#ctor(System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}},Meridian.Execution.Services.PortfolioRegistry,Microsoft.Extensions.Options.IOptions{Meridian.Execution.Services.PositionSyncOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PositionReconciliationService})
+  id: '#ctor(System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}},Meridian.Execution.Services.PortfolioRegistry,Microsoft.Extensions.Options.IOptions{Meridian.Execution.Services.PositionSyncOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PositionReconciliationService})'
+  parent: Meridian.Execution.Services.PositionReconciliationService
+  langs:
+  - csharp
+  - vb
+  name: PositionReconciliationService(IEnumerable<(string Name, IBrokeragePositionSync Sync)>, PortfolioRegistry, IOptions<PositionSyncOptions>, ILogger<PositionReconciliationService>)
+  nameWithType: PositionReconciliationService.PositionReconciliationService(IEnumerable<(string Name, IBrokeragePositionSync Sync)>, PortfolioRegistry, IOptions<PositionSyncOptions>, ILogger<PositionReconciliationService>)
+  fullName: Meridian.Execution.Services.PositionReconciliationService.PositionReconciliationService(System.Collections.Generic.IEnumerable<(string Name, Meridian.Execution.Sdk.IBrokeragePositionSync Sync)>, Meridian.Execution.Services.PortfolioRegistry, Microsoft.Extensions.Options.IOptions<Meridian.Execution.Services.PositionSyncOptions>, Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Services.PositionReconciliationService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PositionReconciliationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public PositionReconciliationService(IEnumerable<(string Name, IBrokeragePositionSync Sync)> providers, PortfolioRegistry registry, IOptions<PositionSyncOptions> options, ILogger<PositionReconciliationService> logger)
+    parameters:
+    - id: providers
+      type: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}}
+    - id: registry
+      type: Meridian.Execution.Services.PortfolioRegistry
+    - id: options
+      type: Microsoft.Extensions.Options.IOptions{Meridian.Execution.Services.PositionSyncOptions}
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PositionReconciliationService}
+    content.vb: Public Sub New(providers As IEnumerable(Of (Name As String, Sync As IBrokeragePositionSync)), registry As PortfolioRegistry, options As IOptions(Of PositionSyncOptions), logger As ILogger(Of PositionReconciliationService))
+  overload: Meridian.Execution.Services.PositionReconciliationService.#ctor*
+  nameWithType.vb: PositionReconciliationService.New(IEnumerable(Of (Name As String, Sync As IBrokeragePositionSync)), PortfolioRegistry, IOptions(Of PositionSyncOptions), ILogger(Of PositionReconciliationService))
+  fullName.vb: Meridian.Execution.Services.PositionReconciliationService.New(System.Collections.Generic.IEnumerable(Of (Name As String, Sync As Meridian.Execution.Sdk.IBrokeragePositionSync)), Meridian.Execution.Services.PortfolioRegistry, Microsoft.Extensions.Options.IOptions(Of Meridian.Execution.Services.PositionSyncOptions), Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Services.PositionReconciliationService))
+  name.vb: New(IEnumerable(Of (Name As String, Sync As IBrokeragePositionSync)), PortfolioRegistry, IOptions(Of PositionSyncOptions), ILogger(Of PositionReconciliationService))
+- uid: Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync(System.Threading.CancellationToken)
+  id: ReconcileAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PositionReconciliationService
+  langs:
+  - csharp
+  - vb
+  name: ReconcileAsync(CancellationToken)
+  nameWithType: PositionReconciliationService.ReconcileAsync(CancellationToken)
+  fullName: Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PositionReconciliationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconcileAsync
+    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Runs a single reconciliation pass against the highest-priority available provider.
+
+    Emits a <xref href="Meridian.Execution.Services.ReconciliationReport" data-throw-if-not-resolved="false"></xref> per account checked.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<ReconciliationReport>> ReconcileAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ReconciliationReport}}
+    content.vb: Public Function ReconcileAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ReconciliationReport))
+  overload: Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync*
+references:
+- uid: Meridian.Execution.Sdk.IBrokeragePositionSync
+  commentId: T:Meridian.Execution.Sdk.IBrokeragePositionSync
+  href: Meridian.Execution.Sdk.IBrokeragePositionSync.html
+  name: IBrokeragePositionSync
+  nameWithType: IBrokeragePositionSync
+  fullName: Meridian.Execution.Sdk.IBrokeragePositionSync
+- uid: Meridian.Execution.Services.PositionSyncOptions.ProviderPriority
+  commentId: P:Meridian.Execution.Services.PositionSyncOptions.ProviderPriority
+  href: Meridian.Execution.Services.PositionSyncOptions.html#Meridian_Execution_Services_PositionSyncOptions_ProviderPriority
+  name: ProviderPriority
+  nameWithType: PositionSyncOptions.ProviderPriority
+  fullName: Meridian.Execution.Services.PositionSyncOptions.ProviderPriority
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport*
+  commentId: Overload:Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport
+  href: Meridian.Execution.Services.PositionReconciliationService.html#Meridian_Execution_Services_PositionReconciliationService_GetLastReconciliationReport
+  name: GetLastReconciliationReport
+  nameWithType: PositionReconciliationService.GetLastReconciliationReport
+  fullName: Meridian.Execution.Services.PositionReconciliationService.GetLastReconciliationReport
+- uid: Meridian.Execution.Services.ReconciliationReport
+  commentId: T:Meridian.Execution.Services.ReconciliationReport
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ReconciliationReport.html
+  name: ReconciliationReport
+  nameWithType: ReconciliationReport
+  fullName: Meridian.Execution.Services.ReconciliationReport
+- uid: Meridian.Execution.Services.PositionReconciliationService.#ctor*
+  commentId: Overload:Meridian.Execution.Services.PositionReconciliationService.#ctor
+  href: Meridian.Execution.Services.PositionReconciliationService.html#Meridian_Execution_Services_PositionReconciliationService__ctor_System_Collections_Generic_IEnumerable_System_ValueTuple_System_String_Meridian_Execution_Sdk_IBrokeragePositionSync___Meridian_Execution_Services_PortfolioRegistry_Microsoft_Extensions_Options_IOptions_Meridian_Execution_Services_PositionSyncOptions__Microsoft_Extensions_Logging_ILogger_Meridian_Execution_Services_PositionReconciliationService__
+  name: PositionReconciliationService
+  nameWithType: PositionReconciliationService.PositionReconciliationService
+  fullName: Meridian.Execution.Services.PositionReconciliationService.PositionReconciliationService
+  nameWithType.vb: PositionReconciliationService.New
+  fullName.vb: Meridian.Execution.Services.PositionReconciliationService.New
+  name.vb: New
+- uid: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}}
+  commentId: T:System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<(string Name, IBrokeragePositionSync Sync)>
+  nameWithType: IEnumerable<(string Name, IBrokeragePositionSync Sync)>
+  fullName: System.Collections.Generic.IEnumerable<(string Name, Meridian.Execution.Sdk.IBrokeragePositionSync Sync)>
+  nameWithType.vb: IEnumerable(Of (Name As String, Sync As IBrokeragePositionSync))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of (Name As String, Sync As Meridian.Execution.Sdk.IBrokeragePositionSync))
+  name.vb: IEnumerable(Of (Name As String, Sync As IBrokeragePositionSync))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}.Name
+    name: Name
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.execution.sdk.ibrokeragepositionsync-.name
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Sdk.IBrokeragePositionSync
+    name: IBrokeragePositionSync
+  - name: " "
+  - uid: System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}.Sync
+    name: Sync
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.execution.sdk.ibrokeragepositionsync-.sync
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}.Name
+    name: Name
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.execution.sdk.ibrokeragepositionsync-.name
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,Meridian.Execution.Sdk.IBrokeragePositionSync}.Sync
+    name: Sync
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.execution.sdk.ibrokeragepositionsync-.sync
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: Meridian.Execution.Sdk.IBrokeragePositionSync
+    name: IBrokeragePositionSync
+  - name: )
+  - name: )
+- uid: Meridian.Execution.Services.PortfolioRegistry
+  commentId: T:Meridian.Execution.Services.PortfolioRegistry
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PortfolioRegistry.html
+  name: PortfolioRegistry
+  nameWithType: PortfolioRegistry
+  fullName: Meridian.Execution.Services.PortfolioRegistry
+- uid: Microsoft.Extensions.Options.IOptions{Meridian.Execution.Services.PositionSyncOptions}
+  commentId: T:Microsoft.Extensions.Options.IOptions{Meridian.Execution.Services.PositionSyncOptions}
+  parent: Microsoft.Extensions.Options
+  definition: Microsoft.Extensions.Options.IOptions`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  name: IOptions<PositionSyncOptions>
+  nameWithType: IOptions<PositionSyncOptions>
+  fullName: Microsoft.Extensions.Options.IOptions<Meridian.Execution.Services.PositionSyncOptions>
+  nameWithType.vb: IOptions(Of PositionSyncOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptions(Of Meridian.Execution.Services.PositionSyncOptions)
+  name.vb: IOptions(Of PositionSyncOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: <
+  - uid: Meridian.Execution.Services.PositionSyncOptions
+    name: PositionSyncOptions
+    href: Meridian.Execution.Services.PositionSyncOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PositionSyncOptions
+    name: PositionSyncOptions
+    href: Meridian.Execution.Services.PositionSyncOptions.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PositionReconciliationService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PositionReconciliationService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<PositionReconciliationService>
+  nameWithType: ILogger<PositionReconciliationService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Services.PositionReconciliationService>
+  nameWithType.vb: ILogger(Of PositionReconciliationService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Services.PositionReconciliationService)
+  name.vb: ILogger(Of PositionReconciliationService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Execution.Services.PositionReconciliationService
+    name: PositionReconciliationService
+    href: Meridian.Execution.Services.PositionReconciliationService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PositionReconciliationService
+    name: PositionReconciliationService
+    href: Meridian.Execution.Services.PositionReconciliationService.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Microsoft.Extensions.Options.IOptions`1
+  commentId: T:Microsoft.Extensions.Options.IOptions`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  name: IOptions<TOptions>
+  nameWithType: IOptions<TOptions>
+  fullName: Microsoft.Extensions.Options.IOptions<TOptions>
+  nameWithType.vb: IOptions(Of TOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptions(Of TOptions)
+  name.vb: IOptions(Of TOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: <
+  - name: TOptions
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptions`1
+    name: IOptions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TOptions
+  - name: )
+- uid: Microsoft.Extensions.Options
+  commentId: N:Microsoft.Extensions.Options
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Options
+  nameWithType: Microsoft.Extensions.Options
+  fullName: Microsoft.Extensions.Options
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync*
+  commentId: Overload:Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync
+  href: Meridian.Execution.Services.PositionReconciliationService.html#Meridian_Execution_Services_PositionReconciliationService_ReconcileAsync_System_Threading_CancellationToken_
+  name: ReconcileAsync
+  nameWithType: PositionReconciliationService.ReconcileAsync
+  fullName: Meridian.Execution.Services.PositionReconciliationService.ReconcileAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ReconciliationReport}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ReconciliationReport}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ReconciliationReport>>
+  nameWithType: Task<IReadOnlyList<ReconciliationReport>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.ReconciliationReport>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ReconciliationReport))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.ReconciliationReport))
+  name.vb: Task(Of IReadOnlyList(Of ReconciliationReport))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.ReconciliationReport
+    name: ReconciliationReport
+    href: Meridian.Execution.Services.ReconciliationReport.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ReconciliationReport
+    name: ReconciliationReport
+    href: Meridian.Execution.Services.ReconciliationReport.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

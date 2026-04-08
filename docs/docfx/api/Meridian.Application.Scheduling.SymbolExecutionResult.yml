@@ -1,0 +1,695 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult
+  commentId: T:Meridian.Application.Scheduling.SymbolExecutionResult
+  id: SymbolExecutionResult
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved
+  - Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt
+  - Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage
+  - Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected
+  - Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled
+  - Meridian.Application.Scheduling.SymbolExecutionResult.Provider
+  - Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt
+  - Meridian.Application.Scheduling.SymbolExecutionResult.Status
+  - Meridian.Application.Scheduling.SymbolExecutionResult.Symbol
+  langs:
+  - csharp
+  - vb
+  name: SymbolExecutionResult
+  nameWithType: SymbolExecutionResult
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolExecutionResult
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution result for a single symbol.
+  example: []
+  syntax:
+    content: public sealed class SymbolExecutionResult
+    content.vb: Public NotInheritable Class SymbolExecutionResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.Symbol
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.Symbol
+  id: Symbol
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolExecutionResult.Symbol
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.Symbol*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.Status
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.Status
+  id: Status
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: SymbolExecutionResult.Status
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public ExecutionStatus Status { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+    content.vb: Public Property Status As ExecutionStatus
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.Status*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected
+  id: GapsDetected
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: GapsDetected
+  nameWithType: SymbolExecutionResult.GapsDetected
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsDetected
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int GapsDetected { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapsDetected As Integer
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled
+  id: GapsFilled
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: GapsFilled
+  nameWithType: SymbolExecutionResult.GapsFilled
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsFilled
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int GapsFilled { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapsFilled As Integer
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved
+  id: BarsRetrieved
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: BarsRetrieved
+  nameWithType: SymbolExecutionResult.BarsRetrieved
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BarsRetrieved
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public long BarsRetrieved { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BarsRetrieved As Long
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.Provider
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.Provider
+  id: Provider
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: SymbolExecutionResult.Provider
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public string? Provider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.Provider*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: SymbolExecutionResult.ErrorMessage
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public string? ErrorMessage { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt
+  id: StartedAt
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: SymbolExecutionResult.StartedAt
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public DateTimeOffset? StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property StartedAt As DateTimeOffset?
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt*
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt
+  commentId: P:Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Application.Scheduling.SymbolExecutionResult
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: SymbolExecutionResult.CompletedAt
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public DateTimeOffset? CompletedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CompletedAt As DateTimeOffset?
+  overload: Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.Symbol*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.Symbol
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_Symbol
+  name: Symbol
+  nameWithType: SymbolExecutionResult.Symbol
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.Status*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.Status
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_Status
+  name: Status
+  nameWithType: SymbolExecutionResult.Status
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.Status
+- uid: Meridian.Application.Scheduling.ExecutionStatus
+  commentId: T:Meridian.Application.Scheduling.ExecutionStatus
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ExecutionStatus.html
+  name: ExecutionStatus
+  nameWithType: ExecutionStatus
+  fullName: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_GapsDetected
+  name: GapsDetected
+  nameWithType: SymbolExecutionResult.GapsDetected
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.GapsDetected
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_GapsFilled
+  name: GapsFilled
+  nameWithType: SymbolExecutionResult.GapsFilled
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.GapsFilled
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_BarsRetrieved
+  name: BarsRetrieved
+  nameWithType: SymbolExecutionResult.BarsRetrieved
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.BarsRetrieved
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.Provider*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.Provider
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_Provider
+  name: Provider
+  nameWithType: SymbolExecutionResult.Provider
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.Provider
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_ErrorMessage
+  name: ErrorMessage
+  nameWithType: SymbolExecutionResult.ErrorMessage
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.ErrorMessage
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_StartedAt
+  name: StartedAt
+  nameWithType: SymbolExecutionResult.StartedAt
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.StartedAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt*
+  commentId: Overload:Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt
+  href: Meridian.Application.Scheduling.SymbolExecutionResult.html#Meridian_Application_Scheduling_SymbolExecutionResult_CompletedAt
+  name: CompletedAt
+  nameWithType: SymbolExecutionResult.CompletedAt
+  fullName: Meridian.Application.Scheduling.SymbolExecutionResult.CompletedAt

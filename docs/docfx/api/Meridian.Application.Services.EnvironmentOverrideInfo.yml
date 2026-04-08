@@ -1,0 +1,485 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo
+  commentId: T:Meridian.Application.Services.EnvironmentOverrideInfo
+  id: EnvironmentOverrideInfo
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath
+  - Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue
+  - Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable
+  - Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive
+  - Meridian.Application.Services.EnvironmentOverrideInfo.IsSet
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentOverrideInfo
+  nameWithType: EnvironmentOverrideInfo
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentOverrideInfo
+    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Information about an environment variable override.
+  example: []
+  syntax:
+    content: public sealed class EnvironmentOverrideInfo
+    content.vb: Public NotInheritable Class EnvironmentOverrideInfo
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable
+  commentId: P:Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable
+  id: EnvironmentVariable
+  parent: Meridian.Application.Services.EnvironmentOverrideInfo
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentVariable
+  nameWithType: EnvironmentOverrideInfo.EnvironmentVariable
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentVariable
+    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string EnvironmentVariable { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EnvironmentVariable As String
+  overload: Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable*
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath
+  commentId: P:Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath
+  id: ConfigPath
+  parent: Meridian.Application.Services.EnvironmentOverrideInfo
+  langs:
+  - csharp
+  - vb
+  name: ConfigPath
+  nameWithType: EnvironmentOverrideInfo.ConfigPath
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigPath
+    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string ConfigPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConfigPath As String
+  overload: Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath*
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue
+  commentId: P:Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue
+  id: CurrentValue
+  parent: Meridian.Application.Services.EnvironmentOverrideInfo
+  langs:
+  - csharp
+  - vb
+  name: CurrentValue
+  nameWithType: EnvironmentOverrideInfo.CurrentValue
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentValue
+    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? CurrentValue { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CurrentValue As String
+  overload: Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue*
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.IsSet
+  commentId: P:Meridian.Application.Services.EnvironmentOverrideInfo.IsSet
+  id: IsSet
+  parent: Meridian.Application.Services.EnvironmentOverrideInfo
+  langs:
+  - csharp
+  - vb
+  name: IsSet
+  nameWithType: EnvironmentOverrideInfo.IsSet
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.IsSet
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSet
+    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IsSet { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsSet As Boolean
+  overload: Meridian.Application.Services.EnvironmentOverrideInfo.IsSet*
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive
+  commentId: P:Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive
+  id: IsSensitive
+  parent: Meridian.Application.Services.EnvironmentOverrideInfo
+  langs:
+  - csharp
+  - vb
+  name: IsSensitive
+  nameWithType: EnvironmentOverrideInfo.IsSensitive
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSensitive
+    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IsSensitive { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsSensitive As Boolean
+  overload: Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable*
+  commentId: Overload:Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable
+  href: Meridian.Application.Services.EnvironmentOverrideInfo.html#Meridian_Application_Services_EnvironmentOverrideInfo_EnvironmentVariable
+  name: EnvironmentVariable
+  nameWithType: EnvironmentOverrideInfo.EnvironmentVariable
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.EnvironmentVariable
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath*
+  commentId: Overload:Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath
+  href: Meridian.Application.Services.EnvironmentOverrideInfo.html#Meridian_Application_Services_EnvironmentOverrideInfo_ConfigPath
+  name: ConfigPath
+  nameWithType: EnvironmentOverrideInfo.ConfigPath
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.ConfigPath
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue*
+  commentId: Overload:Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue
+  href: Meridian.Application.Services.EnvironmentOverrideInfo.html#Meridian_Application_Services_EnvironmentOverrideInfo_CurrentValue
+  name: CurrentValue
+  nameWithType: EnvironmentOverrideInfo.CurrentValue
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.CurrentValue
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.IsSet*
+  commentId: Overload:Meridian.Application.Services.EnvironmentOverrideInfo.IsSet
+  href: Meridian.Application.Services.EnvironmentOverrideInfo.html#Meridian_Application_Services_EnvironmentOverrideInfo_IsSet
+  name: IsSet
+  nameWithType: EnvironmentOverrideInfo.IsSet
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.IsSet
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive*
+  commentId: Overload:Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive
+  href: Meridian.Application.Services.EnvironmentOverrideInfo.html#Meridian_Application_Services_EnvironmentOverrideInfo_IsSensitive
+  name: IsSensitive
+  nameWithType: EnvironmentOverrideInfo.IsSensitive
+  fullName: Meridian.Application.Services.EnvironmentOverrideInfo.IsSensitive

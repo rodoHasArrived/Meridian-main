@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.SloComplianceState
+  commentId: T:Meridian.Application.Monitoring.Core.SloComplianceState
+  id: SloComplianceState
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.SloComplianceState.Healthy
+  - Meridian.Application.Monitoring.Core.SloComplianceState.Unknown
+  - Meridian.Application.Monitoring.Core.SloComplianceState.Violation
+  - Meridian.Application.Monitoring.Core.SloComplianceState.Warning
+  langs:
+  - csharp
+  - vb
+  name: SloComplianceState
+  nameWithType: SloComplianceState
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SloComplianceState
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: SLO compliance state.
+  example: []
+  syntax:
+    content: 'public enum SloComplianceState : byte'
+    content.vb: Public Enum SloComplianceState As Byte
+- uid: Meridian.Application.Monitoring.Core.SloComplianceState.Healthy
+  commentId: F:Meridian.Application.Monitoring.Core.SloComplianceState.Healthy
+  id: Healthy
+  parent: Meridian.Application.Monitoring.Core.SloComplianceState
+  langs:
+  - csharp
+  - vb
+  name: Healthy
+  nameWithType: SloComplianceState.Healthy
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceState.Healthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: Healthy = 0
+    return:
+      type: Meridian.Application.Monitoring.Core.SloComplianceState
+- uid: Meridian.Application.Monitoring.Core.SloComplianceState.Warning
+  commentId: F:Meridian.Application.Monitoring.Core.SloComplianceState.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.Core.SloComplianceState
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: SloComplianceState.Warning
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceState.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 384
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.Core.SloComplianceState
+- uid: Meridian.Application.Monitoring.Core.SloComplianceState.Violation
+  commentId: F:Meridian.Application.Monitoring.Core.SloComplianceState.Violation
+  id: Violation
+  parent: Meridian.Application.Monitoring.Core.SloComplianceState
+  langs:
+  - csharp
+  - vb
+  name: Violation
+  nameWithType: SloComplianceState.Violation
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceState.Violation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Violation
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 385
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: Violation = 2
+    return:
+      type: Meridian.Application.Monitoring.Core.SloComplianceState
+- uid: Meridian.Application.Monitoring.Core.SloComplianceState.Unknown
+  commentId: F:Meridian.Application.Monitoring.Core.SloComplianceState.Unknown
+  id: Unknown
+  parent: Meridian.Application.Monitoring.Core.SloComplianceState
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: SloComplianceState.Unknown
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceState.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: Unknown = 3
+    return:
+      type: Meridian.Application.Monitoring.Core.SloComplianceState
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: Meridian.Application.Monitoring.Core.SloComplianceState
+  commentId: T:Meridian.Application.Monitoring.Core.SloComplianceState
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloComplianceState.html
+  name: SloComplianceState
+  nameWithType: SloComplianceState
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceState

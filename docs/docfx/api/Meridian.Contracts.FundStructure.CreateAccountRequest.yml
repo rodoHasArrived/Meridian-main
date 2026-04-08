@@ -1,0 +1,1012 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateAccountRequest
+  id: CreateAccountRequest
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId
+  langs:
+  - csharp
+  - vb
+  name: CreateAccountRequest
+  nameWithType: CreateAccountRequest
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateAccountRequest
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record CreateAccountRequest : IEquatable<CreateAccountRequest>'
+    content.vb: Public NotInheritable Class CreateAccountRequest Implements IEquatable(Of CreateAccountRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.CreateAccountRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  commentId: M:Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)'
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: CreateAccountRequest(Guid, AccountTypeDto, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
+  nameWithType: CreateAccountRequest.CreateAccountRequest(Guid, AccountTypeDto, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreateAccountRequest(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, string, string, string, System.DateTimeOffset, string, System.Guid?, System.Guid?, System.Guid?, System.Guid?, string?, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto?, Meridian.Contracts.FundStructure.BankAccountDetailsDto?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public CreateAccountRequest(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? EntityId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? Institution = null, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null)
+    parameters:
+    - id: AccountId
+      type: System.Guid
+    - id: AccountType
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+    - id: AccountCode
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: CreatedBy
+      type: System.String
+    - id: EntityId
+      type: System.Nullable{System.Guid}
+    - id: FundId
+      type: System.Nullable{System.Guid}
+    - id: SleeveId
+      type: System.Nullable{System.Guid}
+    - id: VehicleId
+      type: System.Nullable{System.Guid}
+    - id: Institution
+      type: System.String
+    - id: CustodianDetails
+      type: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+    - id: BankDetails
+      type: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+    content.vb: Public Sub New(AccountId As Guid, AccountType As AccountTypeDto, AccountCode As String, DisplayName As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, EntityId As Guid? = Nothing, FundId As Guid? = Nothing, SleeveId As Guid? = Nothing, VehicleId As Guid? = Nothing, Institution As String = Nothing, CustodianDetails As CustodianAccountDetailsDto = Nothing, BankDetails As BankAccountDetailsDto = Nothing)
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor*
+  nameWithType.vb: CreateAccountRequest.New(Guid, AccountTypeDto, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
+  fullName.vb: Meridian.Contracts.FundStructure.CreateAccountRequest.New(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, String, String, String, System.DateTimeOffset, String, System.Guid?, System.Guid?, System.Guid?, System.Guid?, String, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto, Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  name.vb: New(Guid, AccountTypeDto, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: CreateAccountRequest.AccountId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property AccountId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType
+  id: AccountType
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: AccountType
+  nameWithType: CreateAccountRequest.AccountType
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountType
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public AccountTypeDto AccountType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+    content.vb: Public Property AccountType As AccountTypeDto
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode
+  id: AccountCode
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: AccountCode
+  nameWithType: CreateAccountRequest.AccountCode
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountCode
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string AccountCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountCode As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName
+  id: DisplayName
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: CreateAccountRequest.DisplayName
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: CreateAccountRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: CreateAccountRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy
+  id: CreatedBy
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: CreatedBy
+  nameWithType: CreateAccountRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedBy
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string CreatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CreatedBy As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: CreateAccountRequest.EntityId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property EntityId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
+  id: FundId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: FundId
+  nameWithType: CreateAccountRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? FundId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property FundId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
+  id: SleeveId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: SleeveId
+  nameWithType: CreateAccountRequest.SleeveId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? SleeveId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property SleeveId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId
+  id: VehicleId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: VehicleId
+  nameWithType: CreateAccountRequest.VehicleId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? VehicleId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property VehicleId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+  id: Institution
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: Institution
+  nameWithType: CreateAccountRequest.Institution
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Institution
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Institution { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Institution As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.Institution*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
+  id: CustodianDetails
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: CustodianDetails
+  nameWithType: CreateAccountRequest.CustodianDetails
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustodianDetails
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public CustodianAccountDetailsDto? CustodianDetails { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+    content.vb: Public Property CustodianDetails As CustodianAccountDetailsDto
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails
+  id: BankDetails
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: BankDetails
+  nameWithType: CreateAccountRequest.BankDetails
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankDetails
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public BankAccountDetailsDto? BankDetails { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+    content.vb: Public Property BankDetails As BankAccountDetailsDto
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.CreateAccountRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.CreateAccountRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CreateAccountRequest>
+  nameWithType: IEquatable<CreateAccountRequest>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.CreateAccountRequest>
+  nameWithType.vb: IEquatable(Of CreateAccountRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.CreateAccountRequest)
+  name.vb: IEquatable(Of CreateAccountRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CreateAccountRequest
+    name: CreateAccountRequest
+    href: Meridian.Contracts.FundStructure.CreateAccountRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CreateAccountRequest
+    name: CreateAccountRequest
+    href: Meridian.Contracts.FundStructure.CreateAccountRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest__ctor_System_Guid_Meridian_Contracts_FundStructure_AccountTypeDto_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_Meridian_Contracts_FundStructure_BankAccountDetailsDto_
+  name: CreateAccountRequest
+  nameWithType: CreateAccountRequest.CreateAccountRequest
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreateAccountRequest
+  nameWithType.vb: CreateAccountRequest.New
+  fullName.vb: Meridian.Contracts.FundStructure.CreateAccountRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountTypeDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountTypeDto.html
+  name: AccountTypeDto
+  nameWithType: AccountTypeDto
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  commentId: T:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html
+  name: CustodianAccountDetailsDto
+  nameWithType: CustodianAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  commentId: T:Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html
+  name: BankAccountDetailsDto
+  nameWithType: BankAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_AccountId
+  name: AccountId
+  nameWithType: CreateAccountRequest.AccountId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_AccountType
+  name: AccountType
+  nameWithType: CreateAccountRequest.AccountType
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_AccountCode
+  name: AccountCode
+  nameWithType: CreateAccountRequest.AccountCode
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_DisplayName
+  name: DisplayName
+  nameWithType: CreateAccountRequest.DisplayName
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.DisplayName
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_BaseCurrency
+  name: BaseCurrency
+  nameWithType: CreateAccountRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.BaseCurrency
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: CreateAccountRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EffectiveFrom
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_CreatedBy
+  name: CreatedBy
+  nameWithType: CreateAccountRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_EntityId
+  name: EntityId
+  nameWithType: CreateAccountRequest.EntityId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_FundId
+  name: FundId
+  nameWithType: CreateAccountRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_SleeveId
+  name: SleeveId
+  nameWithType: CreateAccountRequest.SleeveId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_VehicleId
+  name: VehicleId
+  nameWithType: CreateAccountRequest.VehicleId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.Institution*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_Institution
+  name: Institution
+  nameWithType: CreateAccountRequest.Institution
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_CustodianDetails
+  name: CustodianDetails
+  nameWithType: CreateAccountRequest.CustodianDetails
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_BankDetails
+  name: BankDetails
+  nameWithType: CreateAccountRequest.BankDetails
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.BankDetails

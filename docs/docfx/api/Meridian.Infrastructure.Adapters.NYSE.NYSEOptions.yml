@@ -1,0 +1,1242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  id: NYSEOptions
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  children:
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl
+  langs:
+  - csharp
+  - vb
+  name: NYSEOptions
+  nameWithType: NYSEOptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NYSEOptions
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Configuration options for NYSE Direct Connection data source.
+  example: []
+  syntax:
+    content: 'public sealed record NYSEOptions : IEquatable<NYSEOptions>'
+    content.vb: Public NotInheritable Class NYSEOptions Implements IEquatable(Of NYSEOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.NYSE.NYSEOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey
+  id: ApiKey
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ApiKey
+  nameWithType: NYSEOptions.ApiKey
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApiKey
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    NYSE Connect API Key for authentication.
+
+    Can be set via environment variable NYSE_API_KEY.
+  example: []
+  syntax:
+    content: public string? ApiKey { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ApiKey As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret
+  id: ApiSecret
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ApiSecret
+  nameWithType: NYSEOptions.ApiSecret
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApiSecret
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    NYSE Connect API Secret for authentication.
+
+    Can be set via environment variable NYSE_API_SECRET.
+  example: []
+  syntax:
+    content: public string? ApiSecret { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ApiSecret As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId
+  id: ClientId
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ClientId
+  nameWithType: NYSEOptions.ClientId
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientId
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Client ID for OAuth authentication with NYSE Connect.
+  example: []
+  syntax:
+    content: public string? ClientId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ClientId As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl
+  id: BaseUrl
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: BaseUrl
+  nameWithType: NYSEOptions.BaseUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Base URL for NYSE REST API.
+
+    Default: https://api.nyse.com/v1
+  example: []
+  syntax:
+    content: public string BaseUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseUrl As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl
+  id: WebSocketUrl
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: WebSocketUrl
+  nameWithType: NYSEOptions.WebSocketUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebSocketUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    WebSocket URL for NYSE real-time streaming.
+
+    Default: wss://stream.nyse.com/v1
+  example: []
+  syntax:
+    content: public string WebSocketUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property WebSocketUrl As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox
+  id: UseSandbox
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: UseSandbox
+  nameWithType: NYSEOptions.UseSandbox
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseSandbox
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether to use the sandbox/test environment.
+  example: []
+  syntax:
+    content: public bool UseSandbox { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property UseSandbox As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl
+  id: SandboxBaseUrl
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: SandboxBaseUrl
+  nameWithType: NYSEOptions.SandboxBaseUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SandboxBaseUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Sandbox/test environment base URL.
+  example: []
+  syntax:
+    content: public string SandboxBaseUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SandboxBaseUrl As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl
+  id: SandboxWebSocketUrl
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: SandboxWebSocketUrl
+  nameWithType: NYSEOptions.SandboxWebSocketUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SandboxWebSocketUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Sandbox WebSocket URL.
+  example: []
+  syntax:
+    content: public string SandboxWebSocketUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SandboxWebSocketUrl As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds
+  id: ConnectionTimeoutSeconds
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ConnectionTimeoutSeconds
+  nameWithType: NYSEOptions.ConnectionTimeoutSeconds
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionTimeoutSeconds
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Connection timeout in seconds.
+  example: []
+  syntax:
+    content: public int ConnectionTimeoutSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ConnectionTimeoutSeconds As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds
+  id: ReconnectDelaySeconds
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ReconnectDelaySeconds
+  nameWithType: NYSEOptions.ReconnectDelaySeconds
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectDelaySeconds
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Reconnection delay in seconds after connection loss.
+  example: []
+  syntax:
+    content: public int ReconnectDelaySeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ReconnectDelaySeconds As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts
+  id: MaxReconnectAttempts
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxReconnectAttempts
+  nameWithType: NYSEOptions.MaxReconnectAttempts
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxReconnectAttempts
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Maximum reconnection attempts before giving up.
+  example: []
+  syntax:
+    content: public int MaxReconnectAttempts { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxReconnectAttempts As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2
+  id: EnableLevel2
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableLevel2
+  nameWithType: NYSEOptions.EnableLevel2
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableLevel2
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Whether to subscribe to Level 2 (depth) data when available.
+
+    Requires additional NYSE subscription.
+  example: []
+  syntax:
+    content: public bool EnableLevel2 { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableLevel2 As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed
+  id: EnableIntegratedFeed
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableIntegratedFeed
+  nameWithType: NYSEOptions.EnableIntegratedFeed
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableIntegratedFeed
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether to subscribe to NYSE Integrated Feed (comprehensive).
+  example: []
+  syntax:
+    content: public bool EnableIntegratedFeed { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableIntegratedFeed As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket
+  id: IncludePreMarket
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludePreMarket
+  nameWithType: NYSEOptions.IncludePreMarket
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludePreMarket
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether to include pre-market data (4:00 AM - 9:30 AM ET).
+  example: []
+  syntax:
+    content: public bool IncludePreMarket { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludePreMarket As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours
+  id: IncludeAfterHours
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeAfterHours
+  nameWithType: NYSEOptions.IncludeAfterHours
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeAfterHours
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether to include after-hours data (4:00 PM - 8:00 PM ET).
+  example: []
+  syntax:
+    content: public bool IncludeAfterHours { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeAfterHours As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier
+  id: FeedTier
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: FeedTier
+  nameWithType: NYSEOptions.FeedTier
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FeedTier
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: 'NYSE data feed tier: Basic, Enhanced, Premium, Professional.'
+  example: []
+  syntax:
+    content: public NYSEFeedTier FeedTier { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+    content.vb: Public Property FeedTier As NYSEFeedTier
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions
+  id: MaxSubscriptions
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxSubscriptions
+  nameWithType: NYSEOptions.MaxSubscriptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSubscriptions
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Maximum symbols that can be subscribed simultaneously.
+  example: []
+  syntax:
+    content: public int MaxSubscriptions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxSubscriptions As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl
+  id: EffectiveBaseUrl
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: EffectiveBaseUrl
+  nameWithType: NYSEOptions.EffectiveBaseUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveBaseUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets the effective base URL based on sandbox setting.
+  example: []
+  syntax:
+    content: public string EffectiveBaseUrl { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property EffectiveBaseUrl As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl
+  id: EffectiveWebSocketUrl
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: EffectiveWebSocketUrl
+  nameWithType: NYSEOptions.EffectiveWebSocketUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveWebSocketUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets the effective WebSocket URL based on sandbox setting.
+  example: []
+  syntax:
+    content: public string EffectiveWebSocketUrl { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property EffectiveWebSocketUrl As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey
+  id: ResolveApiKey
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ResolveApiKey()
+  nameWithType: NYSEOptions.ResolveApiKey()
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveApiKey
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Resolves API key from environment if not set directly.
+  example: []
+  syntax:
+    content: public string? ResolveApiKey()
+    return:
+      type: System.String
+    content.vb: Public Function ResolveApiKey() As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret
+  id: ResolveApiSecret
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ResolveApiSecret()
+  nameWithType: NYSEOptions.ResolveApiSecret()
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveApiSecret
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Resolves API secret from environment if not set directly.
+  example: []
+  syntax:
+    content: public string? ResolveApiSecret()
+    return:
+      type: System.String
+    content.vb: Public Function ResolveApiSecret() As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId
+  id: ResolveClientId
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  langs:
+  - csharp
+  - vb
+  name: ResolveClientId()
+  nameWithType: NYSEOptions.ResolveClientId()
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveClientId
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Resolves Client ID from environment if not set directly.
+  example: []
+  syntax:
+    content: public string? ResolveClientId()
+    return:
+      type: System.String
+    content.vb: Public Function ResolveClientId() As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId*
+references:
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.NYSE.NYSEOptions}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.NYSE.NYSEOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<NYSEOptions>
+  nameWithType: IEquatable<NYSEOptions>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.NYSE.NYSEOptions>
+  nameWithType.vb: IEquatable(Of NYSEOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.NYSE.NYSEOptions)
+  name.vb: IEquatable(Of NYSEOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+    name: NYSEOptions
+    href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+    name: NYSEOptions
+    href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ApiKey
+  name: ApiKey
+  nameWithType: NYSEOptions.ApiKey
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiKey
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ApiSecret
+  name: ApiSecret
+  nameWithType: NYSEOptions.ApiSecret
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ApiSecret
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ClientId
+  name: ClientId
+  nameWithType: NYSEOptions.ClientId
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ClientId
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_BaseUrl
+  name: BaseUrl
+  nameWithType: NYSEOptions.BaseUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.BaseUrl
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_WebSocketUrl
+  name: WebSocketUrl
+  nameWithType: NYSEOptions.WebSocketUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.WebSocketUrl
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_UseSandbox
+  name: UseSandbox
+  nameWithType: NYSEOptions.UseSandbox
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.UseSandbox
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_SandboxBaseUrl
+  name: SandboxBaseUrl
+  nameWithType: NYSEOptions.SandboxBaseUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxBaseUrl
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_SandboxWebSocketUrl
+  name: SandboxWebSocketUrl
+  nameWithType: NYSEOptions.SandboxWebSocketUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.SandboxWebSocketUrl
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ConnectionTimeoutSeconds
+  name: ConnectionTimeoutSeconds
+  nameWithType: NYSEOptions.ConnectionTimeoutSeconds
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ConnectionTimeoutSeconds
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ReconnectDelaySeconds
+  name: ReconnectDelaySeconds
+  nameWithType: NYSEOptions.ReconnectDelaySeconds
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ReconnectDelaySeconds
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_MaxReconnectAttempts
+  name: MaxReconnectAttempts
+  nameWithType: NYSEOptions.MaxReconnectAttempts
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxReconnectAttempts
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_EnableLevel2
+  name: EnableLevel2
+  nameWithType: NYSEOptions.EnableLevel2
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableLevel2
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_EnableIntegratedFeed
+  name: EnableIntegratedFeed
+  nameWithType: NYSEOptions.EnableIntegratedFeed
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EnableIntegratedFeed
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_IncludePreMarket
+  name: IncludePreMarket
+  nameWithType: NYSEOptions.IncludePreMarket
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludePreMarket
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_IncludeAfterHours
+  name: IncludeAfterHours
+  nameWithType: NYSEOptions.IncludeAfterHours
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.IncludeAfterHours
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_FeedTier
+  name: FeedTier
+  nameWithType: NYSEOptions.FeedTier
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.FeedTier
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.html
+  name: NYSEFeedTier
+  nameWithType: NYSEFeedTier
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_MaxSubscriptions
+  name: MaxSubscriptions
+  nameWithType: NYSEOptions.MaxSubscriptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.MaxSubscriptions
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_EffectiveBaseUrl
+  name: EffectiveBaseUrl
+  nameWithType: NYSEOptions.EffectiveBaseUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveBaseUrl
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_EffectiveWebSocketUrl
+  name: EffectiveWebSocketUrl
+  nameWithType: NYSEOptions.EffectiveWebSocketUrl
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.EffectiveWebSocketUrl
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ResolveApiKey
+  name: ResolveApiKey
+  nameWithType: NYSEOptions.ResolveApiKey
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiKey
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ResolveApiSecret
+  name: ResolveApiSecret
+  nameWithType: NYSEOptions.ResolveApiSecret
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveApiSecret
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html#Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_ResolveClientId
+  name: ResolveClientId
+  nameWithType: NYSEOptions.ResolveClientId
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.ResolveClientId

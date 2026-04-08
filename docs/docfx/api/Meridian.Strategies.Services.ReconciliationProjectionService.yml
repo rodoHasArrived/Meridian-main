@@ -1,0 +1,553 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.ReconciliationProjectionService
+  commentId: T:Meridian.Strategies.Services.ReconciliationProjectionService
+  id: ReconciliationProjectionService
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},Meridian.Contracts.Workstation.LedgerSummary)
+  - Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks(Meridian.Contracts.Workstation.StrategyRunDetail,Meridian.Contracts.Workstation.ReconciliationRunRequest)
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationProjectionService
+  nameWithType: ReconciliationProjectionService
+  fullName: Meridian.Strategies.Services.ReconciliationProjectionService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationProjectionService
+    path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public sealed class ReconciliationProjectionService
+    content.vb: Public NotInheritable Class ReconciliationProjectionService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks(Meridian.Contracts.Workstation.StrategyRunDetail,Meridian.Contracts.Workstation.ReconciliationRunRequest)
+  commentId: M:Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks(Meridian.Contracts.Workstation.StrategyRunDetail,Meridian.Contracts.Workstation.ReconciliationRunRequest)
+  id: BuildChecks(Meridian.Contracts.Workstation.StrategyRunDetail,Meridian.Contracts.Workstation.ReconciliationRunRequest)
+  parent: Meridian.Strategies.Services.ReconciliationProjectionService
+  langs:
+  - csharp
+  - vb
+  name: BuildChecks(StrategyRunDetail, ReconciliationRunRequest)
+  nameWithType: ReconciliationProjectionService.BuildChecks(StrategyRunDetail, ReconciliationRunRequest)
+  fullName: Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks(Meridian.Contracts.Workstation.StrategyRunDetail, Meridian.Contracts.Workstation.ReconciliationRunRequest)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildChecks
+    path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public IReadOnlyList<PortfolioLedgerCheckDto> BuildChecks(StrategyRunDetail detail, ReconciliationRunRequest request)
+    parameters:
+    - id: detail
+      type: Meridian.Contracts.Workstation.StrategyRunDetail
+    - id: request
+      type: Meridian.Contracts.Workstation.ReconciliationRunRequest
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.FSharp.Ledger.PortfolioLedgerCheckDto}
+    content.vb: Public Function BuildChecks(detail As StrategyRunDetail, request As ReconciliationRunRequest) As IReadOnlyList(Of PortfolioLedgerCheckDto)
+  overload: Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks*
+- uid: Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},Meridian.Contracts.Workstation.LedgerSummary)
+  commentId: M:Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},Meridian.Contracts.Workstation.LedgerSummary)
+  id: BuildBankingChecks(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},Meridian.Contracts.Workstation.LedgerSummary)
+  parent: Meridian.Strategies.Services.ReconciliationProjectionService
+  langs:
+  - csharp
+  - vb
+  name: BuildBankingChecks(IReadOnlyList<BankTransactionDto>, LedgerSummary?)
+  nameWithType: ReconciliationProjectionService.BuildBankingChecks(IReadOnlyList<BankTransactionDto>, LedgerSummary?)
+  fullName: Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks(System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Banking.BankTransactionDto>, Meridian.Contracts.Workstation.LedgerSummary?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildBankingChecks
+    path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Build reconciliation checks that compare bank-side transaction totals against
+
+    the internal ledger's cash balance.  Returns an empty list when both sides have
+
+    no data.
+  example: []
+  syntax:
+    content: public IReadOnlyList<PortfolioLedgerCheckDto> BuildBankingChecks(IReadOnlyList<BankTransactionDto> bankTransactions, LedgerSummary? ledger)
+    parameters:
+    - id: bankTransactions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}
+    - id: ledger
+      type: Meridian.Contracts.Workstation.LedgerSummary
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.FSharp.Ledger.PortfolioLedgerCheckDto}
+    content.vb: Public Function BuildBankingChecks(bankTransactions As IReadOnlyList(Of BankTransactionDto), ledger As LedgerSummary) As IReadOnlyList(Of PortfolioLedgerCheckDto)
+  overload: Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks*
+  nameWithType.vb: ReconciliationProjectionService.BuildBankingChecks(IReadOnlyList(Of BankTransactionDto), LedgerSummary)
+  fullName.vb: Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks(System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Banking.BankTransactionDto), Meridian.Contracts.Workstation.LedgerSummary)
+  name.vb: BuildBankingChecks(IReadOnlyList(Of BankTransactionDto), LedgerSummary)
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks*
+  commentId: Overload:Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks
+  href: Meridian.Strategies.Services.ReconciliationProjectionService.html#Meridian_Strategies_Services_ReconciliationProjectionService_BuildChecks_Meridian_Contracts_Workstation_StrategyRunDetail_Meridian_Contracts_Workstation_ReconciliationRunRequest_
+  name: BuildChecks
+  nameWithType: ReconciliationProjectionService.BuildChecks
+  fullName: Meridian.Strategies.Services.ReconciliationProjectionService.BuildChecks
+- uid: Meridian.Contracts.Workstation.StrategyRunDetail
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunDetail
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunDetail.html
+  name: StrategyRunDetail
+  nameWithType: StrategyRunDetail
+  fullName: Meridian.Contracts.Workstation.StrategyRunDetail
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationRunRequest
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html
+  name: ReconciliationRunRequest
+  nameWithType: ReconciliationRunRequest
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.FSharp.Ledger.PortfolioLedgerCheckDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.FSharp.Ledger.PortfolioLedgerCheckDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PortfolioLedgerCheckDto>
+  nameWithType: IReadOnlyList<PortfolioLedgerCheckDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.FSharp.Ledger.PortfolioLedgerCheckDto>
+  nameWithType.vb: IReadOnlyList(Of PortfolioLedgerCheckDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.FSharp.Ledger.PortfolioLedgerCheckDto)
+  name.vb: IReadOnlyList(Of PortfolioLedgerCheckDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckDto
+    name: PortfolioLedgerCheckDto
+    isExternal: true
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckDto
+    name: PortfolioLedgerCheckDto
+    isExternal: true
+  - name: )
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks*
+  commentId: Overload:Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks
+  href: Meridian.Strategies.Services.ReconciliationProjectionService.html#Meridian_Strategies_Services_ReconciliationProjectionService_BuildBankingChecks_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Banking_BankTransactionDto__Meridian_Contracts_Workstation_LedgerSummary_
+  name: BuildBankingChecks
+  nameWithType: ReconciliationProjectionService.BuildBankingChecks
+  fullName: Meridian.Strategies.Services.ReconciliationProjectionService.BuildBankingChecks
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<BankTransactionDto>
+  nameWithType: IReadOnlyList<BankTransactionDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Banking.BankTransactionDto>
+  nameWithType.vb: IReadOnlyList(Of BankTransactionDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Banking.BankTransactionDto)
+  name.vb: IReadOnlyList(Of BankTransactionDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: )
+- uid: Meridian.Contracts.Workstation.LedgerSummary
+  commentId: T:Meridian.Contracts.Workstation.LedgerSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.LedgerSummary.html
+  name: LedgerSummary
+  nameWithType: LedgerSummary
+  fullName: Meridian.Contracts.Workstation.LedgerSummary

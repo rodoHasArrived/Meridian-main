@@ -1,0 +1,1805 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  id: DataQualityMonitoringService
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.#ctor(Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig,Meridian.Application.Monitoring.IEventMetrics)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth(System.String)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.OnMetricsUpdated
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.Nullable{System.Double})
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Nullable{System.Int64},System.String,System.Nullable{System.Double})
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator
+  - Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker
+  langs:
+  - csharp
+  - vb
+  name: DataQualityMonitoringService
+  nameWithType: DataQualityMonitoringService
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityMonitoringService
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Central orchestrator for all data quality monitoring components.
+
+    Provides a unified interface for real-time monitoring and reporting.
+  example: []
+  syntax:
+    content: 'public sealed class DataQualityMonitoringService : IAsyncDisposable'
+    content.vb: Public NotInheritable Class DataQualityMonitoringService Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness
+  id: Completeness
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: Completeness
+  nameWithType: DataQualityMonitoringService.Completeness
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completeness
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public CompletenessScoreCalculator Completeness { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+    content.vb: Public ReadOnly Property Completeness As CompletenessScoreCalculator
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer
+  id: GapAnalyzer
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: GapAnalyzer
+  nameWithType: DataQualityMonitoringService.GapAnalyzer
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapAnalyzer
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public GapAnalyzer GapAnalyzer { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+    content.vb: Public ReadOnly Property GapAnalyzer As GapAnalyzer
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker
+  id: SequenceTracker
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: SequenceTracker
+  nameWithType: DataQualityMonitoringService.SequenceTracker
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceTracker
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public SequenceErrorTracker SequenceTracker { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+    content.vb: Public ReadOnly Property SequenceTracker As SequenceErrorTracker
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector
+  id: AnomalyDetector
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: AnomalyDetector
+  nameWithType: DataQualityMonitoringService.AnomalyDetector
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyDetector
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public AnomalyDetector AnomalyDetector { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+    content.vb: Public ReadOnly Property AnomalyDetector As AnomalyDetector
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram
+  id: LatencyHistogram
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: LatencyHistogram
+  nameWithType: DataQualityMonitoringService.LatencyHistogram
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyHistogram
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public LatencyHistogram LatencyHistogram { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+    content.vb: Public ReadOnly Property LatencyHistogram As LatencyHistogram
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider
+  id: CrossProvider
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: CrossProvider
+  nameWithType: DataQualityMonitoringService.CrossProvider
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrossProvider
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public CrossProviderComparisonService CrossProvider { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+    content.vb: Public ReadOnly Property CrossProvider As CrossProviderComparisonService
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator
+  id: ReportGenerator
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: ReportGenerator
+  nameWithType: DataQualityMonitoringService.ReportGenerator
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportGenerator
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DataQualityReportGenerator ReportGenerator { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+    content.vb: Public ReadOnly Property ReportGenerator As DataQualityReportGenerator
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.OnMetricsUpdated
+  commentId: E:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.OnMetricsUpdated
+  id: OnMetricsUpdated
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: OnMetricsUpdated
+  nameWithType: DataQualityMonitoringService.OnMetricsUpdated
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.OnMetricsUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnMetricsUpdated
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when the overall health state changes.
+  example: []
+  syntax:
+    content: public event Action<RealTimeQualityMetrics>? OnMetricsUpdated
+    return:
+      type: System.Action{Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics}
+    content.vb: Public Event OnMetricsUpdated As Action(Of RealTimeQualityMetrics)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.#ctor(Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig,Meridian.Application.Monitoring.IEventMetrics)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.#ctor(Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig,Meridian.Application.Monitoring.IEventMetrics)
+  id: '#ctor(Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig,Meridian.Application.Monitoring.IEventMetrics)'
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: DataQualityMonitoringService(DataQualityMonitoringConfig?, IEventMetrics?)
+  nameWithType: DataQualityMonitoringService.DataQualityMonitoringService(DataQualityMonitoringConfig?, IEventMetrics?)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DataQualityMonitoringService(Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig?, Meridian.Application.Monitoring.IEventMetrics?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DataQualityMonitoringService(DataQualityMonitoringConfig? config = null, IEventMetrics? eventMetrics = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+    - id: eventMetrics
+      type: Meridian.Application.Monitoring.IEventMetrics
+    content.vb: Public Sub New(config As DataQualityMonitoringConfig = Nothing, eventMetrics As IEventMetrics = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.#ctor*
+  nameWithType.vb: DataQualityMonitoringService.New(DataQualityMonitoringConfig, IEventMetrics)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.New(Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig, Meridian.Application.Monitoring.IEventMetrics)
+  name.vb: New(DataQualityMonitoringConfig, IEventMetrics)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  id: RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbolLiquidity(string, LiquidityProfile)
+  nameWithType: DataQualityMonitoringService.RegisterSymbolLiquidity(string, LiquidityProfile)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity(string, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbolLiquidity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Registers a symbol's liquidity profile across all monitoring sub-services.
+
+    This adjusts gap detection thresholds, completeness expectations,
+
+    stale-data alerting, and SLA freshness for the symbol so that
+
+    illiquid instruments do not trigger false-positive quality alerts.
+  example: []
+  syntax:
+    content: public void RegisterSymbolLiquidity(string symbol, LiquidityProfile profile)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: profile
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+    content.vb: Public Sub RegisterSymbolLiquidity(symbol As String, profile As LiquidityProfile)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity*
+  nameWithType.vb: DataQualityMonitoringService.RegisterSymbolLiquidity(String, LiquidityProfile)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity(String, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  name.vb: RegisterSymbolLiquidity(String, LiquidityProfile)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Nullable{System.Int64},System.String,System.Nullable{System.Double})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Nullable{System.Int64},System.String,System.Nullable{System.Double})
+  id: ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Nullable{System.Int64},System.String,System.Nullable{System.Double})
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: ProcessTrade(string, DateTimeOffset, decimal, decimal, long?, string?, double?)
+  nameWithType: DataQualityMonitoringService.ProcessTrade(string, DateTimeOffset, decimal, decimal, long?, string?, double?)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade(string, System.DateTimeOffset, decimal, decimal, long?, string?, double?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessTrade
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Processes a trade event through all quality monitors.
+  example: []
+  syntax:
+    content: public void ProcessTrade(string symbol, DateTimeOffset timestamp, decimal price, decimal volume, long? sequence = null, string? provider = null, double? latencyMs = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: price
+      type: System.Decimal
+    - id: volume
+      type: System.Decimal
+    - id: sequence
+      type: System.Nullable{System.Int64}
+    - id: provider
+      type: System.String
+    - id: latencyMs
+      type: System.Nullable{System.Double}
+    content.vb: Public Sub ProcessTrade(symbol As String, timestamp As DateTimeOffset, price As Decimal, volume As Decimal, sequence As Long? = Nothing, provider As String = Nothing, latencyMs As Double? = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade*
+  nameWithType.vb: DataQualityMonitoringService.ProcessTrade(String, DateTimeOffset, Decimal, Decimal, Long?, String, Double?)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade(String, System.DateTimeOffset, Decimal, Decimal, Long?, String, Double?)
+  name.vb: ProcessTrade(String, DateTimeOffset, Decimal, Decimal, Long?, String, Double?)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.Nullable{System.Double})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.Nullable{System.Double})
+  id: ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.Nullable{System.Double})
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: ProcessQuote(string, DateTimeOffset, decimal, decimal, decimal, decimal, string?, double?)
+  nameWithType: DataQualityMonitoringService.ProcessQuote(string, DateTimeOffset, decimal, decimal, decimal, decimal, string?, double?)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote(string, System.DateTimeOffset, decimal, decimal, decimal, decimal, string?, double?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessQuote
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Processes a quote event through quality monitors.
+  example: []
+  syntax:
+    content: public void ProcessQuote(string symbol, DateTimeOffset timestamp, decimal bidPrice, decimal askPrice, decimal bidSize, decimal askSize, string? provider = null, double? latencyMs = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: bidPrice
+      type: System.Decimal
+    - id: askPrice
+      type: System.Decimal
+    - id: bidSize
+      type: System.Decimal
+    - id: askSize
+      type: System.Decimal
+    - id: provider
+      type: System.String
+    - id: latencyMs
+      type: System.Nullable{System.Double}
+    content.vb: Public Sub ProcessQuote(symbol As String, timestamp As DateTimeOffset, bidPrice As Decimal, askPrice As Decimal, bidSize As Decimal, askSize As Decimal, provider As String = Nothing, latencyMs As Double? = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote*
+  nameWithType.vb: DataQualityMonitoringService.ProcessQuote(String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, String, Double?)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote(String, System.DateTimeOffset, Decimal, Decimal, Decimal, Decimal, String, Double?)
+  name.vb: ProcessQuote(String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, String, Double?)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics
+  id: GetRealTimeMetrics
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: GetRealTimeMetrics()
+  nameWithType: DataQualityMonitoringService.GetRealTimeMetrics()
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRealTimeMetrics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets real-time quality metrics.
+  example: []
+  syntax:
+    content: public RealTimeQualityMetrics GetRealTimeMetrics()
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+    content.vb: Public Function GetRealTimeMetrics() As RealTimeQualityMetrics
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth(System.String)
+  id: GetSymbolHealth(System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolHealth(string)
+  nameWithType: DataQualityMonitoringService.GetSymbolHealth(string)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolHealth
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets the health status for a specific symbol.
+  example: []
+  syntax:
+    content: public SymbolHealthStatus? GetSymbolHealth(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus
+    content.vb: Public Function GetSymbolHealth(symbol As String) As SymbolHealthStatus
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth*
+  nameWithType.vb: DataQualityMonitoringService.GetSymbolHealth(String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth(String)
+  name.vb: GetSymbolHealth(String)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols
+  id: GetUnhealthySymbols
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: GetUnhealthySymbols()
+  nameWithType: DataQualityMonitoringService.GetUnhealthySymbols()
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUnhealthySymbols
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets all symbols with degraded or unhealthy status.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SymbolHealthStatus> GetUnhealthySymbols()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus}
+    content.vb: Public Function GetUnhealthySymbols() As IReadOnlyList(Of SymbolHealthStatus)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  id: GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: GenerateDailyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  nameWithType: DataQualityMonitoringService.GenerateDailyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateDailyReportAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Generates a daily report.
+  example: []
+  syntax:
+    content: public Task<DailyQualityReport> GenerateDailyReportAsync(DateOnly date, ReportGenerationOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    - id: options
+      type: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.DailyQualityReport}
+    content.vb: Public Function GenerateDailyReportAsync([date] As DateOnly, options As ReportGenerationOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of DailyQualityReport)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync*
+  nameWithType.vb: DataQualityMonitoringService.GenerateDailyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions, System.Threading.CancellationToken)
+  name.vb: GenerateDailyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  id: GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  nameWithType: DataQualityMonitoringService.GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateWeeklyReportAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Generates a weekly report.
+  example: []
+  syntax:
+    content: public Task<WeeklyQualityReport> GenerateWeeklyReportAsync(DateOnly weekStart, ReportGenerationOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: weekStart
+      type: System.DateOnly
+    - id: options
+      type: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport}
+    content.vb: Public Function GenerateWeeklyReportAsync(weekStart As DateOnly, options As ReportGenerationOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of WeeklyQualityReport)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync*
+  nameWithType.vb: DataQualityMonitoringService.GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions, System.Threading.CancellationToken)
+  name.vb: GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  id: ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: ExportReportAsync(DailyQualityReport, ReportExportFormat, CancellationToken)
+  nameWithType: DataQualityMonitoringService.ExportReportAsync(DailyQualityReport, ReportExportFormat, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport, Meridian.Application.Monitoring.DataQuality.ReportExportFormat, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportReportAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Exports a report.
+  example: []
+  syntax:
+    content: public Task<string> ExportReportAsync(DailyQualityReport report, ReportExportFormat format, CancellationToken ct = default)
+    parameters:
+    - id: report
+      type: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+    - id: format
+      type: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function ExportReportAsync(report As DailyQualityReport, format As ReportExportFormat, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard
+  id: GetDashboard
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: GetDashboard()
+  nameWithType: DataQualityMonitoringService.GetDashboard()
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDashboard
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets a comprehensive quality dashboard snapshot.
+  example: []
+  syntax:
+    content: public DataQualityDashboard GetDashboard()
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+    content.vb: Public Function GetDashboard() As DataQualityDashboard
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: DataQualityMonitoringService.DisposeAsync()
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_Completeness
+  name: Completeness
+  nameWithType: DataQualityMonitoringService.Completeness
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.Completeness
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html
+  name: CompletenessScoreCalculator
+  nameWithType: CompletenessScoreCalculator
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_GapAnalyzer
+  name: GapAnalyzer
+  nameWithType: DataQualityMonitoringService.GapAnalyzer
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GapAnalyzer
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html
+  name: GapAnalyzer
+  nameWithType: GapAnalyzer
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_SequenceTracker
+  name: SequenceTracker
+  nameWithType: DataQualityMonitoringService.SequenceTracker
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.SequenceTracker
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker.html
+  name: SequenceErrorTracker
+  nameWithType: SequenceErrorTracker
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_AnomalyDetector
+  name: AnomalyDetector
+  nameWithType: DataQualityMonitoringService.AnomalyDetector
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.AnomalyDetector
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html
+  name: AnomalyDetector
+  nameWithType: AnomalyDetector
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_LatencyHistogram
+  name: LatencyHistogram
+  nameWithType: DataQualityMonitoringService.LatencyHistogram
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.LatencyHistogram
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html
+  name: LatencyHistogram
+  nameWithType: LatencyHistogram
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_CrossProvider
+  name: CrossProvider
+  nameWithType: DataQualityMonitoringService.CrossProvider
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.CrossProvider
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService.html
+  name: CrossProviderComparisonService
+  nameWithType: CrossProviderComparisonService
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_ReportGenerator
+  name: ReportGenerator
+  nameWithType: DataQualityMonitoringService.ReportGenerator
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ReportGenerator
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.html
+  name: DataQualityReportGenerator
+  nameWithType: DataQualityReportGenerator
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+- uid: System.Action{Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics}
+  commentId: T:System.Action{Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<RealTimeQualityMetrics>
+  nameWithType: Action<RealTimeQualityMetrics>
+  fullName: System.Action<Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics>
+  nameWithType.vb: Action(Of RealTimeQualityMetrics)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics)
+  name.vb: Action(Of RealTimeQualityMetrics)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+    name: RealTimeQualityMetrics
+    href: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+    name: RealTimeQualityMetrics
+    href: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService__ctor_Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringConfig_Meridian_Application_Monitoring_IEventMetrics_
+  name: DataQualityMonitoringService
+  nameWithType: DataQualityMonitoringService.DataQualityMonitoringService
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DataQualityMonitoringService
+  nameWithType.vb: DataQualityMonitoringService.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig.html
+  name: DataQualityMonitoringConfig
+  nameWithType: DataQualityMonitoringConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringConfig
+- uid: Meridian.Application.Monitoring.IEventMetrics
+  commentId: T:Meridian.Application.Monitoring.IEventMetrics
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IEventMetrics.html
+  name: IEventMetrics
+  nameWithType: IEventMetrics
+  fullName: Meridian.Application.Monitoring.IEventMetrics
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_RegisterSymbolLiquidity_System_String_Meridian_Contracts_Domain_Enums_LiquidityProfile_
+  name: RegisterSymbolLiquidity
+  nameWithType: DataQualityMonitoringService.RegisterSymbolLiquidity
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.RegisterSymbolLiquidity
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  commentId: T:Meridian.Contracts.Domain.Enums.LiquidityProfile
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  name: LiquidityProfile
+  nameWithType: LiquidityProfile
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_ProcessTrade_System_String_System_DateTimeOffset_System_Decimal_System_Decimal_System_Nullable_System_Int64__System_String_System_Nullable_System_Double__
+  name: ProcessTrade
+  nameWithType: DataQualityMonitoringService.ProcessTrade
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessTrade
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_ProcessQuote_System_String_System_DateTimeOffset_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_String_System_Nullable_System_Double__
+  name: ProcessQuote
+  nameWithType: DataQualityMonitoringService.ProcessQuote
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ProcessQuote
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_GetRealTimeMetrics
+  name: GetRealTimeMetrics
+  nameWithType: DataQualityMonitoringService.GetRealTimeMetrics
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetRealTimeMetrics
+- uid: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics.html
+  name: RealTimeQualityMetrics
+  nameWithType: RealTimeQualityMetrics
+  fullName: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_GetSymbolHealth_System_String_
+  name: GetSymbolHealth
+  nameWithType: DataQualityMonitoringService.GetSymbolHealth
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetSymbolHealth
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus.html
+  name: SymbolHealthStatus
+  nameWithType: SymbolHealthStatus
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_GetUnhealthySymbols
+  name: GetUnhealthySymbols
+  nameWithType: DataQualityMonitoringService.GetUnhealthySymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetUnhealthySymbols
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SymbolHealthStatus>
+  nameWithType: IReadOnlyList<SymbolHealthStatus>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus>
+  nameWithType.vb: IReadOnlyList(Of SymbolHealthStatus)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus)
+  name.vb: IReadOnlyList(Of SymbolHealthStatus)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus
+    name: SymbolHealthStatus
+    href: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus
+    name: SymbolHealthStatus
+    href: Meridian.Application.Monitoring.DataQuality.SymbolHealthStatus.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_GenerateDailyReportAsync_System_DateOnly_Meridian_Application_Monitoring_DataQuality_ReportGenerationOptions_System_Threading_CancellationToken_
+  name: GenerateDailyReportAsync
+  nameWithType: DataQualityMonitoringService.GenerateDailyReportAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateDailyReportAsync
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions.html
+  name: ReportGenerationOptions
+  nameWithType: ReportGenerationOptions
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.DailyQualityReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.DailyQualityReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DailyQualityReport>
+  nameWithType: Task<DailyQualityReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.DataQuality.DailyQualityReport>
+  nameWithType.vb: Task(Of DailyQualityReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DataQuality.DailyQualityReport)
+  name.vb: Task(Of DailyQualityReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+    name: DailyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.DailyQualityReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+    name: DailyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.DailyQualityReport.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_GenerateWeeklyReportAsync_System_DateOnly_Meridian_Application_Monitoring_DataQuality_ReportGenerationOptions_System_Threading_CancellationToken_
+  name: GenerateWeeklyReportAsync
+  nameWithType: DataQualityMonitoringService.GenerateWeeklyReportAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GenerateWeeklyReportAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WeeklyQualityReport>
+  nameWithType: Task<WeeklyQualityReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport>
+  nameWithType.vb: Task(Of WeeklyQualityReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport)
+  name.vb: Task(Of WeeklyQualityReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport
+    name: WeeklyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport
+    name: WeeklyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport.html
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_ExportReportAsync_Meridian_Application_Monitoring_DataQuality_DailyQualityReport_Meridian_Application_Monitoring_DataQuality_ReportExportFormat_System_Threading_CancellationToken_
+  name: ExportReportAsync
+  nameWithType: DataQualityMonitoringService.ExportReportAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.ExportReportAsync
+- uid: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DailyQualityReport.html
+  name: DailyQualityReport
+  nameWithType: DailyQualityReport
+  fullName: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.html
+  name: ReportExportFormat
+  nameWithType: ReportExportFormat
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_GetDashboard
+  name: GetDashboard
+  nameWithType: DataQualityMonitoringService.GetDashboard
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.GetDashboard
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html
+  name: DataQualityDashboard
+  nameWithType: DataQualityDashboard
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.html#Meridian_Application_Monitoring_DataQuality_DataQualityMonitoringService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: DataQualityMonitoringService.DisposeAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityMonitoringService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

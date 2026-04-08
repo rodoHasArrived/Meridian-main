@@ -1,0 +1,1294 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.StorageServiceBase
+  commentId: T:Meridian.Ui.Services.StorageServiceBase
+  id: StorageServiceBase
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.StorageServiceBase.#ctor(Meridian.Ui.Services.ApiClientService)
+  - Meridian.Ui.Services.StorageServiceBase.FormatBytes(System.Int64)
+  - Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.GetFileIcon(System.String)
+  - Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync(System.Boolean,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StorageServiceBase
+  nameWithType: StorageServiceBase
+  fullName: Meridian.Ui.Services.StorageServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Base class for storage services providing platform-agnostic API delegation methods.
+
+    Accepts <xref href="Meridian.Ui.Services.ApiClientService" data-throw-if-not-resolved="false"></xref> via constructor for testability and to avoid
+
+    coupling to a static singleton.
+
+    WPF StorageService inherits from this class and adds platform-specific functionality
+
+    (e.g., Brush-based styling).
+  example: []
+  syntax:
+    content: public class StorageServiceBase
+    content.vb: Public Class StorageServiceBase
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.StorageServiceBase.#ctor(Meridian.Ui.Services.ApiClientService)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.#ctor(Meridian.Ui.Services.ApiClientService)
+  id: '#ctor(Meridian.Ui.Services.ApiClientService)'
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StorageServiceBase(ApiClientService)
+  nameWithType: StorageServiceBase.StorageServiceBase(ApiClientService)
+  fullName: Meridian.Ui.Services.StorageServiceBase.StorageServiceBase(Meridian.Ui.Services.ApiClientService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a new instance with the specified API client.
+  example: []
+  syntax:
+    content: protected StorageServiceBase(ApiClientService apiClient)
+    parameters:
+    - id: apiClient
+      type: Meridian.Ui.Services.ApiClientService
+    content.vb: Protected Sub New(apiClient As ApiClientService)
+  overload: Meridian.Ui.Services.StorageServiceBase.#ctor*
+  nameWithType.vb: StorageServiceBase.New(ApiClientService)
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.New(Meridian.Ui.Services.ApiClientService)
+  name.vb: New(ApiClientService)
+- uid: Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync(System.Threading.CancellationToken)
+  id: GetStorageStatsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetStorageStatsAsync(CancellationToken)
+  nameWithType: StorageServiceBase.GetStorageStatsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStorageStatsAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets storage statistics summary.
+  example: []
+  syntax:
+    content: public Task<StorageStatsSummary?> GetStorageStatsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.StorageStatsSummary}
+    content.vb: Public Function GetStorageStatsAsync(ct As CancellationToken = Nothing) As Task(Of StorageStatsSummary)
+  overload: Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync*
+- uid: Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync(System.Threading.CancellationToken)
+  id: GetStorageBreakdownAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetStorageBreakdownAsync(CancellationToken)
+  nameWithType: StorageServiceBase.GetStorageBreakdownAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStorageBreakdownAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets detailed storage usage by category.
+  example: []
+  syntax:
+    content: public Task<List<StorageCategory>?> GetStorageBreakdownAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.StorageCategory}}
+    content.vb: Public Function GetStorageBreakdownAsync(ct As CancellationToken = Nothing) As Task(Of List(Of StorageCategory))
+  overload: Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync*
+- uid: Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync(System.String,System.Threading.CancellationToken)
+  id: GetSymbolInfoAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolInfoAsync(string, CancellationToken)
+  nameWithType: StorageServiceBase.GetSymbolInfoAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolInfoAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets symbol-specific information.
+  example: []
+  syntax:
+    content: public Task<SymbolStorageInfo?> GetSymbolInfoAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolStorageInfo}
+    content.vb: Public Function GetSymbolInfoAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SymbolStorageInfo)
+  overload: Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync*
+  nameWithType.vb: StorageServiceBase.GetSymbolInfoAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync(String, System.Threading.CancellationToken)
+  name.vb: GetSymbolInfoAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync(System.String,System.Threading.CancellationToken)
+  id: GetSymbolStorageStatsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolStorageStatsAsync(string, CancellationToken)
+  nameWithType: StorageServiceBase.GetSymbolStorageStatsAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolStorageStatsAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets storage statistics for a specific symbol.
+  example: []
+  syntax:
+    content: public Task<SymbolStorageStats?> GetSymbolStorageStatsAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolStorageStats}
+    content.vb: Public Function GetSymbolStorageStatsAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SymbolStorageStats)
+  overload: Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync*
+  nameWithType.vb: StorageServiceBase.GetSymbolStorageStatsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetSymbolStorageStatsAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync(System.String,System.Threading.CancellationToken)
+  id: GetSymbolFolderPathAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolFolderPathAsync(string, CancellationToken)
+  nameWithType: StorageServiceBase.GetSymbolFolderPathAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolFolderPathAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the folder path for a symbol's data.
+  example: []
+  syntax:
+    content: public Task<string?> GetSymbolFolderPathAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function GetSymbolFolderPathAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync*
+  nameWithType.vb: StorageServiceBase.GetSymbolFolderPathAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync(String, System.Threading.CancellationToken)
+  name.vb: GetSymbolFolderPathAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync(System.Threading.CancellationToken)
+  id: GetStorageHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetStorageHealthAsync(CancellationToken)
+  nameWithType: StorageServiceBase.GetStorageHealthAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStorageHealthAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets storage health report.
+  example: []
+  syntax:
+    content: public Task<StorageHealthReport?> GetStorageHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.StorageHealthReport}
+    content.vb: Public Function GetStorageHealthAsync(ct As CancellationToken = Nothing) As Task(Of StorageHealthReport)
+  overload: Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync*
+- uid: Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync(System.Threading.CancellationToken)
+  id: GetCleanupCandidatesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetCleanupCandidatesAsync(CancellationToken)
+  nameWithType: StorageServiceBase.GetCleanupCandidatesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCleanupCandidatesAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets files that need cleanup based on retention policies.
+  example: []
+  syntax:
+    content: public Task<List<CleanupCandidate>?> GetCleanupCandidatesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.CleanupCandidate}}
+    content.vb: Public Function GetCleanupCandidatesAsync(ct As CancellationToken = Nothing) As Task(Of List(Of CleanupCandidate))
+  overload: Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync*
+- uid: Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync(System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync(System.Boolean,System.Threading.CancellationToken)
+  id: RunCleanupAsync(System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: RunCleanupAsync(bool, CancellationToken)
+  nameWithType: StorageServiceBase.RunCleanupAsync(bool, CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync(bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunCleanupAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs storage cleanup.
+  example: []
+  syntax:
+    content: public Task<CleanupResult?> RunCleanupAsync(bool dryRun = true, CancellationToken ct = default)
+    parameters:
+    - id: dryRun
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.CleanupResult}
+    content.vb: Public Function RunCleanupAsync(dryRun As Boolean = True, ct As CancellationToken = Nothing) As Task(Of CleanupResult)
+  overload: Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync*
+  nameWithType.vb: StorageServiceBase.RunCleanupAsync(Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync(Boolean, System.Threading.CancellationToken)
+  name.vb: RunCleanupAsync(Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync(System.Threading.CancellationToken)
+  id: GetArchiveStatsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetArchiveStatsAsync(CancellationToken)
+  nameWithType: StorageServiceBase.GetArchiveStatsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetArchiveStatsAsync
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets archive statistics.
+  example: []
+  syntax:
+    content: public Task<ArchiveStats?> GetArchiveStatsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ArchiveStats}
+    content.vb: Public Function GetArchiveStatsAsync(ct As CancellationToken = Nothing) As Task(Of ArchiveStats)
+  overload: Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync*
+- uid: Meridian.Ui.Services.StorageServiceBase.FormatBytes(System.Int64)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.FormatBytes(System.Int64)
+  id: FormatBytes(System.Int64)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: FormatBytes(long)
+  nameWithType: StorageServiceBase.FormatBytes(long)
+  fullName: Meridian.Ui.Services.StorageServiceBase.FormatBytes(long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FormatBytes
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Formats a byte count into a human-readable string (e.g., "1.5 GB").
+  example: []
+  syntax:
+    content: public static string FormatBytes(long bytes)
+    parameters:
+    - id: bytes
+      type: System.Int64
+    return:
+      type: System.String
+    content.vb: Public Shared Function FormatBytes(bytes As Long) As String
+  overload: Meridian.Ui.Services.StorageServiceBase.FormatBytes*
+  nameWithType.vb: StorageServiceBase.FormatBytes(Long)
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.FormatBytes(Long)
+  name.vb: FormatBytes(Long)
+- uid: Meridian.Ui.Services.StorageServiceBase.GetFileIcon(System.String)
+  commentId: M:Meridian.Ui.Services.StorageServiceBase.GetFileIcon(System.String)
+  id: GetFileIcon(System.String)
+  parent: Meridian.Ui.Services.StorageServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetFileIcon(string)
+  nameWithType: StorageServiceBase.GetFileIcon(string)
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetFileIcon(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFileIcon
+    path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the icon glyph for a data type.
+  example: []
+  syntax:
+    content: public static string GetFileIcon(string dataType)
+    parameters:
+    - id: dataType
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetFileIcon(dataType As String) As String
+  overload: Meridian.Ui.Services.StorageServiceBase.GetFileIcon*
+  nameWithType.vb: StorageServiceBase.GetFileIcon(String)
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.GetFileIcon(String)
+  name.vb: GetFileIcon(String)
+references:
+- uid: Meridian.Ui.Services.ApiClientService
+  commentId: T:Meridian.Ui.Services.ApiClientService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ApiClientService.html
+  name: ApiClientService
+  nameWithType: ApiClientService
+  fullName: Meridian.Ui.Services.ApiClientService
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.StorageServiceBase.#ctor*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.#ctor
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase__ctor_Meridian_Ui_Services_ApiClientService_
+  name: StorageServiceBase
+  nameWithType: StorageServiceBase.StorageServiceBase
+  fullName: Meridian.Ui.Services.StorageServiceBase.StorageServiceBase
+  nameWithType.vb: StorageServiceBase.New
+  fullName.vb: Meridian.Ui.Services.StorageServiceBase.New
+  name.vb: New
+- uid: Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetStorageStatsAsync_System_Threading_CancellationToken_
+  name: GetStorageStatsAsync
+  nameWithType: StorageServiceBase.GetStorageStatsAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetStorageStatsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.StorageStatsSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.StorageStatsSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StorageStatsSummary>
+  nameWithType: Task<StorageStatsSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.StorageStatsSummary>
+  nameWithType.vb: Task(Of StorageStatsSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.StorageStatsSummary)
+  name.vb: Task(Of StorageStatsSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.StorageStatsSummary
+    name: StorageStatsSummary
+    href: Meridian.Ui.Services.StorageStatsSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.StorageStatsSummary
+    name: StorageStatsSummary
+    href: Meridian.Ui.Services.StorageStatsSummary.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetStorageBreakdownAsync_System_Threading_CancellationToken_
+  name: GetStorageBreakdownAsync
+  nameWithType: StorageServiceBase.GetStorageBreakdownAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetStorageBreakdownAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.StorageCategory}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.StorageCategory}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<StorageCategory>>
+  nameWithType: Task<List<StorageCategory>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.StorageCategory>>
+  nameWithType.vb: Task(Of List(Of StorageCategory))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.StorageCategory))
+  name.vb: Task(Of List(Of StorageCategory))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.StorageCategory
+    name: StorageCategory
+    href: Meridian.Ui.Services.StorageCategory.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.StorageCategory
+    name: StorageCategory
+    href: Meridian.Ui.Services.StorageCategory.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetSymbolInfoAsync_System_String_System_Threading_CancellationToken_
+  name: GetSymbolInfoAsync
+  nameWithType: StorageServiceBase.GetSymbolInfoAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetSymbolInfoAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolStorageInfo}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolStorageInfo}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolStorageInfo>
+  nameWithType: Task<SymbolStorageInfo>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SymbolStorageInfo>
+  nameWithType.vb: Task(Of SymbolStorageInfo)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SymbolStorageInfo)
+  name.vb: Task(Of SymbolStorageInfo)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SymbolStorageInfo
+    name: SymbolStorageInfo
+    href: Meridian.Ui.Services.SymbolStorageInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SymbolStorageInfo
+    name: SymbolStorageInfo
+    href: Meridian.Ui.Services.SymbolStorageInfo.html
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetSymbolStorageStatsAsync_System_String_System_Threading_CancellationToken_
+  name: GetSymbolStorageStatsAsync
+  nameWithType: StorageServiceBase.GetSymbolStorageStatsAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetSymbolStorageStatsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolStorageStats}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SymbolStorageStats}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolStorageStats>
+  nameWithType: Task<SymbolStorageStats>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SymbolStorageStats>
+  nameWithType.vb: Task(Of SymbolStorageStats)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SymbolStorageStats)
+  name.vb: Task(Of SymbolStorageStats)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SymbolStorageStats
+    name: SymbolStorageStats
+    href: Meridian.Ui.Services.SymbolStorageStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SymbolStorageStats
+    name: SymbolStorageStats
+    href: Meridian.Ui.Services.SymbolStorageStats.html
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetSymbolFolderPathAsync_System_String_System_Threading_CancellationToken_
+  name: GetSymbolFolderPathAsync
+  nameWithType: StorageServiceBase.GetSymbolFolderPathAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetSymbolFolderPathAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetStorageHealthAsync_System_Threading_CancellationToken_
+  name: GetStorageHealthAsync
+  nameWithType: StorageServiceBase.GetStorageHealthAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetStorageHealthAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.StorageHealthReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.StorageHealthReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StorageHealthReport>
+  nameWithType: Task<StorageHealthReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.StorageHealthReport>
+  nameWithType.vb: Task(Of StorageHealthReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.StorageHealthReport)
+  name.vb: Task(Of StorageHealthReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.StorageHealthReport
+    name: StorageHealthReport
+    href: Meridian.Ui.Services.StorageHealthReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.StorageHealthReport
+    name: StorageHealthReport
+    href: Meridian.Ui.Services.StorageHealthReport.html
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetCleanupCandidatesAsync_System_Threading_CancellationToken_
+  name: GetCleanupCandidatesAsync
+  nameWithType: StorageServiceBase.GetCleanupCandidatesAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetCleanupCandidatesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.CleanupCandidate}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.CleanupCandidate}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<CleanupCandidate>>
+  nameWithType: Task<List<CleanupCandidate>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.CleanupCandidate>>
+  nameWithType.vb: Task(Of List(Of CleanupCandidate))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.CleanupCandidate))
+  name.vb: Task(Of List(Of CleanupCandidate))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.CleanupCandidate
+    name: CleanupCandidate
+    href: Meridian.Ui.Services.CleanupCandidate.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.CleanupCandidate
+    name: CleanupCandidate
+    href: Meridian.Ui.Services.CleanupCandidate.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_RunCleanupAsync_System_Boolean_System_Threading_CancellationToken_
+  name: RunCleanupAsync
+  nameWithType: StorageServiceBase.RunCleanupAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.RunCleanupAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.CleanupResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.CleanupResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CleanupResult>
+  nameWithType: Task<CleanupResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.CleanupResult>
+  nameWithType.vb: Task(Of CleanupResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.CleanupResult)
+  name.vb: Task(Of CleanupResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.CleanupResult
+    name: CleanupResult
+    href: Meridian.Ui.Services.CleanupResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.CleanupResult
+    name: CleanupResult
+    href: Meridian.Ui.Services.CleanupResult.html
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetArchiveStatsAsync_System_Threading_CancellationToken_
+  name: GetArchiveStatsAsync
+  nameWithType: StorageServiceBase.GetArchiveStatsAsync
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetArchiveStatsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ArchiveStats}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ArchiveStats}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ArchiveStats>
+  nameWithType: Task<ArchiveStats>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ArchiveStats>
+  nameWithType.vb: Task(Of ArchiveStats)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ArchiveStats)
+  name.vb: Task(Of ArchiveStats)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ArchiveStats
+    name: ArchiveStats
+    href: Meridian.Ui.Services.ArchiveStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ArchiveStats
+    name: ArchiveStats
+    href: Meridian.Ui.Services.ArchiveStats.html
+  - name: )
+- uid: Meridian.Ui.Services.StorageServiceBase.FormatBytes*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.FormatBytes
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_FormatBytes_System_Int64_
+  name: FormatBytes
+  nameWithType: StorageServiceBase.FormatBytes
+  fullName: Meridian.Ui.Services.StorageServiceBase.FormatBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.StorageServiceBase.GetFileIcon*
+  commentId: Overload:Meridian.Ui.Services.StorageServiceBase.GetFileIcon
+  href: Meridian.Ui.Services.StorageServiceBase.html#Meridian_Ui_Services_StorageServiceBase_GetFileIcon_System_String_
+  name: GetFileIcon
+  nameWithType: StorageServiceBase.GetFileIcon
+  fullName: Meridian.Ui.Services.StorageServiceBase.GetFileIcon

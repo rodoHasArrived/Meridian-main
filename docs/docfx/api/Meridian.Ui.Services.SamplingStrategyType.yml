@@ -1,0 +1,309 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SamplingStrategyType
+  commentId: T:Meridian.Ui.Services.SamplingStrategyType
+  id: SamplingStrategyType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SamplingStrategyType.EventTypeStratified
+  - Meridian.Ui.Services.SamplingStrategyType.FirstN
+  - Meridian.Ui.Services.SamplingStrategyType.LastN
+  - Meridian.Ui.Services.SamplingStrategyType.PeakHours
+  - Meridian.Ui.Services.SamplingStrategyType.Random
+  - Meridian.Ui.Services.SamplingStrategyType.SymbolStratified
+  - Meridian.Ui.Services.SamplingStrategyType.Systematic
+  - Meridian.Ui.Services.SamplingStrategyType.TimeBased
+  - Meridian.Ui.Services.SamplingStrategyType.VolatilityBased
+  langs:
+  - csharp
+  - vb
+  name: SamplingStrategyType
+  nameWithType: SamplingStrategyType
+  fullName: Meridian.Ui.Services.SamplingStrategyType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SamplingStrategyType
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 387
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum SamplingStrategyType : byte'
+    content.vb: Public Enum SamplingStrategyType As Byte
+- uid: Meridian.Ui.Services.SamplingStrategyType.Random
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.Random
+  id: Random
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: Random
+  nameWithType: SamplingStrategyType.Random
+  fullName: Meridian.Ui.Services.SamplingStrategyType.Random
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Random
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 389
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Random = 0
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.TimeBased
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.TimeBased
+  id: TimeBased
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: TimeBased
+  nameWithType: SamplingStrategyType.TimeBased
+  fullName: Meridian.Ui.Services.SamplingStrategyType.TimeBased
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeBased
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 390
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: TimeBased = 1
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.SymbolStratified
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.SymbolStratified
+  id: SymbolStratified
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: SymbolStratified
+  nameWithType: SamplingStrategyType.SymbolStratified
+  fullName: Meridian.Ui.Services.SamplingStrategyType.SymbolStratified
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolStratified
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SymbolStratified = 2
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.EventTypeStratified
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.EventTypeStratified
+  id: EventTypeStratified
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: EventTypeStratified
+  nameWithType: SamplingStrategyType.EventTypeStratified
+  fullName: Meridian.Ui.Services.SamplingStrategyType.EventTypeStratified
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypeStratified
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: EventTypeStratified = 3
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.VolatilityBased
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.VolatilityBased
+  id: VolatilityBased
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: VolatilityBased
+  nameWithType: SamplingStrategyType.VolatilityBased
+  fullName: Meridian.Ui.Services.SamplingStrategyType.VolatilityBased
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolatilityBased
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 393
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: VolatilityBased = 4
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.FirstN
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.FirstN
+  id: FirstN
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: FirstN
+  nameWithType: SamplingStrategyType.FirstN
+  fullName: Meridian.Ui.Services.SamplingStrategyType.FirstN
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstN
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 394
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: FirstN = 5
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.LastN
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.LastN
+  id: LastN
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: LastN
+  nameWithType: SamplingStrategyType.LastN
+  fullName: Meridian.Ui.Services.SamplingStrategyType.LastN
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastN
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: LastN = 6
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.PeakHours
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.PeakHours
+  id: PeakHours
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: PeakHours
+  nameWithType: SamplingStrategyType.PeakHours
+  fullName: Meridian.Ui.Services.SamplingStrategyType.PeakHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PeakHours
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 396
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: PeakHours = 7
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingStrategyType.Systematic
+  commentId: F:Meridian.Ui.Services.SamplingStrategyType.Systematic
+  id: Systematic
+  parent: Meridian.Ui.Services.SamplingStrategyType
+  langs:
+  - csharp
+  - vb
+  name: Systematic
+  nameWithType: SamplingStrategyType.Systematic
+  fullName: Meridian.Ui.Services.SamplingStrategyType.Systematic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Systematic
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Systematic = 8
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.SamplingStrategyType
+  commentId: T:Meridian.Ui.Services.SamplingStrategyType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SamplingStrategyType.html
+  name: SamplingStrategyType
+  nameWithType: SamplingStrategyType
+  fullName: Meridian.Ui.Services.SamplingStrategyType

@@ -1,0 +1,818 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  commentId: T:Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  id: PipelinePolicyConstants
+  parent: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueCapacity
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueFullMode
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultCapacity
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultFullMode
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropNewest
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropOldest
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropWrite
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeWait
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputCapacity
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputFullMode
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingCapacity
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingFullMode
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueCapacity
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueFullMode
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferCapacity
+  - Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferFullMode
+  langs:
+  - csharp
+  - vb
+  name: PipelinePolicyConstants
+  nameWithType: PipelinePolicyConstants
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PipelinePolicyConstants
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Constants for pipeline policy configuration.
+
+    Shared between the main application and desktop projects to ensure consistent channel settings.
+  remarks: >-
+    These constants are used by <code>EventPipelinePolicy</code> in the main application
+
+    and by desktop service projects that cannot reference the main assembly directly.
+  example: []
+  syntax:
+    content: public static class PipelinePolicyConstants
+    content.vb: Public Module PipelinePolicyConstants
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeWait
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeWait
+  id: FullModeWait
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: FullModeWait
+  nameWithType: PipelinePolicyConstants.FullModeWait
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeWait
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullModeWait
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Channel full mode: Wait (backpressure - blocks writers when full).
+
+    Maps to <code>BoundedChannelFullMode.Wait</code>.
+  example: []
+  syntax:
+    content: public const int FullModeWait = 0
+    return:
+      type: System.Int32
+    content.vb: Public Const FullModeWait As Integer = 0
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropNewest
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropNewest
+  id: FullModeDropNewest
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: FullModeDropNewest
+  nameWithType: PipelinePolicyConstants.FullModeDropNewest
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropNewest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullModeDropNewest
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Channel full mode: DropNewest (drop incoming items when full).
+
+    Maps to <code>BoundedChannelFullMode.DropNewest</code>.
+  example: []
+  syntax:
+    content: public const int FullModeDropNewest = 1
+    return:
+      type: System.Int32
+    content.vb: Public Const FullModeDropNewest As Integer = 1
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropOldest
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropOldest
+  id: FullModeDropOldest
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: FullModeDropOldest
+  nameWithType: PipelinePolicyConstants.FullModeDropOldest
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropOldest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullModeDropOldest
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Channel full mode: DropOldest (drop oldest items when full).
+
+    Maps to <code>BoundedChannelFullMode.DropOldest</code>.
+  example: []
+  syntax:
+    content: public const int FullModeDropOldest = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const FullModeDropOldest As Integer = 2
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropWrite
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropWrite
+  id: FullModeDropWrite
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: FullModeDropWrite
+  nameWithType: PipelinePolicyConstants.FullModeDropWrite
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.FullModeDropWrite
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullModeDropWrite
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Channel full mode: DropWrite (drop write attempt when full).
+
+    Maps to <code>BoundedChannelFullMode.DropWrite</code>.
+  example: []
+  syntax:
+    content: public const int FullModeDropWrite = 3
+    return:
+      type: System.Int32
+    content.vb: Public Const FullModeDropWrite As Integer = 3
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultCapacity
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultCapacity
+  id: DefaultCapacity
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: DefaultCapacity
+  nameWithType: PipelinePolicyConstants.DefaultCapacity
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultCapacity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultCapacity
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Default preset capacity for general-purpose event pipelines.
+  example: []
+  syntax:
+    content: public const int DefaultCapacity = 100000
+    return:
+      type: System.Int32
+    content.vb: Public Const DefaultCapacity As Integer = 100000
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultFullMode
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultFullMode
+  id: DefaultFullMode
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: DefaultFullMode
+  nameWithType: PipelinePolicyConstants.DefaultFullMode
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.DefaultFullMode
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultFullMode
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Default preset full mode (DropOldest).
+  example: []
+  syntax:
+    content: public const int DefaultFullMode = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const DefaultFullMode As Integer = 2
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputCapacity
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputCapacity
+  id: HighThroughputCapacity
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: HighThroughputCapacity
+  nameWithType: PipelinePolicyConstants.HighThroughputCapacity
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputCapacity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighThroughputCapacity
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: HighThroughput preset capacity for streaming data pipelines.
+  example: []
+  syntax:
+    content: public const int HighThroughputCapacity = 50000
+    return:
+      type: System.Int32
+    content.vb: Public Const HighThroughputCapacity As Integer = 50000
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputFullMode
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputFullMode
+  id: HighThroughputFullMode
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: HighThroughputFullMode
+  nameWithType: PipelinePolicyConstants.HighThroughputFullMode
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.HighThroughputFullMode
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighThroughputFullMode
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: HighThroughput preset full mode (DropOldest).
+  example: []
+  syntax:
+    content: public const int HighThroughputFullMode = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const HighThroughputFullMode As Integer = 2
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferCapacity
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferCapacity
+  id: MessageBufferCapacity
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: MessageBufferCapacity
+  nameWithType: PipelinePolicyConstants.MessageBufferCapacity
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferCapacity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessageBufferCapacity
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: MessageBuffer preset capacity for internal message buffering.
+  example: []
+  syntax:
+    content: public const int MessageBufferCapacity = 50000
+    return:
+      type: System.Int32
+    content.vb: Public Const MessageBufferCapacity As Integer = 50000
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferFullMode
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferFullMode
+  id: MessageBufferFullMode
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: MessageBufferFullMode
+  nameWithType: PipelinePolicyConstants.MessageBufferFullMode
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MessageBufferFullMode
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessageBufferFullMode
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: MessageBuffer preset full mode (DropOldest).
+  example: []
+  syntax:
+    content: public const int MessageBufferFullMode = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const MessageBufferFullMode As Integer = 2
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueCapacity
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueCapacity
+  id: MaintenanceQueueCapacity
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceQueueCapacity
+  nameWithType: PipelinePolicyConstants.MaintenanceQueueCapacity
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueCapacity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceQueueCapacity
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: MaintenanceQueue preset capacity for background tasks.
+  example: []
+  syntax:
+    content: public const int MaintenanceQueueCapacity = 100
+    return:
+      type: System.Int32
+    content.vb: Public Const MaintenanceQueueCapacity As Integer = 100
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueFullMode
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueFullMode
+  id: MaintenanceQueueFullMode
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceQueueFullMode
+  nameWithType: PipelinePolicyConstants.MaintenanceQueueFullMode
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.MaintenanceQueueFullMode
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceQueueFullMode
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: MaintenanceQueue preset full mode (Wait/backpressure).
+  example: []
+  syntax:
+    content: public const int MaintenanceQueueFullMode = 0
+    return:
+      type: System.Int32
+    content.vb: Public Const MaintenanceQueueFullMode As Integer = 0
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingCapacity
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingCapacity
+  id: LoggingCapacity
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: LoggingCapacity
+  nameWithType: PipelinePolicyConstants.LoggingCapacity
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingCapacity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoggingCapacity
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Logging preset capacity for log channels.
+  example: []
+  syntax:
+    content: public const int LoggingCapacity = 1000
+    return:
+      type: System.Int32
+    content.vb: Public Const LoggingCapacity As Integer = 1000
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingFullMode
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingFullMode
+  id: LoggingFullMode
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: LoggingFullMode
+  nameWithType: PipelinePolicyConstants.LoggingFullMode
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.LoggingFullMode
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoggingFullMode
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Logging preset full mode (DropOldest).
+  example: []
+  syntax:
+    content: public const int LoggingFullMode = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const LoggingFullMode As Integer = 2
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueCapacity
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueCapacity
+  id: CompletionQueueCapacity
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: CompletionQueueCapacity
+  nameWithType: PipelinePolicyConstants.CompletionQueueCapacity
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueCapacity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletionQueueCapacity
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: CompletionQueue preset capacity for completion notifications.
+  example: []
+  syntax:
+    content: public const int CompletionQueueCapacity = 500
+    return:
+      type: System.Int32
+    content.vb: Public Const CompletionQueueCapacity As Integer = 500
+- uid: Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueFullMode
+  commentId: F:Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueFullMode
+  id: CompletionQueueFullMode
+  parent: Meridian.Contracts.Pipeline.PipelinePolicyConstants
+  langs:
+  - csharp
+  - vb
+  name: CompletionQueueFullMode
+  nameWithType: PipelinePolicyConstants.CompletionQueueFullMode
+  fullName: Meridian.Contracts.Pipeline.PipelinePolicyConstants.CompletionQueueFullMode
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletionQueueFullMode
+    path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: CompletionQueue preset full mode (Wait/backpressure - no drops).
+  example: []
+  syntax:
+    content: public const int CompletionQueueFullMode = 0
+    return:
+      type: System.Int32
+    content.vb: Public Const CompletionQueueFullMode As Integer = 0
+references:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

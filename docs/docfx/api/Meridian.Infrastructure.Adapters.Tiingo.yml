@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Tiingo
+  commentId: N:Meridian.Infrastructure.Adapters.Tiingo
+  id: Meridian.Infrastructure.Adapters.Tiingo
+  children:
+  - Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Tiingo
+  nameWithType: Meridian.Infrastructure.Adapters.Tiingo
+  fullName: Meridian.Infrastructure.Adapters.Tiingo
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider.html
+  name: TiingoHistoricalDataProvider
+  nameWithType: TiingoHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider

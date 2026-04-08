@@ -1,0 +1,1400 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.DataLineageService
+  commentId: T:Meridian.Storage.Services.DataLineageService
+  id: DataLineageService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.DataLineageService.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataLineageService})
+  - Meridian.Storage.Services.DataLineageService.GenerateReport
+  - Meridian.Storage.Services.DataLineageService.GetDownstream(System.String)
+  - Meridian.Storage.Services.DataLineageService.GetLineageGraph(System.String)
+  - Meridian.Storage.Services.DataLineageService.GetUpstream(System.String)
+  - Meridian.Storage.Services.DataLineageService.RecordDeletion(System.String,System.String)
+  - Meridian.Storage.Services.DataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+  - Meridian.Storage.Services.DataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+  - Meridian.Storage.Services.DataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+  - Meridian.Storage.Services.DataLineageService.SaveAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: DataLineageService
+  nameWithType: DataLineageService
+  fullName: Meridian.Storage.Services.DataLineageService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataLineageService
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Service for tracking data lineage: provenance, transformations, and dependency graphs
+
+    across the entire storage system. Records where data came from, what transformations
+
+    were applied, and how data flows between storage tiers and formats.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-002", "Data lineage tracking for storage operations")]
+
+      public sealed class DataLineageService : IDataLineageService
+    content.vb: >-
+      <ImplementsAdr("ADR-002", "Data lineage tracking for storage operations")>
+
+      Public NotInheritable Class DataLineageService Implements IDataLineageService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Services.IDataLineageService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-002
+    - type: System.String
+      value: Data lineage tracking for storage operations
+- uid: Meridian.Storage.Services.DataLineageService.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataLineageService})
+  commentId: M:Meridian.Storage.Services.DataLineageService.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataLineageService})
+  id: '#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataLineageService})'
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: DataLineageService(string, ILogger<DataLineageService>)
+  nameWithType: DataLineageService.DataLineageService(string, ILogger<DataLineageService>)
+  fullName: Meridian.Storage.Services.DataLineageService.DataLineageService(string, Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Services.DataLineageService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DataLineageService(string lineageStorePath, ILogger<DataLineageService> logger)
+    parameters:
+    - id: lineageStorePath
+      type: System.String
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataLineageService}
+    content.vb: Public Sub New(lineageStorePath As String, logger As ILogger(Of DataLineageService))
+  overload: Meridian.Storage.Services.DataLineageService.#ctor*
+  nameWithType.vb: DataLineageService.New(String, ILogger(Of DataLineageService))
+  fullName.vb: Meridian.Storage.Services.DataLineageService.New(String, Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Services.DataLineageService))
+  name.vb: New(String, ILogger(Of DataLineageService))
+- uid: Meridian.Storage.Services.DataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+  commentId: M:Meridian.Storage.Services.DataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+  id: RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: RecordIngestion(string, IngestionRecord)
+  nameWithType: DataLineageService.RecordIngestion(string, IngestionRecord)
+  fullName: Meridian.Storage.Services.DataLineageService.RecordIngestion(string, Meridian.Storage.Services.IngestionRecord)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordIngestion
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public void RecordIngestion(string filePath, IngestionRecord record)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: record
+      type: Meridian.Storage.Services.IngestionRecord
+    content.vb: Public Sub RecordIngestion(filePath As String, record As IngestionRecord)
+  overload: Meridian.Storage.Services.DataLineageService.RecordIngestion*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+  nameWithType.vb: DataLineageService.RecordIngestion(String, IngestionRecord)
+  fullName.vb: Meridian.Storage.Services.DataLineageService.RecordIngestion(String, Meridian.Storage.Services.IngestionRecord)
+  name.vb: RecordIngestion(String, IngestionRecord)
+- uid: Meridian.Storage.Services.DataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+  commentId: M:Meridian.Storage.Services.DataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+  id: RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: RecordTransformation(string, string, TransformationRecord)
+  nameWithType: DataLineageService.RecordTransformation(string, string, TransformationRecord)
+  fullName: Meridian.Storage.Services.DataLineageService.RecordTransformation(string, string, Meridian.Storage.Services.TransformationRecord)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordTransformation
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record)
+    parameters:
+    - id: sourceFilePath
+      type: System.String
+    - id: targetFilePath
+      type: System.String
+    - id: record
+      type: Meridian.Storage.Services.TransformationRecord
+    content.vb: Public Sub RecordTransformation(sourceFilePath As String, targetFilePath As String, record As TransformationRecord)
+  overload: Meridian.Storage.Services.DataLineageService.RecordTransformation*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+  nameWithType.vb: DataLineageService.RecordTransformation(String, String, TransformationRecord)
+  fullName.vb: Meridian.Storage.Services.DataLineageService.RecordTransformation(String, String, Meridian.Storage.Services.TransformationRecord)
+  name.vb: RecordTransformation(String, String, TransformationRecord)
+- uid: Meridian.Storage.Services.DataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+  commentId: M:Meridian.Storage.Services.DataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+  id: RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: RecordMigration(string, string, MigrationRecord)
+  nameWithType: DataLineageService.RecordMigration(string, string, MigrationRecord)
+  fullName: Meridian.Storage.Services.DataLineageService.RecordMigration(string, string, Meridian.Storage.Services.MigrationRecord)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordMigration
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record)
+    parameters:
+    - id: sourceFilePath
+      type: System.String
+    - id: targetFilePath
+      type: System.String
+    - id: record
+      type: Meridian.Storage.Services.MigrationRecord
+    content.vb: Public Sub RecordMigration(sourceFilePath As String, targetFilePath As String, record As MigrationRecord)
+  overload: Meridian.Storage.Services.DataLineageService.RecordMigration*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+  nameWithType.vb: DataLineageService.RecordMigration(String, String, MigrationRecord)
+  fullName.vb: Meridian.Storage.Services.DataLineageService.RecordMigration(String, String, Meridian.Storage.Services.MigrationRecord)
+  name.vb: RecordMigration(String, String, MigrationRecord)
+- uid: Meridian.Storage.Services.DataLineageService.RecordDeletion(System.String,System.String)
+  commentId: M:Meridian.Storage.Services.DataLineageService.RecordDeletion(System.String,System.String)
+  id: RecordDeletion(System.String,System.String)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: RecordDeletion(string, string)
+  nameWithType: DataLineageService.RecordDeletion(string, string)
+  fullName: Meridian.Storage.Services.DataLineageService.RecordDeletion(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordDeletion
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public void RecordDeletion(string filePath, string reason)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: reason
+      type: System.String
+    content.vb: Public Sub RecordDeletion(filePath As String, reason As String)
+  overload: Meridian.Storage.Services.DataLineageService.RecordDeletion*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.RecordDeletion(System.String,System.String)
+  nameWithType.vb: DataLineageService.RecordDeletion(String, String)
+  fullName.vb: Meridian.Storage.Services.DataLineageService.RecordDeletion(String, String)
+  name.vb: RecordDeletion(String, String)
+- uid: Meridian.Storage.Services.DataLineageService.GetLineageGraph(System.String)
+  commentId: M:Meridian.Storage.Services.DataLineageService.GetLineageGraph(System.String)
+  id: GetLineageGraph(System.String)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: GetLineageGraph(string)
+  nameWithType: DataLineageService.GetLineageGraph(string)
+  fullName: Meridian.Storage.Services.DataLineageService.GetLineageGraph(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLineageGraph
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public LineageGraph? GetLineageGraph(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: Meridian.Storage.Services.LineageGraph
+    content.vb: Public Function GetLineageGraph(filePath As String) As LineageGraph
+  overload: Meridian.Storage.Services.DataLineageService.GetLineageGraph*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.GetLineageGraph(System.String)
+  nameWithType.vb: DataLineageService.GetLineageGraph(String)
+  fullName.vb: Meridian.Storage.Services.DataLineageService.GetLineageGraph(String)
+  name.vb: GetLineageGraph(String)
+- uid: Meridian.Storage.Services.DataLineageService.GetUpstream(System.String)
+  commentId: M:Meridian.Storage.Services.DataLineageService.GetUpstream(System.String)
+  id: GetUpstream(System.String)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: GetUpstream(string)
+  nameWithType: DataLineageService.GetUpstream(string)
+  fullName: Meridian.Storage.Services.DataLineageService.GetUpstream(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUpstream
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetUpstream(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetUpstream(filePath As String) As IReadOnlyList(Of String)
+  overload: Meridian.Storage.Services.DataLineageService.GetUpstream*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.GetUpstream(System.String)
+  nameWithType.vb: DataLineageService.GetUpstream(String)
+  fullName.vb: Meridian.Storage.Services.DataLineageService.GetUpstream(String)
+  name.vb: GetUpstream(String)
+- uid: Meridian.Storage.Services.DataLineageService.GetDownstream(System.String)
+  commentId: M:Meridian.Storage.Services.DataLineageService.GetDownstream(System.String)
+  id: GetDownstream(System.String)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: GetDownstream(string)
+  nameWithType: DataLineageService.GetDownstream(string)
+  fullName: Meridian.Storage.Services.DataLineageService.GetDownstream(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDownstream
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetDownstream(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetDownstream(filePath As String) As IReadOnlyList(Of String)
+  overload: Meridian.Storage.Services.DataLineageService.GetDownstream*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.GetDownstream(System.String)
+  nameWithType.vb: DataLineageService.GetDownstream(String)
+  fullName.vb: Meridian.Storage.Services.DataLineageService.GetDownstream(String)
+  name.vb: GetDownstream(String)
+- uid: Meridian.Storage.Services.DataLineageService.GenerateReport
+  commentId: M:Meridian.Storage.Services.DataLineageService.GenerateReport
+  id: GenerateReport
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: GenerateReport()
+  nameWithType: DataLineageService.GenerateReport()
+  fullName: Meridian.Storage.Services.DataLineageService.GenerateReport()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateReport
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public LineageReport GenerateReport()
+    return:
+      type: Meridian.Storage.Services.LineageReport
+    content.vb: Public Function GenerateReport() As LineageReport
+  overload: Meridian.Storage.Services.DataLineageService.GenerateReport*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.GenerateReport
+- uid: Meridian.Storage.Services.DataLineageService.SaveAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.DataLineageService.SaveAsync(System.Threading.CancellationToken)
+  id: SaveAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.DataLineageService
+  langs:
+  - csharp
+  - vb
+  name: SaveAsync(CancellationToken)
+  nameWithType: DataLineageService.SaveAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.DataLineageService.SaveAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataLineageService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveAsync
+    path: ../../src/Meridian.Storage/Services/DataLineageService.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task SaveAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Services.DataLineageService.SaveAsync*
+  implements:
+  - Meridian.Storage.Services.IDataLineageService.SaveAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Services.IDataLineageService
+  commentId: T:Meridian.Storage.Services.IDataLineageService
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IDataLineageService.html
+  name: IDataLineageService
+  nameWithType: IDataLineageService
+  fullName: Meridian.Storage.Services.IDataLineageService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.DataLineageService.#ctor*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.#ctor
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService__ctor_System_String_Microsoft_Extensions_Logging_ILogger_Meridian_Storage_Services_DataLineageService__
+  name: DataLineageService
+  nameWithType: DataLineageService.DataLineageService
+  fullName: Meridian.Storage.Services.DataLineageService.DataLineageService
+  nameWithType.vb: DataLineageService.New
+  fullName.vb: Meridian.Storage.Services.DataLineageService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataLineageService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.DataLineageService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<DataLineageService>
+  nameWithType: ILogger<DataLineageService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Services.DataLineageService>
+  nameWithType.vb: ILogger(Of DataLineageService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Services.DataLineageService)
+  name.vb: ILogger(Of DataLineageService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataLineageService
+    name: DataLineageService
+    href: Meridian.Storage.Services.DataLineageService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataLineageService
+    name: DataLineageService
+    href: Meridian.Storage.Services.DataLineageService.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Storage.Services.DataLineageService.RecordIngestion*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.RecordIngestion
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_RecordIngestion_System_String_Meridian_Storage_Services_IngestionRecord_
+  name: RecordIngestion
+  nameWithType: DataLineageService.RecordIngestion
+  fullName: Meridian.Storage.Services.DataLineageService.RecordIngestion
+- uid: Meridian.Storage.Services.IDataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordIngestion_System_String_Meridian_Storage_Services_IngestionRecord_
+  name: RecordIngestion(string, IngestionRecord)
+  nameWithType: IDataLineageService.RecordIngestion(string, IngestionRecord)
+  fullName: Meridian.Storage.Services.IDataLineageService.RecordIngestion(string, Meridian.Storage.Services.IngestionRecord)
+  nameWithType.vb: IDataLineageService.RecordIngestion(String, IngestionRecord)
+  fullName.vb: Meridian.Storage.Services.IDataLineageService.RecordIngestion(String, Meridian.Storage.Services.IngestionRecord)
+  name.vb: RecordIngestion(String, IngestionRecord)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+    name: RecordIngestion
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordIngestion_System_String_Meridian_Storage_Services_IngestionRecord_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.IngestionRecord
+    name: IngestionRecord
+    href: Meridian.Storage.Services.IngestionRecord.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordIngestion(System.String,Meridian.Storage.Services.IngestionRecord)
+    name: RecordIngestion
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordIngestion_System_String_Meridian_Storage_Services_IngestionRecord_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.IngestionRecord
+    name: IngestionRecord
+    href: Meridian.Storage.Services.IngestionRecord.html
+  - name: )
+- uid: Meridian.Storage.Services.IngestionRecord
+  commentId: T:Meridian.Storage.Services.IngestionRecord
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IngestionRecord.html
+  name: IngestionRecord
+  nameWithType: IngestionRecord
+  fullName: Meridian.Storage.Services.IngestionRecord
+- uid: Meridian.Storage.Services.DataLineageService.RecordTransformation*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.RecordTransformation
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_RecordTransformation_System_String_System_String_Meridian_Storage_Services_TransformationRecord_
+  name: RecordTransformation
+  nameWithType: DataLineageService.RecordTransformation
+  fullName: Meridian.Storage.Services.DataLineageService.RecordTransformation
+- uid: Meridian.Storage.Services.IDataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordTransformation_System_String_System_String_Meridian_Storage_Services_TransformationRecord_
+  name: RecordTransformation(string, string, TransformationRecord)
+  nameWithType: IDataLineageService.RecordTransformation(string, string, TransformationRecord)
+  fullName: Meridian.Storage.Services.IDataLineageService.RecordTransformation(string, string, Meridian.Storage.Services.TransformationRecord)
+  nameWithType.vb: IDataLineageService.RecordTransformation(String, String, TransformationRecord)
+  fullName.vb: Meridian.Storage.Services.IDataLineageService.RecordTransformation(String, String, Meridian.Storage.Services.TransformationRecord)
+  name.vb: RecordTransformation(String, String, TransformationRecord)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+    name: RecordTransformation
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordTransformation_System_String_System_String_Meridian_Storage_Services_TransformationRecord_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.TransformationRecord
+    name: TransformationRecord
+    href: Meridian.Storage.Services.TransformationRecord.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordTransformation(System.String,System.String,Meridian.Storage.Services.TransformationRecord)
+    name: RecordTransformation
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordTransformation_System_String_System_String_Meridian_Storage_Services_TransformationRecord_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.TransformationRecord
+    name: TransformationRecord
+    href: Meridian.Storage.Services.TransformationRecord.html
+  - name: )
+- uid: Meridian.Storage.Services.TransformationRecord
+  commentId: T:Meridian.Storage.Services.TransformationRecord
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.TransformationRecord.html
+  name: TransformationRecord
+  nameWithType: TransformationRecord
+  fullName: Meridian.Storage.Services.TransformationRecord
+- uid: Meridian.Storage.Services.DataLineageService.RecordMigration*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.RecordMigration
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_RecordMigration_System_String_System_String_Meridian_Storage_Services_MigrationRecord_
+  name: RecordMigration
+  nameWithType: DataLineageService.RecordMigration
+  fullName: Meridian.Storage.Services.DataLineageService.RecordMigration
+- uid: Meridian.Storage.Services.IDataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordMigration_System_String_System_String_Meridian_Storage_Services_MigrationRecord_
+  name: RecordMigration(string, string, MigrationRecord)
+  nameWithType: IDataLineageService.RecordMigration(string, string, MigrationRecord)
+  fullName: Meridian.Storage.Services.IDataLineageService.RecordMigration(string, string, Meridian.Storage.Services.MigrationRecord)
+  nameWithType.vb: IDataLineageService.RecordMigration(String, String, MigrationRecord)
+  fullName.vb: Meridian.Storage.Services.IDataLineageService.RecordMigration(String, String, Meridian.Storage.Services.MigrationRecord)
+  name.vb: RecordMigration(String, String, MigrationRecord)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+    name: RecordMigration
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordMigration_System_String_System_String_Meridian_Storage_Services_MigrationRecord_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.MigrationRecord
+    name: MigrationRecord
+    href: Meridian.Storage.Services.MigrationRecord.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordMigration(System.String,System.String,Meridian.Storage.Services.MigrationRecord)
+    name: RecordMigration
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordMigration_System_String_System_String_Meridian_Storage_Services_MigrationRecord_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.MigrationRecord
+    name: MigrationRecord
+    href: Meridian.Storage.Services.MigrationRecord.html
+  - name: )
+- uid: Meridian.Storage.Services.MigrationRecord
+  commentId: T:Meridian.Storage.Services.MigrationRecord
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.MigrationRecord.html
+  name: MigrationRecord
+  nameWithType: MigrationRecord
+  fullName: Meridian.Storage.Services.MigrationRecord
+- uid: Meridian.Storage.Services.DataLineageService.RecordDeletion*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.RecordDeletion
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_RecordDeletion_System_String_System_String_
+  name: RecordDeletion
+  nameWithType: DataLineageService.RecordDeletion
+  fullName: Meridian.Storage.Services.DataLineageService.RecordDeletion
+- uid: Meridian.Storage.Services.IDataLineageService.RecordDeletion(System.String,System.String)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.RecordDeletion(System.String,System.String)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordDeletion_System_String_System_String_
+  name: RecordDeletion(string, string)
+  nameWithType: IDataLineageService.RecordDeletion(string, string)
+  fullName: Meridian.Storage.Services.IDataLineageService.RecordDeletion(string, string)
+  nameWithType.vb: IDataLineageService.RecordDeletion(String, String)
+  fullName.vb: Meridian.Storage.Services.IDataLineageService.RecordDeletion(String, String)
+  name.vb: RecordDeletion(String, String)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordDeletion(System.String,System.String)
+    name: RecordDeletion
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordDeletion_System_String_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.RecordDeletion(System.String,System.String)
+    name: RecordDeletion
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_RecordDeletion_System_String_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Services.DataLineageService.GetLineageGraph*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.GetLineageGraph
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_GetLineageGraph_System_String_
+  name: GetLineageGraph
+  nameWithType: DataLineageService.GetLineageGraph
+  fullName: Meridian.Storage.Services.DataLineageService.GetLineageGraph
+- uid: Meridian.Storage.Services.IDataLineageService.GetLineageGraph(System.String)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.GetLineageGraph(System.String)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetLineageGraph_System_String_
+  name: GetLineageGraph(string)
+  nameWithType: IDataLineageService.GetLineageGraph(string)
+  fullName: Meridian.Storage.Services.IDataLineageService.GetLineageGraph(string)
+  nameWithType.vb: IDataLineageService.GetLineageGraph(String)
+  fullName.vb: Meridian.Storage.Services.IDataLineageService.GetLineageGraph(String)
+  name.vb: GetLineageGraph(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.GetLineageGraph(System.String)
+    name: GetLineageGraph
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetLineageGraph_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.GetLineageGraph(System.String)
+    name: GetLineageGraph
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetLineageGraph_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Services.LineageGraph
+  commentId: T:Meridian.Storage.Services.LineageGraph
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.LineageGraph.html
+  name: LineageGraph
+  nameWithType: LineageGraph
+  fullName: Meridian.Storage.Services.LineageGraph
+- uid: Meridian.Storage.Services.DataLineageService.GetUpstream*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.GetUpstream
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_GetUpstream_System_String_
+  name: GetUpstream
+  nameWithType: DataLineageService.GetUpstream
+  fullName: Meridian.Storage.Services.DataLineageService.GetUpstream
+- uid: Meridian.Storage.Services.IDataLineageService.GetUpstream(System.String)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.GetUpstream(System.String)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetUpstream_System_String_
+  name: GetUpstream(string)
+  nameWithType: IDataLineageService.GetUpstream(string)
+  fullName: Meridian.Storage.Services.IDataLineageService.GetUpstream(string)
+  nameWithType.vb: IDataLineageService.GetUpstream(String)
+  fullName.vb: Meridian.Storage.Services.IDataLineageService.GetUpstream(String)
+  name.vb: GetUpstream(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.GetUpstream(System.String)
+    name: GetUpstream
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetUpstream_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.GetUpstream(System.String)
+    name: GetUpstream
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetUpstream_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.DataLineageService.GetDownstream*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.GetDownstream
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_GetDownstream_System_String_
+  name: GetDownstream
+  nameWithType: DataLineageService.GetDownstream
+  fullName: Meridian.Storage.Services.DataLineageService.GetDownstream
+- uid: Meridian.Storage.Services.IDataLineageService.GetDownstream(System.String)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.GetDownstream(System.String)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetDownstream_System_String_
+  name: GetDownstream(string)
+  nameWithType: IDataLineageService.GetDownstream(string)
+  fullName: Meridian.Storage.Services.IDataLineageService.GetDownstream(string)
+  nameWithType.vb: IDataLineageService.GetDownstream(String)
+  fullName.vb: Meridian.Storage.Services.IDataLineageService.GetDownstream(String)
+  name.vb: GetDownstream(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.GetDownstream(System.String)
+    name: GetDownstream
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetDownstream_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.GetDownstream(System.String)
+    name: GetDownstream
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GetDownstream_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Services.DataLineageService.GenerateReport*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.GenerateReport
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_GenerateReport
+  name: GenerateReport
+  nameWithType: DataLineageService.GenerateReport
+  fullName: Meridian.Storage.Services.DataLineageService.GenerateReport
+- uid: Meridian.Storage.Services.IDataLineageService.GenerateReport
+  commentId: M:Meridian.Storage.Services.IDataLineageService.GenerateReport
+  parent: Meridian.Storage.Services.IDataLineageService
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GenerateReport
+  name: GenerateReport()
+  nameWithType: IDataLineageService.GenerateReport()
+  fullName: Meridian.Storage.Services.IDataLineageService.GenerateReport()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.GenerateReport
+    name: GenerateReport
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GenerateReport
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.GenerateReport
+    name: GenerateReport
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_GenerateReport
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.LineageReport
+  commentId: T:Meridian.Storage.Services.LineageReport
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.LineageReport.html
+  name: LineageReport
+  nameWithType: LineageReport
+  fullName: Meridian.Storage.Services.LineageReport
+- uid: Meridian.Storage.Services.DataLineageService.SaveAsync*
+  commentId: Overload:Meridian.Storage.Services.DataLineageService.SaveAsync
+  href: Meridian.Storage.Services.DataLineageService.html#Meridian_Storage_Services_DataLineageService_SaveAsync_System_Threading_CancellationToken_
+  name: SaveAsync
+  nameWithType: DataLineageService.SaveAsync
+  fullName: Meridian.Storage.Services.DataLineageService.SaveAsync
+- uid: Meridian.Storage.Services.IDataLineageService.SaveAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataLineageService.SaveAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataLineageService
+  isExternal: true
+  href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_SaveAsync_System_Threading_CancellationToken_
+  name: SaveAsync(CancellationToken)
+  nameWithType: IDataLineageService.SaveAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.IDataLineageService.SaveAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IDataLineageService.SaveAsync(System.Threading.CancellationToken)
+    name: SaveAsync
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_SaveAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IDataLineageService.SaveAsync(System.Threading.CancellationToken)
+    name: SaveAsync
+    href: Meridian.Storage.Services.IDataLineageService.html#Meridian_Storage_Services_IDataLineageService_SaveAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

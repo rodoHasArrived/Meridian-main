@@ -1,0 +1,1116 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.CompositionOptions
+  commentId: T:Meridian.Application.Composition.CompositionOptions
+  id: CompositionOptions
+  parent: Meridian.Application.Composition
+  children:
+  - Meridian.Application.Composition.CompositionOptions.BackfillOnly
+  - Meridian.Application.Composition.CompositionOptions.ConfigPath
+  - Meridian.Application.Composition.CompositionOptions.DataRoot
+  - Meridian.Application.Composition.CompositionOptions.Default
+  - Meridian.Application.Composition.CompositionOptions.EnableBackfillServices
+  - Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices
+  - Meridian.Application.Composition.CompositionOptions.EnableCollectorServices
+  - Meridian.Application.Composition.CompositionOptions.EnableCredentialServices
+  - Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices
+  - Meridian.Application.Composition.CompositionOptions.EnableEtlServices
+  - Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory
+  - Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices
+  - Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry
+  - Meridian.Application.Composition.CompositionOptions.EnablePipelineServices
+  - Meridian.Application.Composition.CompositionOptions.EnableProviderServices
+  - Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement
+  - Meridian.Application.Composition.CompositionOptions.McpServer
+  - Meridian.Application.Composition.CompositionOptions.Minimal
+  - Meridian.Application.Composition.CompositionOptions.Streaming
+  - Meridian.Application.Composition.CompositionOptions.WebDashboard
+  langs:
+  - csharp
+  - vb
+  name: CompositionOptions
+  nameWithType: CompositionOptions
+  fullName: Meridian.Application.Composition.CompositionOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositionOptions
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Options controlling which services are registered by the composition root.
+  example: []
+  syntax:
+    content: 'public sealed record CompositionOptions : IEquatable<CompositionOptions>'
+    content.vb: Public NotInheritable Class CompositionOptions Implements IEquatable(Of CompositionOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Composition.CompositionOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Composition.CompositionOptions.Default
+  commentId: P:Meridian.Application.Composition.CompositionOptions.Default
+  id: Default
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: CompositionOptions.Default
+  fullName: Meridian.Application.Composition.CompositionOptions.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Default options enabling all commonly used services.
+  example: []
+  syntax:
+    content: public static CompositionOptions Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Composition.CompositionOptions
+    content.vb: Public Shared ReadOnly Property [Default] As CompositionOptions
+  overload: Meridian.Application.Composition.CompositionOptions.Default*
+- uid: Meridian.Application.Composition.CompositionOptions.Minimal
+  commentId: P:Meridian.Application.Composition.CompositionOptions.Minimal
+  id: Minimal
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: Minimal
+  nameWithType: CompositionOptions.Minimal
+  fullName: Meridian.Application.Composition.CompositionOptions.Minimal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minimal
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Minimal options for console-only operation (utility commands, validation, etc.).
+  example: []
+  syntax:
+    content: public static CompositionOptions Minimal { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Composition.CompositionOptions
+    content.vb: Public Shared ReadOnly Property Minimal As CompositionOptions
+  overload: Meridian.Application.Composition.CompositionOptions.Minimal*
+- uid: Meridian.Application.Composition.CompositionOptions.WebDashboard
+  commentId: P:Meridian.Application.Composition.CompositionOptions.WebDashboard
+  id: WebDashboard
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: WebDashboard
+  nameWithType: CompositionOptions.WebDashboard
+  fullName: Meridian.Application.Composition.CompositionOptions.WebDashboard
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebDashboard
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Options optimized for web dashboard hosting.
+  example: []
+  syntax:
+    content: public static CompositionOptions WebDashboard { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Composition.CompositionOptions
+    content.vb: Public Shared ReadOnly Property WebDashboard As CompositionOptions
+  overload: Meridian.Application.Composition.CompositionOptions.WebDashboard*
+- uid: Meridian.Application.Composition.CompositionOptions.Streaming
+  commentId: P:Meridian.Application.Composition.CompositionOptions.Streaming
+  id: Streaming
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: Streaming
+  nameWithType: CompositionOptions.Streaming
+  fullName: Meridian.Application.Composition.CompositionOptions.Streaming
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Streaming
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Options for streaming data collection (CLI headless mode).
+  example: []
+  syntax:
+    content: public static CompositionOptions Streaming { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Composition.CompositionOptions
+    content.vb: Public Shared ReadOnly Property Streaming As CompositionOptions
+  overload: Meridian.Application.Composition.CompositionOptions.Streaming*
+- uid: Meridian.Application.Composition.CompositionOptions.BackfillOnly
+  commentId: P:Meridian.Application.Composition.CompositionOptions.BackfillOnly
+  id: BackfillOnly
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: BackfillOnly
+  nameWithType: CompositionOptions.BackfillOnly
+  fullName: Meridian.Application.Composition.CompositionOptions.BackfillOnly
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillOnly
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Options for backfill-only operation.
+  example: []
+  syntax:
+    content: public static CompositionOptions BackfillOnly { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Composition.CompositionOptions
+    content.vb: Public Shared ReadOnly Property BackfillOnly As CompositionOptions
+  overload: Meridian.Application.Composition.CompositionOptions.BackfillOnly*
+- uid: Meridian.Application.Composition.CompositionOptions.McpServer
+  commentId: P:Meridian.Application.Composition.CompositionOptions.McpServer
+  id: McpServer
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: McpServer
+  nameWithType: CompositionOptions.McpServer
+  fullName: Meridian.Application.Composition.CompositionOptions.McpServer
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: McpServer
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: >-
+    Options for the MCP server host. Enables provider discovery and backfill services
+
+    without the streaming pipeline or collector, since the MCP server is query-oriented.
+  example: []
+  syntax:
+    content: public static CompositionOptions McpServer { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Composition.CompositionOptions
+    content.vb: Public Shared ReadOnly Property McpServer As CompositionOptions
+  overload: Meridian.Application.Composition.CompositionOptions.McpServer*
+- uid: Meridian.Application.Composition.CompositionOptions.ConfigPath
+  commentId: P:Meridian.Application.Composition.CompositionOptions.ConfigPath
+  id: ConfigPath
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: ConfigPath
+  nameWithType: CompositionOptions.ConfigPath
+  fullName: Meridian.Application.Composition.CompositionOptions.ConfigPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigPath
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 328
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Path to the configuration file. If null, ConfigStore will use default resolution.
+  example: []
+  syntax:
+    content: public string? ConfigPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConfigPath As String
+  overload: Meridian.Application.Composition.CompositionOptions.ConfigPath*
+- uid: Meridian.Application.Composition.CompositionOptions.DataRoot
+  commentId: P:Meridian.Application.Composition.CompositionOptions.DataRoot
+  id: DataRoot
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: DataRoot
+  nameWithType: CompositionOptions.DataRoot
+  fullName: Meridian.Application.Composition.CompositionOptions.DataRoot
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataRoot
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 333
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Data root directory override. If null, uses value from configuration.
+  example: []
+  syntax:
+    content: public string? DataRoot { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataRoot As String
+  overload: Meridian.Application.Composition.CompositionOptions.DataRoot*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement
+  id: EnableSymbolManagement
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableSymbolManagement
+  nameWithType: CompositionOptions.EnableSymbolManagement
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableSymbolManagement
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 335
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableSymbolManagement { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableSymbolManagement As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableBackfillServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableBackfillServices
+  id: EnableBackfillServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableBackfillServices
+  nameWithType: CompositionOptions.EnableBackfillServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableBackfillServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableBackfillServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableBackfillServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableBackfillServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableBackfillServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableEtlServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableEtlServices
+  id: EnableEtlServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableEtlServices
+  nameWithType: CompositionOptions.EnableEtlServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableEtlServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableEtlServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 337
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableEtlServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableEtlServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableEtlServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices
+  id: EnableMaintenanceServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableMaintenanceServices
+  nameWithType: CompositionOptions.EnableMaintenanceServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableMaintenanceServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableMaintenanceServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableMaintenanceServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices
+  id: EnableDiagnosticServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableDiagnosticServices
+  nameWithType: CompositionOptions.EnableDiagnosticServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableDiagnosticServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 339
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableDiagnosticServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableDiagnosticServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableCredentialServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableCredentialServices
+  id: EnableCredentialServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableCredentialServices
+  nameWithType: CompositionOptions.EnableCredentialServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableCredentialServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableCredentialServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableCredentialServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableCredentialServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableCredentialServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableProviderServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableProviderServices
+  id: EnableProviderServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableProviderServices
+  nameWithType: CompositionOptions.EnableProviderServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableProviderServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableProviderServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableProviderServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableProviderServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableProviderServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnablePipelineServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnablePipelineServices
+  id: EnablePipelineServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnablePipelineServices
+  nameWithType: CompositionOptions.EnablePipelineServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnablePipelineServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnablePipelineServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnablePipelineServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnablePipelineServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnablePipelineServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableCollectorServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableCollectorServices
+  id: EnableCollectorServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableCollectorServices
+  nameWithType: CompositionOptions.EnableCollectorServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableCollectorServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableCollectorServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableCollectorServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableCollectorServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableCollectorServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory
+  id: EnableHttpClientFactory
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableHttpClientFactory
+  nameWithType: CompositionOptions.EnableHttpClientFactory
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableHttpClientFactory
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableHttpClientFactory { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableHttpClientFactory As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices
+  id: EnableCanonicalizationServices
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableCanonicalizationServices
+  nameWithType: CompositionOptions.EnableCanonicalizationServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableCanonicalizationServices
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  syntax:
+    content: public bool EnableCanonicalizationServices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableCanonicalizationServices As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices*
+- uid: Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry
+  commentId: P:Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry
+  id: EnableOpenTelemetry
+  parent: Meridian.Application.Composition.CompositionOptions
+  langs:
+  - csharp
+  - vb
+  name: EnableOpenTelemetry
+  nameWithType: CompositionOptions.EnableOpenTelemetry
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableOpenTelemetry
+    path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Whether to enable OpenTelemetry tracing and metrics instrumentation.
+  example: []
+  syntax:
+    content: public bool EnableOpenTelemetry { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableOpenTelemetry As Boolean
+  overload: Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry*
+references:
+- uid: Meridian.Application.Composition
+  commentId: N:Meridian.Application.Composition
+  href: Meridian.html
+  name: Meridian.Application.Composition
+  nameWithType: Meridian.Application.Composition
+  fullName: Meridian.Application.Composition
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Composition.CompositionOptions}
+  commentId: T:System.IEquatable{Meridian.Application.Composition.CompositionOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CompositionOptions>
+  nameWithType: IEquatable<CompositionOptions>
+  fullName: System.IEquatable<Meridian.Application.Composition.CompositionOptions>
+  nameWithType.vb: IEquatable(Of CompositionOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Composition.CompositionOptions)
+  name.vb: IEquatable(Of CompositionOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Composition.CompositionOptions
+    name: CompositionOptions
+    href: Meridian.Application.Composition.CompositionOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Composition.CompositionOptions
+    name: CompositionOptions
+    href: Meridian.Application.Composition.CompositionOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Composition.CompositionOptions.Default*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.Default
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_Default
+  name: Default
+  nameWithType: CompositionOptions.Default
+  fullName: Meridian.Application.Composition.CompositionOptions.Default
+- uid: Meridian.Application.Composition.CompositionOptions
+  commentId: T:Meridian.Application.Composition.CompositionOptions
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.CompositionOptions.html
+  name: CompositionOptions
+  nameWithType: CompositionOptions
+  fullName: Meridian.Application.Composition.CompositionOptions
+- uid: Meridian.Application.Composition.CompositionOptions.Minimal*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.Minimal
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_Minimal
+  name: Minimal
+  nameWithType: CompositionOptions.Minimal
+  fullName: Meridian.Application.Composition.CompositionOptions.Minimal
+- uid: Meridian.Application.Composition.CompositionOptions.WebDashboard*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.WebDashboard
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_WebDashboard
+  name: WebDashboard
+  nameWithType: CompositionOptions.WebDashboard
+  fullName: Meridian.Application.Composition.CompositionOptions.WebDashboard
+- uid: Meridian.Application.Composition.CompositionOptions.Streaming*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.Streaming
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_Streaming
+  name: Streaming
+  nameWithType: CompositionOptions.Streaming
+  fullName: Meridian.Application.Composition.CompositionOptions.Streaming
+- uid: Meridian.Application.Composition.CompositionOptions.BackfillOnly*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.BackfillOnly
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_BackfillOnly
+  name: BackfillOnly
+  nameWithType: CompositionOptions.BackfillOnly
+  fullName: Meridian.Application.Composition.CompositionOptions.BackfillOnly
+- uid: Meridian.Application.Composition.CompositionOptions.McpServer*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.McpServer
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_McpServer
+  name: McpServer
+  nameWithType: CompositionOptions.McpServer
+  fullName: Meridian.Application.Composition.CompositionOptions.McpServer
+- uid: Meridian.Application.Composition.CompositionOptions.ConfigPath*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.ConfigPath
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_ConfigPath
+  name: ConfigPath
+  nameWithType: CompositionOptions.ConfigPath
+  fullName: Meridian.Application.Composition.CompositionOptions.ConfigPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Composition.CompositionOptions.DataRoot*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.DataRoot
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_DataRoot
+  name: DataRoot
+  nameWithType: CompositionOptions.DataRoot
+  fullName: Meridian.Application.Composition.CompositionOptions.DataRoot
+- uid: Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableSymbolManagement
+  name: EnableSymbolManagement
+  nameWithType: CompositionOptions.EnableSymbolManagement
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableSymbolManagement
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Composition.CompositionOptions.EnableBackfillServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableBackfillServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableBackfillServices
+  name: EnableBackfillServices
+  nameWithType: CompositionOptions.EnableBackfillServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableBackfillServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableEtlServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableEtlServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableEtlServices
+  name: EnableEtlServices
+  nameWithType: CompositionOptions.EnableEtlServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableEtlServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableMaintenanceServices
+  name: EnableMaintenanceServices
+  nameWithType: CompositionOptions.EnableMaintenanceServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableMaintenanceServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableDiagnosticServices
+  name: EnableDiagnosticServices
+  nameWithType: CompositionOptions.EnableDiagnosticServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableDiagnosticServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableCredentialServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableCredentialServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableCredentialServices
+  name: EnableCredentialServices
+  nameWithType: CompositionOptions.EnableCredentialServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableCredentialServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableProviderServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableProviderServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableProviderServices
+  name: EnableProviderServices
+  nameWithType: CompositionOptions.EnableProviderServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableProviderServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnablePipelineServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnablePipelineServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnablePipelineServices
+  name: EnablePipelineServices
+  nameWithType: CompositionOptions.EnablePipelineServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnablePipelineServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableCollectorServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableCollectorServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableCollectorServices
+  name: EnableCollectorServices
+  nameWithType: CompositionOptions.EnableCollectorServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableCollectorServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableHttpClientFactory
+  name: EnableHttpClientFactory
+  nameWithType: CompositionOptions.EnableHttpClientFactory
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableHttpClientFactory
+- uid: Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableCanonicalizationServices
+  name: EnableCanonicalizationServices
+  nameWithType: CompositionOptions.EnableCanonicalizationServices
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableCanonicalizationServices
+- uid: Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry*
+  commentId: Overload:Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry
+  href: Meridian.Application.Composition.CompositionOptions.html#Meridian_Application_Composition_CompositionOptions_EnableOpenTelemetry
+  name: EnableOpenTelemetry
+  nameWithType: CompositionOptions.EnableOpenTelemetry
+  fullName: Meridian.Application.Composition.CompositionOptions.EnableOpenTelemetry

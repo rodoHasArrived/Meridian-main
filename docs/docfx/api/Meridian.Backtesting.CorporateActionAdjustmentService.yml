@@ -1,0 +1,1083 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService
+  commentId: T:Meridian.Backtesting.CorporateActionAdjustmentService
+  id: CorporateActionAdjustmentService
+  parent: Meridian.Backtesting
+  children:
+  - Meridian.Backtesting.CorporateActionAdjustmentService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.CorporateActionAdjustmentService})
+  - Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  - Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionAdjustmentService
+  nameWithType: CorporateActionAdjustmentService
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActionAdjustmentService
+    path: ../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: >-
+    Adjusts historical bar prices and volumes for corporate actions (stock splits and dividends)
+
+    using Security Master data.
+  example: []
+  syntax:
+    content: 'public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService, ILivePositionCorporateActionAdjuster'
+    content.vb: Public NotInheritable Class CorporateActionAdjustmentService Implements ICorporateActionAdjustmentService, ILivePositionCorporateActionAdjuster
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Backtesting.ICorporateActionAdjustmentService
+  - Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.CorporateActionAdjustmentService})
+  commentId: M:Meridian.Backtesting.CorporateActionAdjustmentService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.CorporateActionAdjustmentService})
+  id: '#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.CorporateActionAdjustmentService})'
+  parent: Meridian.Backtesting.CorporateActionAdjustmentService
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionAdjustmentService(ISecurityMasterQueryService, ISecurityResolver, ILogger<CorporateActionAdjustmentService>)
+  nameWithType: CorporateActionAdjustmentService.CorporateActionAdjustmentService(ISecurityMasterQueryService, ISecurityResolver, ILogger<CorporateActionAdjustmentService>)
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService.CorporateActionAdjustmentService(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, Meridian.Application.SecurityMaster.ISecurityResolver, Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.CorporateActionAdjustmentService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  syntax:
+    content: public CorporateActionAdjustmentService(ISecurityMasterQueryService queryService, ISecurityResolver resolver, ILogger<CorporateActionAdjustmentService> logger)
+    parameters:
+    - id: queryService
+      type: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+    - id: resolver
+      type: Meridian.Application.SecurityMaster.ISecurityResolver
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.CorporateActionAdjustmentService}
+    content.vb: Public Sub New(queryService As ISecurityMasterQueryService, resolver As ISecurityResolver, logger As ILogger(Of CorporateActionAdjustmentService))
+  overload: Meridian.Backtesting.CorporateActionAdjustmentService.#ctor*
+  nameWithType.vb: CorporateActionAdjustmentService.New(ISecurityMasterQueryService, ISecurityResolver, ILogger(Of CorporateActionAdjustmentService))
+  fullName.vb: Meridian.Backtesting.CorporateActionAdjustmentService.New(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, Meridian.Application.SecurityMaster.ISecurityResolver, Microsoft.Extensions.Logging.ILogger(Of Meridian.Backtesting.CorporateActionAdjustmentService))
+  name.vb: New(ISecurityMasterQueryService, ISecurityResolver, ILogger(Of CorporateActionAdjustmentService))
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  id: AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.CorporateActionAdjustmentService
+  langs:
+  - csharp
+  - vb
+  name: AdjustAsync(IReadOnlyList<HistoricalBar>, string, CancellationToken)
+  nameWithType: CorporateActionAdjustmentService.AdjustAsync(IReadOnlyList<HistoricalBar>, string, CancellationToken)
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustAsync
+    path: ../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Adjusts historical bars for stock splits and dividends using Security Master data.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<HistoricalBar>> AdjustAsync(IReadOnlyList<HistoricalBar> bars, string ticker, CancellationToken ct = default)
+    parameters:
+    - id: bars
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+      description: Original historical bars (not modified).
+    - id: ticker
+      type: System.String
+      description: Ticker symbol to resolve to security ID.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+      description: New list of adjusted bars, or original bars if security not found or no actions recorded.
+    content.vb: Public Function AdjustAsync(bars As IReadOnlyList(Of HistoricalBar), ticker As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of HistoricalBar))
+  overload: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync*
+  implements:
+  - Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  nameWithType.vb: CorporateActionAdjustmentService.AdjustAsync(IReadOnlyList(Of HistoricalBar), String, CancellationToken)
+  fullName.vb: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar), String, System.Threading.CancellationToken)
+  name.vb: AdjustAsync(IReadOnlyList(Of HistoricalBar), String, CancellationToken)
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.CorporateActionAdjustmentService
+  langs:
+  - csharp
+  - vb
+  name: AdjustPositionAsync(string, decimal, decimal, DateTimeOffset, CancellationToken)
+  nameWithType: CorporateActionAdjustmentService.AdjustPositionAsync(string, decimal, decimal, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync(string, decimal, decimal, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustPositionAsync
+    path: ../../src/Meridian.Backtesting/CorporateActionAdjustmentService.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: >-
+    Returns an adjusted <xref href="Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment" data-throw-if-not-resolved="false"></xref> for the given position.
+
+    If no corporate actions are found or the symbol cannot be resolved, returns an adjustment
+
+    with the original values unchanged.
+  example: []
+  syntax:
+    content: public Task<PositionCorporateActionAdjustment> AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default)
+    parameters:
+    - id: ticker
+      type: System.String
+      description: Ticker symbol of the security.
+    - id: quantity
+      type: System.Decimal
+      description: Current position quantity (positive for long, negative for short).
+    - id: costBasis
+      type: System.Decimal
+      description: Current average cost basis per share.
+    - id: positionOpenedAt
+      type: System.DateTimeOffset
+      description: Timestamp when the position was first opened (UTC).
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment}
+    content.vb: Public Function AdjustPositionAsync(ticker As String, quantity As Decimal, costBasis As Decimal, positionOpenedAt As DateTimeOffset, ct As CancellationToken = Nothing) As Task(Of PositionCorporateActionAdjustment)
+  overload: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+  nameWithType.vb: CorporateActionAdjustmentService.AdjustPositionAsync(String, Decimal, Decimal, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync(String, Decimal, Decimal, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: AdjustPositionAsync(String, Decimal, Decimal, DateTimeOffset, CancellationToken)
+references:
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  href: Meridian.html
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.ICorporateActionAdjustmentService
+  commentId: T:Meridian.Backtesting.ICorporateActionAdjustmentService
+  parent: Meridian.Backtesting
+  href: Meridian.Backtesting.ICorporateActionAdjustmentService.html
+  name: ICorporateActionAdjustmentService
+  nameWithType: ICorporateActionAdjustmentService
+  fullName: Meridian.Backtesting.ICorporateActionAdjustmentService
+- uid: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+  commentId: T:Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.html
+  name: ILivePositionCorporateActionAdjuster
+  nameWithType: ILivePositionCorporateActionAdjuster
+  fullName: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService.#ctor*
+  commentId: Overload:Meridian.Backtesting.CorporateActionAdjustmentService.#ctor
+  href: Meridian.Backtesting.CorporateActionAdjustmentService.html#Meridian_Backtesting_CorporateActionAdjustmentService__ctor_Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService_Meridian_Application_SecurityMaster_ISecurityResolver_Microsoft_Extensions_Logging_ILogger_Meridian_Backtesting_CorporateActionAdjustmentService__
+  name: CorporateActionAdjustmentService
+  nameWithType: CorporateActionAdjustmentService.CorporateActionAdjustmentService
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService.CorporateActionAdjustmentService
+  nameWithType.vb: CorporateActionAdjustmentService.New
+  fullName.vb: Meridian.Backtesting.CorporateActionAdjustmentService.New
+  name.vb: New
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.html
+  name: ISecurityMasterQueryService
+  nameWithType: ISecurityMasterQueryService
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+- uid: Meridian.Application.SecurityMaster.ISecurityResolver
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityResolver
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityResolver.html
+  name: ISecurityResolver
+  nameWithType: ISecurityResolver
+  fullName: Meridian.Application.SecurityMaster.ISecurityResolver
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.CorporateActionAdjustmentService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.CorporateActionAdjustmentService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<CorporateActionAdjustmentService>
+  nameWithType: ILogger<CorporateActionAdjustmentService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.CorporateActionAdjustmentService>
+  nameWithType.vb: ILogger(Of CorporateActionAdjustmentService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Backtesting.CorporateActionAdjustmentService)
+  name.vb: ILogger(Of CorporateActionAdjustmentService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Backtesting.CorporateActionAdjustmentService
+    name: CorporateActionAdjustmentService
+    href: Meridian.Backtesting.CorporateActionAdjustmentService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.CorporateActionAdjustmentService
+    name: CorporateActionAdjustmentService
+    href: Meridian.Backtesting.CorporateActionAdjustmentService.html
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync*
+  commentId: Overload:Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync
+  href: Meridian.Backtesting.CorporateActionAdjustmentService.html#Meridian_Backtesting_CorporateActionAdjustmentService_AdjustAsync_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_HistoricalBar__System_String_System_Threading_CancellationToken_
+  name: AdjustAsync
+  nameWithType: CorporateActionAdjustmentService.AdjustAsync
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustAsync
+- uid: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.ICorporateActionAdjustmentService
+  isExternal: true
+  href: Meridian.Backtesting.ICorporateActionAdjustmentService.html#Meridian_Backtesting_ICorporateActionAdjustmentService_AdjustAsync_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_HistoricalBar__System_String_System_Threading_CancellationToken_
+  name: AdjustAsync(IReadOnlyList<HistoricalBar>, string, CancellationToken)
+  nameWithType: ICorporateActionAdjustmentService.AdjustAsync(IReadOnlyList<HistoricalBar>, string, CancellationToken)
+  fullName: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>, string, System.Threading.CancellationToken)
+  nameWithType.vb: ICorporateActionAdjustmentService.AdjustAsync(IReadOnlyList(Of HistoricalBar), String, CancellationToken)
+  fullName.vb: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar), String, System.Threading.CancellationToken)
+  name.vb: AdjustAsync(IReadOnlyList(Of HistoricalBar), String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+    name: AdjustAsync
+    href: Meridian.Backtesting.ICorporateActionAdjustmentService.html#Meridian_Backtesting_ICorporateActionAdjustmentService_AdjustAsync_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_HistoricalBar__System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.ICorporateActionAdjustmentService.AdjustAsync(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar},System.String,System.Threading.CancellationToken)
+    name: AdjustAsync
+    href: Meridian.Backtesting.ICorporateActionAdjustmentService.html#Meridian_Backtesting_ICorporateActionAdjustmentService_AdjustAsync_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_HistoricalBar__System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<HistoricalBar>
+  nameWithType: IReadOnlyList<HistoricalBar>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>
+  nameWithType.vb: IReadOnlyList(Of HistoricalBar)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar)
+  name.vb: IReadOnlyList(Of HistoricalBar)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<HistoricalBar>>
+  nameWithType: Task<IReadOnlyList<HistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment
+  commentId: T:Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment
+  href: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment.html
+  name: PositionCorporateActionAdjustment
+  nameWithType: PositionCorporateActionAdjustment
+  fullName: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync*
+  commentId: Overload:Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync
+  href: Meridian.Backtesting.CorporateActionAdjustmentService.html#Meridian_Backtesting_CorporateActionAdjustmentService_AdjustPositionAsync_System_String_System_Decimal_System_Decimal_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: AdjustPositionAsync
+  nameWithType: CorporateActionAdjustmentService.AdjustPositionAsync
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService.AdjustPositionAsync
+- uid: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.html#Meridian_Application_SecurityMaster_ILivePositionCorporateActionAdjuster_AdjustPositionAsync_System_String_System_Decimal_System_Decimal_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: AdjustPositionAsync(string, decimal, decimal, DateTimeOffset, CancellationToken)
+  nameWithType: ILivePositionCorporateActionAdjuster.AdjustPositionAsync(string, decimal, decimal, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.AdjustPositionAsync(string, decimal, decimal, System.DateTimeOffset, System.Threading.CancellationToken)
+  nameWithType.vb: ILivePositionCorporateActionAdjuster.AdjustPositionAsync(String, Decimal, Decimal, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.AdjustPositionAsync(String, Decimal, Decimal, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: AdjustPositionAsync(String, Decimal, Decimal, DateTimeOffset, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: AdjustPositionAsync
+    href: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.html#Meridian_Application_SecurityMaster_ILivePositionCorporateActionAdjuster_AdjustPositionAsync_System_String_System_Decimal_System_Decimal_System_DateTimeOffset_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.AdjustPositionAsync(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: AdjustPositionAsync
+    href: Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.html#Meridian_Application_SecurityMaster_ILivePositionCorporateActionAdjuster_AdjustPositionAsync_System_String_System_Decimal_System_Decimal_System_DateTimeOffset_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Threading.Tasks.Task{Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PositionCorporateActionAdjustment>
+  nameWithType: Task<PositionCorporateActionAdjustment>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment>
+  nameWithType.vb: Task(Of PositionCorporateActionAdjustment)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment)
+  name.vb: Task(Of PositionCorporateActionAdjustment)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment
+    name: PositionCorporateActionAdjustment
+    href: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment
+    name: PositionCorporateActionAdjustment
+    href: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment.html
+  - name: )

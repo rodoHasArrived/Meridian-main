@@ -1,0 +1,157 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.BrokerType
+  commentId: T:Meridian.Application.Subscriptions.Models.BrokerType
+  id: BrokerType
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.BrokerType.Alpaca
+  - Meridian.Application.Subscriptions.Models.BrokerType.InteractiveBrokers
+  - Meridian.Application.Subscriptions.Models.BrokerType.Manual
+  langs:
+  - csharp
+  - vb
+  name: BrokerType
+  nameWithType: BrokerType
+  fullName: Meridian.Application.Subscriptions.Models.BrokerType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerType
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Supported broker types.
+  example: []
+  syntax:
+    content: 'public enum BrokerType : byte'
+    content.vb: Public Enum BrokerType As Byte
+- uid: Meridian.Application.Subscriptions.Models.BrokerType.Alpaca
+  commentId: F:Meridian.Application.Subscriptions.Models.BrokerType.Alpaca
+  id: Alpaca
+  parent: Meridian.Application.Subscriptions.Models.BrokerType
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: BrokerType.Alpaca
+  fullName: Meridian.Application.Subscriptions.Models.BrokerType.Alpaca
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Alpaca = 0
+    return:
+      type: Meridian.Application.Subscriptions.Models.BrokerType
+- uid: Meridian.Application.Subscriptions.Models.BrokerType.InteractiveBrokers
+  commentId: F:Meridian.Application.Subscriptions.Models.BrokerType.InteractiveBrokers
+  id: InteractiveBrokers
+  parent: Meridian.Application.Subscriptions.Models.BrokerType
+  langs:
+  - csharp
+  - vb
+  name: InteractiveBrokers
+  nameWithType: BrokerType.InteractiveBrokers
+  fullName: Meridian.Application.Subscriptions.Models.BrokerType.InteractiveBrokers
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InteractiveBrokers
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: InteractiveBrokers = 1
+    return:
+      type: Meridian.Application.Subscriptions.Models.BrokerType
+- uid: Meridian.Application.Subscriptions.Models.BrokerType.Manual
+  commentId: F:Meridian.Application.Subscriptions.Models.BrokerType.Manual
+  id: Manual
+  parent: Meridian.Application.Subscriptions.Models.BrokerType
+  langs:
+  - csharp
+  - vb
+  name: Manual
+  nameWithType: BrokerType.Manual
+  fullName: Meridian.Application.Subscriptions.Models.BrokerType.Manual
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Manual
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Manual = 2
+    return:
+      type: Meridian.Application.Subscriptions.Models.BrokerType
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Models.BrokerType
+  commentId: T:Meridian.Application.Subscriptions.Models.BrokerType
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BrokerType.html
+  name: BrokerType
+  nameWithType: BrokerType
+  fullName: Meridian.Application.Subscriptions.Models.BrokerType

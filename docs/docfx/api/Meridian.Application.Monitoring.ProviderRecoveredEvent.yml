@@ -1,0 +1,534 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent
+  commentId: T:Meridian.Application.Monitoring.ProviderRecoveredEvent
+  id: ProviderRecoveredEvent
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderRecoveredEvent.#ctor(System.String,System.Double,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore
+  - Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName
+  - Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: ProviderRecoveredEvent
+  nameWithType: ProviderRecoveredEvent
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRecoveredEvent
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a provider recovers from degradation.
+  example: []
+  syntax:
+    content: 'public readonly record struct ProviderRecoveredEvent : IEquatable<ProviderRecoveredEvent>'
+    content.vb: Public Structure ProviderRecoveredEvent Implements IEquatable(Of ProviderRecoveredEvent)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ProviderRecoveredEvent}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.#ctor(System.String,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.ProviderRecoveredEvent.#ctor(System.String,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.String,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.ProviderRecoveredEvent
+  langs:
+  - csharp
+  - vb
+  name: ProviderRecoveredEvent(string, double, DateTimeOffset)
+  nameWithType: ProviderRecoveredEvent.ProviderRecoveredEvent(string, double, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderRecoveredEvent(string, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a provider recovers from degradation.
+  example: []
+  syntax:
+    content: public ProviderRecoveredEvent(string ProviderName, double CompositeScore, DateTimeOffset Timestamp)
+    parameters:
+    - id: ProviderName
+      type: System.String
+    - id: CompositeScore
+      type: System.Double
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(ProviderName As String, CompositeScore As Double, Timestamp As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.ProviderRecoveredEvent.#ctor*
+  nameWithType.vb: ProviderRecoveredEvent.New(String, Double, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.ProviderRecoveredEvent.New(String, Double, System.DateTimeOffset)
+  name.vb: New(String, Double, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName
+  commentId: P:Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName
+  id: ProviderName
+  parent: Meridian.Application.Monitoring.ProviderRecoveredEvent
+  langs:
+  - csharp
+  - vb
+  name: ProviderName
+  nameWithType: ProviderRecoveredEvent.ProviderName
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderName
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 413
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string ProviderName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderName As String
+  overload: Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName*
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore
+  commentId: P:Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore
+  id: CompositeScore
+  parent: Meridian.Application.Monitoring.ProviderRecoveredEvent
+  langs:
+  - csharp
+  - vb
+  name: CompositeScore
+  nameWithType: ProviderRecoveredEvent.CompositeScore
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositeScore
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 414
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double CompositeScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CompositeScore As Double
+  overload: Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore*
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp
+  commentId: P:Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.ProviderRecoveredEvent
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ProviderRecoveredEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 415
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.ProviderRecoveredEvent}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ProviderRecoveredEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderRecoveredEvent>
+  nameWithType: IEquatable<ProviderRecoveredEvent>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ProviderRecoveredEvent>
+  nameWithType.vb: IEquatable(Of ProviderRecoveredEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ProviderRecoveredEvent)
+  name.vb: IEquatable(Of ProviderRecoveredEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderRecoveredEvent
+    name: ProviderRecoveredEvent
+    href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderRecoveredEvent
+    name: ProviderRecoveredEvent
+    href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderRecoveredEvent.#ctor
+  href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html#Meridian_Application_Monitoring_ProviderRecoveredEvent__ctor_System_String_System_Double_System_DateTimeOffset_
+  name: ProviderRecoveredEvent
+  nameWithType: ProviderRecoveredEvent.ProviderRecoveredEvent
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderRecoveredEvent
+  nameWithType.vb: ProviderRecoveredEvent.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderRecoveredEvent.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName
+  href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html#Meridian_Application_Monitoring_ProviderRecoveredEvent_ProviderName
+  name: ProviderName
+  nameWithType: ProviderRecoveredEvent.ProviderName
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.ProviderName
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore
+  href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html#Meridian_Application_Monitoring_ProviderRecoveredEvent_CompositeScore
+  name: CompositeScore
+  nameWithType: ProviderRecoveredEvent.CompositeScore
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.CompositeScore
+- uid: Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp
+  href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html#Meridian_Application_Monitoring_ProviderRecoveredEvent_Timestamp
+  name: Timestamp
+  nameWithType: ProviderRecoveredEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.ProviderRecoveredEvent.Timestamp

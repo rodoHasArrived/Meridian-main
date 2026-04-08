@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.SessionFilter
+  commentId: T:Meridian.Storage.Export.SessionFilter
+  id: SessionFilter
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.SessionFilter.AfterHours
+  - Meridian.Storage.Export.SessionFilter.All
+  - Meridian.Storage.Export.SessionFilter.ExtendedHours
+  - Meridian.Storage.Export.SessionFilter.PreMarket
+  - Meridian.Storage.Export.SessionFilter.RegularHours
+  langs:
+  - csharp
+  - vb
+  name: SessionFilter
+  nameWithType: SessionFilter
+  fullName: Meridian.Storage.Export.SessionFilter
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionFilter
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Session filter options.
+  example: []
+  syntax:
+    content: 'public enum SessionFilter : byte'
+    content.vb: Public Enum SessionFilter As Byte
+- uid: Meridian.Storage.Export.SessionFilter.All
+  commentId: F:Meridian.Storage.Export.SessionFilter.All
+  id: All
+  parent: Meridian.Storage.Export.SessionFilter
+  langs:
+  - csharp
+  - vb
+  name: All
+  nameWithType: SessionFilter.All
+  fullName: Meridian.Storage.Export.SessionFilter.All
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: All
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Include all data.
+  example: []
+  syntax:
+    content: All = 0
+    return:
+      type: Meridian.Storage.Export.SessionFilter
+- uid: Meridian.Storage.Export.SessionFilter.RegularHours
+  commentId: F:Meridian.Storage.Export.SessionFilter.RegularHours
+  id: RegularHours
+  parent: Meridian.Storage.Export.SessionFilter
+  langs:
+  - csharp
+  - vb
+  name: RegularHours
+  nameWithType: SessionFilter.RegularHours
+  fullName: Meridian.Storage.Export.SessionFilter.RegularHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegularHours
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Regular market hours only (9:30-16:00 ET).
+  example: []
+  syntax:
+    content: RegularHours = 1
+    return:
+      type: Meridian.Storage.Export.SessionFilter
+- uid: Meridian.Storage.Export.SessionFilter.PreMarket
+  commentId: F:Meridian.Storage.Export.SessionFilter.PreMarket
+  id: PreMarket
+  parent: Meridian.Storage.Export.SessionFilter
+  langs:
+  - csharp
+  - vb
+  name: PreMarket
+  nameWithType: SessionFilter.PreMarket
+  fullName: Meridian.Storage.Export.SessionFilter.PreMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreMarket
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-market only (4:00-9:30 ET).
+  example: []
+  syntax:
+    content: PreMarket = 2
+    return:
+      type: Meridian.Storage.Export.SessionFilter
+- uid: Meridian.Storage.Export.SessionFilter.AfterHours
+  commentId: F:Meridian.Storage.Export.SessionFilter.AfterHours
+  id: AfterHours
+  parent: Meridian.Storage.Export.SessionFilter
+  langs:
+  - csharp
+  - vb
+  name: AfterHours
+  nameWithType: SessionFilter.AfterHours
+  fullName: Meridian.Storage.Export.SessionFilter.AfterHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AfterHours
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: After-hours only (16:00-20:00 ET).
+  example: []
+  syntax:
+    content: AfterHours = 3
+    return:
+      type: Meridian.Storage.Export.SessionFilter
+- uid: Meridian.Storage.Export.SessionFilter.ExtendedHours
+  commentId: F:Meridian.Storage.Export.SessionFilter.ExtendedHours
+  id: ExtendedHours
+  parent: Meridian.Storage.Export.SessionFilter
+  langs:
+  - csharp
+  - vb
+  name: ExtendedHours
+  nameWithType: SessionFilter.ExtendedHours
+  fullName: Meridian.Storage.Export.SessionFilter.ExtendedHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExtendedHours
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Extended hours (pre + after).
+  example: []
+  syntax:
+    content: ExtendedHours = 4
+    return:
+      type: Meridian.Storage.Export.SessionFilter
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.SessionFilter
+  commentId: T:Meridian.Storage.Export.SessionFilter
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.SessionFilter.html
+  name: SessionFilter
+  nameWithType: SessionFilter
+  fullName: Meridian.Storage.Export.SessionFilter

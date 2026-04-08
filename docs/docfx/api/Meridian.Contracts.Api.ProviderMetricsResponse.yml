@@ -1,0 +1,1073 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse
+  commentId: T:Meridian.Contracts.Api.ProviderMetricsResponse
+  id: ProviderMetricsResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ProviderMetricsResponse.#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset,System.Boolean)
+  - Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions
+  - Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs
+  - Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts
+  - Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures
+  - Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate
+  - Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore
+  - Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived
+  - Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated
+  - Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs
+  - Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped
+  - Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs
+  - Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId
+  - Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType
+  - Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived
+  - Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp
+  - Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived
+  langs:
+  - csharp
+  - vb
+  name: ProviderMetricsResponse
+  nameWithType: ProviderMetricsResponse
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderMetricsResponse
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response containing detailed provider metrics.
+  example: []
+  syntax:
+    content: 'public record ProviderMetricsResponse : IEquatable<ProviderMetricsResponse>'
+    content.vb: Public Class ProviderMetricsResponse Implements IEquatable(Of ProviderMetricsResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.ProviderMetricsResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset,System.Boolean)
+  commentId: M:Meridian.Contracts.Api.ProviderMetricsResponse.#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset,System.Boolean)
+  id: '#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset,System.Boolean)'
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderMetricsResponse(string, string, long, long, long, long, long, long, long, double, double, double, double, double, DateTimeOffset, bool)
+  nameWithType: ProviderMetricsResponse.ProviderMetricsResponse(string, string, long, long, long, long, long, long, long, double, double, double, double, double, DateTimeOffset, bool)
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderMetricsResponse(string, string, long, long, long, long, long, long, long, double, double, double, double, double, System.DateTimeOffset, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response containing detailed provider metrics.
+  example: []
+  syntax:
+    content: public ProviderMetricsResponse(string ProviderId, string ProviderType, long TradesReceived, long DepthUpdatesReceived, long QuotesReceived, long ConnectionAttempts, long ConnectionFailures, long MessagesDropped, long ActiveSubscriptions, double AverageLatencyMs, double MinLatencyMs, double MaxLatencyMs, double DataQualityScore, double ConnectionSuccessRate, DateTimeOffset Timestamp, bool IsSimulated = false)
+    parameters:
+    - id: ProviderId
+      type: System.String
+    - id: ProviderType
+      type: System.String
+    - id: TradesReceived
+      type: System.Int64
+    - id: DepthUpdatesReceived
+      type: System.Int64
+    - id: QuotesReceived
+      type: System.Int64
+    - id: ConnectionAttempts
+      type: System.Int64
+    - id: ConnectionFailures
+      type: System.Int64
+    - id: MessagesDropped
+      type: System.Int64
+    - id: ActiveSubscriptions
+      type: System.Int64
+    - id: AverageLatencyMs
+      type: System.Double
+    - id: MinLatencyMs
+      type: System.Double
+    - id: MaxLatencyMs
+      type: System.Double
+    - id: DataQualityScore
+      type: System.Double
+    - id: ConnectionSuccessRate
+      type: System.Double
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: IsSimulated
+      type: System.Boolean
+    content.vb: Public Sub New(ProviderId As String, ProviderType As String, TradesReceived As Long, DepthUpdatesReceived As Long, QuotesReceived As Long, ConnectionAttempts As Long, ConnectionFailures As Long, MessagesDropped As Long, ActiveSubscriptions As Long, AverageLatencyMs As Double, MinLatencyMs As Double, MaxLatencyMs As Double, DataQualityScore As Double, ConnectionSuccessRate As Double, Timestamp As DateTimeOffset, IsSimulated As Boolean = False)
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.#ctor*
+  nameWithType.vb: ProviderMetricsResponse.New(String, String, Long, Long, Long, Long, Long, Long, Long, Double, Double, Double, Double, Double, DateTimeOffset, Boolean)
+  fullName.vb: Meridian.Contracts.Api.ProviderMetricsResponse.New(String, String, Long, Long, Long, Long, Long, Long, Long, Double, Double, Double, Double, Double, System.DateTimeOffset, Boolean)
+  name.vb: New(String, String, Long, Long, Long, Long, Long, Long, Long, Double, Double, Double, Double, Double, DateTimeOffset, Boolean)
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId
+  id: ProviderId
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: ProviderMetricsResponse.ProviderId
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string ProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderId As String
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType
+  id: ProviderType
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderType
+  nameWithType: ProviderMetricsResponse.ProviderType
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderType
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string ProviderType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderType As String
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived
+  id: TradesReceived
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: TradesReceived
+  nameWithType: ProviderMetricsResponse.TradesReceived
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradesReceived
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long TradesReceived { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TradesReceived As Long
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived
+  id: DepthUpdatesReceived
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdatesReceived
+  nameWithType: ProviderMetricsResponse.DepthUpdatesReceived
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdatesReceived
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long DepthUpdatesReceived { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DepthUpdatesReceived As Long
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived
+  id: QuotesReceived
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: QuotesReceived
+  nameWithType: ProviderMetricsResponse.QuotesReceived
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotesReceived
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long QuotesReceived { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property QuotesReceived As Long
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts
+  id: ConnectionAttempts
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: ConnectionAttempts
+  nameWithType: ProviderMetricsResponse.ConnectionAttempts
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionAttempts
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long ConnectionAttempts { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ConnectionAttempts As Long
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures
+  id: ConnectionFailures
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: ConnectionFailures
+  nameWithType: ProviderMetricsResponse.ConnectionFailures
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionFailures
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long ConnectionFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ConnectionFailures As Long
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped
+  id: MessagesDropped
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: MessagesDropped
+  nameWithType: ProviderMetricsResponse.MessagesDropped
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessagesDropped
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long MessagesDropped { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MessagesDropped As Long
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions
+  id: ActiveSubscriptions
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: ActiveSubscriptions
+  nameWithType: ProviderMetricsResponse.ActiveSubscriptions
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveSubscriptions
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long ActiveSubscriptions { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ActiveSubscriptions As Long
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs
+  id: AverageLatencyMs
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: AverageLatencyMs
+  nameWithType: ProviderMetricsResponse.AverageLatencyMs
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageLatencyMs
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double AverageLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageLatencyMs As Double
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs
+  id: MinLatencyMs
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: MinLatencyMs
+  nameWithType: ProviderMetricsResponse.MinLatencyMs
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinLatencyMs
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double MinLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MinLatencyMs As Double
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs
+  id: MaxLatencyMs
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: MaxLatencyMs
+  nameWithType: ProviderMetricsResponse.MaxLatencyMs
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxLatencyMs
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double MaxLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxLatencyMs As Double
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore
+  id: DataQualityScore
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: DataQualityScore
+  nameWithType: ProviderMetricsResponse.DataQualityScore
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityScore
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double DataQualityScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DataQualityScore As Double
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate
+  id: ConnectionSuccessRate
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: ConnectionSuccessRate
+  nameWithType: ProviderMetricsResponse.ConnectionSuccessRate
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionSuccessRate
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double ConnectionSuccessRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ConnectionSuccessRate As Double
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ProviderMetricsResponse.Timestamp
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp*
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated
+  commentId: P:Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated
+  id: IsSimulated
+  parent: Meridian.Contracts.Api.ProviderMetricsResponse
+  langs:
+  - csharp
+  - vb
+  name: IsSimulated
+  nameWithType: ProviderMetricsResponse.IsSimulated
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSimulated
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool IsSimulated { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsSimulated As Boolean
+  overload: Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.ProviderMetricsResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.ProviderMetricsResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderMetricsResponse>
+  nameWithType: IEquatable<ProviderMetricsResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.ProviderMetricsResponse>
+  nameWithType.vb: IEquatable(Of ProviderMetricsResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.ProviderMetricsResponse)
+  name.vb: IEquatable(Of ProviderMetricsResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ProviderMetricsResponse
+    name: ProviderMetricsResponse
+    href: Meridian.Contracts.Api.ProviderMetricsResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ProviderMetricsResponse
+    name: ProviderMetricsResponse
+    href: Meridian.Contracts.Api.ProviderMetricsResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.#ctor
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse__ctor_System_String_System_String_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Double_System_Double_System_Double_System_Double_System_Double_System_DateTimeOffset_System_Boolean_
+  name: ProviderMetricsResponse
+  nameWithType: ProviderMetricsResponse.ProviderMetricsResponse
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderMetricsResponse
+  nameWithType.vb: ProviderMetricsResponse.New
+  fullName.vb: Meridian.Contracts.Api.ProviderMetricsResponse.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_ProviderId
+  name: ProviderId
+  nameWithType: ProviderMetricsResponse.ProviderId
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderId
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_ProviderType
+  name: ProviderType
+  nameWithType: ProviderMetricsResponse.ProviderType
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ProviderType
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_TradesReceived
+  name: TradesReceived
+  nameWithType: ProviderMetricsResponse.TradesReceived
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.TradesReceived
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_DepthUpdatesReceived
+  name: DepthUpdatesReceived
+  nameWithType: ProviderMetricsResponse.DepthUpdatesReceived
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.DepthUpdatesReceived
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_QuotesReceived
+  name: QuotesReceived
+  nameWithType: ProviderMetricsResponse.QuotesReceived
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.QuotesReceived
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_ConnectionAttempts
+  name: ConnectionAttempts
+  nameWithType: ProviderMetricsResponse.ConnectionAttempts
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionAttempts
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_ConnectionFailures
+  name: ConnectionFailures
+  nameWithType: ProviderMetricsResponse.ConnectionFailures
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionFailures
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_MessagesDropped
+  name: MessagesDropped
+  nameWithType: ProviderMetricsResponse.MessagesDropped
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.MessagesDropped
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_ActiveSubscriptions
+  name: ActiveSubscriptions
+  nameWithType: ProviderMetricsResponse.ActiveSubscriptions
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ActiveSubscriptions
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_AverageLatencyMs
+  name: AverageLatencyMs
+  nameWithType: ProviderMetricsResponse.AverageLatencyMs
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.AverageLatencyMs
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_MinLatencyMs
+  name: MinLatencyMs
+  nameWithType: ProviderMetricsResponse.MinLatencyMs
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.MinLatencyMs
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_MaxLatencyMs
+  name: MaxLatencyMs
+  nameWithType: ProviderMetricsResponse.MaxLatencyMs
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.MaxLatencyMs
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_DataQualityScore
+  name: DataQualityScore
+  nameWithType: ProviderMetricsResponse.DataQualityScore
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.DataQualityScore
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_ConnectionSuccessRate
+  name: ConnectionSuccessRate
+  nameWithType: ProviderMetricsResponse.ConnectionSuccessRate
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.ConnectionSuccessRate
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_Timestamp
+  name: Timestamp
+  nameWithType: ProviderMetricsResponse.Timestamp
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.Timestamp
+- uid: Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated*
+  commentId: Overload:Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated
+  href: Meridian.Contracts.Api.ProviderMetricsResponse.html#Meridian_Contracts_Api_ProviderMetricsResponse_IsSimulated
+  name: IsSimulated
+  nameWithType: ProviderMetricsResponse.IsSimulated
+  fullName: Meridian.Contracts.Api.ProviderMetricsResponse.IsSimulated

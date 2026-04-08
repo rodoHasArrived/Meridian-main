@@ -1,0 +1,230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.MaintenanceTaskType
+  commentId: T:Meridian.Ui.Services.MaintenanceTaskType
+  id: MaintenanceTaskType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.MaintenanceTaskType.Cleanup
+  - Meridian.Ui.Services.MaintenanceTaskType.Compression
+  - Meridian.Ui.Services.MaintenanceTaskType.Deduplication
+  - Meridian.Ui.Services.MaintenanceTaskType.FullAudit
+  - Meridian.Ui.Services.MaintenanceTaskType.Optimization
+  - Meridian.Ui.Services.MaintenanceTaskType.Verification
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceTaskType
+  nameWithType: MaintenanceTaskType
+  fullName: Meridian.Ui.Services.MaintenanceTaskType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceTaskType
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 655
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Types of maintenance tasks.
+  example: []
+  syntax:
+    content: 'public enum MaintenanceTaskType : byte'
+    content.vb: Public Enum MaintenanceTaskType As Byte
+- uid: Meridian.Ui.Services.MaintenanceTaskType.Verification
+  commentId: F:Meridian.Ui.Services.MaintenanceTaskType.Verification
+  id: Verification
+  parent: Meridian.Ui.Services.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Verification
+  nameWithType: MaintenanceTaskType.Verification
+  fullName: Meridian.Ui.Services.MaintenanceTaskType.Verification
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Verification
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 657
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Verification = 0
+    return:
+      type: Meridian.Ui.Services.MaintenanceTaskType
+- uid: Meridian.Ui.Services.MaintenanceTaskType.Optimization
+  commentId: F:Meridian.Ui.Services.MaintenanceTaskType.Optimization
+  id: Optimization
+  parent: Meridian.Ui.Services.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Optimization
+  nameWithType: MaintenanceTaskType.Optimization
+  fullName: Meridian.Ui.Services.MaintenanceTaskType.Optimization
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Optimization
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 658
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Optimization = 1
+    return:
+      type: Meridian.Ui.Services.MaintenanceTaskType
+- uid: Meridian.Ui.Services.MaintenanceTaskType.Cleanup
+  commentId: F:Meridian.Ui.Services.MaintenanceTaskType.Cleanup
+  id: Cleanup
+  parent: Meridian.Ui.Services.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Cleanup
+  nameWithType: MaintenanceTaskType.Cleanup
+  fullName: Meridian.Ui.Services.MaintenanceTaskType.Cleanup
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cleanup
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 659
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Cleanup = 2
+    return:
+      type: Meridian.Ui.Services.MaintenanceTaskType
+- uid: Meridian.Ui.Services.MaintenanceTaskType.FullAudit
+  commentId: F:Meridian.Ui.Services.MaintenanceTaskType.FullAudit
+  id: FullAudit
+  parent: Meridian.Ui.Services.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: FullAudit
+  nameWithType: MaintenanceTaskType.FullAudit
+  fullName: Meridian.Ui.Services.MaintenanceTaskType.FullAudit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullAudit
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 660
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: FullAudit = 3
+    return:
+      type: Meridian.Ui.Services.MaintenanceTaskType
+- uid: Meridian.Ui.Services.MaintenanceTaskType.Compression
+  commentId: F:Meridian.Ui.Services.MaintenanceTaskType.Compression
+  id: Compression
+  parent: Meridian.Ui.Services.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Compression
+  nameWithType: MaintenanceTaskType.Compression
+  fullName: Meridian.Ui.Services.MaintenanceTaskType.Compression
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compression
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 661
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Compression = 4
+    return:
+      type: Meridian.Ui.Services.MaintenanceTaskType
+- uid: Meridian.Ui.Services.MaintenanceTaskType.Deduplication
+  commentId: F:Meridian.Ui.Services.MaintenanceTaskType.Deduplication
+  id: Deduplication
+  parent: Meridian.Ui.Services.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Deduplication
+  nameWithType: MaintenanceTaskType.Deduplication
+  fullName: Meridian.Ui.Services.MaintenanceTaskType.Deduplication
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deduplication
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 662
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Deduplication = 5
+    return:
+      type: Meridian.Ui.Services.MaintenanceTaskType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.MaintenanceTaskType
+  commentId: T:Meridian.Ui.Services.MaintenanceTaskType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.MaintenanceTaskType.html
+  name: MaintenanceTaskType
+  nameWithType: MaintenanceTaskType
+  fullName: Meridian.Ui.Services.MaintenanceTaskType

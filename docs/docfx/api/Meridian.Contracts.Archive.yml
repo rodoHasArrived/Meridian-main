@@ -1,0 +1,117 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Archive
+  commentId: N:Meridian.Contracts.Archive
+  id: Meridian.Contracts.Archive
+  children:
+  - Meridian.Contracts.Archive.ArchiveHealthSeverity
+  - Meridian.Contracts.Archive.ArchiveHealthStatus
+  - Meridian.Contracts.Archive.ArchiveHealthStatusValues
+  - Meridian.Contracts.Archive.ArchiveIssue
+  - Meridian.Contracts.Archive.ArchiveIssueCategory
+  - Meridian.Contracts.Archive.StorageHealthInfo
+  - Meridian.Contracts.Archive.VerificationJob
+  - Meridian.Contracts.Archive.VerificationJobStatus
+  - Meridian.Contracts.Archive.VerificationJobType
+  - Meridian.Contracts.Archive.VerificationScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Archive
+  nameWithType: Meridian.Contracts.Archive
+  fullName: Meridian.Contracts.Archive
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Archive.ArchiveHealthSeverity
+  commentId: T:Meridian.Contracts.Archive.ArchiveHealthSeverity
+  href: Meridian.Contracts.Archive.ArchiveHealthSeverity.html
+  name: ArchiveHealthSeverity
+  nameWithType: ArchiveHealthSeverity
+  fullName: Meridian.Contracts.Archive.ArchiveHealthSeverity
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatusValues
+  commentId: T:Meridian.Contracts.Archive.ArchiveHealthStatusValues
+  href: Meridian.Contracts.Archive.ArchiveHealthStatusValues.html
+  name: ArchiveHealthStatusValues
+  nameWithType: ArchiveHealthStatusValues
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatusValues
+- uid: Meridian.Contracts.Archive.ArchiveIssueCategory
+  commentId: T:Meridian.Contracts.Archive.ArchiveIssueCategory
+  href: Meridian.Contracts.Archive.ArchiveIssueCategory.html
+  name: ArchiveIssueCategory
+  nameWithType: ArchiveIssueCategory
+  fullName: Meridian.Contracts.Archive.ArchiveIssueCategory
+- uid: Meridian.Contracts.Archive.VerificationJobType
+  commentId: T:Meridian.Contracts.Archive.VerificationJobType
+  href: Meridian.Contracts.Archive.VerificationJobType.html
+  name: VerificationJobType
+  nameWithType: VerificationJobType
+  fullName: Meridian.Contracts.Archive.VerificationJobType
+- uid: Meridian.Contracts.Archive.VerificationJobStatus
+  commentId: T:Meridian.Contracts.Archive.VerificationJobStatus
+  href: Meridian.Contracts.Archive.VerificationJobStatus.html
+  name: VerificationJobStatus
+  nameWithType: VerificationJobStatus
+  fullName: Meridian.Contracts.Archive.VerificationJobStatus
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus
+  commentId: T:Meridian.Contracts.Archive.ArchiveHealthStatus
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html
+  name: ArchiveHealthStatus
+  nameWithType: ArchiveHealthStatus
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus
+- uid: Meridian.Contracts.Archive.ArchiveIssue
+  commentId: T:Meridian.Contracts.Archive.ArchiveIssue
+  href: Meridian.Contracts.Archive.ArchiveIssue.html
+  name: ArchiveIssue
+  nameWithType: ArchiveIssue
+  fullName: Meridian.Contracts.Archive.ArchiveIssue
+- uid: Meridian.Contracts.Archive.StorageHealthInfo
+  commentId: T:Meridian.Contracts.Archive.StorageHealthInfo
+  parent: Meridian.Contracts.Archive
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html
+  name: StorageHealthInfo
+  nameWithType: StorageHealthInfo
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo
+- uid: Meridian.Contracts.Archive.VerificationJob
+  commentId: T:Meridian.Contracts.Archive.VerificationJob
+  href: Meridian.Contracts.Archive.VerificationJob.html
+  name: VerificationJob
+  nameWithType: VerificationJob
+  fullName: Meridian.Contracts.Archive.VerificationJob
+- uid: Meridian.Contracts.Archive.VerificationScheduleConfig
+  commentId: T:Meridian.Contracts.Archive.VerificationScheduleConfig
+  href: Meridian.Contracts.Archive.VerificationScheduleConfig.html
+  name: VerificationScheduleConfig
+  nameWithType: VerificationScheduleConfig
+  fullName: Meridian.Contracts.Archive.VerificationScheduleConfig
+- uid: Meridian.Contracts.Archive
+  commentId: N:Meridian.Contracts.Archive
+  href: Meridian.html
+  name: Meridian.Contracts.Archive
+  nameWithType: Meridian.Contracts.Archive
+  fullName: Meridian.Contracts.Archive
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Archive
+    name: Archive
+    href: Meridian.Contracts.Archive.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Archive
+    name: Archive
+    href: Meridian.Contracts.Archive.html

@@ -1,0 +1,537 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Performance.SymbolTable
+  commentId: T:Meridian.Core.Performance.SymbolTable
+  id: SymbolTable
+  parent: Meridian.Core.Performance
+  children:
+  - Meridian.Core.Performance.SymbolTable.Count
+  - Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+  - Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: SymbolTable
+  nameWithType: SymbolTable
+  fullName: Meridian.Core.Performance.SymbolTable
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolTable
+    path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Thread-safe symbol intern table that maps market symbol strings to compact integer IDs.
+  remarks: >-
+    The hot-path producer stores only the integer ID in <xref href="Meridian.Core.Performance.RawTradeEvent.SymbolHash" data-throw-if-not-resolved="false"></xref>
+
+    and <xref href="Meridian.Core.Performance.RawQuoteEvent.SymbolHash" data-throw-if-not-resolved="false"></xref> to avoid string references on the
+
+    critical publish path.  The consumer resolves the ID back to a symbol string for
+
+    serialization via <xref href="Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)" data-throw-if-not-resolved="false"></xref>.
+
+
+    <p>
+
+    IDs start at 1. ID 0 is reserved to represent an unregistered symbol.
+
+    A single global <xref href="Meridian.Core.Performance.SymbolTable" data-throw-if-not-resolved="false"></xref> instance should be shared between
+
+    the producer and consumer so both sides see the same ID→symbol mapping.
+
+    </p>
+  example: []
+  syntax:
+    content: public sealed class SymbolTable
+    content.vb: Public NotInheritable Class SymbolTable
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+  commentId: M:Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+  id: GetOrAdd(System.String)
+  parent: Meridian.Core.Performance.SymbolTable
+  langs:
+  - csharp
+  - vb
+  name: GetOrAdd(string)
+  nameWithType: SymbolTable.GetOrAdd(string)
+  fullName: Meridian.Core.Performance.SymbolTable.GetOrAdd(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrAdd
+    path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: >-
+    Returns the integer ID for <code class="paramref">symbol</code>, registering it if not already present.
+
+    This call is allocation-free for symbols that have already been registered.
+  example: []
+  syntax:
+    content: public int GetOrAdd(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Market symbol (e.g. "SPY").
+    return:
+      type: System.Int32
+      description: Stable non-zero integer ID for the symbol.
+    content.vb: Public Function GetOrAdd(symbol As String) As Integer
+  overload: Meridian.Core.Performance.SymbolTable.GetOrAdd*
+  nameWithType.vb: SymbolTable.GetOrAdd(String)
+  fullName.vb: Meridian.Core.Performance.SymbolTable.GetOrAdd(String)
+  name.vb: GetOrAdd(String)
+- uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+  commentId: M:Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+  id: TryGetSymbol(System.Int32)
+  parent: Meridian.Core.Performance.SymbolTable
+  langs:
+  - csharp
+  - vb
+  name: TryGetSymbol(int)
+  nameWithType: SymbolTable.TryGetSymbol(int)
+  fullName: Meridian.Core.Performance.SymbolTable.TryGetSymbol(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGetSymbol
+    path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Resolves an integer ID back to its symbol string.
+  example: []
+  syntax:
+    content: public string? TryGetSymbol(int id)
+    parameters:
+    - id: id
+      type: System.Int32
+      description: Symbol ID previously returned by <xref href="Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)" data-throw-if-not-resolved="false"></xref>.
+    return:
+      type: System.String
+      description: >-
+        The symbol string, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if <code class="paramref">id</code> was
+
+        never registered in this table.
+    content.vb: Public Function TryGetSymbol(id As Integer) As String
+  overload: Meridian.Core.Performance.SymbolTable.TryGetSymbol*
+  nameWithType.vb: SymbolTable.TryGetSymbol(Integer)
+  fullName.vb: Meridian.Core.Performance.SymbolTable.TryGetSymbol(Integer)
+  name.vb: TryGetSymbol(Integer)
+- uid: Meridian.Core.Performance.SymbolTable.Count
+  commentId: P:Meridian.Core.Performance.SymbolTable.Count
+  id: Count
+  parent: Meridian.Core.Performance.SymbolTable
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: SymbolTable.Count
+  fullName: Meridian.Core.Performance.SymbolTable.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Gets the total number of symbols registered in this table.
+  example: []
+  syntax:
+    content: public int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Count As Integer
+  overload: Meridian.Core.Performance.SymbolTable.Count*
+references:
+- uid: Meridian.Core.Performance.RawTradeEvent.SymbolHash
+  commentId: F:Meridian.Core.Performance.RawTradeEvent.SymbolHash
+  href: Meridian.Core.Performance.RawTradeEvent.html#Meridian_Core_Performance_RawTradeEvent_SymbolHash
+  name: SymbolHash
+  nameWithType: RawTradeEvent.SymbolHash
+  fullName: Meridian.Core.Performance.RawTradeEvent.SymbolHash
+- uid: Meridian.Core.Performance.RawQuoteEvent.SymbolHash
+  commentId: F:Meridian.Core.Performance.RawQuoteEvent.SymbolHash
+  href: Meridian.Core.Performance.RawQuoteEvent.html#Meridian_Core_Performance_RawQuoteEvent_SymbolHash
+  name: SymbolHash
+  nameWithType: RawQuoteEvent.SymbolHash
+  fullName: Meridian.Core.Performance.RawQuoteEvent.SymbolHash
+- uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+  commentId: M:Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+  isExternal: true
+  href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_TryGetSymbol_System_Int32_
+  name: TryGetSymbol(int)
+  nameWithType: SymbolTable.TryGetSymbol(int)
+  fullName: Meridian.Core.Performance.SymbolTable.TryGetSymbol(int)
+  nameWithType.vb: SymbolTable.TryGetSymbol(Integer)
+  fullName.vb: Meridian.Core.Performance.SymbolTable.TryGetSymbol(Integer)
+  name.vb: TryGetSymbol(Integer)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+    name: TryGetSymbol
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_TryGetSymbol_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+    name: TryGetSymbol
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_TryGetSymbol_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Core.Performance.SymbolTable
+  commentId: T:Meridian.Core.Performance.SymbolTable
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.SymbolTable.html
+  name: SymbolTable
+  nameWithType: SymbolTable
+  fullName: Meridian.Core.Performance.SymbolTable
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Core.Performance.SymbolTable.GetOrAdd*
+  commentId: Overload:Meridian.Core.Performance.SymbolTable.GetOrAdd
+  href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_GetOrAdd_System_String_
+  name: GetOrAdd
+  nameWithType: SymbolTable.GetOrAdd
+  fullName: Meridian.Core.Performance.SymbolTable.GetOrAdd
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+  commentId: M:Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+  isExternal: true
+  href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_GetOrAdd_System_String_
+  name: GetOrAdd(string)
+  nameWithType: SymbolTable.GetOrAdd(string)
+  fullName: Meridian.Core.Performance.SymbolTable.GetOrAdd(string)
+  nameWithType.vb: SymbolTable.GetOrAdd(String)
+  fullName.vb: Meridian.Core.Performance.SymbolTable.GetOrAdd(String)
+  name.vb: GetOrAdd(String)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+    name: GetOrAdd
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_GetOrAdd_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+    name: GetOrAdd
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_GetOrAdd_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol*
+  commentId: Overload:Meridian.Core.Performance.SymbolTable.TryGetSymbol
+  href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_TryGetSymbol_System_Int32_
+  name: TryGetSymbol
+  nameWithType: SymbolTable.TryGetSymbol
+  fullName: Meridian.Core.Performance.SymbolTable.TryGetSymbol
+- uid: Meridian.Core.Performance.SymbolTable.Count*
+  commentId: Overload:Meridian.Core.Performance.SymbolTable.Count
+  href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_Count
+  name: Count
+  nameWithType: SymbolTable.Count
+  fullName: Meridian.Core.Performance.SymbolTable.Count

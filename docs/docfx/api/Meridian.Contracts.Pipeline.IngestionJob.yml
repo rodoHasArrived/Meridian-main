@@ -1,0 +1,1471 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline.IngestionJob
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJob
+  id: IngestionJob
+  parent: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken
+  - Meridian.Contracts.Pipeline.IngestionJob.CompletedAt
+  - Meridian.Contracts.Pipeline.IngestionJob.CreatedAt
+  - Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage
+  - Meridian.Contracts.Pipeline.IngestionJob.FromDate
+  - Meridian.Contracts.Pipeline.IngestionJob.IsResumable
+  - Meridian.Contracts.Pipeline.IngestionJob.IsTerminal
+  - Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition(Meridian.Contracts.Pipeline.IngestionJobState,Meridian.Contracts.Pipeline.IngestionJobState)
+  - Meridian.Contracts.Pipeline.IngestionJob.JobId
+  - Meridian.Contracts.Pipeline.IngestionJob.Provider
+  - Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope
+  - Meridian.Contracts.Pipeline.IngestionJob.Sla
+  - Meridian.Contracts.Pipeline.IngestionJob.StartedAt
+  - Meridian.Contracts.Pipeline.IngestionJob.State
+  - Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress
+  - Meridian.Contracts.Pipeline.IngestionJob.Symbols
+  - Meridian.Contracts.Pipeline.IngestionJob.ToDate
+  - Meridian.Contracts.Pipeline.IngestionJob.TryTransition(Meridian.Contracts.Pipeline.IngestionJobState)
+  - Meridian.Contracts.Pipeline.IngestionJob.WorkloadType
+  langs:
+  - csharp
+  - vb
+  name: IngestionJob
+  nameWithType: IngestionJob
+  fullName: Meridian.Contracts.Pipeline.IngestionJob
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestionJob
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Unified ingestion job state machine that applies to both realtime and historical flows.
+
+    Implements a single contract for all ingestion workload types, ensuring consistent
+
+    status tracking, checkpoint semantics, and retry behavior.
+  remarks: >-
+    State transitions:
+      Draft → Queued → Running → Paused → Completed | Failed | Cancelled
+
+    Resume behavior by workload type:
+      Realtime: restart from latest stream + gap-fill window
+      Historical: resume from last committed bar cursor (checkpoint token)
+  example: []
+  syntax:
+    content: public sealed class IngestionJob
+    content.vb: Public NotInheritable Class IngestionJob
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Pipeline.IngestionJob.JobId
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.JobId
+  id: JobId
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: JobId
+  nameWithType: IngestionJob.JobId
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.JobId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobId
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Unique identifier for this ingestion job.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("jobId")]
+
+      public string JobId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("jobId")>
+
+      Public Property JobId As String
+  overload: Meridian.Contracts.Pipeline.IngestionJob.JobId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: jobId
+- uid: Meridian.Contracts.Pipeline.IngestionJob.WorkloadType
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.WorkloadType
+  id: WorkloadType
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: WorkloadType
+  nameWithType: IngestionJob.WorkloadType
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.WorkloadType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkloadType
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: The type of ingestion workload.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("workloadType")]
+
+      public IngestionWorkloadType WorkloadType { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionWorkloadType
+    content.vb: >-
+      <JsonPropertyName("workloadType")>
+
+      Public Property WorkloadType As IngestionWorkloadType
+  overload: Meridian.Contracts.Pipeline.IngestionJob.WorkloadType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: workloadType
+- uid: Meridian.Contracts.Pipeline.IngestionJob.State
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.State
+  id: State
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: IngestionJob.State
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Current state of the job in the state machine.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("state")]
+
+      public IngestionJobState State { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+    content.vb: >-
+      <JsonPropertyName("state")>
+
+      Public Property State As IngestionJobState
+  overload: Meridian.Contracts.Pipeline.IngestionJob.State*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: state
+- uid: Meridian.Contracts.Pipeline.IngestionJob.Symbols
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: IngestionJob.Symbols
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Symbols targeted by this job.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbols")]
+
+      public string[] Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("symbols")>
+
+      Public Property Symbols As String()
+  overload: Meridian.Contracts.Pipeline.IngestionJob.Symbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbols
+- uid: Meridian.Contracts.Pipeline.IngestionJob.Provider
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.Provider
+  id: Provider
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: IngestionJob.Provider
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: The data provider executing this job.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("provider")]
+
+      public string Provider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("provider")>
+
+      Public Property Provider As String
+  overload: Meridian.Contracts.Pipeline.IngestionJob.Provider*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: provider
+- uid: Meridian.Contracts.Pipeline.IngestionJob.FromDate
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.FromDate
+  id: FromDate
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: FromDate
+  nameWithType: IngestionJob.FromDate
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.FromDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromDate
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Optional time range start (historical workloads).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("fromDate")]
+
+      public DateTime? FromDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("fromDate")>
+
+      Public Property FromDate As Date?
+  overload: Meridian.Contracts.Pipeline.IngestionJob.FromDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fromDate
+- uid: Meridian.Contracts.Pipeline.IngestionJob.ToDate
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.ToDate
+  id: ToDate
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: ToDate
+  nameWithType: IngestionJob.ToDate
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.ToDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDate
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Optional time range end (historical workloads).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("toDate")]
+
+      public DateTime? ToDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("toDate")>
+
+      Public Property ToDate As Date?
+  overload: Meridian.Contracts.Pipeline.IngestionJob.ToDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: toDate
+- uid: Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken
+  id: CheckpointToken
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: CheckpointToken
+  nameWithType: IngestionJob.CheckpointToken
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckpointToken
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Checkpoint token enabling resume from last durable offset.
+
+    For historical: last committed bar cursor (symbol/date).
+
+    For realtime: latest stream offset + gap-fill window.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("checkpointToken")]
+
+      public IngestionCheckpointToken? CheckpointToken { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+    content.vb: >-
+      <JsonPropertyName("checkpointToken")>
+
+      Public Property CheckpointToken As IngestionCheckpointToken
+  overload: Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: checkpointToken
+- uid: Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope
+  id: RetryEnvelope
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: RetryEnvelope
+  nameWithType: IngestionJob.RetryEnvelope
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryEnvelope
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Retry envelope tracking attempt count, schedule, and policy.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("retryEnvelope")]
+
+      public RetryEnvelope RetryEnvelope { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Pipeline.RetryEnvelope
+    content.vb: >-
+      <JsonPropertyName("retryEnvelope")>
+
+      Public Property RetryEnvelope As RetryEnvelope
+  overload: Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: retryEnvelope
+- uid: Meridian.Contracts.Pipeline.IngestionJob.Sla
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.Sla
+  id: Sla
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: Sla
+  nameWithType: IngestionJob.Sla
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.Sla
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sla
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: SLA expectations for this job.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sla")]
+
+      public IngestionSla? Sla { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionSla
+    content.vb: >-
+      <JsonPropertyName("sla")>
+
+      Public Property Sla As IngestionSla
+  overload: Meridian.Contracts.Pipeline.IngestionJob.Sla*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sla
+- uid: Meridian.Contracts.Pipeline.IngestionJob.CreatedAt
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: IngestionJob.CreatedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: UTC timestamp when the job was created.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("createdAt")]
+
+      public DateTime CreatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("createdAt")>
+
+      Public Property CreatedAt As Date
+  overload: Meridian.Contracts.Pipeline.IngestionJob.CreatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: createdAt
+- uid: Meridian.Contracts.Pipeline.IngestionJob.StartedAt
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.StartedAt
+  id: StartedAt
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: IngestionJob.StartedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: UTC timestamp when the job started running.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("startedAt")]
+
+      public DateTime? StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("startedAt")>
+
+      Public Property StartedAt As Date?
+  overload: Meridian.Contracts.Pipeline.IngestionJob.StartedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: startedAt
+- uid: Meridian.Contracts.Pipeline.IngestionJob.CompletedAt
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: IngestionJob.CompletedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: UTC timestamp when the job reached a terminal state.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("completedAt")]
+
+      public DateTime? CompletedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("completedAt")>
+
+      Public Property CompletedAt As Date?
+  overload: Meridian.Contracts.Pipeline.IngestionJob.CompletedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: completedAt
+- uid: Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: IngestionJob.ErrorMessage
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Error message if the job failed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("errorMessage")]
+
+      public string? ErrorMessage { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("errorMessage")>
+
+      Public Property ErrorMessage As String
+  overload: Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorMessage
+- uid: Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress
+  id: SymbolProgress
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: SymbolProgress
+  nameWithType: IngestionJob.SymbolProgress
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolProgress
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Per-symbol progress details.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbolProgress")]
+
+      public List<IngestionSymbolProgress> SymbolProgress { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Contracts.Pipeline.IngestionSymbolProgress}
+    content.vb: >-
+      <JsonPropertyName("symbolProgress")>
+
+      Public Property SymbolProgress As List(Of IngestionSymbolProgress)
+  overload: Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbolProgress
+- uid: Meridian.Contracts.Pipeline.IngestionJob.IsTerminal
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.IsTerminal
+  id: IsTerminal
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: IsTerminal
+  nameWithType: IngestionJob.IsTerminal
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.IsTerminal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTerminal
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Gets whether the job is in a terminal state.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public bool IsTerminal { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property IsTerminal As Boolean
+  overload: Meridian.Contracts.Pipeline.IngestionJob.IsTerminal*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+- uid: Meridian.Contracts.Pipeline.IngestionJob.IsResumable
+  commentId: P:Meridian.Contracts.Pipeline.IngestionJob.IsResumable
+  id: IsResumable
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: IsResumable
+  nameWithType: IngestionJob.IsResumable
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.IsResumable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsResumable
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Gets whether the job can be resumed.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public bool IsResumable { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property IsResumable As Boolean
+  overload: Meridian.Contracts.Pipeline.IngestionJob.IsResumable*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+- uid: Meridian.Contracts.Pipeline.IngestionJob.TryTransition(Meridian.Contracts.Pipeline.IngestionJobState)
+  commentId: M:Meridian.Contracts.Pipeline.IngestionJob.TryTransition(Meridian.Contracts.Pipeline.IngestionJobState)
+  id: TryTransition(Meridian.Contracts.Pipeline.IngestionJobState)
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: TryTransition(IngestionJobState)
+  nameWithType: IngestionJob.TryTransition(IngestionJobState)
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.TryTransition(Meridian.Contracts.Pipeline.IngestionJobState)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryTransition
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: >-
+    Attempts to transition the job to a new state.
+
+    Returns false if the transition is invalid.
+  example: []
+  syntax:
+    content: public bool TryTransition(IngestionJobState newState)
+    parameters:
+    - id: newState
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+    return:
+      type: System.Boolean
+    content.vb: Public Function TryTransition(newState As IngestionJobState) As Boolean
+  overload: Meridian.Contracts.Pipeline.IngestionJob.TryTransition*
+- uid: Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition(Meridian.Contracts.Pipeline.IngestionJobState,Meridian.Contracts.Pipeline.IngestionJobState)
+  commentId: M:Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition(Meridian.Contracts.Pipeline.IngestionJobState,Meridian.Contracts.Pipeline.IngestionJobState)
+  id: IsValidTransition(Meridian.Contracts.Pipeline.IngestionJobState,Meridian.Contracts.Pipeline.IngestionJobState)
+  parent: Meridian.Contracts.Pipeline.IngestionJob
+  langs:
+  - csharp
+  - vb
+  name: IsValidTransition(IngestionJobState, IngestionJobState)
+  nameWithType: IngestionJob.IsValidTransition(IngestionJobState, IngestionJobState)
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition(Meridian.Contracts.Pipeline.IngestionJobState, Meridian.Contracts.Pipeline.IngestionJobState)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValidTransition
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Validates whether a state transition is allowed.
+  example: []
+  syntax:
+    content: public static bool IsValidTransition(IngestionJobState from, IngestionJobState to)
+    parameters:
+    - id: from
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+    - id: to
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function IsValidTransition(from As IngestionJobState, [to] As IngestionJobState) As Boolean
+  overload: Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition*
+references:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Pipeline.IngestionJob.JobId*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.JobId
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_JobId
+  name: JobId
+  nameWithType: IngestionJob.JobId
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.JobId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Pipeline.IngestionJob.WorkloadType*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.WorkloadType
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_WorkloadType
+  name: WorkloadType
+  nameWithType: IngestionJob.WorkloadType
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.WorkloadType
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  commentId: T:Meridian.Contracts.Pipeline.IngestionWorkloadType
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionWorkloadType.html
+  name: IngestionWorkloadType
+  nameWithType: IngestionWorkloadType
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType
+- uid: Meridian.Contracts.Pipeline.IngestionJob.State*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.State
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_State
+  name: State
+  nameWithType: IngestionJob.State
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.State
+- uid: Meridian.Contracts.Pipeline.IngestionJobState
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJobState
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJobState.html
+  name: IngestionJobState
+  nameWithType: IngestionJobState
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionJob.Symbols*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.Symbols
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_Symbols
+  name: Symbols
+  nameWithType: IngestionJob.Symbols
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.Symbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Pipeline.IngestionJob.Provider*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.Provider
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_Provider
+  name: Provider
+  nameWithType: IngestionJob.Provider
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.Provider
+- uid: Meridian.Contracts.Pipeline.IngestionJob.FromDate*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.FromDate
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_FromDate
+  name: FromDate
+  nameWithType: IngestionJob.FromDate
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.FromDate
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Pipeline.IngestionJob.ToDate*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.ToDate
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_ToDate
+  name: ToDate
+  nameWithType: IngestionJob.ToDate
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.ToDate
+- uid: Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_CheckpointToken
+  name: CheckpointToken
+  nameWithType: IngestionJob.CheckpointToken
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.CheckpointToken
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  commentId: T:Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html
+  name: IngestionCheckpointToken
+  nameWithType: IngestionCheckpointToken
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+- uid: Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_RetryEnvelope
+  name: RetryEnvelope
+  nameWithType: IngestionJob.RetryEnvelope
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.RetryEnvelope
+- uid: Meridian.Contracts.Pipeline.RetryEnvelope
+  commentId: T:Meridian.Contracts.Pipeline.RetryEnvelope
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.RetryEnvelope.html
+  name: RetryEnvelope
+  nameWithType: RetryEnvelope
+  fullName: Meridian.Contracts.Pipeline.RetryEnvelope
+- uid: Meridian.Contracts.Pipeline.IngestionJob.Sla*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.Sla
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_Sla
+  name: Sla
+  nameWithType: IngestionJob.Sla
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.Sla
+- uid: Meridian.Contracts.Pipeline.IngestionSla
+  commentId: T:Meridian.Contracts.Pipeline.IngestionSla
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionSla.html
+  name: IngestionSla
+  nameWithType: IngestionSla
+  fullName: Meridian.Contracts.Pipeline.IngestionSla
+- uid: Meridian.Contracts.Pipeline.IngestionJob.CreatedAt*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.CreatedAt
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_CreatedAt
+  name: CreatedAt
+  nameWithType: IngestionJob.CreatedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.CreatedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Pipeline.IngestionJob.StartedAt*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.StartedAt
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_StartedAt
+  name: StartedAt
+  nameWithType: IngestionJob.StartedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.StartedAt
+- uid: Meridian.Contracts.Pipeline.IngestionJob.CompletedAt*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.CompletedAt
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_CompletedAt
+  name: CompletedAt
+  nameWithType: IngestionJob.CompletedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.CompletedAt
+- uid: Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_ErrorMessage
+  name: ErrorMessage
+  nameWithType: IngestionJob.ErrorMessage
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.ErrorMessage
+- uid: Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_SymbolProgress
+  name: SymbolProgress
+  nameWithType: IngestionJob.SymbolProgress
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.SymbolProgress
+- uid: System.Collections.Generic.List{Meridian.Contracts.Pipeline.IngestionSymbolProgress}
+  commentId: T:System.Collections.Generic.List{Meridian.Contracts.Pipeline.IngestionSymbolProgress}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<IngestionSymbolProgress>
+  nameWithType: List<IngestionSymbolProgress>
+  fullName: System.Collections.Generic.List<Meridian.Contracts.Pipeline.IngestionSymbolProgress>
+  nameWithType.vb: List(Of IngestionSymbolProgress)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Contracts.Pipeline.IngestionSymbolProgress)
+  name.vb: List(Of IngestionSymbolProgress)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+    name: IngestionSymbolProgress
+    href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+    name: IngestionSymbolProgress
+    href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Pipeline.IngestionJob.IsTerminal*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.IsTerminal
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_IsTerminal
+  name: IsTerminal
+  nameWithType: IngestionJob.IsTerminal
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.IsTerminal
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Pipeline.IngestionJob.IsResumable*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.IsResumable
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_IsResumable
+  name: IsResumable
+  nameWithType: IngestionJob.IsResumable
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.IsResumable
+- uid: Meridian.Contracts.Pipeline.IngestionJob.TryTransition*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.TryTransition
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_TryTransition_Meridian_Contracts_Pipeline_IngestionJobState_
+  name: TryTransition
+  nameWithType: IngestionJob.TryTransition
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.TryTransition
+- uid: Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition
+  href: Meridian.Contracts.Pipeline.IngestionJob.html#Meridian_Contracts_Pipeline_IngestionJob_IsValidTransition_Meridian_Contracts_Pipeline_IngestionJobState_Meridian_Contracts_Pipeline_IngestionJobState_
+  name: IsValidTransition
+  nameWithType: IngestionJob.IsValidTransition
+  fullName: Meridian.Contracts.Pipeline.IngestionJob.IsValidTransition

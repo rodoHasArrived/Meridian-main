@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.MarketState
+  commentId: T:Meridian.Application.Services.MarketState
+  id: MarketState
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.MarketState.AfterHours
+  - Meridian.Application.Services.MarketState.Closed
+  - Meridian.Application.Services.MarketState.Open
+  - Meridian.Application.Services.MarketState.PreMarket
+  langs:
+  - csharp
+  - vb
+  name: MarketState
+  nameWithType: MarketState
+  fullName: Meridian.Application.Services.MarketState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketState
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 583
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Market trading state.
+  example: []
+  syntax:
+    content: 'public enum MarketState : byte'
+    content.vb: Public Enum MarketState As Byte
+- uid: Meridian.Application.Services.MarketState.Closed
+  commentId: F:Meridian.Application.Services.MarketState.Closed
+  id: Closed
+  parent: Meridian.Application.Services.MarketState
+  langs:
+  - csharp
+  - vb
+  name: Closed
+  nameWithType: MarketState.Closed
+  fullName: Meridian.Application.Services.MarketState.Closed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Closed
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 586
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Market is closed.
+  example: []
+  syntax:
+    content: Closed = 0
+    return:
+      type: Meridian.Application.Services.MarketState
+- uid: Meridian.Application.Services.MarketState.PreMarket
+  commentId: F:Meridian.Application.Services.MarketState.PreMarket
+  id: PreMarket
+  parent: Meridian.Application.Services.MarketState
+  langs:
+  - csharp
+  - vb
+  name: PreMarket
+  nameWithType: MarketState.PreMarket
+  fullName: Meridian.Application.Services.MarketState.PreMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreMarket
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 589
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Pre-market session (4:00 AM - 9:30 AM ET).
+  example: []
+  syntax:
+    content: PreMarket = 1
+    return:
+      type: Meridian.Application.Services.MarketState
+- uid: Meridian.Application.Services.MarketState.Open
+  commentId: F:Meridian.Application.Services.MarketState.Open
+  id: Open
+  parent: Meridian.Application.Services.MarketState
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: MarketState.Open
+  fullName: Meridian.Application.Services.MarketState.Open
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Regular trading session (9:30 AM - 4:00 PM ET).
+  example: []
+  syntax:
+    content: Open = 2
+    return:
+      type: Meridian.Application.Services.MarketState
+- uid: Meridian.Application.Services.MarketState.AfterHours
+  commentId: F:Meridian.Application.Services.MarketState.AfterHours
+  id: AfterHours
+  parent: Meridian.Application.Services.MarketState
+  langs:
+  - csharp
+  - vb
+  name: AfterHours
+  nameWithType: MarketState.AfterHours
+  fullName: Meridian.Application.Services.MarketState.AfterHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AfterHours
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 595
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: After-hours session (4:00 PM - 8:00 PM ET).
+  example: []
+  syntax:
+    content: AfterHours = 3
+    return:
+      type: Meridian.Application.Services.MarketState
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.MarketState
+  commentId: T:Meridian.Application.Services.MarketState
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.MarketState.html
+  name: MarketState
+  nameWithType: MarketState
+  fullName: Meridian.Application.Services.MarketState

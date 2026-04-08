@@ -1,0 +1,1070 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.SubscriptionId
+  commentId: T:Meridian.Contracts.Domain.SubscriptionId
+  id: SubscriptionId
+  parent: Meridian.Contracts.Domain
+  children:
+  - Meridian.Contracts.Domain.SubscriptionId.#ctor(System.Int32)
+  - Meridian.Contracts.Domain.SubscriptionId.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  - Meridian.Contracts.Domain.SubscriptionId.Equals(Meridian.Contracts.Domain.SubscriptionId)
+  - Meridian.Contracts.Domain.SubscriptionId.Equals(System.Object)
+  - Meridian.Contracts.Domain.SubscriptionId.GetHashCode
+  - Meridian.Contracts.Domain.SubscriptionId.ToString
+  - Meridian.Contracts.Domain.SubscriptionId.Value
+  - Meridian.Contracts.Domain.SubscriptionId.op_Equality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  - Meridian.Contracts.Domain.SubscriptionId.op_Explicit(System.Int32)~Meridian.Contracts.Domain.SubscriptionId
+  - Meridian.Contracts.Domain.SubscriptionId.op_Implicit(Meridian.Contracts.Domain.SubscriptionId)~System.Int32
+  - Meridian.Contracts.Domain.SubscriptionId.op_Inequality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionId
+  nameWithType: SubscriptionId
+  fullName: Meridian.Contracts.Domain.SubscriptionId
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionId
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: >-
+    Zero-cost value object representing a market-data subscription identifier.
+
+    Prevents accidental interchange of subscription IDs with other integer-typed identifiers
+
+    such as sequence numbers or request IDs.
+  remarks: >-
+    Subscription IDs are returned by <code>SubscribeTrades</code> / <code>SubscribeMarketDepth</code>
+
+    on <code>IMarketDataClient</code> implementations and must be passed back to unsubscribe.
+
+    Wrapping the bare <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">int</a> in this type makes the intent explicit at
+
+    call sites and prevents silent mixups with unrelated integer-typed parameters.
+  example: []
+  syntax:
+    content: 'public readonly struct SubscriptionId : IEquatable<SubscriptionId>, IComparable<SubscriptionId>'
+    content.vb: Public Structure SubscriptionId Implements IEquatable(Of SubscriptionId), IComparable(Of SubscriptionId)
+  implements:
+  - System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}
+  - System.IComparable{Meridian.Contracts.Domain.SubscriptionId}
+  inheritedMembers:
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Contracts.Domain.SubscriptionId.#ctor(System.Int32)
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.#ctor(System.Int32)
+  id: '#ctor(System.Int32)'
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionId(int)
+  nameWithType: SubscriptionId.SubscriptionId(int)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.SubscriptionId(int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Initializes a new <xref href="Meridian.Contracts.Domain.SubscriptionId" data-throw-if-not-resolved="false"></xref> with the given integer value.
+  example: []
+  syntax:
+    content: public SubscriptionId(int value)
+    parameters:
+    - id: value
+      type: System.Int32
+      description: The subscription handle returned by the provider.
+    content.vb: Public Sub New(value As Integer)
+  overload: Meridian.Contracts.Domain.SubscriptionId.#ctor*
+  nameWithType.vb: SubscriptionId.New(Integer)
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.New(Integer)
+  name.vb: New(Integer)
+- uid: Meridian.Contracts.Domain.SubscriptionId.Value
+  commentId: P:Meridian.Contracts.Domain.SubscriptionId.Value
+  id: Value
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: Value
+  nameWithType: SubscriptionId.Value
+  fullName: Meridian.Contracts.Domain.SubscriptionId.Value
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Value
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Returns the underlying subscription handle integer.
+  example: []
+  syntax:
+    content: public int Value { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Value As Integer
+  overload: Meridian.Contracts.Domain.SubscriptionId.Value*
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Implicit(Meridian.Contracts.Domain.SubscriptionId)~System.Int32
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.op_Implicit(Meridian.Contracts.Domain.SubscriptionId)~System.Int32
+  id: op_Implicit(Meridian.Contracts.Domain.SubscriptionId)~System.Int32
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: implicit operator int(SubscriptionId)
+  nameWithType: SubscriptionId.implicit operator int(SubscriptionId)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.implicit operator int(Meridian.Contracts.Domain.SubscriptionId)
+  type: Operator
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: op_Implicit
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Implicitly converts a <xref href="Meridian.Contracts.Domain.SubscriptionId" data-throw-if-not-resolved="false"></xref> to its underlying integer value.
+  example: []
+  syntax:
+    content: public static implicit operator int(SubscriptionId id)
+    parameters:
+    - id: id
+      type: Meridian.Contracts.Domain.SubscriptionId
+    return:
+      type: System.Int32
+    content.vb: Public Shared Widening Operator CType(id As SubscriptionId) As Integer
+  overload: Meridian.Contracts.Domain.SubscriptionId.op_Implicit*
+  nameWithType.vb: SubscriptionId.CType(SubscriptionId)
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.CType(Meridian.Contracts.Domain.SubscriptionId)
+  name.vb: CType(SubscriptionId)
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Explicit(System.Int32)~Meridian.Contracts.Domain.SubscriptionId
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.op_Explicit(System.Int32)~Meridian.Contracts.Domain.SubscriptionId
+  id: op_Explicit(System.Int32)~Meridian.Contracts.Domain.SubscriptionId
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: explicit operator SubscriptionId(int)
+  nameWithType: SubscriptionId.explicit operator SubscriptionId(int)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.explicit operator Meridian.Contracts.Domain.SubscriptionId(int)
+  type: Operator
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: op_Explicit
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Explicitly converts an integer to a <xref href="Meridian.Contracts.Domain.SubscriptionId" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public static explicit operator SubscriptionId(int value)
+    parameters:
+    - id: value
+      type: System.Int32
+    return:
+      type: Meridian.Contracts.Domain.SubscriptionId
+    content.vb: Public Shared Narrowing Operator CType(value As Integer) As SubscriptionId
+  overload: Meridian.Contracts.Domain.SubscriptionId.op_Explicit*
+  nameWithType.vb: SubscriptionId.CType(Integer)
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.CType(Integer)
+  name.vb: CType(Integer)
+- uid: Meridian.Contracts.Domain.SubscriptionId.Equals(Meridian.Contracts.Domain.SubscriptionId)
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.Equals(Meridian.Contracts.Domain.SubscriptionId)
+  id: Equals(Meridian.Contracts.Domain.SubscriptionId)
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: Equals(SubscriptionId)
+  nameWithType: SubscriptionId.Equals(SubscriptionId)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.Equals(Meridian.Contracts.Domain.SubscriptionId)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Equals
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Indicates whether the current object is equal to another object of the same type.
+  example: []
+  syntax:
+    content: public bool Equals(SubscriptionId other)
+    parameters:
+    - id: other
+      type: Meridian.Contracts.Domain.SubscriptionId
+      description: An object to compare with this object.
+    return:
+      type: System.Boolean
+      description: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the current object is equal to the <code class="paramref">other</code> parameter; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+    content.vb: Public Function Equals(other As SubscriptionId) As Boolean
+  overload: Meridian.Contracts.Domain.SubscriptionId.Equals*
+  implements:
+  - System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}.Equals(Meridian.Contracts.Domain.SubscriptionId)
+- uid: Meridian.Contracts.Domain.SubscriptionId.Equals(System.Object)
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.Equals(System.Object)
+  id: Equals(System.Object)
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: Equals(object?)
+  nameWithType: SubscriptionId.Equals(object?)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.Equals(object?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Equals
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Indicates whether this instance and a specified object are equal.
+  example: []
+  syntax:
+    content: public override bool Equals(object? obj)
+    parameters:
+    - id: obj
+      type: System.Object
+      description: The object to compare with the current instance.
+    return:
+      type: System.Boolean
+      description: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">obj</code> and this instance are the same type and represent the same value; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+    content.vb: Public Overrides Function Equals(obj As Object) As Boolean
+  overridden: System.ValueType.Equals(System.Object)
+  overload: Meridian.Contracts.Domain.SubscriptionId.Equals*
+  nameWithType.vb: SubscriptionId.Equals(Object)
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.Equals(Object)
+  name.vb: Equals(Object)
+- uid: Meridian.Contracts.Domain.SubscriptionId.GetHashCode
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.GetHashCode
+  id: GetHashCode
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: GetHashCode()
+  nameWithType: SubscriptionId.GetHashCode()
+  fullName: Meridian.Contracts.Domain.SubscriptionId.GetHashCode()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHashCode
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Returns the hash code for this instance.
+  example: []
+  syntax:
+    content: public override int GetHashCode()
+    return:
+      type: System.Int32
+      description: A 32-bit signed integer that is the hash code for this instance.
+    content.vb: Public Overrides Function GetHashCode() As Integer
+  overridden: System.ValueType.GetHashCode
+  overload: Meridian.Contracts.Domain.SubscriptionId.GetHashCode*
+- uid: Meridian.Contracts.Domain.SubscriptionId.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  id: CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: CompareTo(SubscriptionId)
+  nameWithType: SubscriptionId.CompareTo(SubscriptionId)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompareTo
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Compares the current instance with another object of the same type and returns an integer that indicates whether the current instance precedes, follows, or occurs in the same position in the sort order as the other object.
+  example: []
+  syntax:
+    content: public int CompareTo(SubscriptionId other)
+    parameters:
+    - id: other
+      type: Meridian.Contracts.Domain.SubscriptionId
+      description: An object to compare with this instance.
+    return:
+      type: System.Int32
+      description: >-
+        A value that indicates the relative order of the objects being compared. The return value has these meanings:  
+
+         <table><thead><tr><th class="term"> Value</th><th class="description"> Meaning</th></tr></thead><tbody><tr><td class="term"> Less than zero</td><td class="description"> This instance precedes <code class="paramref">other</code> in the sort order.</td></tr><tr><td class="term"> Zero</td><td class="description"> This instance occurs in the same position in the sort order as <code class="paramref">other</code>.</td></tr><tr><td class="term"> Greater than zero</td><td class="description"> This instance follows <code class="paramref">other</code> in the sort order.</td></tr></tbody></table>
+    content.vb: Public Function CompareTo(other As SubscriptionId) As Integer
+  overload: Meridian.Contracts.Domain.SubscriptionId.CompareTo*
+  implements:
+  - System.IComparable{Meridian.Contracts.Domain.SubscriptionId}.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+- uid: Meridian.Contracts.Domain.SubscriptionId.ToString
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.ToString
+  id: ToString
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: SubscriptionId.ToString()
+  fullName: Meridian.Contracts.Domain.SubscriptionId.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Returns the fully qualified type name of this instance.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+      description: The fully qualified type name.
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.ValueType.ToString
+  overload: Meridian.Contracts.Domain.SubscriptionId.ToString*
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Equality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.op_Equality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  id: op_Equality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: operator ==(SubscriptionId, SubscriptionId)
+  nameWithType: SubscriptionId.operator ==(SubscriptionId, SubscriptionId)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.operator ==(Meridian.Contracts.Domain.SubscriptionId, Meridian.Contracts.Domain.SubscriptionId)
+  type: Operator
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: op_Equality
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Indicates whether the current object is equal to another object of the same type.
+  example: []
+  syntax:
+    content: public static bool operator ==(SubscriptionId left, SubscriptionId right)
+    parameters:
+    - id: left
+      type: Meridian.Contracts.Domain.SubscriptionId
+    - id: right
+      type: Meridian.Contracts.Domain.SubscriptionId
+    return:
+      type: System.Boolean
+      description: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the current object is equal to the <code class="paramref">other</code> parameter; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+    content.vb: Public Shared Operator =(left As SubscriptionId, right As SubscriptionId) As Boolean
+  overload: Meridian.Contracts.Domain.SubscriptionId.op_Equality*
+  nameWithType.vb: SubscriptionId.=(SubscriptionId, SubscriptionId)
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.=(Meridian.Contracts.Domain.SubscriptionId, Meridian.Contracts.Domain.SubscriptionId)
+  name.vb: =(SubscriptionId, SubscriptionId)
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Inequality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  commentId: M:Meridian.Contracts.Domain.SubscriptionId.op_Inequality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  id: op_Inequality(Meridian.Contracts.Domain.SubscriptionId,Meridian.Contracts.Domain.SubscriptionId)
+  parent: Meridian.Contracts.Domain.SubscriptionId
+  langs:
+  - csharp
+  - vb
+  name: operator !=(SubscriptionId, SubscriptionId)
+  nameWithType: SubscriptionId.operator !=(SubscriptionId, SubscriptionId)
+  fullName: Meridian.Contracts.Domain.SubscriptionId.operator !=(Meridian.Contracts.Domain.SubscriptionId, Meridian.Contracts.Domain.SubscriptionId)
+  type: Operator
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/SubscriptionId.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: op_Inequality
+    path: ../../src/Meridian.Contracts/Domain/SubscriptionId.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Indicates whether the current object is equal to another object of the same type.
+  example: []
+  syntax:
+    content: public static bool operator !=(SubscriptionId left, SubscriptionId right)
+    parameters:
+    - id: left
+      type: Meridian.Contracts.Domain.SubscriptionId
+    - id: right
+      type: Meridian.Contracts.Domain.SubscriptionId
+    return:
+      type: System.Boolean
+      description: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the current object is equal to the <code class="paramref">other</code> parameter; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+    content.vb: Public Shared Operator <>(left As SubscriptionId, right As SubscriptionId) As Boolean
+  overload: Meridian.Contracts.Domain.SubscriptionId.op_Inequality*
+  nameWithType.vb: SubscriptionId.<>(SubscriptionId, SubscriptionId)
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.<>(Meridian.Contracts.Domain.SubscriptionId, Meridian.Contracts.Domain.SubscriptionId)
+  name.vb: <>(SubscriptionId, SubscriptionId)
+references:
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SubscriptionId>
+  nameWithType: IEquatable<SubscriptionId>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.SubscriptionId>
+  nameWithType.vb: IEquatable(Of SubscriptionId)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.SubscriptionId)
+  name.vb: IEquatable(Of SubscriptionId)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: )
+- uid: System.IComparable{Meridian.Contracts.Domain.SubscriptionId}
+  commentId: T:System.IComparable{Meridian.Contracts.Domain.SubscriptionId}
+  parent: System
+  definition: System.IComparable`1
+  href: https://learn.microsoft.com/dotnet/api/system.icomparable-1
+  name: IComparable<SubscriptionId>
+  nameWithType: IComparable<SubscriptionId>
+  fullName: System.IComparable<Meridian.Contracts.Domain.SubscriptionId>
+  nameWithType.vb: IComparable(Of SubscriptionId)
+  fullName.vb: System.IComparable(Of Meridian.Contracts.Domain.SubscriptionId)
+  name.vb: IComparable(Of SubscriptionId)
+  spec.csharp:
+  - uid: System.IComparable`1
+    name: IComparable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IComparable`1
+    name: IComparable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IComparable`1
+  commentId: T:System.IComparable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.icomparable-1
+  name: IComparable<T>
+  nameWithType: IComparable<T>
+  fullName: System.IComparable<T>
+  nameWithType.vb: IComparable(Of T)
+  fullName.vb: System.IComparable(Of T)
+  name.vb: IComparable(Of T)
+  spec.csharp:
+  - uid: System.IComparable`1
+    name: IComparable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IComparable`1
+    name: IComparable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.SubscriptionId
+  commentId: T:Meridian.Contracts.Domain.SubscriptionId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.SubscriptionId.html
+  name: SubscriptionId
+  nameWithType: SubscriptionId
+  fullName: Meridian.Contracts.Domain.SubscriptionId
+- uid: Meridian.Contracts.Domain.SubscriptionId.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.#ctor
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId__ctor_System_Int32_
+  name: SubscriptionId
+  nameWithType: SubscriptionId.SubscriptionId
+  fullName: Meridian.Contracts.Domain.SubscriptionId.SubscriptionId
+  nameWithType.vb: SubscriptionId.New
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Domain.SubscriptionId.Value*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.Value
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_Value
+  name: Value
+  nameWithType: SubscriptionId.Value
+  fullName: Meridian.Contracts.Domain.SubscriptionId.Value
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Implicit*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.op_Implicit
+  name: implicit operator
+  nameWithType: SubscriptionId.implicit operator
+  fullName: Meridian.Contracts.Domain.SubscriptionId.implicit operator
+  nameWithType.vb: SubscriptionId.CType
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.CType
+  name.vb: CType
+  spec.csharp:
+  - name: implicit
+  - name: " "
+  - name: operator
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Explicit*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.op_Explicit
+  name: explicit operator
+  nameWithType: SubscriptionId.explicit operator
+  fullName: Meridian.Contracts.Domain.SubscriptionId.explicit operator
+  nameWithType.vb: SubscriptionId.CType
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.CType
+  name.vb: CType
+  spec.csharp:
+  - name: explicit
+  - name: " "
+  - name: operator
+- uid: Meridian.Contracts.Domain.SubscriptionId.Equals*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.Equals
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_Equals_Meridian_Contracts_Domain_SubscriptionId_
+  name: Equals
+  nameWithType: SubscriptionId.Equals
+  fullName: Meridian.Contracts.Domain.SubscriptionId.Equals
+- uid: System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}.Equals(Meridian.Contracts.Domain.SubscriptionId)
+  commentId: M:System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}.Equals(Meridian.Contracts.Domain.SubscriptionId)
+  parent: System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}
+  definition: System.IEquatable`1.Equals(`0)
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  name: Equals(SubscriptionId)
+  nameWithType: IEquatable<SubscriptionId>.Equals(SubscriptionId)
+  fullName: System.IEquatable<Meridian.Contracts.Domain.SubscriptionId>.Equals(Meridian.Contracts.Domain.SubscriptionId)
+  nameWithType.vb: IEquatable(Of SubscriptionId).Equals(SubscriptionId)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.SubscriptionId).Equals(Meridian.Contracts.Domain.SubscriptionId)
+  spec.csharp:
+  - uid: System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}.Equals(Meridian.Contracts.Domain.SubscriptionId)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: )
+  spec.vb:
+  - uid: System.IEquatable{Meridian.Contracts.Domain.SubscriptionId}.Equals(Meridian.Contracts.Domain.SubscriptionId)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.IEquatable`1.Equals(`0)
+  commentId: M:System.IEquatable`1.Equals(`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  name: Equals(T)
+  nameWithType: IEquatable<T>.Equals(T)
+  fullName: System.IEquatable<T>.Equals(T)
+  nameWithType.vb: IEquatable(Of T).Equals(T)
+  fullName.vb: System.IEquatable(Of T).Equals(T)
+  spec.csharp:
+  - uid: System.IEquatable`1.Equals(`0)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.IEquatable`1.Equals(`0)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1.equals
+  - name: (
+  - name: T
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.SubscriptionId.GetHashCode*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.GetHashCode
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_GetHashCode
+  name: GetHashCode
+  nameWithType: SubscriptionId.GetHashCode
+  fullName: Meridian.Contracts.Domain.SubscriptionId.GetHashCode
+- uid: Meridian.Contracts.Domain.SubscriptionId.CompareTo*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.CompareTo
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_CompareTo_Meridian_Contracts_Domain_SubscriptionId_
+  name: CompareTo
+  nameWithType: SubscriptionId.CompareTo
+  fullName: Meridian.Contracts.Domain.SubscriptionId.CompareTo
+- uid: System.IComparable{Meridian.Contracts.Domain.SubscriptionId}.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  commentId: M:System.IComparable{Meridian.Contracts.Domain.SubscriptionId}.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  parent: System.IComparable{Meridian.Contracts.Domain.SubscriptionId}
+  definition: System.IComparable`1.CompareTo(`0)
+  href: https://learn.microsoft.com/dotnet/api/system.icomparable-1.compareto
+  name: CompareTo(SubscriptionId)
+  nameWithType: IComparable<SubscriptionId>.CompareTo(SubscriptionId)
+  fullName: System.IComparable<Meridian.Contracts.Domain.SubscriptionId>.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  nameWithType.vb: IComparable(Of SubscriptionId).CompareTo(SubscriptionId)
+  fullName.vb: System.IComparable(Of Meridian.Contracts.Domain.SubscriptionId).CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+  spec.csharp:
+  - uid: System.IComparable{Meridian.Contracts.Domain.SubscriptionId}.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+    name: CompareTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1.compareto
+  - name: (
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: )
+  spec.vb:
+  - uid: System.IComparable{Meridian.Contracts.Domain.SubscriptionId}.CompareTo(Meridian.Contracts.Domain.SubscriptionId)
+    name: CompareTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1.compareto
+  - name: (
+  - uid: Meridian.Contracts.Domain.SubscriptionId
+    name: SubscriptionId
+    href: Meridian.Contracts.Domain.SubscriptionId.html
+  - name: )
+- uid: System.IComparable`1.CompareTo(`0)
+  commentId: M:System.IComparable`1.CompareTo(`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.icomparable-1.compareto
+  name: CompareTo(T)
+  nameWithType: IComparable<T>.CompareTo(T)
+  fullName: System.IComparable<T>.CompareTo(T)
+  nameWithType.vb: IComparable(Of T).CompareTo(T)
+  fullName.vb: System.IComparable(Of T).CompareTo(T)
+  spec.csharp:
+  - uid: System.IComparable`1.CompareTo(`0)
+    name: CompareTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1.compareto
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.IComparable`1.CompareTo(`0)
+    name: CompareTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.icomparable-1.compareto
+  - name: (
+  - name: T
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.SubscriptionId.ToString*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.ToString
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_ToString
+  name: ToString
+  nameWithType: SubscriptionId.ToString
+  fullName: Meridian.Contracts.Domain.SubscriptionId.ToString
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Equality*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.op_Equality
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_op_Equality_Meridian_Contracts_Domain_SubscriptionId_Meridian_Contracts_Domain_SubscriptionId_
+  name: operator ==
+  nameWithType: SubscriptionId.operator ==
+  fullName: Meridian.Contracts.Domain.SubscriptionId.operator ==
+  nameWithType.vb: SubscriptionId.=
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.=
+  name.vb: =
+  spec.csharp:
+  - name: operator
+  - name: " "
+  - uid: Meridian.Contracts.Domain.SubscriptionId.op_Equality*
+    name: ==
+    href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_op_Equality_Meridian_Contracts_Domain_SubscriptionId_Meridian_Contracts_Domain_SubscriptionId_
+- uid: Meridian.Contracts.Domain.SubscriptionId.op_Inequality*
+  commentId: Overload:Meridian.Contracts.Domain.SubscriptionId.op_Inequality
+  href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_op_Inequality_Meridian_Contracts_Domain_SubscriptionId_Meridian_Contracts_Domain_SubscriptionId_
+  name: operator !=
+  nameWithType: SubscriptionId.operator !=
+  fullName: Meridian.Contracts.Domain.SubscriptionId.operator !=
+  nameWithType.vb: SubscriptionId.<>
+  fullName.vb: Meridian.Contracts.Domain.SubscriptionId.<>
+  name.vb: <>
+  spec.csharp:
+  - name: operator
+  - name: " "
+  - uid: Meridian.Contracts.Domain.SubscriptionId.op_Inequality*
+    name: '!='
+    href: Meridian.Contracts.Domain.SubscriptionId.html#Meridian_Contracts_Domain_SubscriptionId_op_Inequality_Meridian_Contracts_Domain_SubscriptionId_Meridian_Contracts_Domain_SubscriptionId_

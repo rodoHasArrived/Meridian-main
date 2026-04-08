@@ -1,0 +1,933 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.ExecutionReport
+  commentId: T:Meridian.Execution.Sdk.ExecutionReport
+  id: ExecutionReport
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.ExecutionReport.ClientOrderId
+  - Meridian.Execution.Sdk.ExecutionReport.Commission
+  - Meridian.Execution.Sdk.ExecutionReport.FillPrice
+  - Meridian.Execution.Sdk.ExecutionReport.FilledQuantity
+  - Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId
+  - Meridian.Execution.Sdk.ExecutionReport.OrderId
+  - Meridian.Execution.Sdk.ExecutionReport.OrderQuantity
+  - Meridian.Execution.Sdk.ExecutionReport.OrderStatus
+  - Meridian.Execution.Sdk.ExecutionReport.RejectReason
+  - Meridian.Execution.Sdk.ExecutionReport.ReportType
+  - Meridian.Execution.Sdk.ExecutionReport.Side
+  - Meridian.Execution.Sdk.ExecutionReport.Symbol
+  - Meridian.Execution.Sdk.ExecutionReport.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: ExecutionReport
+  nameWithType: ExecutionReport
+  fullName: Meridian.Execution.Sdk.ExecutionReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionReport
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Report from the execution gateway about an order event.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionReport : IEquatable<ExecutionReport>'
+    content.vb: Public NotInheritable Class ExecutionReport Implements IEquatable(Of ExecutionReport)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.ExecutionReport}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.ExecutionReport.OrderId
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.OrderId
+  id: OrderId
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: ExecutionReport.OrderId
+  fullName: Meridian.Execution.Sdk.ExecutionReport.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required string OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OrderId As String
+  overload: Meridian.Execution.Sdk.ExecutionReport.OrderId*
+- uid: Meridian.Execution.Sdk.ExecutionReport.ReportType
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.ReportType
+  id: ReportType
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: ReportType
+  nameWithType: ExecutionReport.ReportType
+  fullName: Meridian.Execution.Sdk.ExecutionReport.ReportType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportType
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required ExecutionReportType ReportType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+    content.vb: Public Property ReportType As ExecutionReportType
+  overload: Meridian.Execution.Sdk.ExecutionReport.ReportType*
+- uid: Meridian.Execution.Sdk.ExecutionReport.Symbol
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ExecutionReport.Symbol
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Sdk.ExecutionReport.Symbol*
+- uid: Meridian.Execution.Sdk.ExecutionReport.Side
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.Side
+  id: Side
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: ExecutionReport.Side
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required OrderSide Side { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.OrderSide
+    content.vb: Public Property Side As OrderSide
+  overload: Meridian.Execution.Sdk.ExecutionReport.Side*
+- uid: Meridian.Execution.Sdk.ExecutionReport.OrderStatus
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.OrderStatus
+  id: OrderStatus
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: OrderStatus
+  nameWithType: ExecutionReport.OrderStatus
+  fullName: Meridian.Execution.Sdk.ExecutionReport.OrderStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderStatus
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required OrderStatus OrderStatus { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+    content.vb: Public Property OrderStatus As OrderStatus
+  overload: Meridian.Execution.Sdk.ExecutionReport.OrderStatus*
+- uid: Meridian.Execution.Sdk.ExecutionReport.OrderQuantity
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.OrderQuantity
+  id: OrderQuantity
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: OrderQuantity
+  nameWithType: ExecutionReport.OrderQuantity
+  fullName: Meridian.Execution.Sdk.ExecutionReport.OrderQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderQuantity
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal OrderQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property OrderQuantity As Decimal
+  overload: Meridian.Execution.Sdk.ExecutionReport.OrderQuantity*
+- uid: Meridian.Execution.Sdk.ExecutionReport.FilledQuantity
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.FilledQuantity
+  id: FilledQuantity
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: FilledQuantity
+  nameWithType: ExecutionReport.FilledQuantity
+  fullName: Meridian.Execution.Sdk.ExecutionReport.FilledQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilledQuantity
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal FilledQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property FilledQuantity As Decimal
+  overload: Meridian.Execution.Sdk.ExecutionReport.FilledQuantity*
+- uid: Meridian.Execution.Sdk.ExecutionReport.FillPrice
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.FillPrice
+  id: FillPrice
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: FillPrice
+  nameWithType: ExecutionReport.FillPrice
+  fullName: Meridian.Execution.Sdk.ExecutionReport.FillPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillPrice
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal? FillPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property FillPrice As Decimal?
+  overload: Meridian.Execution.Sdk.ExecutionReport.FillPrice*
+- uid: Meridian.Execution.Sdk.ExecutionReport.Commission
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.Commission
+  id: Commission
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: Commission
+  nameWithType: ExecutionReport.Commission
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Commission
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Commission
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal? Commission { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Commission As Decimal?
+  overload: Meridian.Execution.Sdk.ExecutionReport.Commission*
+- uid: Meridian.Execution.Sdk.ExecutionReport.Timestamp
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.Timestamp
+  id: Timestamp
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ExecutionReport.Timestamp
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Execution.Sdk.ExecutionReport.Timestamp*
+- uid: Meridian.Execution.Sdk.ExecutionReport.RejectReason
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.RejectReason
+  id: RejectReason
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: RejectReason
+  nameWithType: ExecutionReport.RejectReason
+  fullName: Meridian.Execution.Sdk.ExecutionReport.RejectReason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectReason
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public string? RejectReason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RejectReason As String
+  overload: Meridian.Execution.Sdk.ExecutionReport.RejectReason*
+- uid: Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId
+  id: GatewayOrderId
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: GatewayOrderId
+  nameWithType: ExecutionReport.GatewayOrderId
+  fullName: Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GatewayOrderId
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Broker-assigned order ID (may differ from the client-provided <xref href="Meridian.Execution.Sdk.ExecutionReport.OrderId" data-throw-if-not-resolved="false"></xref>).
+  example: []
+  syntax:
+    content: public string? GatewayOrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property GatewayOrderId As String
+  overload: Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId*
+- uid: Meridian.Execution.Sdk.ExecutionReport.ClientOrderId
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.ClientOrderId
+  id: ClientOrderId
+  parent: Meridian.Execution.Sdk.ExecutionReport
+  langs:
+  - csharp
+  - vb
+  name: ClientOrderId
+  nameWithType: ExecutionReport.ClientOrderId
+  fullName: Meridian.Execution.Sdk.ExecutionReport.ClientOrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientOrderId
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: The client-provided order ID from the original <xref href="Meridian.Execution.Sdk.OrderRequest" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public string? ClientOrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ClientOrderId As String
+  overload: Meridian.Execution.Sdk.ExecutionReport.ClientOrderId*
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.ExecutionReport}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.ExecutionReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionReport>
+  nameWithType: IEquatable<ExecutionReport>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.ExecutionReport>
+  nameWithType.vb: IEquatable(Of ExecutionReport)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.ExecutionReport)
+  name.vb: IEquatable(Of ExecutionReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.ExecutionReport
+    name: ExecutionReport
+    href: Meridian.Execution.Sdk.ExecutionReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.ExecutionReport
+    name: ExecutionReport
+    href: Meridian.Execution.Sdk.ExecutionReport.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.ExecutionReport.OrderId*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.OrderId
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_OrderId
+  name: OrderId
+  nameWithType: ExecutionReport.OrderId
+  fullName: Meridian.Execution.Sdk.ExecutionReport.OrderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.ExecutionReport.ReportType*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.ReportType
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_ReportType
+  name: ReportType
+  nameWithType: ExecutionReport.ReportType
+  fullName: Meridian.Execution.Sdk.ExecutionReport.ReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType
+  commentId: T:Meridian.Execution.Sdk.ExecutionReportType
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.ExecutionReportType.html
+  name: ExecutionReportType
+  nameWithType: ExecutionReportType
+  fullName: Meridian.Execution.Sdk.ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReport.Symbol*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.Symbol
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_Symbol
+  name: Symbol
+  nameWithType: ExecutionReport.Symbol
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Symbol
+- uid: Meridian.Execution.Sdk.ExecutionReport.Side*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.Side
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_Side
+  name: Side
+  nameWithType: ExecutionReport.Side
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Side
+- uid: Meridian.Execution.Sdk.OrderSide
+  commentId: T:Meridian.Execution.Sdk.OrderSide
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderSide.html
+  name: OrderSide
+  nameWithType: OrderSide
+  fullName: Meridian.Execution.Sdk.OrderSide
+- uid: Meridian.Execution.Sdk.ExecutionReport.OrderStatus*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.OrderStatus
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_OrderStatus
+  name: OrderStatus
+  nameWithType: ExecutionReport.OrderStatus
+  fullName: Meridian.Execution.Sdk.ExecutionReport.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus
+  commentId: T:Meridian.Execution.Sdk.OrderStatus
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderStatus.html
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.ExecutionReport.OrderQuantity*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.OrderQuantity
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_OrderQuantity
+  name: OrderQuantity
+  nameWithType: ExecutionReport.OrderQuantity
+  fullName: Meridian.Execution.Sdk.ExecutionReport.OrderQuantity
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.ExecutionReport.FilledQuantity*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.FilledQuantity
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_FilledQuantity
+  name: FilledQuantity
+  nameWithType: ExecutionReport.FilledQuantity
+  fullName: Meridian.Execution.Sdk.ExecutionReport.FilledQuantity
+- uid: Meridian.Execution.Sdk.ExecutionReport.FillPrice*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.FillPrice
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_FillPrice
+  name: FillPrice
+  nameWithType: ExecutionReport.FillPrice
+  fullName: Meridian.Execution.Sdk.ExecutionReport.FillPrice
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.ExecutionReport.Commission*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.Commission
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_Commission
+  name: Commission
+  nameWithType: ExecutionReport.Commission
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Commission
+- uid: Meridian.Execution.Sdk.ExecutionReport.Timestamp*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.Timestamp
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_Timestamp
+  name: Timestamp
+  nameWithType: ExecutionReport.Timestamp
+  fullName: Meridian.Execution.Sdk.ExecutionReport.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Execution.Sdk.ExecutionReport.RejectReason*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.RejectReason
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_RejectReason
+  name: RejectReason
+  nameWithType: ExecutionReport.RejectReason
+  fullName: Meridian.Execution.Sdk.ExecutionReport.RejectReason
+- uid: Meridian.Execution.Sdk.ExecutionReport.OrderId
+  commentId: P:Meridian.Execution.Sdk.ExecutionReport.OrderId
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_OrderId
+  name: OrderId
+  nameWithType: ExecutionReport.OrderId
+  fullName: Meridian.Execution.Sdk.ExecutionReport.OrderId
+- uid: Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_GatewayOrderId
+  name: GatewayOrderId
+  nameWithType: ExecutionReport.GatewayOrderId
+  fullName: Meridian.Execution.Sdk.ExecutionReport.GatewayOrderId
+- uid: Meridian.Execution.Sdk.OrderRequest
+  commentId: T:Meridian.Execution.Sdk.OrderRequest
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderRequest.html
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Execution.Sdk.OrderRequest
+- uid: Meridian.Execution.Sdk.ExecutionReport.ClientOrderId*
+  commentId: Overload:Meridian.Execution.Sdk.ExecutionReport.ClientOrderId
+  href: Meridian.Execution.Sdk.ExecutionReport.html#Meridian_Execution_Sdk_ExecutionReport_ClientOrderId
+  name: ClientOrderId
+  nameWithType: ExecutionReport.ClientOrderId
+  fullName: Meridian.Execution.Sdk.ExecutionReport.ClientOrderId

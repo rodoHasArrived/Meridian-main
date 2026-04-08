@@ -1,0 +1,70 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  id: Meridian.Strategies.Interfaces
+  children:
+  - Meridian.Strategies.Interfaces.ILiveStrategy
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle
+  - Meridian.Strategies.Interfaces.IStrategyRepository
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  type: Namespace
+  assemblies:
+  - Meridian.Strategies
+references:
+- uid: Meridian.Strategies.Interfaces.ILiveStrategy
+  commentId: T:Meridian.Strategies.Interfaces.ILiveStrategy
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.ILiveStrategy.html
+  name: ILiveStrategy
+  nameWithType: ILiveStrategy
+  fullName: Meridian.Strategies.Interfaces.ILiveStrategy
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyLifecycle
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html
+  name: IStrategyLifecycle
+  nameWithType: IStrategyLifecycle
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyRepository
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html
+  name: IStrategyRepository
+  nameWithType: IStrategyRepository
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html

@@ -1,0 +1,230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ConfigTemplateCategory
+  commentId: T:Meridian.Application.Services.ConfigTemplateCategory
+  id: ConfigTemplateCategory
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ConfigTemplateCategory.Advanced
+  - Meridian.Application.Services.ConfigTemplateCategory.Basic
+  - Meridian.Application.Services.ConfigTemplateCategory.Custom
+  - Meridian.Application.Services.ConfigTemplateCategory.Deployment
+  - Meridian.Application.Services.ConfigTemplateCategory.Provider
+  - Meridian.Application.Services.ConfigTemplateCategory.UseCase
+  langs:
+  - csharp
+  - vb
+  name: ConfigTemplateCategory
+  nameWithType: ConfigTemplateCategory
+  fullName: Meridian.Application.Services.ConfigTemplateCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigTemplateCategory
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Configuration template categories.
+  example: []
+  syntax:
+    content: 'public enum ConfigTemplateCategory : byte'
+    content.vb: Public Enum ConfigTemplateCategory As Byte
+- uid: Meridian.Application.Services.ConfigTemplateCategory.Basic
+  commentId: F:Meridian.Application.Services.ConfigTemplateCategory.Basic
+  id: Basic
+  parent: Meridian.Application.Services.ConfigTemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Basic
+  nameWithType: ConfigTemplateCategory.Basic
+  fullName: Meridian.Application.Services.ConfigTemplateCategory.Basic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Basic
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 465
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Basic = 0
+    return:
+      type: Meridian.Application.Services.ConfigTemplateCategory
+- uid: Meridian.Application.Services.ConfigTemplateCategory.Advanced
+  commentId: F:Meridian.Application.Services.ConfigTemplateCategory.Advanced
+  id: Advanced
+  parent: Meridian.Application.Services.ConfigTemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Advanced
+  nameWithType: ConfigTemplateCategory.Advanced
+  fullName: Meridian.Application.Services.ConfigTemplateCategory.Advanced
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Advanced
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 466
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Advanced = 1
+    return:
+      type: Meridian.Application.Services.ConfigTemplateCategory
+- uid: Meridian.Application.Services.ConfigTemplateCategory.Provider
+  commentId: F:Meridian.Application.Services.ConfigTemplateCategory.Provider
+  id: Provider
+  parent: Meridian.Application.Services.ConfigTemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: ConfigTemplateCategory.Provider
+  fullName: Meridian.Application.Services.ConfigTemplateCategory.Provider
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 467
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Provider = 2
+    return:
+      type: Meridian.Application.Services.ConfigTemplateCategory
+- uid: Meridian.Application.Services.ConfigTemplateCategory.UseCase
+  commentId: F:Meridian.Application.Services.ConfigTemplateCategory.UseCase
+  id: UseCase
+  parent: Meridian.Application.Services.ConfigTemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: UseCase
+  nameWithType: ConfigTemplateCategory.UseCase
+  fullName: Meridian.Application.Services.ConfigTemplateCategory.UseCase
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseCase
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 468
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: UseCase = 3
+    return:
+      type: Meridian.Application.Services.ConfigTemplateCategory
+- uid: Meridian.Application.Services.ConfigTemplateCategory.Deployment
+  commentId: F:Meridian.Application.Services.ConfigTemplateCategory.Deployment
+  id: Deployment
+  parent: Meridian.Application.Services.ConfigTemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Deployment
+  nameWithType: ConfigTemplateCategory.Deployment
+  fullName: Meridian.Application.Services.ConfigTemplateCategory.Deployment
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deployment
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 469
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Deployment = 4
+    return:
+      type: Meridian.Application.Services.ConfigTemplateCategory
+- uid: Meridian.Application.Services.ConfigTemplateCategory.Custom
+  commentId: F:Meridian.Application.Services.ConfigTemplateCategory.Custom
+  id: Custom
+  parent: Meridian.Application.Services.ConfigTemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: ConfigTemplateCategory.Custom
+  fullName: Meridian.Application.Services.ConfigTemplateCategory.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 470
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Custom = 5
+    return:
+      type: Meridian.Application.Services.ConfigTemplateCategory
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.ConfigTemplateCategory
+  commentId: T:Meridian.Application.Services.ConfigTemplateCategory
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigTemplateCategory.html
+  name: ConfigTemplateCategory
+  nameWithType: ConfigTemplateCategory
+  fullName: Meridian.Application.Services.ConfigTemplateCategory

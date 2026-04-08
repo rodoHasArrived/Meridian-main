@@ -1,0 +1,188 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  id: ReconciliationBreakStatus
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ReconciliationBreakStatus.Investigating
+  - Meridian.Contracts.Workstation.ReconciliationBreakStatus.Matched
+  - Meridian.Contracts.Workstation.ReconciliationBreakStatus.Open
+  - Meridian.Contracts.Workstation.ReconciliationBreakStatus.Resolved
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationBreakStatus
+  nameWithType: ReconciliationBreakStatus
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationBreakStatus
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Current workflow state for a reconciliation break.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakStatus>))]
+
+      public enum ReconciliationBreakStatus : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ReconciliationBreakStatus)))>
+
+      Public Enum ReconciliationBreakStatus As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.ReconciliationBreakStatus}
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Open
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakStatus.Open
+  id: Open
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: ReconciliationBreakStatus.Open
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Open
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Open = 0
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Matched
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakStatus.Matched
+  id: Matched
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  langs:
+  - csharp
+  - vb
+  name: Matched
+  nameWithType: ReconciliationBreakStatus.Matched
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Matched
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Matched
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Matched = 1
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Investigating
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakStatus.Investigating
+  id: Investigating
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  langs:
+  - csharp
+  - vb
+  name: Investigating
+  nameWithType: ReconciliationBreakStatus.Investigating
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Investigating
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Investigating
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Investigating = 2
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Resolved
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakStatus.Resolved
+  id: Resolved
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  langs:
+  - csharp
+  - vb
+  name: Resolved
+  nameWithType: ReconciliationBreakStatus.Resolved
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakStatus.Resolved
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Resolved
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Resolved = 3
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationBreakStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationBreakStatus.html
+  name: ReconciliationBreakStatus
+  nameWithType: ReconciliationBreakStatus
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakStatus

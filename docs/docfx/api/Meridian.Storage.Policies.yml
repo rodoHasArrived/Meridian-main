@@ -1,0 +1,62 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Policies
+  commentId: N:Meridian.Storage.Policies
+  id: Meridian.Storage.Policies
+  children:
+  - Meridian.Storage.Policies.JsonlStoragePolicy
+  - Meridian.Storage.Policies.ParsedPathMetadata
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.Policies
+  nameWithType: Meridian.Storage.Policies
+  fullName: Meridian.Storage.Policies
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.Policies.JsonlStoragePolicy
+  commentId: T:Meridian.Storage.Policies.JsonlStoragePolicy
+  parent: Meridian.Storage.Policies
+  href: Meridian.Storage.Policies.JsonlStoragePolicy.html
+  name: JsonlStoragePolicy
+  nameWithType: JsonlStoragePolicy
+  fullName: Meridian.Storage.Policies.JsonlStoragePolicy
+- uid: Meridian.Storage.Policies.ParsedPathMetadata
+  commentId: T:Meridian.Storage.Policies.ParsedPathMetadata
+  parent: Meridian.Storage.Policies
+  href: Meridian.Storage.Policies.ParsedPathMetadata.html
+  name: ParsedPathMetadata
+  nameWithType: ParsedPathMetadata
+  fullName: Meridian.Storage.Policies.ParsedPathMetadata
+- uid: Meridian.Storage.Policies
+  commentId: N:Meridian.Storage.Policies
+  href: Meridian.html
+  name: Meridian.Storage.Policies
+  nameWithType: Meridian.Storage.Policies
+  fullName: Meridian.Storage.Policies
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Policies
+    name: Policies
+    href: Meridian.Storage.Policies.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Policies
+    name: Policies
+    href: Meridian.Storage.Policies.html

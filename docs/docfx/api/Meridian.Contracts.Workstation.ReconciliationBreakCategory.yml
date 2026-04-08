@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  id: ReconciliationBreakCategory
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ReconciliationBreakCategory.AmountMismatch
+  - Meridian.Contracts.Workstation.ReconciliationBreakCategory.ClassificationGap
+  - Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingBankCoverage
+  - Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingLedgerCoverage
+  - Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingPortfolioCoverage
+  - Meridian.Contracts.Workstation.ReconciliationBreakCategory.TimingMismatch
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationBreakCategory
+  nameWithType: ReconciliationBreakCategory
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationBreakCategory
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Canonical classification for reconciliation outcomes.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakCategory>))]
+
+      public enum ReconciliationBreakCategory : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ReconciliationBreakCategory)))>
+
+      Public Enum ReconciliationBreakCategory As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.ReconciliationBreakCategory}
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory.AmountMismatch
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakCategory.AmountMismatch
+  id: AmountMismatch
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  langs:
+  - csharp
+  - vb
+  name: AmountMismatch
+  nameWithType: ReconciliationBreakCategory.AmountMismatch
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory.AmountMismatch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmountMismatch
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: AmountMismatch = 0
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingLedgerCoverage
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingLedgerCoverage
+  id: MissingLedgerCoverage
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  langs:
+  - csharp
+  - vb
+  name: MissingLedgerCoverage
+  nameWithType: ReconciliationBreakCategory.MissingLedgerCoverage
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingLedgerCoverage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingLedgerCoverage
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: MissingLedgerCoverage = 1
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingPortfolioCoverage
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingPortfolioCoverage
+  id: MissingPortfolioCoverage
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  langs:
+  - csharp
+  - vb
+  name: MissingPortfolioCoverage
+  nameWithType: ReconciliationBreakCategory.MissingPortfolioCoverage
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingPortfolioCoverage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingPortfolioCoverage
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: MissingPortfolioCoverage = 2
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory.ClassificationGap
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakCategory.ClassificationGap
+  id: ClassificationGap
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  langs:
+  - csharp
+  - vb
+  name: ClassificationGap
+  nameWithType: ReconciliationBreakCategory.ClassificationGap
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory.ClassificationGap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClassificationGap
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: ClassificationGap = 3
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory.TimingMismatch
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakCategory.TimingMismatch
+  id: TimingMismatch
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  langs:
+  - csharp
+  - vb
+  name: TimingMismatch
+  nameWithType: ReconciliationBreakCategory.TimingMismatch
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory.TimingMismatch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimingMismatch
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: TimingMismatch = 4
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingBankCoverage
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingBankCoverage
+  id: MissingBankCoverage
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  langs:
+  - csharp
+  - vb
+  name: MissingBankCoverage
+  nameWithType: ReconciliationBreakCategory.MissingBankCoverage
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory.MissingBankCoverage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingBankCoverage
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: MissingBankCoverage = 5
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationBreakCategory.html
+  name: ReconciliationBreakCategory
+  nameWithType: ReconciliationBreakCategory
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory

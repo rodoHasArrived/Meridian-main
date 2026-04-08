@@ -1,0 +1,117 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Core
+  commentId: N:Meridian.Application.Wizard.Core
+  id: Meridian.Application.Wizard.Core
+  children:
+  - Meridian.Application.Wizard.Core.IWizardStep
+  - Meridian.Application.Wizard.Core.WizardContext
+  - Meridian.Application.Wizard.Core.WizardCoordinator
+  - Meridian.Application.Wizard.Core.WizardStepId
+  - Meridian.Application.Wizard.Core.WizardStepResult
+  - Meridian.Application.Wizard.Core.WizardStepStatus
+  - Meridian.Application.Wizard.Core.WizardSummary
+  - Meridian.Application.Wizard.Core.WizardTransition
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Wizard.Core
+  nameWithType: Meridian.Application.Wizard.Core
+  fullName: Meridian.Application.Wizard.Core
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Wizard.Core.IWizardStep
+  commentId: T:Meridian.Application.Wizard.Core.IWizardStep
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.IWizardStep.html
+  name: IWizardStep
+  nameWithType: IWizardStep
+  fullName: Meridian.Application.Wizard.Core.IWizardStep
+- uid: Meridian.Application.Wizard.Core.WizardContext
+  commentId: T:Meridian.Application.Wizard.Core.WizardContext
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardContext.html
+  name: WizardContext
+  nameWithType: WizardContext
+  fullName: Meridian.Application.Wizard.Core.WizardContext
+- uid: Meridian.Application.Wizard.Core.WizardCoordinator
+  commentId: T:Meridian.Application.Wizard.Core.WizardCoordinator
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardCoordinator.html
+  name: WizardCoordinator
+  nameWithType: WizardCoordinator
+  fullName: Meridian.Application.Wizard.Core.WizardCoordinator
+- uid: Meridian.Application.Wizard.Core.WizardStepId
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepId
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepId.html
+  name: WizardStepId
+  nameWithType: WizardStepId
+  fullName: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepResult
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepResult
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html
+  name: WizardStepResult
+  nameWithType: WizardStepResult
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepStatus
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepStatus.html
+  name: WizardStepStatus
+  nameWithType: WizardStepStatus
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus
+- uid: Meridian.Application.Wizard.Core.WizardSummary
+  commentId: T:Meridian.Application.Wizard.Core.WizardSummary
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardSummary.html
+  name: WizardSummary
+  nameWithType: WizardSummary
+  fullName: Meridian.Application.Wizard.Core.WizardSummary
+- uid: Meridian.Application.Wizard.Core.WizardTransition
+  commentId: T:Meridian.Application.Wizard.Core.WizardTransition
+  href: Meridian.Application.Wizard.Core.WizardTransition.html
+  name: WizardTransition
+  nameWithType: WizardTransition
+  fullName: Meridian.Application.Wizard.Core.WizardTransition
+- uid: Meridian.Application.Wizard.Core
+  commentId: N:Meridian.Application.Wizard.Core
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Core
+  nameWithType: Meridian.Application.Wizard.Core
+  fullName: Meridian.Application.Wizard.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html

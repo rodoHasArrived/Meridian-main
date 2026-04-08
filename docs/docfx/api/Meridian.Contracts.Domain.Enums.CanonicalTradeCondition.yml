@@ -1,0 +1,896 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  commentId: T:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  id: CanonicalTradeCondition
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Acquisition
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.AveragePrice
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Bunched
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Cash
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel1
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel2
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel3
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.ClosingPrint
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Contingent
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CorrectedConsolidated
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CrossTrade
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.DerivativelyPriced
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.FormT_ExtendedHours
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Halted
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Intermarket_Sweep
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.IpoHalt
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.LuldPause
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.NextDay
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OddLot
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OpeningPrint
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.PriorReferencePrice
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Regular
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.RegulatoryHalt
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SellerInitiated
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SoldOutOfSequence
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.StockOption
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.TradingResumed
+  - Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Unknown
+  langs:
+  - csharp
+  - vb
+  name: CanonicalTradeCondition
+  nameWithType: CanonicalTradeCondition
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalTradeCondition
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    Provider-agnostic canonical trade condition codes.
+
+    Maps raw provider-specific condition codes (CTA plan, SEC numeric, IB text)
+
+    to a unified set of canonical conditions for cross-provider comparison.
+  example: []
+  syntax:
+    content: 'public enum CanonicalTradeCondition : byte'
+    content.vb: Public Enum CanonicalTradeCondition As Byte
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Regular
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Regular
+  id: Regular
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Regular
+  nameWithType: CanonicalTradeCondition.Regular
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Regular
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Regular
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Regular trade (normal market conditions).
+  example: []
+  syntax:
+    content: Regular = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.FormT_ExtendedHours
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.FormT_ExtendedHours
+  id: FormT_ExtendedHours
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: FormT_ExtendedHours
+  nameWithType: CanonicalTradeCondition.FormT_ExtendedHours
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.FormT_ExtendedHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FormT_ExtendedHours
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Form T / extended hours trade (pre-market or after-hours).
+  example: []
+  syntax:
+    content: FormT_ExtendedHours = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OddLot
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OddLot
+  id: OddLot
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: OddLot
+  nameWithType: CanonicalTradeCondition.OddLot
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OddLot
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OddLot
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Odd lot trade (fewer than 100 shares for equities).
+  example: []
+  syntax:
+    content: OddLot = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.AveragePrice
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.AveragePrice
+  id: AveragePrice
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: AveragePrice
+  nameWithType: CanonicalTradeCondition.AveragePrice
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.AveragePrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AveragePrice
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Average price trade.
+  example: []
+  syntax:
+    content: AveragePrice = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Intermarket_Sweep
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Intermarket_Sweep
+  id: Intermarket_Sweep
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Intermarket_Sweep
+  nameWithType: CanonicalTradeCondition.Intermarket_Sweep
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Intermarket_Sweep
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Intermarket_Sweep
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Intermarket sweep order (ISO).
+  example: []
+  syntax:
+    content: Intermarket_Sweep = 4
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OpeningPrint
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OpeningPrint
+  id: OpeningPrint
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: OpeningPrint
+  nameWithType: CanonicalTradeCondition.OpeningPrint
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.OpeningPrint
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpeningPrint
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Opening print.
+  example: []
+  syntax:
+    content: OpeningPrint = 5
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.ClosingPrint
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.ClosingPrint
+  id: ClosingPrint
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: ClosingPrint
+  nameWithType: CanonicalTradeCondition.ClosingPrint
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.ClosingPrint
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosingPrint
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Closing print.
+  example: []
+  syntax:
+    content: ClosingPrint = 6
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.DerivativelyPriced
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.DerivativelyPriced
+  id: DerivativelyPriced
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: DerivativelyPriced
+  nameWithType: CanonicalTradeCondition.DerivativelyPriced
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.DerivativelyPriced
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DerivativelyPriced
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Derivatively priced trade.
+  example: []
+  syntax:
+    content: DerivativelyPriced = 7
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CrossTrade
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CrossTrade
+  id: CrossTrade
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: CrossTrade
+  nameWithType: CanonicalTradeCondition.CrossTrade
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CrossTrade
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrossTrade
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Cross trade.
+  example: []
+  syntax:
+    content: CrossTrade = 8
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.StockOption
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.StockOption
+  id: StockOption
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: StockOption
+  nameWithType: CanonicalTradeCondition.StockOption
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.StockOption
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StockOption
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Stock option trade.
+  example: []
+  syntax:
+    content: StockOption = 9
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Halted
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Halted
+  id: Halted
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Halted
+  nameWithType: CanonicalTradeCondition.Halted
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Halted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Halted
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Trading halt indicator.
+  example: []
+  syntax:
+    content: Halted = 10
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CorrectedConsolidated
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CorrectedConsolidated
+  id: CorrectedConsolidated
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: CorrectedConsolidated
+  nameWithType: CanonicalTradeCondition.CorrectedConsolidated
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CorrectedConsolidated
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorrectedConsolidated
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Corrected consolidated trade.
+  example: []
+  syntax:
+    content: CorrectedConsolidated = 11
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SoldOutOfSequence
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SoldOutOfSequence
+  id: SoldOutOfSequence
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: SoldOutOfSequence
+  nameWithType: CanonicalTradeCondition.SoldOutOfSequence
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SoldOutOfSequence
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SoldOutOfSequence
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Sold out of sequence (late report).
+  example: []
+  syntax:
+    content: SoldOutOfSequence = 12
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Contingent
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Contingent
+  id: Contingent
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Contingent
+  nameWithType: CanonicalTradeCondition.Contingent
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Contingent
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contingent
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Contingent trade.
+  example: []
+  syntax:
+    content: Contingent = 13
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Acquisition
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Acquisition
+  id: Acquisition
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Acquisition
+  nameWithType: CanonicalTradeCondition.Acquisition
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Acquisition
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Acquisition
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Acquisition trade.
+  example: []
+  syntax:
+    content: Acquisition = 14
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Bunched
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Bunched
+  id: Bunched
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Bunched
+  nameWithType: CanonicalTradeCondition.Bunched
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Bunched
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bunched
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Bunched trade.
+  example: []
+  syntax:
+    content: Bunched = 15
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Cash
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Cash
+  id: Cash
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: CanonicalTradeCondition.Cash
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Cash
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Cash settlement.
+  example: []
+  syntax:
+    content: Cash = 16
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.NextDay
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.NextDay
+  id: NextDay
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: NextDay
+  nameWithType: CanonicalTradeCondition.NextDay
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.NextDay
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextDay
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Next day settlement.
+  example: []
+  syntax:
+    content: NextDay = 17
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SellerInitiated
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SellerInitiated
+  id: SellerInitiated
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: SellerInitiated
+  nameWithType: CanonicalTradeCondition.SellerInitiated
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.SellerInitiated
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SellerInitiated
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Seller-initiated trade (definitive aggressor inference).
+  example: []
+  syntax:
+    content: SellerInitiated = 18
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.PriorReferencePrice
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.PriorReferencePrice
+  id: PriorReferencePrice
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: PriorReferencePrice
+  nameWithType: CanonicalTradeCondition.PriorReferencePrice
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.PriorReferencePrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriorReferencePrice
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Prior reference price.
+  example: []
+  syntax:
+    content: PriorReferencePrice = 19
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel1
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel1
+  id: CircuitBreakerLevel1
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerLevel1
+  nameWithType: CanonicalTradeCondition.CircuitBreakerLevel1
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerLevel1
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: 'Market-wide circuit breaker halt (MWCB Level 1: 7% drop in S&amp;P 500).'
+  example: []
+  syntax:
+    content: CircuitBreakerLevel1 = 20
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel2
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel2
+  id: CircuitBreakerLevel2
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerLevel2
+  nameWithType: CanonicalTradeCondition.CircuitBreakerLevel2
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel2
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerLevel2
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: 'Market-wide circuit breaker halt (MWCB Level 2: 13% drop in S&amp;P 500).'
+  example: []
+  syntax:
+    content: CircuitBreakerLevel2 = 21
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel3
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel3
+  id: CircuitBreakerLevel3
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerLevel3
+  nameWithType: CanonicalTradeCondition.CircuitBreakerLevel3
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.CircuitBreakerLevel3
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerLevel3
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: 'Market-wide circuit breaker halt (MWCB Level 3: 20% drop in S&amp;P 500, trading halted for remainder of day).'
+  example: []
+  syntax:
+    content: CircuitBreakerLevel3 = 22
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.LuldPause
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.LuldPause
+  id: LuldPause
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: LuldPause
+  nameWithType: CanonicalTradeCondition.LuldPause
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.LuldPause
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LuldPause
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    LULD (Limit Up/Limit Down) trading pause. Individual stock halted due to
+
+    price moving outside its LULD band for more than 15 seconds.
+  example: []
+  syntax:
+    content: LuldPause = 23
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.RegulatoryHalt
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.RegulatoryHalt
+  id: RegulatoryHalt
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: RegulatoryHalt
+  nameWithType: CanonicalTradeCondition.RegulatoryHalt
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.RegulatoryHalt
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegulatoryHalt
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Regulatory halt (SEC or exchange-imposed trading halt, e.g., news pending).
+  example: []
+  syntax:
+    content: RegulatoryHalt = 24
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.TradingResumed
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.TradingResumed
+  id: TradingResumed
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: TradingResumed
+  nameWithType: CanonicalTradeCondition.TradingResumed
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.TradingResumed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingResumed
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Trading resumed after halt.
+  example: []
+  syntax:
+    content: TradingResumed = 25
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.IpoHalt
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.IpoHalt
+  id: IpoHalt
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: IpoHalt
+  nameWithType: CanonicalTradeCondition.IpoHalt
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.IpoHalt
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IpoHalt
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: IPO halt (pre-opening, price discovery).
+  example: []
+  syntax:
+    content: IpoHalt = 26
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Unknown
+  commentId: F:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Unknown
+  id: Unknown
+  parent: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: CanonicalTradeCondition.Unknown
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Unknown / unmapped condition code.
+  example: []
+  syntax:
+    content: Unknown = 255
+    return:
+      type: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  commentId: T:Meridian.Contracts.Domain.Enums.CanonicalTradeCondition
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition.html
+  name: CanonicalTradeCondition
+  nameWithType: CanonicalTradeCondition
+  fullName: Meridian.Contracts.Domain.Enums.CanonicalTradeCondition

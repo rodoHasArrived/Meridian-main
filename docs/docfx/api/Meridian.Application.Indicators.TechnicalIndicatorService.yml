@@ -1,0 +1,896 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService
+  commentId: T:Meridian.Application.Indicators.TechnicalIndicatorService
+  id: TechnicalIndicatorService
+  parent: Meridian.Application.Indicators
+  children:
+  - Meridian.Application.Indicators.TechnicalIndicatorService.#ctor(Meridian.Application.Indicators.IndicatorConfiguration)
+  - Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar})
+  - Meridian.Application.Indicators.TechnicalIndicatorService.Dispose
+  - Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots
+  - Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot(System.String)
+  - Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  - Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade(Meridian.Domain.Models.MarketTradeUpdate)
+  langs:
+  - csharp
+  - vb
+  name: TechnicalIndicatorService
+  nameWithType: TechnicalIndicatorService
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TechnicalIndicatorService
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: >-
+    Real-time technical indicator calculation service using Skender.Stock.Indicators.
+
+    Provides 200+ technical indicators with streaming support for live market data.
+
+
+    Based on: https://github.com/DaveSkender/Stock.Indicators (Apache 2.0)
+
+    Reference: docs/open-source-references.md #25
+  example: []
+  syntax:
+    content: 'public sealed class TechnicalIndicatorService : IDisposable'
+    content.vb: Public NotInheritable Class TechnicalIndicatorService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.#ctor(Meridian.Application.Indicators.IndicatorConfiguration)
+  commentId: M:Meridian.Application.Indicators.TechnicalIndicatorService.#ctor(Meridian.Application.Indicators.IndicatorConfiguration)
+  id: '#ctor(Meridian.Application.Indicators.IndicatorConfiguration)'
+  parent: Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: TechnicalIndicatorService(IndicatorConfiguration?)
+  nameWithType: TechnicalIndicatorService.TechnicalIndicatorService(IndicatorConfiguration?)
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.TechnicalIndicatorService(Meridian.Application.Indicators.IndicatorConfiguration?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public TechnicalIndicatorService(IndicatorConfiguration? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Indicators.IndicatorConfiguration
+    content.vb: Public Sub New(config As IndicatorConfiguration = Nothing)
+  overload: Meridian.Application.Indicators.TechnicalIndicatorService.#ctor*
+  nameWithType.vb: TechnicalIndicatorService.New(IndicatorConfiguration)
+  fullName.vb: Meridian.Application.Indicators.TechnicalIndicatorService.New(Meridian.Application.Indicators.IndicatorConfiguration)
+  name.vb: New(IndicatorConfiguration)
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade(Meridian.Domain.Models.MarketTradeUpdate)
+  commentId: M:Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade(Meridian.Domain.Models.MarketTradeUpdate)
+  id: ProcessTrade(Meridian.Domain.Models.MarketTradeUpdate)
+  parent: Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: ProcessTrade(MarketTradeUpdate)
+  nameWithType: TechnicalIndicatorService.ProcessTrade(MarketTradeUpdate)
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade(Meridian.Domain.Models.MarketTradeUpdate)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessTrade
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Process a trade event and update all streaming indicators for the symbol.
+  example: []
+  syntax:
+    content: public IndicatorSnapshot? ProcessTrade(MarketTradeUpdate trade)
+    parameters:
+    - id: trade
+      type: Meridian.Domain.Models.MarketTradeUpdate
+    return:
+      type: Meridian.Application.Indicators.IndicatorSnapshot
+    content.vb: Public Function ProcessTrade(trade As MarketTradeUpdate) As IndicatorSnapshot
+  overload: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade*
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  commentId: M:Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  id: ProcessQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  parent: Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: ProcessQuote(MarketQuoteUpdate)
+  nameWithType: TechnicalIndicatorService.ProcessQuote(MarketQuoteUpdate)
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessQuote
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Process a quote event and update quote-based indicators.
+  example: []
+  syntax:
+    content: public IndicatorSnapshot? ProcessQuote(MarketQuoteUpdate quote)
+    parameters:
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+    return:
+      type: Meridian.Application.Indicators.IndicatorSnapshot
+    content.vb: Public Function ProcessQuote(quote As MarketQuoteUpdate) As IndicatorSnapshot
+  overload: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote*
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot(System.String)
+  commentId: M:Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot(System.String)
+  id: GetSnapshot(System.String)
+  parent: Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot(string)
+  nameWithType: TechnicalIndicatorService.GetSnapshot(string)
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Get the current indicator snapshot for a symbol.
+  example: []
+  syntax:
+    content: public IndicatorSnapshot? GetSnapshot(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Application.Indicators.IndicatorSnapshot
+    content.vb: Public Function GetSnapshot(symbol As String) As IndicatorSnapshot
+  overload: Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot*
+  nameWithType.vb: TechnicalIndicatorService.GetSnapshot(String)
+  fullName.vb: Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot(String)
+  name.vb: GetSnapshot(String)
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots
+  commentId: M:Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots
+  id: GetAllSnapshots
+  parent: Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: GetAllSnapshots()
+  nameWithType: TechnicalIndicatorService.GetAllSnapshots()
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSnapshots
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Get all symbol snapshots.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, IndicatorSnapshot> GetAllSnapshots()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Indicators.IndicatorSnapshot}
+    content.vb: Public Function GetAllSnapshots() As IReadOnlyDictionary(Of String, IndicatorSnapshot)
+  overload: Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots*
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar})
+  commentId: M:Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar})
+  id: CalculateHistorical(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar})
+  parent: Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: CalculateHistorical(string, IEnumerable<HistoricalBar>)
+  nameWithType: TechnicalIndicatorService.CalculateHistorical(string, IEnumerable<HistoricalBar>)
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical(string, System.Collections.Generic.IEnumerable<Meridian.Contracts.Domain.Models.HistoricalBar>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateHistorical
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Calculate historical indicators from OHLCV bars.
+  example: []
+  syntax:
+    content: public HistoricalIndicatorResult CalculateHistorical(string symbol, IEnumerable<HistoricalBar> bars)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: bars
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar}
+    return:
+      type: Meridian.Application.Indicators.HistoricalIndicatorResult
+    content.vb: Public Function CalculateHistorical(symbol As String, bars As IEnumerable(Of HistoricalBar)) As HistoricalIndicatorResult
+  overload: Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical*
+  nameWithType.vb: TechnicalIndicatorService.CalculateHistorical(String, IEnumerable(Of HistoricalBar))
+  fullName.vb: Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical(String, System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Domain.Models.HistoricalBar))
+  name.vb: CalculateHistorical(String, IEnumerable(Of HistoricalBar))
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.Dispose
+  commentId: M:Meridian.Application.Indicators.TechnicalIndicatorService.Dispose
+  id: Dispose
+  parent: Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: TechnicalIndicatorService.Dispose()
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 269
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Indicators.TechnicalIndicatorService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Indicators
+  commentId: N:Meridian.Application.Indicators
+  href: Meridian.html
+  name: Meridian.Application.Indicators
+  nameWithType: Meridian.Application.Indicators
+  fullName: Meridian.Application.Indicators
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.#ctor*
+  commentId: Overload:Meridian.Application.Indicators.TechnicalIndicatorService.#ctor
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html#Meridian_Application_Indicators_TechnicalIndicatorService__ctor_Meridian_Application_Indicators_IndicatorConfiguration_
+  name: TechnicalIndicatorService
+  nameWithType: TechnicalIndicatorService.TechnicalIndicatorService
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.TechnicalIndicatorService
+  nameWithType.vb: TechnicalIndicatorService.New
+  fullName.vb: Meridian.Application.Indicators.TechnicalIndicatorService.New
+  name.vb: New
+- uid: Meridian.Application.Indicators.IndicatorConfiguration
+  commentId: T:Meridian.Application.Indicators.IndicatorConfiguration
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html
+  name: IndicatorConfiguration
+  nameWithType: IndicatorConfiguration
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade*
+  commentId: Overload:Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html#Meridian_Application_Indicators_TechnicalIndicatorService_ProcessTrade_Meridian_Domain_Models_MarketTradeUpdate_
+  name: ProcessTrade
+  nameWithType: TechnicalIndicatorService.ProcessTrade
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessTrade
+- uid: Meridian.Domain.Models.MarketTradeUpdate
+  commentId: T:Meridian.Domain.Models.MarketTradeUpdate
+  parent: Meridian.Domain.Models
+  href: Meridian.Domain.Models.MarketTradeUpdate.html
+  name: MarketTradeUpdate
+  nameWithType: MarketTradeUpdate
+  fullName: Meridian.Domain.Models.MarketTradeUpdate
+- uid: Meridian.Application.Indicators.IndicatorSnapshot
+  commentId: T:Meridian.Application.Indicators.IndicatorSnapshot
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.IndicatorSnapshot.html
+  name: IndicatorSnapshot
+  nameWithType: IndicatorSnapshot
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot
+- uid: Meridian.Domain.Models
+  commentId: N:Meridian.Domain.Models
+  href: Meridian.html
+  name: Meridian.Domain.Models
+  nameWithType: Meridian.Domain.Models
+  fullName: Meridian.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote*
+  commentId: Overload:Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html#Meridian_Application_Indicators_TechnicalIndicatorService_ProcessQuote_Meridian_Contracts_Domain_Models_MarketQuoteUpdate_
+  name: ProcessQuote
+  nameWithType: TechnicalIndicatorService.ProcessQuote
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.ProcessQuote
+- uid: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+  commentId: T:Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.MarketQuoteUpdate.html
+  name: MarketQuoteUpdate
+  nameWithType: MarketQuoteUpdate
+  fullName: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot*
+  commentId: Overload:Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html#Meridian_Application_Indicators_TechnicalIndicatorService_GetSnapshot_System_String_
+  name: GetSnapshot
+  nameWithType: TechnicalIndicatorService.GetSnapshot
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.GetSnapshot
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots*
+  commentId: Overload:Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html#Meridian_Application_Indicators_TechnicalIndicatorService_GetAllSnapshots
+  name: GetAllSnapshots
+  nameWithType: TechnicalIndicatorService.GetAllSnapshots
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.GetAllSnapshots
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Indicators.IndicatorSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Indicators.IndicatorSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, IndicatorSnapshot>
+  nameWithType: IReadOnlyDictionary<string, IndicatorSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Application.Indicators.IndicatorSnapshot>
+  nameWithType.vb: IReadOnlyDictionary(Of String, IndicatorSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Application.Indicators.IndicatorSnapshot)
+  name.vb: IReadOnlyDictionary(Of String, IndicatorSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Indicators.IndicatorSnapshot
+    name: IndicatorSnapshot
+    href: Meridian.Application.Indicators.IndicatorSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Indicators.IndicatorSnapshot
+    name: IndicatorSnapshot
+    href: Meridian.Application.Indicators.IndicatorSnapshot.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical*
+  commentId: Overload:Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html#Meridian_Application_Indicators_TechnicalIndicatorService_CalculateHistorical_System_String_System_Collections_Generic_IEnumerable_Meridian_Contracts_Domain_Models_HistoricalBar__
+  name: CalculateHistorical
+  nameWithType: TechnicalIndicatorService.CalculateHistorical
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.CalculateHistorical
+- uid: System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Contracts.Domain.Models.HistoricalBar}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<HistoricalBar>
+  nameWithType: IEnumerable<HistoricalBar>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Contracts.Domain.Models.HistoricalBar>
+  nameWithType.vb: IEnumerable(Of HistoricalBar)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Domain.Models.HistoricalBar)
+  name.vb: IEnumerable(Of HistoricalBar)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+- uid: Meridian.Application.Indicators.HistoricalIndicatorResult
+  commentId: T:Meridian.Application.Indicators.HistoricalIndicatorResult
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.HistoricalIndicatorResult.html
+  name: HistoricalIndicatorResult
+  nameWithType: HistoricalIndicatorResult
+  fullName: Meridian.Application.Indicators.HistoricalIndicatorResult
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService.Dispose*
+  commentId: Overload:Meridian.Application.Indicators.TechnicalIndicatorService.Dispose
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html#Meridian_Application_Indicators_TechnicalIndicatorService_Dispose
+  name: Dispose
+  nameWithType: TechnicalIndicatorService.Dispose
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

@@ -1,0 +1,1011 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.StatusSnapshot
+  commentId: T:Meridian.Application.Monitoring.StatusSnapshot
+  id: StatusSnapshot
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.StatusSnapshot.#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Boolean,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32})
+  - Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions
+  - Meridian.Application.Monitoring.StatusSnapshot.Dropped
+  - Meridian.Application.Monitoring.StatusSnapshot.FromRuntime(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.IMarketDataClient,Meridian.Application.Subscriptions.SubscriptionOrchestrator,Meridian.Application.Monitoring.IEventMetrics)
+  - Meridian.Application.Monitoring.StatusSnapshot.IbEnabled
+  - Meridian.Application.Monitoring.StatusSnapshot.Integrity
+  - Meridian.Application.Monitoring.StatusSnapshot.Published
+  - Meridian.Application.Monitoring.StatusSnapshot.SymbolCount
+  - Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc
+  - Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions
+  langs:
+  - csharp
+  - vb
+  name: StatusSnapshot
+  nameWithType: StatusSnapshot
+  fullName: Meridian.Application.Monitoring.StatusSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatusSnapshot
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: 'public sealed record StatusSnapshot : IEquatable<StatusSnapshot>'
+    content.vb: Public NotInheritable Class StatusSnapshot Implements IEquatable(Of StatusSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.StatusSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.StatusSnapshot.#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Boolean,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32})
+  commentId: M:Meridian.Application.Monitoring.StatusSnapshot.#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Boolean,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32})
+  id: '#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Boolean,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32})'
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: StatusSnapshot(DateTimeOffset, long, long, long, bool, int, IReadOnlyDictionary<string, int>, IReadOnlyDictionary<string, int>)
+  nameWithType: StatusSnapshot.StatusSnapshot(DateTimeOffset, long, long, long, bool, int, IReadOnlyDictionary<string, int>, IReadOnlyDictionary<string, int>)
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.StatusSnapshot(System.DateTimeOffset, long, long, long, bool, int, System.Collections.Generic.IReadOnlyDictionary<string, int>, System.Collections.Generic.IReadOnlyDictionary<string, int>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public StatusSnapshot(DateTimeOffset TimestampUtc, long Published, long Dropped, long Integrity, bool IbEnabled, int SymbolCount, IReadOnlyDictionary<string, int> DepthSubscriptions, IReadOnlyDictionary<string, int> TradeSubscriptions)
+    parameters:
+    - id: TimestampUtc
+      type: System.DateTimeOffset
+    - id: Published
+      type: System.Int64
+    - id: Dropped
+      type: System.Int64
+    - id: Integrity
+      type: System.Int64
+    - id: IbEnabled
+      type: System.Boolean
+    - id: SymbolCount
+      type: System.Int32
+    - id: DepthSubscriptions
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32}
+    - id: TradeSubscriptions
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32}
+    content.vb: Public Sub New(TimestampUtc As DateTimeOffset, Published As Long, Dropped As Long, Integrity As Long, IbEnabled As Boolean, SymbolCount As Integer, DepthSubscriptions As IReadOnlyDictionary(Of String, Integer), TradeSubscriptions As IReadOnlyDictionary(Of String, Integer))
+  overload: Meridian.Application.Monitoring.StatusSnapshot.#ctor*
+  nameWithType.vb: StatusSnapshot.New(DateTimeOffset, Long, Long, Long, Boolean, Integer, IReadOnlyDictionary(Of String, Integer), IReadOnlyDictionary(Of String, Integer))
+  fullName.vb: Meridian.Application.Monitoring.StatusSnapshot.New(System.DateTimeOffset, Long, Long, Long, Boolean, Integer, System.Collections.Generic.IReadOnlyDictionary(Of String, Integer), System.Collections.Generic.IReadOnlyDictionary(Of String, Integer))
+  name.vb: New(DateTimeOffset, Long, Long, Long, Boolean, Integer, IReadOnlyDictionary(Of String, Integer), IReadOnlyDictionary(Of String, Integer))
+- uid: Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc
+  id: TimestampUtc
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TimestampUtc
+  nameWithType: StatusSnapshot.TimestampUtc
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampUtc
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset TimestampUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property TimestampUtc As DateTimeOffset
+  overload: Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.Published
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.Published
+  id: Published
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Published
+  nameWithType: StatusSnapshot.Published
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.Published
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Published
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Published { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Published As Long
+  overload: Meridian.Application.Monitoring.StatusSnapshot.Published*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.Dropped
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.Dropped
+  id: Dropped
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Dropped
+  nameWithType: StatusSnapshot.Dropped
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.Dropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dropped
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Dropped { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Dropped As Long
+  overload: Meridian.Application.Monitoring.StatusSnapshot.Dropped*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.Integrity
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.Integrity
+  id: Integrity
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Integrity
+  nameWithType: StatusSnapshot.Integrity
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.Integrity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Integrity
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Integrity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Integrity As Long
+  overload: Meridian.Application.Monitoring.StatusSnapshot.Integrity*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.IbEnabled
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.IbEnabled
+  id: IbEnabled
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: IbEnabled
+  nameWithType: StatusSnapshot.IbEnabled
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.IbEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IbEnabled
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public bool IbEnabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IbEnabled As Boolean
+  overload: Meridian.Application.Monitoring.StatusSnapshot.IbEnabled*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.SymbolCount
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.SymbolCount
+  id: SymbolCount
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SymbolCount
+  nameWithType: StatusSnapshot.SymbolCount
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.SymbolCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCount
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int SymbolCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolCount As Integer
+  overload: Meridian.Application.Monitoring.StatusSnapshot.SymbolCount*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions
+  id: DepthSubscriptions
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DepthSubscriptions
+  nameWithType: StatusSnapshot.DepthSubscriptions
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthSubscriptions
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyDictionary<string, int> DepthSubscriptions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32}
+    content.vb: Public Property DepthSubscriptions As IReadOnlyDictionary(Of String, Integer)
+  overload: Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions
+  commentId: P:Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions
+  id: TradeSubscriptions
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TradeSubscriptions
+  nameWithType: StatusSnapshot.TradeSubscriptions
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeSubscriptions
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyDictionary<string, int> TradeSubscriptions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32}
+    content.vb: Public Property TradeSubscriptions As IReadOnlyDictionary(Of String, Integer)
+  overload: Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions*
+- uid: Meridian.Application.Monitoring.StatusSnapshot.FromRuntime(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.IMarketDataClient,Meridian.Application.Subscriptions.SubscriptionOrchestrator,Meridian.Application.Monitoring.IEventMetrics)
+  commentId: M:Meridian.Application.Monitoring.StatusSnapshot.FromRuntime(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.IMarketDataClient,Meridian.Application.Subscriptions.SubscriptionOrchestrator,Meridian.Application.Monitoring.IEventMetrics)
+  id: FromRuntime(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.IMarketDataClient,Meridian.Application.Subscriptions.SubscriptionOrchestrator,Meridian.Application.Monitoring.IEventMetrics)
+  parent: Meridian.Application.Monitoring.StatusSnapshot
+  langs:
+  - csharp
+  - vb
+  name: FromRuntime(AppConfig, IMarketDataClient, SubscriptionOrchestrator, IEventMetrics?)
+  nameWithType: StatusSnapshot.FromRuntime(AppConfig, IMarketDataClient, SubscriptionOrchestrator, IEventMetrics?)
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.FromRuntime(Meridian.Application.Config.AppConfig, Meridian.Infrastructure.IMarketDataClient, Meridian.Application.Subscriptions.SubscriptionOrchestrator, Meridian.Application.Monitoring.IEventMetrics?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromRuntime
+    path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static StatusSnapshot FromRuntime(AppConfig cfg, IMarketDataClient ib, SubscriptionOrchestrator subs, IEventMetrics? metrics = null)
+    parameters:
+    - id: cfg
+      type: Meridian.Application.Config.AppConfig
+    - id: ib
+      type: Meridian.Infrastructure.IMarketDataClient
+    - id: subs
+      type: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+    - id: metrics
+      type: Meridian.Application.Monitoring.IEventMetrics
+    return:
+      type: Meridian.Application.Monitoring.StatusSnapshot
+    content.vb: Public Shared Function FromRuntime(cfg As AppConfig, ib As IMarketDataClient, subs As SubscriptionOrchestrator, metrics As IEventMetrics = Nothing) As StatusSnapshot
+  overload: Meridian.Application.Monitoring.StatusSnapshot.FromRuntime*
+  nameWithType.vb: StatusSnapshot.FromRuntime(AppConfig, IMarketDataClient, SubscriptionOrchestrator, IEventMetrics)
+  fullName.vb: Meridian.Application.Monitoring.StatusSnapshot.FromRuntime(Meridian.Application.Config.AppConfig, Meridian.Infrastructure.IMarketDataClient, Meridian.Application.Subscriptions.SubscriptionOrchestrator, Meridian.Application.Monitoring.IEventMetrics)
+  name.vb: FromRuntime(AppConfig, IMarketDataClient, SubscriptionOrchestrator, IEventMetrics)
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.StatusSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.StatusSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StatusSnapshot>
+  nameWithType: IEquatable<StatusSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.StatusSnapshot>
+  nameWithType.vb: IEquatable(Of StatusSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.StatusSnapshot)
+  name.vb: IEquatable(Of StatusSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.StatusSnapshot
+    name: StatusSnapshot
+    href: Meridian.Application.Monitoring.StatusSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.StatusSnapshot
+    name: StatusSnapshot
+    href: Meridian.Application.Monitoring.StatusSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.StatusSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.#ctor
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot__ctor_System_DateTimeOffset_System_Int64_System_Int64_System_Int64_System_Boolean_System_Int32_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Int32__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Int32__
+  name: StatusSnapshot
+  nameWithType: StatusSnapshot.StatusSnapshot
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.StatusSnapshot
+  nameWithType.vb: StatusSnapshot.New
+  fullName.vb: Meridian.Application.Monitoring.StatusSnapshot.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, int>
+  nameWithType: IReadOnlyDictionary<string, int>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, int>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Integer)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Integer)
+  name.vb: IReadOnlyDictionary(Of String, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_TimestampUtc
+  name: TimestampUtc
+  nameWithType: StatusSnapshot.TimestampUtc
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.TimestampUtc
+- uid: Meridian.Application.Monitoring.StatusSnapshot.Published*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.Published
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_Published
+  name: Published
+  nameWithType: StatusSnapshot.Published
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.Published
+- uid: Meridian.Application.Monitoring.StatusSnapshot.Dropped*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.Dropped
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_Dropped
+  name: Dropped
+  nameWithType: StatusSnapshot.Dropped
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.Dropped
+- uid: Meridian.Application.Monitoring.StatusSnapshot.Integrity*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.Integrity
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_Integrity
+  name: Integrity
+  nameWithType: StatusSnapshot.Integrity
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.Integrity
+- uid: Meridian.Application.Monitoring.StatusSnapshot.IbEnabled*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.IbEnabled
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_IbEnabled
+  name: IbEnabled
+  nameWithType: StatusSnapshot.IbEnabled
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.IbEnabled
+- uid: Meridian.Application.Monitoring.StatusSnapshot.SymbolCount*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.SymbolCount
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_SymbolCount
+  name: SymbolCount
+  nameWithType: StatusSnapshot.SymbolCount
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.SymbolCount
+- uid: Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_DepthSubscriptions
+  name: DepthSubscriptions
+  nameWithType: StatusSnapshot.DepthSubscriptions
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.DepthSubscriptions
+- uid: Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_TradeSubscriptions
+  name: TradeSubscriptions
+  nameWithType: StatusSnapshot.TradeSubscriptions
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.TradeSubscriptions
+- uid: Meridian.Application.Monitoring.StatusSnapshot.FromRuntime*
+  commentId: Overload:Meridian.Application.Monitoring.StatusSnapshot.FromRuntime
+  href: Meridian.Application.Monitoring.StatusSnapshot.html#Meridian_Application_Monitoring_StatusSnapshot_FromRuntime_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_IMarketDataClient_Meridian_Application_Subscriptions_SubscriptionOrchestrator_Meridian_Application_Monitoring_IEventMetrics_
+  name: FromRuntime
+  nameWithType: StatusSnapshot.FromRuntime
+  fullName: Meridian.Application.Monitoring.StatusSnapshot.FromRuntime
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+  commentId: T:Meridian.Application.Subscriptions.SubscriptionOrchestrator
+  parent: Meridian.Application.Subscriptions
+  href: Meridian.Application.Subscriptions.SubscriptionOrchestrator.html
+  name: SubscriptionOrchestrator
+  nameWithType: SubscriptionOrchestrator
+  fullName: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+- uid: Meridian.Application.Monitoring.IEventMetrics
+  commentId: T:Meridian.Application.Monitoring.IEventMetrics
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IEventMetrics.html
+  name: IEventMetrics
+  nameWithType: IEventMetrics
+  fullName: Meridian.Application.Monitoring.IEventMetrics
+- uid: Meridian.Application.Monitoring.StatusSnapshot
+  commentId: T:Meridian.Application.Monitoring.StatusSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.StatusSnapshot.html
+  name: StatusSnapshot
+  nameWithType: StatusSnapshot
+  fullName: Meridian.Application.Monitoring.StatusSnapshot
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: Meridian.Application.Subscriptions
+  commentId: N:Meridian.Application.Subscriptions
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions
+  nameWithType: Meridian.Application.Subscriptions
+  fullName: Meridian.Application.Subscriptions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html

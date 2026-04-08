@@ -1,0 +1,918 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.OrderRequest
+  commentId: T:Meridian.Execution.Sdk.OrderRequest
+  id: OrderRequest
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.OrderRequest.ClientOrderId
+  - Meridian.Execution.Sdk.OrderRequest.LimitPrice
+  - Meridian.Execution.Sdk.OrderRequest.Metadata
+  - Meridian.Execution.Sdk.OrderRequest.Quantity
+  - Meridian.Execution.Sdk.OrderRequest.Side
+  - Meridian.Execution.Sdk.OrderRequest.StopPrice
+  - Meridian.Execution.Sdk.OrderRequest.StrategyId
+  - Meridian.Execution.Sdk.OrderRequest.Symbol
+  - Meridian.Execution.Sdk.OrderRequest.TimeInForce
+  - Meridian.Execution.Sdk.OrderRequest.Type
+  langs:
+  - csharp
+  - vb
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Execution.Sdk.OrderRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderRequest
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Request to place a new order.
+  example: []
+  syntax:
+    content: 'public sealed record OrderRequest : IEquatable<OrderRequest>'
+    content.vb: Public NotInheritable Class OrderRequest Implements IEquatable(Of OrderRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.OrderRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.OrderRequest.Symbol
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OrderRequest.Symbol
+  fullName: Meridian.Execution.Sdk.OrderRequest.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Sdk.OrderRequest.Symbol*
+- uid: Meridian.Execution.Sdk.OrderRequest.Side
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.Side
+  id: Side
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: OrderRequest.Side
+  fullName: Meridian.Execution.Sdk.OrderRequest.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required OrderSide Side { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.OrderSide
+    content.vb: Public Property Side As OrderSide
+  overload: Meridian.Execution.Sdk.OrderRequest.Side*
+- uid: Meridian.Execution.Sdk.OrderRequest.Type
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.Type
+  id: Type
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: OrderRequest.Type
+  fullName: Meridian.Execution.Sdk.OrderRequest.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required OrderType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.OrderType
+    content.vb: Public Property Type As OrderType
+  overload: Meridian.Execution.Sdk.OrderRequest.Type*
+- uid: Meridian.Execution.Sdk.OrderRequest.Quantity
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.Quantity
+  id: Quantity
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: OrderRequest.Quantity
+  fullName: Meridian.Execution.Sdk.OrderRequest.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required decimal Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Quantity As Decimal
+  overload: Meridian.Execution.Sdk.OrderRequest.Quantity*
+- uid: Meridian.Execution.Sdk.OrderRequest.LimitPrice
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.LimitPrice
+  id: LimitPrice
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: LimitPrice
+  nameWithType: OrderRequest.LimitPrice
+  fullName: Meridian.Execution.Sdk.OrderRequest.LimitPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LimitPrice
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal? LimitPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property LimitPrice As Decimal?
+  overload: Meridian.Execution.Sdk.OrderRequest.LimitPrice*
+- uid: Meridian.Execution.Sdk.OrderRequest.StopPrice
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.StopPrice
+  id: StopPrice
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: StopPrice
+  nameWithType: OrderRequest.StopPrice
+  fullName: Meridian.Execution.Sdk.OrderRequest.StopPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopPrice
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal? StopPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property StopPrice As Decimal?
+  overload: Meridian.Execution.Sdk.OrderRequest.StopPrice*
+- uid: Meridian.Execution.Sdk.OrderRequest.TimeInForce
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.TimeInForce
+  id: TimeInForce
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: TimeInForce
+  nameWithType: OrderRequest.TimeInForce
+  fullName: Meridian.Execution.Sdk.OrderRequest.TimeInForce
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeInForce
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public TimeInForce TimeInForce { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.TimeInForce
+    content.vb: Public Property TimeInForce As TimeInForce
+  overload: Meridian.Execution.Sdk.OrderRequest.TimeInForce*
+- uid: Meridian.Execution.Sdk.OrderRequest.ClientOrderId
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.ClientOrderId
+  id: ClientOrderId
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: ClientOrderId
+  nameWithType: OrderRequest.ClientOrderId
+  fullName: Meridian.Execution.Sdk.OrderRequest.ClientOrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientOrderId
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public string? ClientOrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ClientOrderId As String
+  overload: Meridian.Execution.Sdk.OrderRequest.ClientOrderId*
+- uid: Meridian.Execution.Sdk.OrderRequest.StrategyId
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.StrategyId
+  id: StrategyId
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: OrderRequest.StrategyId
+  fullName: Meridian.Execution.Sdk.OrderRequest.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Execution.Sdk.OrderRequest.StrategyId*
+- uid: Meridian.Execution.Sdk.OrderRequest.Metadata
+  commentId: P:Meridian.Execution.Sdk.OrderRequest.Metadata
+  id: Metadata
+  parent: Meridian.Execution.Sdk.OrderRequest
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: OrderRequest.Metadata
+  fullName: Meridian.Execution.Sdk.OrderRequest.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Metadata As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Execution.Sdk.OrderRequest.Metadata*
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.OrderRequest}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.OrderRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrderRequest>
+  nameWithType: IEquatable<OrderRequest>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.OrderRequest>
+  nameWithType.vb: IEquatable(Of OrderRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.OrderRequest)
+  name.vb: IEquatable(Of OrderRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+    href: Meridian.Execution.Sdk.OrderRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+    href: Meridian.Execution.Sdk.OrderRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.OrderRequest.Symbol*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.Symbol
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_Symbol
+  name: Symbol
+  nameWithType: OrderRequest.Symbol
+  fullName: Meridian.Execution.Sdk.OrderRequest.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.OrderRequest.Side*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.Side
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_Side
+  name: Side
+  nameWithType: OrderRequest.Side
+  fullName: Meridian.Execution.Sdk.OrderRequest.Side
+- uid: Meridian.Execution.Sdk.OrderSide
+  commentId: T:Meridian.Execution.Sdk.OrderSide
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderSide.html
+  name: OrderSide
+  nameWithType: OrderSide
+  fullName: Meridian.Execution.Sdk.OrderSide
+- uid: Meridian.Execution.Sdk.OrderRequest.Type*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.Type
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_Type
+  name: Type
+  nameWithType: OrderRequest.Type
+  fullName: Meridian.Execution.Sdk.OrderRequest.Type
+- uid: Meridian.Execution.Sdk.OrderType
+  commentId: T:Meridian.Execution.Sdk.OrderType
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderType.html
+  name: OrderType
+  nameWithType: OrderType
+  fullName: Meridian.Execution.Sdk.OrderType
+- uid: Meridian.Execution.Sdk.OrderRequest.Quantity*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.Quantity
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_Quantity
+  name: Quantity
+  nameWithType: OrderRequest.Quantity
+  fullName: Meridian.Execution.Sdk.OrderRequest.Quantity
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.OrderRequest.LimitPrice*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.LimitPrice
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_LimitPrice
+  name: LimitPrice
+  nameWithType: OrderRequest.LimitPrice
+  fullName: Meridian.Execution.Sdk.OrderRequest.LimitPrice
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.OrderRequest.StopPrice*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.StopPrice
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_StopPrice
+  name: StopPrice
+  nameWithType: OrderRequest.StopPrice
+  fullName: Meridian.Execution.Sdk.OrderRequest.StopPrice
+- uid: Meridian.Execution.Sdk.OrderRequest.TimeInForce*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.TimeInForce
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_TimeInForce
+  name: TimeInForce
+  nameWithType: OrderRequest.TimeInForce
+  fullName: Meridian.Execution.Sdk.OrderRequest.TimeInForce
+- uid: Meridian.Execution.Sdk.TimeInForce
+  commentId: T:Meridian.Execution.Sdk.TimeInForce
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.TimeInForce.html
+  name: TimeInForce
+  nameWithType: TimeInForce
+  fullName: Meridian.Execution.Sdk.TimeInForce
+- uid: Meridian.Execution.Sdk.OrderRequest.ClientOrderId*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.ClientOrderId
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_ClientOrderId
+  name: ClientOrderId
+  nameWithType: OrderRequest.ClientOrderId
+  fullName: Meridian.Execution.Sdk.OrderRequest.ClientOrderId
+- uid: Meridian.Execution.Sdk.OrderRequest.StrategyId*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.StrategyId
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_StrategyId
+  name: StrategyId
+  nameWithType: OrderRequest.StrategyId
+  fullName: Meridian.Execution.Sdk.OrderRequest.StrategyId
+- uid: Meridian.Execution.Sdk.OrderRequest.Metadata*
+  commentId: Overload:Meridian.Execution.Sdk.OrderRequest.Metadata
+  href: Meridian.Execution.Sdk.OrderRequest.html#Meridian_Execution_Sdk_OrderRequest_Metadata
+  name: Metadata
+  nameWithType: OrderRequest.Metadata
+  fullName: Meridian.Execution.Sdk.OrderRequest.Metadata
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

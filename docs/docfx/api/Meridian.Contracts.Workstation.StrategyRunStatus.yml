@@ -1,0 +1,269 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunStatus
+  id: StrategyRunStatus
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunStatus.Cancelled
+  - Meridian.Contracts.Workstation.StrategyRunStatus.Completed
+  - Meridian.Contracts.Workstation.StrategyRunStatus.Failed
+  - Meridian.Contracts.Workstation.StrategyRunStatus.Paused
+  - Meridian.Contracts.Workstation.StrategyRunStatus.Pending
+  - Meridian.Contracts.Workstation.StrategyRunStatus.Running
+  - Meridian.Contracts.Workstation.StrategyRunStatus.Stopped
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunStatus
+  nameWithType: StrategyRunStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunStatus
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Normalized status used by workstation surfaces across backtest, paper, and live runs.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<StrategyRunStatus>))]
+
+      public enum StrategyRunStatus : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of StrategyRunStatus)))>
+
+      Public Enum StrategyRunStatus As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.StrategyRunStatus}
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus.Pending
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunStatus.Pending
+  id: Pending
+  parent: Meridian.Contracts.Workstation.StrategyRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: StrategyRunStatus.Pending
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus.Running
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunStatus.Running
+  id: Running
+  parent: Meridian.Contracts.Workstation.StrategyRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: StrategyRunStatus.Running
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Running = 1
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus.Paused
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunStatus.Paused
+  id: Paused
+  parent: Meridian.Contracts.Workstation.StrategyRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Paused
+  nameWithType: StrategyRunStatus.Paused
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus.Paused
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paused
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Paused = 2
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus.Completed
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunStatus.Completed
+  id: Completed
+  parent: Meridian.Contracts.Workstation.StrategyRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: StrategyRunStatus.Completed
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Completed = 3
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus.Failed
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunStatus.Failed
+  id: Failed
+  parent: Meridian.Contracts.Workstation.StrategyRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: StrategyRunStatus.Failed
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Failed = 4
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus.Cancelled
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Contracts.Workstation.StrategyRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: StrategyRunStatus.Cancelled
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Cancelled = 5
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus.Stopped
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunStatus.Stopped
+  id: Stopped
+  parent: Meridian.Contracts.Workstation.StrategyRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Stopped
+  nameWithType: StrategyRunStatus.Stopped
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus.Stopped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stopped
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Stopped = 6
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  name: StrategyRunStatus
+  nameWithType: StrategyRunStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus

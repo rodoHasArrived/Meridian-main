@@ -288,11 +288,6 @@ jobs:
     steps:
       - name: Generate test summary
         run: |
-          echo "# Test Matrix Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-
           # Linux always runs and has a single definitive result
           LINUX_STATUS="${{ needs.test-ubuntu.result }}"
           case "$LINUX_STATUS" in
@@ -300,7 +295,6 @@ jobs:
             skipped) LINUX_LABEL="⏭️ Skipped" ;;
             *) LINUX_LABEL="❌ Failed" ;;
           esac
-          echo "| Linux | $LINUX_LABEL |" >> $GITHUB_STEP_SUMMARY
 
           # Windows and macOS share a matrix result; on PRs they are skipped
           OTHER_STATUS="${{ needs.test-other-platforms.result }}"
@@ -309,8 +303,6 @@ jobs:
             skipped) WIN_LABEL="⏭️ Skipped (PR)"; MAC_LABEL="⏭️ Skipped (PR)" ;;
             *) WIN_LABEL="❌ Failed"; MAC_LABEL="❌ Failed" ;;
           esac
-          echo "| Windows | $WIN_LABEL |" >> $GITHUB_STEP_SUMMARY
-          echo "| macOS | $MAC_LABEL |" >> $GITHUB_STEP_SUMMARY
 
           # PostgreSQL DB tests only run on push to main; skipped on PRs
           DB_STATUS="${{ needs.test-db.result }}"
@@ -319,4 +311,14 @@ jobs:
             skipped) DB_LABEL="⏭️ Skipped (PR)" ;;
             *) DB_LABEL="❌ Failed" ;;
           esac
-          echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY
+
+          {
+            echo "# Test Matrix Summary"
+            echo ""
+            echo "| Platform | Status |"
+            echo "|----------|--------|"
+            echo "| Linux | $LINUX_LABEL |"
+            echo "| Windows | $WIN_LABEL |"
+            echo "| macOS | $MAC_LABEL |"
+            echo "| PostgreSQL | $DB_LABEL |"
+          } >> "$GITHUB_STEP_SUMMARY"

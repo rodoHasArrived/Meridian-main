@@ -1,0 +1,744 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Commands.CliResult
+  commentId: T:Meridian.Application.Commands.CliResult
+  id: CliResult
+  parent: Meridian.Application.Commands
+  children:
+  - Meridian.Application.Commands.CliResult.Error
+  - Meridian.Application.Commands.CliResult.ExitCode
+  - Meridian.Application.Commands.CliResult.Fail(Meridian.Application.ResultTypes.ErrorCode)
+  - Meridian.Application.Commands.CliResult.Fail(System.Int32)
+  - Meridian.Application.Commands.CliResult.FromBool(System.Boolean,Meridian.Application.ResultTypes.ErrorCode)
+  - Meridian.Application.Commands.CliResult.Ok
+  - Meridian.Application.Commands.CliResult.Success
+  langs:
+  - csharp
+  - vb
+  name: CliResult
+  nameWithType: CliResult
+  fullName: Meridian.Application.Commands.CliResult
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CliResult
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: >-
+    Represents the result of a CLI command execution with optional error classification.
+
+    Provides semantic exit codes mapped from <xref href="Meridian.Application.ResultTypes.ErrorCode" data-throw-if-not-resolved="false"></xref> categories,
+
+    replacing raw int returns with structured error information.
+  remarks: >-
+    Exit code mapping:
+
+    0 = Success, 1 = General, 2 = Validation, 3 = Configuration,
+
+    4 = Connection, 5 = Provider, 6 = Data Integrity, 7 = Storage, 8 = Messaging.
+  example: []
+  syntax:
+    content: 'public readonly record struct CliResult : IEquatable<CliResult>'
+    content.vb: Public Structure CliResult Implements IEquatable(Of CliResult)
+  implements:
+  - System.IEquatable{Meridian.Application.Commands.CliResult}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Commands.CliResult.ExitCode
+  commentId: P:Meridian.Application.Commands.CliResult.ExitCode
+  id: ExitCode
+  parent: Meridian.Application.Commands.CliResult
+  langs:
+  - csharp
+  - vb
+  name: ExitCode
+  nameWithType: CliResult.ExitCode
+  fullName: Meridian.Application.Commands.CliResult.ExitCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExitCode
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Process exit code (0 = success, 1-8 = category-specific failure).
+  example: []
+  syntax:
+    content: public int ExitCode { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property ExitCode As Integer
+  overload: Meridian.Application.Commands.CliResult.ExitCode*
+- uid: Meridian.Application.Commands.CliResult.Error
+  commentId: P:Meridian.Application.Commands.CliResult.Error
+  id: Error
+  parent: Meridian.Application.Commands.CliResult
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: CliResult.Error
+  fullName: Meridian.Application.Commands.CliResult.Error
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Classified error code, if available.
+  example: []
+  syntax:
+    content: public ErrorCode? Error { get; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Application.ResultTypes.ErrorCode}
+    content.vb: Public ReadOnly Property [Error] As ErrorCode?
+  overload: Meridian.Application.Commands.CliResult.Error*
+- uid: Meridian.Application.Commands.CliResult.Success
+  commentId: P:Meridian.Application.Commands.CliResult.Success
+  id: Success
+  parent: Meridian.Application.Commands.CliResult
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: CliResult.Success
+  fullName: Meridian.Application.Commands.CliResult.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Whether the command succeeded.
+  example: []
+  syntax:
+    content: public bool Success { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property Success As Boolean
+  overload: Meridian.Application.Commands.CliResult.Success*
+- uid: Meridian.Application.Commands.CliResult.Ok
+  commentId: M:Meridian.Application.Commands.CliResult.Ok
+  id: Ok
+  parent: Meridian.Application.Commands.CliResult
+  langs:
+  - csharp
+  - vb
+  name: Ok()
+  nameWithType: CliResult.Ok()
+  fullName: Meridian.Application.Commands.CliResult.Ok()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ok
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Creates a successful result (exit code 0).
+  example: []
+  syntax:
+    content: public static CliResult Ok()
+    return:
+      type: Meridian.Application.Commands.CliResult
+    content.vb: Public Shared Function Ok() As CliResult
+  overload: Meridian.Application.Commands.CliResult.Ok*
+- uid: Meridian.Application.Commands.CliResult.Fail(Meridian.Application.ResultTypes.ErrorCode)
+  commentId: M:Meridian.Application.Commands.CliResult.Fail(Meridian.Application.ResultTypes.ErrorCode)
+  id: Fail(Meridian.Application.ResultTypes.ErrorCode)
+  parent: Meridian.Application.Commands.CliResult
+  langs:
+  - csharp
+  - vb
+  name: Fail(ErrorCode)
+  nameWithType: CliResult.Fail(ErrorCode)
+  fullName: Meridian.Application.Commands.CliResult.Fail(Meridian.Application.ResultTypes.ErrorCode)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fail
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Creates a failure result with a classified error code.
+  example: []
+  syntax:
+    content: public static CliResult Fail(ErrorCode code)
+    parameters:
+    - id: code
+      type: Meridian.Application.ResultTypes.ErrorCode
+    return:
+      type: Meridian.Application.Commands.CliResult
+    content.vb: Public Shared Function Fail(code As ErrorCode) As CliResult
+  overload: Meridian.Application.Commands.CliResult.Fail*
+- uid: Meridian.Application.Commands.CliResult.Fail(System.Int32)
+  commentId: M:Meridian.Application.Commands.CliResult.Fail(System.Int32)
+  id: Fail(System.Int32)
+  parent: Meridian.Application.Commands.CliResult
+  langs:
+  - csharp
+  - vb
+  name: Fail(int)
+  nameWithType: CliResult.Fail(int)
+  fullName: Meridian.Application.Commands.CliResult.Fail(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fail
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Creates a failure result with a raw exit code (for backward compatibility).
+  example: []
+  syntax:
+    content: public static CliResult Fail(int exitCode = 1)
+    parameters:
+    - id: exitCode
+      type: System.Int32
+    return:
+      type: Meridian.Application.Commands.CliResult
+    content.vb: Public Shared Function Fail(exitCode As Integer = 1) As CliResult
+  overload: Meridian.Application.Commands.CliResult.Fail*
+  nameWithType.vb: CliResult.Fail(Integer)
+  fullName.vb: Meridian.Application.Commands.CliResult.Fail(Integer)
+  name.vb: Fail(Integer)
+- uid: Meridian.Application.Commands.CliResult.FromBool(System.Boolean,Meridian.Application.ResultTypes.ErrorCode)
+  commentId: M:Meridian.Application.Commands.CliResult.FromBool(System.Boolean,Meridian.Application.ResultTypes.ErrorCode)
+  id: FromBool(System.Boolean,Meridian.Application.ResultTypes.ErrorCode)
+  parent: Meridian.Application.Commands.CliResult
+  langs:
+  - csharp
+  - vb
+  name: FromBool(bool, ErrorCode)
+  nameWithType: CliResult.FromBool(bool, ErrorCode)
+  fullName: Meridian.Application.Commands.CliResult.FromBool(bool, Meridian.Application.ResultTypes.ErrorCode)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromBool
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Creates a result from a boolean success flag and an error code for the failure case.
+  example: []
+  syntax:
+    content: public static CliResult FromBool(bool success, ErrorCode failureCode)
+    parameters:
+    - id: success
+      type: System.Boolean
+    - id: failureCode
+      type: Meridian.Application.ResultTypes.ErrorCode
+    return:
+      type: Meridian.Application.Commands.CliResult
+    content.vb: Public Shared Function FromBool(success As Boolean, failureCode As ErrorCode) As CliResult
+  overload: Meridian.Application.Commands.CliResult.FromBool*
+  nameWithType.vb: CliResult.FromBool(Boolean, ErrorCode)
+  fullName.vb: Meridian.Application.Commands.CliResult.FromBool(Boolean, Meridian.Application.ResultTypes.ErrorCode)
+  name.vb: FromBool(Boolean, ErrorCode)
+references:
+- uid: Meridian.Application.ResultTypes.ErrorCode
+  commentId: T:Meridian.Application.ResultTypes.ErrorCode
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.ErrorCode.html
+  name: ErrorCode
+  nameWithType: ErrorCode
+  fullName: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.Commands
+  commentId: N:Meridian.Application.Commands
+  href: Meridian.html
+  name: Meridian.Application.Commands
+  nameWithType: Meridian.Application.Commands
+  fullName: Meridian.Application.Commands
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html
+- uid: System.IEquatable{Meridian.Application.Commands.CliResult}
+  commentId: T:System.IEquatable{Meridian.Application.Commands.CliResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CliResult>
+  nameWithType: IEquatable<CliResult>
+  fullName: System.IEquatable<Meridian.Application.Commands.CliResult>
+  nameWithType.vb: IEquatable(Of CliResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Commands.CliResult)
+  name.vb: IEquatable(Of CliResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Commands.CliResult
+    name: CliResult
+    href: Meridian.Application.Commands.CliResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Commands.CliResult
+    name: CliResult
+    href: Meridian.Application.Commands.CliResult.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: Meridian.Application.ResultTypes
+  commentId: N:Meridian.Application.ResultTypes
+  href: Meridian.html
+  name: Meridian.Application.ResultTypes
+  nameWithType: Meridian.Application.ResultTypes
+  fullName: Meridian.Application.ResultTypes
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Commands.CliResult.ExitCode*
+  commentId: Overload:Meridian.Application.Commands.CliResult.ExitCode
+  href: Meridian.Application.Commands.CliResult.html#Meridian_Application_Commands_CliResult_ExitCode
+  name: ExitCode
+  nameWithType: CliResult.ExitCode
+  fullName: Meridian.Application.Commands.CliResult.ExitCode
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Commands.CliResult.Error*
+  commentId: Overload:Meridian.Application.Commands.CliResult.Error
+  href: Meridian.Application.Commands.CliResult.html#Meridian_Application_Commands_CliResult_Error
+  name: Error
+  nameWithType: CliResult.Error
+  fullName: Meridian.Application.Commands.CliResult.Error
+- uid: System.Nullable{Meridian.Application.ResultTypes.ErrorCode}
+  commentId: T:System.Nullable{Meridian.Application.ResultTypes.ErrorCode}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Application.ResultTypes.ErrorCode.html
+  name: ErrorCode?
+  nameWithType: ErrorCode?
+  fullName: Meridian.Application.ResultTypes.ErrorCode?
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Commands.CliResult.Success*
+  commentId: Overload:Meridian.Application.Commands.CliResult.Success
+  href: Meridian.Application.Commands.CliResult.html#Meridian_Application_Commands_CliResult_Success
+  name: Success
+  nameWithType: CliResult.Success
+  fullName: Meridian.Application.Commands.CliResult.Success
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Commands.CliResult.Ok*
+  commentId: Overload:Meridian.Application.Commands.CliResult.Ok
+  href: Meridian.Application.Commands.CliResult.html#Meridian_Application_Commands_CliResult_Ok
+  name: Ok
+  nameWithType: CliResult.Ok
+  fullName: Meridian.Application.Commands.CliResult.Ok
+- uid: Meridian.Application.Commands.CliResult
+  commentId: T:Meridian.Application.Commands.CliResult
+  parent: Meridian.Application.Commands
+  href: Meridian.Application.Commands.CliResult.html
+  name: CliResult
+  nameWithType: CliResult
+  fullName: Meridian.Application.Commands.CliResult
+- uid: Meridian.Application.Commands.CliResult.Fail*
+  commentId: Overload:Meridian.Application.Commands.CliResult.Fail
+  href: Meridian.Application.Commands.CliResult.html#Meridian_Application_Commands_CliResult_Fail_Meridian_Application_ResultTypes_ErrorCode_
+  name: Fail
+  nameWithType: CliResult.Fail
+  fullName: Meridian.Application.Commands.CliResult.Fail
+- uid: Meridian.Application.Commands.CliResult.FromBool*
+  commentId: Overload:Meridian.Application.Commands.CliResult.FromBool
+  href: Meridian.Application.Commands.CliResult.html#Meridian_Application_Commands_CliResult_FromBool_System_Boolean_Meridian_Application_ResultTypes_ErrorCode_
+  name: FromBool
+  nameWithType: CliResult.FromBool
+  fullName: Meridian.Application.Commands.CliResult.FromBool

@@ -1,0 +1,506 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  commentId: T:Meridian.Storage.Interfaces.CatalogRebuildProgress
+  id: CatalogRebuildProgress
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile
+  - Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed
+  - Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete
+  - Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase
+  - Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles
+  langs:
+  - csharp
+  - vb
+  name: CatalogRebuildProgress
+  nameWithType: CatalogRebuildProgress
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatalogRebuildProgress
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Progress information for catalog rebuild.
+  example: []
+  syntax:
+    content: public sealed class CatalogRebuildProgress
+    content.vb: Public NotInheritable Class CatalogRebuildProgress
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase
+  commentId: P:Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase
+  id: Phase
+  parent: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  langs:
+  - csharp
+  - vb
+  name: Phase
+  nameWithType: CatalogRebuildProgress.Phase
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Phase
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Current phase of the rebuild.
+  example: []
+  syntax:
+    content: public string Phase { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Phase As String
+  overload: Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase*
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed
+  commentId: P:Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed
+  id: FilesProcessed
+  parent: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  langs:
+  - csharp
+  - vb
+  name: FilesProcessed
+  nameWithType: CatalogRebuildProgress.FilesProcessed
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesProcessed
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Number of files processed.
+  example: []
+  syntax:
+    content: public int FilesProcessed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesProcessed As Integer
+  overload: Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed*
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles
+  commentId: P:Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: CatalogRebuildProgress.TotalFiles
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Total files to process.
+  example: []
+  syntax:
+    content: public int TotalFiles { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFiles As Integer
+  overload: Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles*
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile
+  commentId: P:Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile
+  id: CurrentFile
+  parent: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  langs:
+  - csharp
+  - vb
+  name: CurrentFile
+  nameWithType: CatalogRebuildProgress.CurrentFile
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentFile
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Current file being processed.
+  example: []
+  syntax:
+    content: public string? CurrentFile { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CurrentFile As String
+  overload: Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile*
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete
+  commentId: P:Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete
+  id: PercentComplete
+  parent: Meridian.Storage.Interfaces.CatalogRebuildProgress
+  langs:
+  - csharp
+  - vb
+  name: PercentComplete
+  nameWithType: CatalogRebuildProgress.PercentComplete
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PercentComplete
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Percentage complete (0-100).
+  example: []
+  syntax:
+    content: public double PercentComplete { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property PercentComplete As Double
+  overload: Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete*
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase
+  href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html#Meridian_Storage_Interfaces_CatalogRebuildProgress_Phase
+  name: Phase
+  nameWithType: CatalogRebuildProgress.Phase
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.Phase
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed
+  href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html#Meridian_Storage_Interfaces_CatalogRebuildProgress_FilesProcessed
+  name: FilesProcessed
+  nameWithType: CatalogRebuildProgress.FilesProcessed
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.FilesProcessed
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles
+  href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html#Meridian_Storage_Interfaces_CatalogRebuildProgress_TotalFiles
+  name: TotalFiles
+  nameWithType: CatalogRebuildProgress.TotalFiles
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.TotalFiles
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile
+  href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html#Meridian_Storage_Interfaces_CatalogRebuildProgress_CurrentFile
+  name: CurrentFile
+  nameWithType: CatalogRebuildProgress.CurrentFile
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.CurrentFile
+- uid: Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete
+  href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html#Meridian_Storage_Interfaces_CatalogRebuildProgress_PercentComplete
+  name: PercentComplete
+  nameWithType: CatalogRebuildProgress.PercentComplete
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildProgress.PercentComplete
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

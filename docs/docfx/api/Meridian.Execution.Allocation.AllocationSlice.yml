@@ -1,0 +1,591 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Allocation.AllocationSlice
+  commentId: T:Meridian.Execution.Allocation.AllocationSlice
+  id: AllocationSlice
+  parent: Meridian.Execution.Allocation
+  children:
+  - Meridian.Execution.Allocation.AllocationSlice.#ctor(System.String,System.Int64,System.Decimal,System.Decimal)
+  - Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity
+  - Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight
+  - Meridian.Execution.Allocation.AllocationSlice.DestinationId
+  - Meridian.Execution.Allocation.AllocationSlice.ProRataValue
+  langs:
+  - csharp
+  - vb
+  name: AllocationSlice
+  nameWithType: AllocationSlice
+  fullName: Meridian.Execution.Allocation.AllocationSlice
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocationSlice
+    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    The allocation assigned to a single destination slice (sleeve, entity, or vehicle)
+
+    after a block trade has been distributed.
+  example: []
+  syntax:
+    content: 'public sealed record AllocationSlice : IEquatable<AllocationSlice>'
+    content.vb: Public NotInheritable Class AllocationSlice Implements IEquatable(Of AllocationSlice)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Allocation.AllocationSlice}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Allocation.AllocationSlice.#ctor(System.String,System.Int64,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Execution.Allocation.AllocationSlice.#ctor(System.String,System.Int64,System.Decimal,System.Decimal)
+  id: '#ctor(System.String,System.Int64,System.Decimal,System.Decimal)'
+  parent: Meridian.Execution.Allocation.AllocationSlice
+  langs:
+  - csharp
+  - vb
+  name: AllocationSlice(string, long, decimal, decimal)
+  nameWithType: AllocationSlice.AllocationSlice(string, long, decimal, decimal)
+  fullName: Meridian.Execution.Allocation.AllocationSlice.AllocationSlice(string, long, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    The allocation assigned to a single destination slice (sleeve, entity, or vehicle)
+
+    after a block trade has been distributed.
+  example: []
+  syntax:
+    content: public AllocationSlice(string DestinationId, long AllocatedQuantity, decimal AllocatedWeight, decimal ProRataValue)
+    parameters:
+    - id: DestinationId
+      type: System.String
+      description: Identifier of the destination (e.g., sleeve ID, entity ID).
+    - id: AllocatedQuantity
+      type: System.Int64
+      description: Number of shares/contracts allocated to this slice.
+    - id: AllocatedWeight
+      type: System.Decimal
+      description: Normalized weight used for this slice (0–1).
+    - id: ProRataValue
+      type: System.Decimal
+      description: Dollar value of the allocation (allocated quantity × fill price).
+    content.vb: Public Sub New(DestinationId As String, AllocatedQuantity As Long, AllocatedWeight As Decimal, ProRataValue As Decimal)
+  overload: Meridian.Execution.Allocation.AllocationSlice.#ctor*
+  nameWithType.vb: AllocationSlice.New(String, Long, Decimal, Decimal)
+  fullName.vb: Meridian.Execution.Allocation.AllocationSlice.New(String, Long, Decimal, Decimal)
+  name.vb: New(String, Long, Decimal, Decimal)
+- uid: Meridian.Execution.Allocation.AllocationSlice.DestinationId
+  commentId: P:Meridian.Execution.Allocation.AllocationSlice.DestinationId
+  id: DestinationId
+  parent: Meridian.Execution.Allocation.AllocationSlice
+  langs:
+  - csharp
+  - vb
+  name: DestinationId
+  nameWithType: AllocationSlice.DestinationId
+  fullName: Meridian.Execution.Allocation.AllocationSlice.DestinationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DestinationId
+    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Identifier of the destination (e.g., sleeve ID, entity ID).
+  example: []
+  syntax:
+    content: public string DestinationId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DestinationId As String
+  overload: Meridian.Execution.Allocation.AllocationSlice.DestinationId*
+- uid: Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity
+  commentId: P:Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity
+  id: AllocatedQuantity
+  parent: Meridian.Execution.Allocation.AllocationSlice
+  langs:
+  - csharp
+  - vb
+  name: AllocatedQuantity
+  nameWithType: AllocationSlice.AllocatedQuantity
+  fullName: Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocatedQuantity
+    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Number of shares/contracts allocated to this slice.
+  example: []
+  syntax:
+    content: public long AllocatedQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property AllocatedQuantity As Long
+  overload: Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity*
+- uid: Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight
+  commentId: P:Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight
+  id: AllocatedWeight
+  parent: Meridian.Execution.Allocation.AllocationSlice
+  langs:
+  - csharp
+  - vb
+  name: AllocatedWeight
+  nameWithType: AllocationSlice.AllocatedWeight
+  fullName: Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocatedWeight
+    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Normalized weight used for this slice (0–1).
+  example: []
+  syntax:
+    content: public decimal AllocatedWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AllocatedWeight As Decimal
+  overload: Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight*
+- uid: Meridian.Execution.Allocation.AllocationSlice.ProRataValue
+  commentId: P:Meridian.Execution.Allocation.AllocationSlice.ProRataValue
+  id: ProRataValue
+  parent: Meridian.Execution.Allocation.AllocationSlice
+  langs:
+  - csharp
+  - vb
+  name: ProRataValue
+  nameWithType: AllocationSlice.ProRataValue
+  fullName: Meridian.Execution.Allocation.AllocationSlice.ProRataValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProRataValue
+    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Dollar value of the allocation (allocated quantity × fill price).
+  example: []
+  syntax:
+    content: public decimal ProRataValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProRataValue As Decimal
+  overload: Meridian.Execution.Allocation.AllocationSlice.ProRataValue*
+references:
+- uid: Meridian.Execution.Allocation
+  commentId: N:Meridian.Execution.Allocation
+  href: Meridian.html
+  name: Meridian.Execution.Allocation
+  nameWithType: Meridian.Execution.Allocation
+  fullName: Meridian.Execution.Allocation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Allocation.AllocationSlice}
+  commentId: T:System.IEquatable{Meridian.Execution.Allocation.AllocationSlice}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AllocationSlice>
+  nameWithType: IEquatable<AllocationSlice>
+  fullName: System.IEquatable<Meridian.Execution.Allocation.AllocationSlice>
+  nameWithType.vb: IEquatable(Of AllocationSlice)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Allocation.AllocationSlice)
+  name.vb: IEquatable(Of AllocationSlice)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Allocation.AllocationSlice
+    name: AllocationSlice
+    href: Meridian.Execution.Allocation.AllocationSlice.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Allocation.AllocationSlice
+    name: AllocationSlice
+    href: Meridian.Execution.Allocation.AllocationSlice.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Allocation.AllocationSlice.#ctor*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationSlice.#ctor
+  href: Meridian.Execution.Allocation.AllocationSlice.html#Meridian_Execution_Allocation_AllocationSlice__ctor_System_String_System_Int64_System_Decimal_System_Decimal_
+  name: AllocationSlice
+  nameWithType: AllocationSlice.AllocationSlice
+  fullName: Meridian.Execution.Allocation.AllocationSlice.AllocationSlice
+  nameWithType.vb: AllocationSlice.New
+  fullName.vb: Meridian.Execution.Allocation.AllocationSlice.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Allocation.AllocationSlice.DestinationId*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationSlice.DestinationId
+  href: Meridian.Execution.Allocation.AllocationSlice.html#Meridian_Execution_Allocation_AllocationSlice_DestinationId
+  name: DestinationId
+  nameWithType: AllocationSlice.DestinationId
+  fullName: Meridian.Execution.Allocation.AllocationSlice.DestinationId
+- uid: Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity
+  href: Meridian.Execution.Allocation.AllocationSlice.html#Meridian_Execution_Allocation_AllocationSlice_AllocatedQuantity
+  name: AllocatedQuantity
+  nameWithType: AllocationSlice.AllocatedQuantity
+  fullName: Meridian.Execution.Allocation.AllocationSlice.AllocatedQuantity
+- uid: Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight
+  href: Meridian.Execution.Allocation.AllocationSlice.html#Meridian_Execution_Allocation_AllocationSlice_AllocatedWeight
+  name: AllocatedWeight
+  nameWithType: AllocationSlice.AllocatedWeight
+  fullName: Meridian.Execution.Allocation.AllocationSlice.AllocatedWeight
+- uid: Meridian.Execution.Allocation.AllocationSlice.ProRataValue*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationSlice.ProRataValue
+  href: Meridian.Execution.Allocation.AllocationSlice.html#Meridian_Execution_Allocation_AllocationSlice_ProRataValue
+  name: ProRataValue
+  nameWithType: AllocationSlice.ProRataValue
+  fullName: Meridian.Execution.Allocation.AllocationSlice.ProRataValue

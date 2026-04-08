@@ -1,0 +1,915 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.AssetEvent
+  commentId: T:Meridian.Backtesting.Sdk.AssetEvent
+  id: AssetEvent
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.AssetEvent.#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.AssetEventType,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.String)
+  - Meridian.Backtesting.Sdk.AssetEvent.CashPerShare
+  - Meridian.Backtesting.Sdk.AssetEvent.Description
+  - Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol
+  - Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt
+  - Meridian.Backtesting.Sdk.AssetEvent.EventType
+  - Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation
+  - Meridian.Backtesting.Sdk.AssetEvent.PositionFactor
+  - Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice
+  - Meridian.Backtesting.Sdk.AssetEvent.Symbol
+  - Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol
+  langs:
+  - csharp
+  - vb
+  name: AssetEvent
+  nameWithType: AssetEvent
+  fullName: Meridian.Backtesting.Sdk.AssetEvent
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetEvent
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Describes a scheduled asset-level event that should be applied during a backtest to improve
+
+    portfolio accounting realism beyond pure trade and price data.
+  example: []
+  syntax:
+    content: 'public sealed record AssetEvent : IEquatable<AssetEvent>'
+    content.vb: Public NotInheritable Class AssetEvent Implements IEquatable(Of AssetEvent)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.AssetEvent}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.AssetEvent.#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.AssetEventType,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.String)
+  commentId: M:Meridian.Backtesting.Sdk.AssetEvent.#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.AssetEventType,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.AssetEventType,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.String)'
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: AssetEvent(DateTimeOffset, string, AssetEventType, decimal, decimal, string?, decimal?, string?)
+  nameWithType: AssetEvent.AssetEvent(DateTimeOffset, string, AssetEventType, decimal, decimal, string?, decimal?, string?)
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.AssetEvent(System.DateTimeOffset, string, Meridian.Backtesting.Sdk.AssetEventType, decimal, decimal, string?, decimal?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Describes a scheduled asset-level event that should be applied during a backtest to improve
+
+    portfolio accounting realism beyond pure trade and price data.
+  example: []
+  syntax:
+    content: public AssetEvent(DateTimeOffset EffectiveAt, string Symbol, AssetEventType EventType, decimal CashPerShare = 0, decimal PositionFactor = 1, string? TargetSymbol = null, decimal? ReferencePrice = null, string? Description = null)
+    parameters:
+    - id: EffectiveAt
+      type: System.DateTimeOffset
+      description: Timestamp when the event becomes effective.
+    - id: Symbol
+      type: System.String
+      description: Primary source symbol affected by the event.
+    - id: EventType
+      type: Meridian.Backtesting.Sdk.AssetEventType
+      description: Type of economic event to apply.
+    - id: CashPerShare
+      type: System.Decimal
+      description: >-
+        Cash paid or charged per currently-held unit. Positive values credit holders and debit shorts.
+
+        Negative values model fees, assessments, or other cash outflows.
+    - id: PositionFactor
+      type: System.Decimal
+      description: >-
+        Share-conversion factor applied to the current position. Examples: 2.0 for a 2-for-1 split,
+
+        0.5 for a 1-for-2 reverse split, 0.75 for stock-for-stock merger consideration.
+    - id: TargetSymbol
+      type: System.String
+      description: >-
+        Optional destination symbol for mergers, acquisitions, renames, and other symbol migrations.
+
+        When omitted, the existing symbol is retained.
+    - id: ReferencePrice
+      type: System.Nullable{System.Decimal}
+      description: Optional price used for cash-in-lieu calculations and transformed last-price updates.
+    - id: Description
+      type: System.String
+      description: Optional human-readable description for reporting and ledger entries.
+    content.vb: Public Sub New(EffectiveAt As DateTimeOffset, Symbol As String, EventType As AssetEventType, CashPerShare As Decimal = 0, PositionFactor As Decimal = 1, TargetSymbol As String = Nothing, ReferencePrice As Decimal? = Nothing, Description As String = Nothing)
+  overload: Meridian.Backtesting.Sdk.AssetEvent.#ctor*
+  nameWithType.vb: AssetEvent.New(DateTimeOffset, String, AssetEventType, Decimal, Decimal, String, Decimal?, String)
+  fullName.vb: Meridian.Backtesting.Sdk.AssetEvent.New(System.DateTimeOffset, String, Meridian.Backtesting.Sdk.AssetEventType, Decimal, Decimal, String, Decimal?, String)
+  name.vb: New(DateTimeOffset, String, AssetEventType, Decimal, Decimal, String, Decimal?, String)
+- uid: Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt
+  id: EffectiveAt
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: EffectiveAt
+  nameWithType: AssetEvent.EffectiveAt
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveAt
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Timestamp when the event becomes effective.
+  example: []
+  syntax:
+    content: public DateTimeOffset EffectiveAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: AssetEvent.Symbol
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Primary source symbol affected by the event.
+  example: []
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.AssetEvent.Symbol*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.EventType
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.EventType
+  id: EventType
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: AssetEvent.EventType
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Type of economic event to apply.
+  example: []
+  syntax:
+    content: public AssetEventType EventType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+    content.vb: Public Property EventType As AssetEventType
+  overload: Meridian.Backtesting.Sdk.AssetEvent.EventType*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.CashPerShare
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.CashPerShare
+  id: CashPerShare
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: CashPerShare
+  nameWithType: AssetEvent.CashPerShare
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.CashPerShare
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashPerShare
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Cash paid or charged per currently-held unit. Positive values credit holders and debit shorts.
+
+    Negative values model fees, assessments, or other cash outflows.
+  example: []
+  syntax:
+    content: public decimal CashPerShare { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CashPerShare As Decimal
+  overload: Meridian.Backtesting.Sdk.AssetEvent.CashPerShare*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.PositionFactor
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.PositionFactor
+  id: PositionFactor
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: PositionFactor
+  nameWithType: AssetEvent.PositionFactor
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.PositionFactor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionFactor
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Share-conversion factor applied to the current position. Examples: 2.0 for a 2-for-1 split,
+
+    0.5 for a 1-for-2 reverse split, 0.75 for stock-for-stock merger consideration.
+  example: []
+  syntax:
+    content: public decimal PositionFactor { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PositionFactor As Decimal
+  overload: Meridian.Backtesting.Sdk.AssetEvent.PositionFactor*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol
+  id: TargetSymbol
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: TargetSymbol
+  nameWithType: AssetEvent.TargetSymbol
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetSymbol
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Optional destination symbol for mergers, acquisitions, renames, and other symbol migrations.
+
+    When omitted, the existing symbol is retained.
+  example: []
+  syntax:
+    content: public string? TargetSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetSymbol As String
+  overload: Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice
+  id: ReferencePrice
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: ReferencePrice
+  nameWithType: AssetEvent.ReferencePrice
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReferencePrice
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Optional price used for cash-in-lieu calculations and transformed last-price updates.
+  example: []
+  syntax:
+    content: public decimal? ReferencePrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ReferencePrice As Decimal?
+  overload: Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.Description
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.Description
+  id: Description
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: AssetEvent.Description
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Optional human-readable description for reporting and ledger entries.
+  example: []
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Backtesting.Sdk.AssetEvent.Description*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol
+  id: DestinationSymbol
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: DestinationSymbol
+  nameWithType: AssetEvent.DestinationSymbol
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DestinationSymbol
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Resolved destination symbol after any rename, merger, or acquisition conversion.
+  example: []
+  syntax:
+    content: public string DestinationSymbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property DestinationSymbol As String
+  overload: Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol*
+- uid: Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation
+  commentId: P:Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation
+  id: HasPositionTransformation
+  parent: Meridian.Backtesting.Sdk.AssetEvent
+  langs:
+  - csharp
+  - vb
+  name: HasPositionTransformation
+  nameWithType: AssetEvent.HasPositionTransformation
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasPositionTransformation
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: True when the event alters share count, symbol identity, or both.
+  example: []
+  syntax:
+    content: public bool HasPositionTransformation { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasPositionTransformation As Boolean
+  overload: Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.AssetEvent}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.AssetEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AssetEvent>
+  nameWithType: IEquatable<AssetEvent>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.AssetEvent>
+  nameWithType.vb: IEquatable(Of AssetEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.AssetEvent)
+  name.vb: IEquatable(Of AssetEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.AssetEvent
+    name: AssetEvent
+    href: Meridian.Backtesting.Sdk.AssetEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.AssetEvent
+    name: AssetEvent
+    href: Meridian.Backtesting.Sdk.AssetEvent.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.AssetEvent.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.#ctor
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent__ctor_System_DateTimeOffset_System_String_Meridian_Backtesting_Sdk_AssetEventType_System_Decimal_System_Decimal_System_String_System_Nullable_System_Decimal__System_String_
+  name: AssetEvent
+  nameWithType: AssetEvent.AssetEvent
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.AssetEvent
+  nameWithType.vb: AssetEvent.New
+  fullName.vb: Meridian.Backtesting.Sdk.AssetEvent.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.AssetEventType
+  commentId: T:Meridian.Backtesting.Sdk.AssetEventType
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.AssetEventType.html
+  name: AssetEventType
+  nameWithType: AssetEventType
+  fullName: Meridian.Backtesting.Sdk.AssetEventType
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_EffectiveAt
+  name: EffectiveAt
+  nameWithType: AssetEvent.EffectiveAt
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.EffectiveAt
+- uid: Meridian.Backtesting.Sdk.AssetEvent.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.Symbol
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_Symbol
+  name: Symbol
+  nameWithType: AssetEvent.Symbol
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.Symbol
+- uid: Meridian.Backtesting.Sdk.AssetEvent.EventType*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.EventType
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_EventType
+  name: EventType
+  nameWithType: AssetEvent.EventType
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.EventType
+- uid: Meridian.Backtesting.Sdk.AssetEvent.CashPerShare*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.CashPerShare
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_CashPerShare
+  name: CashPerShare
+  nameWithType: AssetEvent.CashPerShare
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.CashPerShare
+- uid: Meridian.Backtesting.Sdk.AssetEvent.PositionFactor*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.PositionFactor
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_PositionFactor
+  name: PositionFactor
+  nameWithType: AssetEvent.PositionFactor
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.PositionFactor
+- uid: Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_TargetSymbol
+  name: TargetSymbol
+  nameWithType: AssetEvent.TargetSymbol
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.TargetSymbol
+- uid: Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_ReferencePrice
+  name: ReferencePrice
+  nameWithType: AssetEvent.ReferencePrice
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.ReferencePrice
+- uid: Meridian.Backtesting.Sdk.AssetEvent.Description*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.Description
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_Description
+  name: Description
+  nameWithType: AssetEvent.Description
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.Description
+- uid: Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_DestinationSymbol
+  name: DestinationSymbol
+  nameWithType: AssetEvent.DestinationSymbol
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.DestinationSymbol
+- uid: Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation*
+  commentId: Overload:Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation
+  href: Meridian.Backtesting.Sdk.AssetEvent.html#Meridian_Backtesting_Sdk_AssetEvent_HasPositionTransformation
+  name: HasPositionTransformation
+  nameWithType: AssetEvent.HasPositionTransformation
+  fullName: Meridian.Backtesting.Sdk.AssetEvent.HasPositionTransformation
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

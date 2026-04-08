@@ -136,6 +136,7 @@ jobs:
       run: |
         echo "Checking for action references..."
         EXIT_CODE=0
+        SAFE_ENV_PATTERN="[[:space:]]*[A-Z_][A-Z0-9_]*:[[:space:]]*\\$\\{"
         
         # Check for deprecated actions
         if grep -r "actions/checkout@v[1-4]" .github/workflows/; then
@@ -161,7 +162,7 @@ jobs:
         # Check for potentially insecure patterns
         EXPR_OPEN='${''{' # avoid GitHub Actions expression parsing
         UNSAFE_TITLE=$(grep -rh "${EXPR_OPEN}.*github.event.issue.title" .github/workflows/ 2>/dev/null | \
-          grep -Ev '[[:space:]]*[A-Z_][A-Z0-9_]*:[[:space:]]*\$\{' 2>/dev/null || true)
+          grep -Ev "$SAFE_ENV_PATTERN" 2>/dev/null || true)
         if [ -n "$UNSAFE_TITLE" ]; then
           echo "$UNSAFE_TITLE"
           echo "❌ Error: Potential script injection via issue title"
@@ -169,7 +170,7 @@ jobs:
         fi
 
         UNSAFE_COMMENT=$(grep -rh "${EXPR_OPEN}.*github.event.comment.body" .github/workflows/ 2>/dev/null | \
-          grep -Ev '[[:space:]]*[A-Z_][A-Z0-9_]*:[[:space:]]*\$\{' 2>/dev/null || true)
+          grep -Ev "$SAFE_ENV_PATTERN" 2>/dev/null || true)
         if [ -n "$UNSAFE_COMMENT" ]; then
           echo "$UNSAFE_COMMENT"
           echo "❌ Error: Potential script injection via comment body"
@@ -200,8 +201,8 @@ jobs:
         
         # List workflows with write permissions
         echo "Workflows with write permissions:"
-        grep -l "write" .github/workflows/*.yml | while read file; do
-          echo "  - $(basename $file)"
+        grep -l "write" .github/workflows/*.yml | while read -r file; do
+          echo "  - $(basename "$file")"
           grep -A 5 "permissions:" "$file" | head -10
         done
         
@@ -242,21 +243,27 @@ jobs:
     steps:
     - name: Generate summary
       run: |
-        echo "## Workflow Validation Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-        echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-        echo "| YAML Syntax | ${{ needs.validate-yaml.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Action References | ${{ needs.validate-actions.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Permissions | ${{ needs.check-permissions.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Schedules | ${{ needs.validate-schedules.result }} |" >> $GITHUB_STEP_SUMMARY
-        
+        {
+          echo "## Workflow Validation Summary"
+          echo ""
+          echo "| Check | Status |"
+          echo "|-------|--------|"
+          echo "| YAML Syntax | ${{ needs.validate-yaml.result }} |"
+          echo "| Action References | ${{ needs.validate-actions.result }} |"
+          echo "| Permissions | ${{ needs.check-permissions.result }} |"
+          echo "| Schedules | ${{ needs.validate-schedules.result }} |"
+
+          if [[ "${{ needs.validate-yaml.result }}" == "failure" ]] || \
+             [[ "${{ needs.validate-actions.result }}" == "failure" ]]; then
+            echo ""
+            echo "❌ Workflow validation failed. Please review the logs above."
+          else
+            echo ""
+            echo "✅ All workflow validations passed!"
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
         if [[ "${{ needs.validate-yaml.result }}" == "failure" ]] || \
            [[ "${{ needs.validate-actions.result }}" == "failure" ]]; then
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "❌ Workflow validation failed. Please review the logs above." >> $GITHUB_STEP_SUMMARY
           exit 1
-        else
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ All workflow validations passed!" >> $GITHUB_STEP_SUMMARY
         fi

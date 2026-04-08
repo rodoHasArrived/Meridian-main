@@ -1,0 +1,733 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.TradeDataResponse
+  commentId: T:Meridian.Contracts.Api.TradeDataResponse
+  id: TradeDataResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.TradeDataResponse.#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.String,System.Int64,System.String,System.String)
+  - Meridian.Contracts.Api.TradeDataResponse.Aggressor
+  - Meridian.Contracts.Api.TradeDataResponse.Price
+  - Meridian.Contracts.Api.TradeDataResponse.SequenceNumber
+  - Meridian.Contracts.Api.TradeDataResponse.Size
+  - Meridian.Contracts.Api.TradeDataResponse.StreamId
+  - Meridian.Contracts.Api.TradeDataResponse.Symbol
+  - Meridian.Contracts.Api.TradeDataResponse.Timestamp
+  - Meridian.Contracts.Api.TradeDataResponse.Venue
+  langs:
+  - csharp
+  - vb
+  name: TradeDataResponse
+  nameWithType: TradeDataResponse
+  fullName: Meridian.Contracts.Api.TradeDataResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeDataResponse
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for recent trade data for a symbol.
+  example: []
+  syntax:
+    content: 'public sealed record TradeDataResponse : IEquatable<TradeDataResponse>'
+    content.vb: Public NotInheritable Class TradeDataResponse Implements IEquatable(Of TradeDataResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.TradeDataResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.TradeDataResponse.#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.String,System.Int64,System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.TradeDataResponse.#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.String,System.Int64,System.String,System.String)
+  id: '#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.String,System.Int64,System.String,System.String)'
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: TradeDataResponse(string, DateTimeOffset, decimal, long, string, long, string?, string?)
+  nameWithType: TradeDataResponse.TradeDataResponse(string, DateTimeOffset, decimal, long, string, long, string?, string?)
+  fullName: Meridian.Contracts.Api.TradeDataResponse.TradeDataResponse(string, System.DateTimeOffset, decimal, long, string, long, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for recent trade data for a symbol.
+  example: []
+  syntax:
+    content: public TradeDataResponse(string Symbol, DateTimeOffset Timestamp, decimal Price, long Size, string Aggressor, long SequenceNumber, string? StreamId, string? Venue)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Price
+      type: System.Decimal
+    - id: Size
+      type: System.Int64
+    - id: Aggressor
+      type: System.String
+    - id: SequenceNumber
+      type: System.Int64
+    - id: StreamId
+      type: System.String
+    - id: Venue
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, Timestamp As DateTimeOffset, Price As Decimal, Size As Long, Aggressor As String, SequenceNumber As Long, StreamId As String, Venue As String)
+  overload: Meridian.Contracts.Api.TradeDataResponse.#ctor*
+  nameWithType.vb: TradeDataResponse.New(String, DateTimeOffset, Decimal, Long, String, Long, String, String)
+  fullName.vb: Meridian.Contracts.Api.TradeDataResponse.New(String, System.DateTimeOffset, Decimal, Long, String, Long, String, String)
+  name.vb: New(String, DateTimeOffset, Decimal, Long, String, Long, String, String)
+- uid: Meridian.Contracts.Api.TradeDataResponse.Symbol
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: TradeDataResponse.Symbol
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Api.TradeDataResponse.Symbol*
+- uid: Meridian.Contracts.Api.TradeDataResponse.Timestamp
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: TradeDataResponse.Timestamp
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.TradeDataResponse.Timestamp*
+- uid: Meridian.Contracts.Api.TradeDataResponse.Price
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.Price
+  id: Price
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: TradeDataResponse.Price
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Contracts.Api.TradeDataResponse.Price*
+- uid: Meridian.Contracts.Api.TradeDataResponse.Size
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.Size
+  id: Size
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: TradeDataResponse.Size
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long Size { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Size As Long
+  overload: Meridian.Contracts.Api.TradeDataResponse.Size*
+- uid: Meridian.Contracts.Api.TradeDataResponse.Aggressor
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.Aggressor
+  id: Aggressor
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Aggressor
+  nameWithType: TradeDataResponse.Aggressor
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Aggressor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aggressor
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Aggressor { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Aggressor As String
+  overload: Meridian.Contracts.Api.TradeDataResponse.Aggressor*
+- uid: Meridian.Contracts.Api.TradeDataResponse.SequenceNumber
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: TradeDataResponse.SequenceNumber
+  fullName: Meridian.Contracts.Api.TradeDataResponse.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Contracts.Api.TradeDataResponse.SequenceNumber*
+- uid: Meridian.Contracts.Api.TradeDataResponse.StreamId
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.StreamId
+  id: StreamId
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: StreamId
+  nameWithType: TradeDataResponse.StreamId
+  fullName: Meridian.Contracts.Api.TradeDataResponse.StreamId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamId
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? StreamId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StreamId As String
+  overload: Meridian.Contracts.Api.TradeDataResponse.StreamId*
+- uid: Meridian.Contracts.Api.TradeDataResponse.Venue
+  commentId: P:Meridian.Contracts.Api.TradeDataResponse.Venue
+  id: Venue
+  parent: Meridian.Contracts.Api.TradeDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Venue
+  nameWithType: TradeDataResponse.Venue
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Venue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Venue
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Venue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Venue As String
+  overload: Meridian.Contracts.Api.TradeDataResponse.Venue*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.TradeDataResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.TradeDataResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TradeDataResponse>
+  nameWithType: IEquatable<TradeDataResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.TradeDataResponse>
+  nameWithType.vb: IEquatable(Of TradeDataResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.TradeDataResponse)
+  name.vb: IEquatable(Of TradeDataResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.TradeDataResponse
+    name: TradeDataResponse
+    href: Meridian.Contracts.Api.TradeDataResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.TradeDataResponse
+    name: TradeDataResponse
+    href: Meridian.Contracts.Api.TradeDataResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.TradeDataResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.#ctor
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse__ctor_System_String_System_DateTimeOffset_System_Decimal_System_Int64_System_String_System_Int64_System_String_System_String_
+  name: TradeDataResponse
+  nameWithType: TradeDataResponse.TradeDataResponse
+  fullName: Meridian.Contracts.Api.TradeDataResponse.TradeDataResponse
+  nameWithType.vb: TradeDataResponse.New
+  fullName.vb: Meridian.Contracts.Api.TradeDataResponse.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Api.TradeDataResponse.Symbol*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.Symbol
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_Symbol
+  name: Symbol
+  nameWithType: TradeDataResponse.Symbol
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Symbol
+- uid: Meridian.Contracts.Api.TradeDataResponse.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.Timestamp
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_Timestamp
+  name: Timestamp
+  nameWithType: TradeDataResponse.Timestamp
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Timestamp
+- uid: Meridian.Contracts.Api.TradeDataResponse.Price*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.Price
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_Price
+  name: Price
+  nameWithType: TradeDataResponse.Price
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Price
+- uid: Meridian.Contracts.Api.TradeDataResponse.Size*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.Size
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_Size
+  name: Size
+  nameWithType: TradeDataResponse.Size
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Size
+- uid: Meridian.Contracts.Api.TradeDataResponse.Aggressor*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.Aggressor
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_Aggressor
+  name: Aggressor
+  nameWithType: TradeDataResponse.Aggressor
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Aggressor
+- uid: Meridian.Contracts.Api.TradeDataResponse.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.SequenceNumber
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_SequenceNumber
+  name: SequenceNumber
+  nameWithType: TradeDataResponse.SequenceNumber
+  fullName: Meridian.Contracts.Api.TradeDataResponse.SequenceNumber
+- uid: Meridian.Contracts.Api.TradeDataResponse.StreamId*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.StreamId
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_StreamId
+  name: StreamId
+  nameWithType: TradeDataResponse.StreamId
+  fullName: Meridian.Contracts.Api.TradeDataResponse.StreamId
+- uid: Meridian.Contracts.Api.TradeDataResponse.Venue*
+  commentId: Overload:Meridian.Contracts.Api.TradeDataResponse.Venue
+  href: Meridian.Contracts.Api.TradeDataResponse.html#Meridian_Contracts_Api_TradeDataResponse_Venue
+  name: Venue
+  nameWithType: TradeDataResponse.Venue
+  fullName: Meridian.Contracts.Api.TradeDataResponse.Venue

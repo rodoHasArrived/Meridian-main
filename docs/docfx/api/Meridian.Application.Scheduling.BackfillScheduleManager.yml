@@ -1,0 +1,1782 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager
+  commentId: T:Meridian.Application.Scheduling.BackfillScheduleManager
+  id: BackfillScheduleManager
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.BackfillScheduleManager.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.BackfillScheduleManager},System.String,Meridian.Application.Scheduling.BackfillExecutionHistory)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution(Meridian.Application.Scheduling.BackfillSchedule)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory
+  - Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules
+  - Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules(System.Nullable{System.DateTimeOffset})
+  - Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules
+  - Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule(System.Nullable{System.DateTimeOffset})
+  - Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule(System.String)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag(System.String)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary
+  - Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules
+  - Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync(Meridian.Application.Scheduling.BackfillSchedule,Meridian.Application.Scheduling.BackfillExecutionLog,System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleCreated
+  - Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDeleted
+  - Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDue
+  - Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleUpdated
+  - Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BackfillScheduleManager
+  nameWithType: BackfillScheduleManager
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillScheduleManager
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: >-
+    Manages backfill schedules including CRUD operations, persistence, and status tracking.
+
+    Thread-safe for concurrent access.
+  example: []
+  syntax:
+    content: public sealed class BackfillScheduleManager
+    content.vb: Public NotInheritable Class BackfillScheduleManager
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleCreated
+  commentId: E:Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleCreated
+  id: ScheduleCreated
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: ScheduleCreated
+  nameWithType: BackfillScheduleManager.ScheduleCreated
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleCreated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleCreated
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Event raised when a schedule is created.
+  example: []
+  syntax:
+    content: public event EventHandler<BackfillSchedule>? ScheduleCreated
+    return:
+      type: System.EventHandler{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Event ScheduleCreated As EventHandler(Of BackfillSchedule)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleUpdated
+  commentId: E:Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleUpdated
+  id: ScheduleUpdated
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: ScheduleUpdated
+  nameWithType: BackfillScheduleManager.ScheduleUpdated
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleUpdated
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Event raised when a schedule is updated.
+  example: []
+  syntax:
+    content: public event EventHandler<BackfillSchedule>? ScheduleUpdated
+    return:
+      type: System.EventHandler{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Event ScheduleUpdated As EventHandler(Of BackfillSchedule)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDeleted
+  commentId: E:Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDeleted
+  id: ScheduleDeleted
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: ScheduleDeleted
+  nameWithType: BackfillScheduleManager.ScheduleDeleted
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDeleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleDeleted
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Event raised when a schedule is deleted.
+  example: []
+  syntax:
+    content: public event EventHandler<string>? ScheduleDeleted
+    return:
+      type: System.EventHandler{System.String}
+    content.vb: Public Event ScheduleDeleted As EventHandler(Of String)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDue
+  commentId: E:Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDue
+  id: ScheduleDue
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: ScheduleDue
+  nameWithType: BackfillScheduleManager.ScheduleDue
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.ScheduleDue
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleDue
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Event raised when a schedule is due for execution.
+  example: []
+  syntax:
+    content: public event EventHandler<BackfillSchedule>? ScheduleDue
+    return:
+      type: System.EventHandler{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Event ScheduleDue As EventHandler(Of BackfillSchedule)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.BackfillScheduleManager},System.String,Meridian.Application.Scheduling.BackfillExecutionHistory)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.BackfillScheduleManager},System.String,Meridian.Application.Scheduling.BackfillExecutionHistory)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.BackfillScheduleManager},System.String,Meridian.Application.Scheduling.BackfillExecutionHistory)'
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: BackfillScheduleManager(ILogger<BackfillScheduleManager>, string, BackfillExecutionHistory?)
+  nameWithType: BackfillScheduleManager.BackfillScheduleManager(ILogger<BackfillScheduleManager>, string, BackfillExecutionHistory?)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.BackfillScheduleManager(Microsoft.Extensions.Logging.ILogger<Meridian.Application.Scheduling.BackfillScheduleManager>, string, Meridian.Application.Scheduling.BackfillExecutionHistory?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public BackfillScheduleManager(ILogger<BackfillScheduleManager> logger, string dataRoot, BackfillExecutionHistory? executionHistory = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.BackfillScheduleManager}
+    - id: dataRoot
+      type: System.String
+    - id: executionHistory
+      type: Meridian.Application.Scheduling.BackfillExecutionHistory
+    content.vb: Public Sub New(logger As ILogger(Of BackfillScheduleManager), dataRoot As String, executionHistory As BackfillExecutionHistory = Nothing)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.#ctor*
+  nameWithType.vb: BackfillScheduleManager.New(ILogger(Of BackfillScheduleManager), String, BackfillExecutionHistory)
+  fullName.vb: Meridian.Application.Scheduling.BackfillScheduleManager.New(Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Scheduling.BackfillScheduleManager), String, Meridian.Application.Scheduling.BackfillExecutionHistory)
+  name.vb: New(ILogger(Of BackfillScheduleManager), String, BackfillExecutionHistory)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory
+  commentId: P:Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory
+  id: ExecutionHistory
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: ExecutionHistory
+  nameWithType: BackfillScheduleManager.ExecutionHistory
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionHistory
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution history for viewing past runs.
+  example: []
+  syntax:
+    content: public BackfillExecutionHistory ExecutionHistory { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Scheduling.BackfillExecutionHistory
+    content.vb: Public ReadOnly Property ExecutionHistory As BackfillExecutionHistory
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync(System.Threading.CancellationToken)
+  id: LoadSchedulesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: LoadSchedulesAsync(CancellationToken)
+  nameWithType: BackfillScheduleManager.LoadSchedulesAsync(CancellationToken)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadSchedulesAsync
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Load all schedules from disk.
+  example: []
+  syntax:
+    content: public Task LoadSchedulesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LoadSchedulesAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  id: CreateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: CreateScheduleAsync(BackfillSchedule, CancellationToken)
+  nameWithType: BackfillScheduleManager.CreateScheduleAsync(BackfillSchedule, CancellationToken)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateScheduleAsync
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Create a new schedule.
+  example: []
+  syntax:
+    content: public Task<BackfillSchedule> CreateScheduleAsync(BackfillSchedule schedule, CancellationToken ct = default)
+    parameters:
+    - id: schedule
+      type: Meridian.Application.Scheduling.BackfillSchedule
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Function CreateScheduleAsync(schedule As BackfillSchedule, ct As CancellationToken = Nothing) As Task(Of BackfillSchedule)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: CreateFromPresetAsync(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: CreateFromPresetAsync(string, string, IEnumerable<string>?, CancellationToken)
+  nameWithType: BackfillScheduleManager.CreateFromPresetAsync(string, string, IEnumerable<string>?, CancellationToken)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync(string, string, System.Collections.Generic.IEnumerable<string>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateFromPresetAsync
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Create a schedule from a preset.
+  example: []
+  syntax:
+    content: public Task<BackfillSchedule> CreateFromPresetAsync(string presetName, string scheduleName, IEnumerable<string>? symbols = null, CancellationToken ct = default)
+    parameters:
+    - id: presetName
+      type: System.String
+    - id: scheduleName
+      type: System.String
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Function CreateFromPresetAsync(presetName As String, scheduleName As String, symbols As IEnumerable(Of String) = Nothing, ct As CancellationToken = Nothing) As Task(Of BackfillSchedule)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync*
+  nameWithType.vb: BackfillScheduleManager.CreateFromPresetAsync(String, String, IEnumerable(Of String), CancellationToken)
+  fullName.vb: Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync(String, String, System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: CreateFromPresetAsync(String, String, IEnumerable(Of String), CancellationToken)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  id: UpdateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: UpdateScheduleAsync(BackfillSchedule, CancellationToken)
+  nameWithType: BackfillScheduleManager.UpdateScheduleAsync(BackfillSchedule, CancellationToken)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync(Meridian.Application.Scheduling.BackfillSchedule, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateScheduleAsync
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Update an existing schedule.
+  example: []
+  syntax:
+    content: public Task<BackfillSchedule> UpdateScheduleAsync(BackfillSchedule schedule, CancellationToken ct = default)
+    parameters:
+    - id: schedule
+      type: Meridian.Application.Scheduling.BackfillSchedule
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Function UpdateScheduleAsync(schedule As BackfillSchedule, ct As CancellationToken = Nothing) As Task(Of BackfillSchedule)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: DeleteScheduleAsync(string, CancellationToken)
+  nameWithType: BackfillScheduleManager.DeleteScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteScheduleAsync
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Delete a schedule.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteScheduleAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync*
+  nameWithType.vb: BackfillScheduleManager.DeleteScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteScheduleAsync(String, CancellationToken)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule(System.String)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule(System.String)
+  id: GetSchedule(System.String)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: GetSchedule(string)
+  nameWithType: BackfillScheduleManager.GetSchedule(string)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSchedule
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get a schedule by ID.
+  example: []
+  syntax:
+    content: public BackfillSchedule? GetSchedule(string scheduleId)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    return:
+      type: Meridian.Application.Scheduling.BackfillSchedule
+    content.vb: Public Function GetSchedule(scheduleId As String) As BackfillSchedule
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule*
+  nameWithType.vb: BackfillScheduleManager.GetSchedule(String)
+  fullName.vb: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule(String)
+  name.vb: GetSchedule(String)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules
+  id: GetAllSchedules
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: GetAllSchedules()
+  nameWithType: BackfillScheduleManager.GetAllSchedules()
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSchedules
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get all schedules.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillSchedule> GetAllSchedules()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Function GetAllSchedules() As IReadOnlyList(Of BackfillSchedule)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules
+  id: GetEnabledSchedules
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: GetEnabledSchedules()
+  nameWithType: BackfillScheduleManager.GetEnabledSchedules()
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEnabledSchedules
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get enabled schedules.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillSchedule> GetEnabledSchedules()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Function GetEnabledSchedules() As IReadOnlyList(Of BackfillSchedule)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules(System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules(System.Nullable{System.DateTimeOffset})
+  id: GetDueSchedules(System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: GetDueSchedules(DateTimeOffset?)
+  nameWithType: BackfillScheduleManager.GetDueSchedules(DateTimeOffset?)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules(System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDueSchedules
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get schedules due for execution.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillSchedule> GetDueSchedules(DateTimeOffset? asOf = null)
+    parameters:
+    - id: asOf
+      type: System.Nullable{System.DateTimeOffset}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Function GetDueSchedules(asOf As DateTimeOffset? = Nothing) As IReadOnlyList(Of BackfillSchedule)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule(System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule(System.Nullable{System.DateTimeOffset})
+  id: GetNextDueSchedule(System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: GetNextDueSchedule(DateTimeOffset?)
+  nameWithType: BackfillScheduleManager.GetNextDueSchedule(DateTimeOffset?)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule(System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNextDueSchedule
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get next schedule to execute.
+  example: []
+  syntax:
+    content: public BackfillSchedule? GetNextDueSchedule(DateTimeOffset? asOf = null)
+    parameters:
+    - id: asOf
+      type: System.Nullable{System.DateTimeOffset}
+    return:
+      type: Meridian.Application.Scheduling.BackfillSchedule
+    content.vb: Public Function GetNextDueSchedule(asOf As DateTimeOffset? = Nothing) As BackfillSchedule
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: SetScheduleEnabledAsync(string, bool, CancellationToken)
+  nameWithType: BackfillScheduleManager.SetScheduleEnabledAsync(string, bool, CancellationToken)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetScheduleEnabledAsync
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Enable or disable a schedule.
+  example: []
+  syntax:
+    content: public Task<bool> SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: enabled
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function SetScheduleEnabledAsync(scheduleId As String, enabled As Boolean, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync*
+  nameWithType.vb: BackfillScheduleManager.SetScheduleEnabledAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: SetScheduleEnabledAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync(Meridian.Application.Scheduling.BackfillSchedule,Meridian.Application.Scheduling.BackfillExecutionLog,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync(Meridian.Application.Scheduling.BackfillSchedule,Meridian.Application.Scheduling.BackfillExecutionLog,System.Threading.CancellationToken)
+  id: RecordExecutionAsync(Meridian.Application.Scheduling.BackfillSchedule,Meridian.Application.Scheduling.BackfillExecutionLog,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: RecordExecutionAsync(BackfillSchedule, BackfillExecutionLog, CancellationToken)
+  nameWithType: BackfillScheduleManager.RecordExecutionAsync(BackfillSchedule, BackfillExecutionLog, CancellationToken)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync(Meridian.Application.Scheduling.BackfillSchedule, Meridian.Application.Scheduling.BackfillExecutionLog, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordExecutionAsync
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Record that a schedule has been executed.
+  example: []
+  syntax:
+    content: public Task RecordExecutionAsync(BackfillSchedule schedule, BackfillExecutionLog execution, CancellationToken ct = default)
+    parameters:
+    - id: schedule
+      type: Meridian.Application.Scheduling.BackfillSchedule
+    - id: execution
+      type: Meridian.Application.Scheduling.BackfillExecutionLog
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordExecutionAsync(schedule As BackfillSchedule, execution As BackfillExecutionLog, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution(Meridian.Application.Scheduling.BackfillSchedule)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution(Meridian.Application.Scheduling.BackfillSchedule)
+  id: CreateManualExecution(Meridian.Application.Scheduling.BackfillSchedule)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: CreateManualExecution(BackfillSchedule)
+  nameWithType: BackfillScheduleManager.CreateManualExecution(BackfillSchedule)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution(Meridian.Application.Scheduling.BackfillSchedule)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateManualExecution
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 325
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Trigger a manual execution of a schedule.
+  example: []
+  syntax:
+    content: public BackfillExecutionLog CreateManualExecution(BackfillSchedule schedule)
+    parameters:
+    - id: schedule
+      type: Meridian.Application.Scheduling.BackfillSchedule
+    return:
+      type: Meridian.Application.Scheduling.BackfillExecutionLog
+    content.vb: Public Function CreateManualExecution(schedule As BackfillSchedule) As BackfillExecutionLog
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag(System.String)
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag(System.String)
+  id: GetSchedulesByTag(System.String)
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: GetSchedulesByTag(string)
+  nameWithType: BackfillScheduleManager.GetSchedulesByTag(string)
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSchedulesByTag
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get schedules by tag.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillSchedule> GetSchedulesByTag(string tag)
+    parameters:
+    - id: tag
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillSchedule}
+    content.vb: Public Function GetSchedulesByTag(tag As String) As IReadOnlyList(Of BackfillSchedule)
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag*
+  nameWithType.vb: BackfillScheduleManager.GetSchedulesByTag(String)
+  fullName.vb: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag(String)
+  name.vb: GetSchedulesByTag(String)
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules
+  id: HasRunningSchedules
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: HasRunningSchedules()
+  nameWithType: BackfillScheduleManager.HasRunningSchedules()
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasRunningSchedules
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Check if any schedules are currently running.
+  example: []
+  syntax:
+    content: public bool HasRunningSchedules()
+    return:
+      type: System.Boolean
+    content.vb: Public Function HasRunningSchedules() As Boolean
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules*
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary
+  commentId: M:Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary
+  id: GetStatusSummary
+  parent: Meridian.Application.Scheduling.BackfillScheduleManager
+  langs:
+  - csharp
+  - vb
+  name: GetStatusSummary()
+  nameWithType: BackfillScheduleManager.GetStatusSummary()
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusSummary
+    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get schedule status summary.
+  example: []
+  syntax:
+    content: public ScheduleStatusSummary GetStatusSummary()
+    return:
+      type: Meridian.Application.Scheduling.ScheduleStatusSummary
+    content.vb: Public Function GetStatusSummary() As ScheduleStatusSummary
+  overload: Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.EventHandler{Meridian.Application.Scheduling.BackfillSchedule}
+  commentId: T:System.EventHandler{Meridian.Application.Scheduling.BackfillSchedule}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<BackfillSchedule>
+  nameWithType: EventHandler<BackfillSchedule>
+  fullName: System.EventHandler<Meridian.Application.Scheduling.BackfillSchedule>
+  nameWithType.vb: EventHandler(Of BackfillSchedule)
+  fullName.vb: System.EventHandler(Of Meridian.Application.Scheduling.BackfillSchedule)
+  name.vb: EventHandler(Of BackfillSchedule)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.BackfillSchedule
+    name: BackfillSchedule
+    href: Meridian.Application.Scheduling.BackfillSchedule.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.BackfillSchedule
+    name: BackfillSchedule
+    href: Meridian.Application.Scheduling.BackfillSchedule.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{System.String}
+  commentId: T:System.EventHandler{System.String}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<string>
+  nameWithType: EventHandler<string>
+  fullName: System.EventHandler<string>
+  nameWithType.vb: EventHandler(Of String)
+  fullName.vb: System.EventHandler(Of String)
+  name.vb: EventHandler(Of String)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.#ctor*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.#ctor
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager__ctor_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Scheduling_BackfillScheduleManager__System_String_Meridian_Application_Scheduling_BackfillExecutionHistory_
+  name: BackfillScheduleManager
+  nameWithType: BackfillScheduleManager.BackfillScheduleManager
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.BackfillScheduleManager
+  nameWithType.vb: BackfillScheduleManager.New
+  fullName.vb: Meridian.Application.Scheduling.BackfillScheduleManager.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.BackfillScheduleManager}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.BackfillScheduleManager}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<BackfillScheduleManager>
+  nameWithType: ILogger<BackfillScheduleManager>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Scheduling.BackfillScheduleManager>
+  nameWithType.vb: ILogger(Of BackfillScheduleManager)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Scheduling.BackfillScheduleManager)
+  name.vb: ILogger(Of BackfillScheduleManager)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.BackfillScheduleManager
+    name: BackfillScheduleManager
+    href: Meridian.Application.Scheduling.BackfillScheduleManager.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.BackfillScheduleManager
+    name: BackfillScheduleManager
+    href: Meridian.Application.Scheduling.BackfillScheduleManager.html
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory
+  commentId: T:Meridian.Application.Scheduling.BackfillExecutionHistory
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html
+  name: BackfillExecutionHistory
+  nameWithType: BackfillExecutionHistory
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_ExecutionHistory
+  name: ExecutionHistory
+  nameWithType: BackfillScheduleManager.ExecutionHistory
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.ExecutionHistory
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_LoadSchedulesAsync_System_Threading_CancellationToken_
+  name: LoadSchedulesAsync
+  nameWithType: BackfillScheduleManager.LoadSchedulesAsync
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.LoadSchedulesAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_CreateScheduleAsync_Meridian_Application_Scheduling_BackfillSchedule_System_Threading_CancellationToken_
+  name: CreateScheduleAsync
+  nameWithType: BackfillScheduleManager.CreateScheduleAsync
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.CreateScheduleAsync
+- uid: Meridian.Application.Scheduling.BackfillSchedule
+  commentId: T:Meridian.Application.Scheduling.BackfillSchedule
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.BackfillSchedule.html
+  name: BackfillSchedule
+  nameWithType: BackfillSchedule
+  fullName: Meridian.Application.Scheduling.BackfillSchedule
+- uid: System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillSchedule}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillSchedule}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillSchedule>
+  nameWithType: Task<BackfillSchedule>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Scheduling.BackfillSchedule>
+  nameWithType.vb: Task(Of BackfillSchedule)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Scheduling.BackfillSchedule)
+  name.vb: Task(Of BackfillSchedule)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.BackfillSchedule
+    name: BackfillSchedule
+    href: Meridian.Application.Scheduling.BackfillSchedule.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.BackfillSchedule
+    name: BackfillSchedule
+    href: Meridian.Application.Scheduling.BackfillSchedule.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_CreateFromPresetAsync_System_String_System_String_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: CreateFromPresetAsync
+  nameWithType: BackfillScheduleManager.CreateFromPresetAsync
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.CreateFromPresetAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_UpdateScheduleAsync_Meridian_Application_Scheduling_BackfillSchedule_System_Threading_CancellationToken_
+  name: UpdateScheduleAsync
+  nameWithType: BackfillScheduleManager.UpdateScheduleAsync
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.UpdateScheduleAsync
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_DeleteScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteScheduleAsync
+  nameWithType: BackfillScheduleManager.DeleteScheduleAsync
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.DeleteScheduleAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_GetSchedule_System_String_
+  name: GetSchedule
+  nameWithType: BackfillScheduleManager.GetSchedule
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedule
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_GetAllSchedules
+  name: GetAllSchedules
+  nameWithType: BackfillScheduleManager.GetAllSchedules
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetAllSchedules
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillSchedule}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillSchedule}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<BackfillSchedule>
+  nameWithType: IReadOnlyList<BackfillSchedule>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Scheduling.BackfillSchedule>
+  nameWithType.vb: IReadOnlyList(Of BackfillSchedule)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Scheduling.BackfillSchedule)
+  name.vb: IReadOnlyList(Of BackfillSchedule)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.BackfillSchedule
+    name: BackfillSchedule
+    href: Meridian.Application.Scheduling.BackfillSchedule.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.BackfillSchedule
+    name: BackfillSchedule
+    href: Meridian.Application.Scheduling.BackfillSchedule.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_GetEnabledSchedules
+  name: GetEnabledSchedules
+  nameWithType: BackfillScheduleManager.GetEnabledSchedules
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetEnabledSchedules
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_GetDueSchedules_System_Nullable_System_DateTimeOffset__
+  name: GetDueSchedules
+  nameWithType: BackfillScheduleManager.GetDueSchedules
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetDueSchedules
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_GetNextDueSchedule_System_Nullable_System_DateTimeOffset__
+  name: GetNextDueSchedule
+  nameWithType: BackfillScheduleManager.GetNextDueSchedule
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetNextDueSchedule
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_SetScheduleEnabledAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: SetScheduleEnabledAsync
+  nameWithType: BackfillScheduleManager.SetScheduleEnabledAsync
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.SetScheduleEnabledAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_RecordExecutionAsync_Meridian_Application_Scheduling_BackfillSchedule_Meridian_Application_Scheduling_BackfillExecutionLog_System_Threading_CancellationToken_
+  name: RecordExecutionAsync
+  nameWithType: BackfillScheduleManager.RecordExecutionAsync
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.RecordExecutionAsync
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog
+  commentId: T:Meridian.Application.Scheduling.BackfillExecutionLog
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  name: BackfillExecutionLog
+  nameWithType: BackfillExecutionLog
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_CreateManualExecution_Meridian_Application_Scheduling_BackfillSchedule_
+  name: CreateManualExecution
+  nameWithType: BackfillScheduleManager.CreateManualExecution
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.CreateManualExecution
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_GetSchedulesByTag_System_String_
+  name: GetSchedulesByTag
+  nameWithType: BackfillScheduleManager.GetSchedulesByTag
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetSchedulesByTag
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_HasRunningSchedules
+  name: HasRunningSchedules
+  nameWithType: BackfillScheduleManager.HasRunningSchedules
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.HasRunningSchedules
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html#Meridian_Application_Scheduling_BackfillScheduleManager_GetStatusSummary
+  name: GetStatusSummary
+  nameWithType: BackfillScheduleManager.GetStatusSummary
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager.GetStatusSummary
+- uid: Meridian.Application.Scheduling.ScheduleStatusSummary
+  commentId: T:Meridian.Application.Scheduling.ScheduleStatusSummary
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ScheduleStatusSummary.html
+  name: ScheduleStatusSummary
+  nameWithType: ScheduleStatusSummary
+  fullName: Meridian.Application.Scheduling.ScheduleStatusSummary

@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus
+  commentId: T:Meridian.Contracts.Banking.PaymentApprovalStatus
+  id: PaymentApprovalStatus
+  parent: Meridian.Contracts.Banking
+  children:
+  - Meridian.Contracts.Banking.PaymentApprovalStatus.Approved
+  - Meridian.Contracts.Banking.PaymentApprovalStatus.Cancelled
+  - Meridian.Contracts.Banking.PaymentApprovalStatus.Pending
+  - Meridian.Contracts.Banking.PaymentApprovalStatus.Rejected
+  langs:
+  - csharp
+  - vb
+  name: PaymentApprovalStatus
+  nameWithType: PaymentApprovalStatus
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaymentApprovalStatus
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  summary: Lifecycle status of a payment that is routed through the approval workflow.
+  example: []
+  syntax:
+    content: 'public enum PaymentApprovalStatus : byte'
+    content.vb: Public Enum PaymentApprovalStatus As Byte
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus.Pending
+  commentId: F:Meridian.Contracts.Banking.PaymentApprovalStatus.Pending
+  id: Pending
+  parent: Meridian.Contracts.Banking.PaymentApprovalStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: PaymentApprovalStatus.Pending
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Contracts.Banking.PaymentApprovalStatus
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus.Approved
+  commentId: F:Meridian.Contracts.Banking.PaymentApprovalStatus.Approved
+  id: Approved
+  parent: Meridian.Contracts.Banking.PaymentApprovalStatus
+  langs:
+  - csharp
+  - vb
+  name: Approved
+  nameWithType: PaymentApprovalStatus.Approved
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus.Approved
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Approved
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: Approved = 1
+    return:
+      type: Meridian.Contracts.Banking.PaymentApprovalStatus
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus.Rejected
+  commentId: F:Meridian.Contracts.Banking.PaymentApprovalStatus.Rejected
+  id: Rejected
+  parent: Meridian.Contracts.Banking.PaymentApprovalStatus
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: PaymentApprovalStatus.Rejected
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus.Rejected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: Rejected = 2
+    return:
+      type: Meridian.Contracts.Banking.PaymentApprovalStatus
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus.Cancelled
+  commentId: F:Meridian.Contracts.Banking.PaymentApprovalStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Contracts.Banking.PaymentApprovalStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: PaymentApprovalStatus.Cancelled
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: Cancelled = 3
+    return:
+      type: Meridian.Contracts.Banking.PaymentApprovalStatus
+references:
+- uid: Meridian.Contracts.Banking
+  commentId: N:Meridian.Contracts.Banking
+  href: Meridian.html
+  name: Meridian.Contracts.Banking
+  nameWithType: Meridian.Contracts.Banking
+  fullName: Meridian.Contracts.Banking
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus
+  commentId: T:Meridian.Contracts.Banking.PaymentApprovalStatus
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.PaymentApprovalStatus.html
+  name: PaymentApprovalStatus
+  nameWithType: PaymentApprovalStatus
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus

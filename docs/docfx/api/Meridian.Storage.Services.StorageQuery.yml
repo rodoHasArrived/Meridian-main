@@ -1,0 +1,724 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.StorageQuery
+  commentId: T:Meridian.Storage.Services.StorageQuery
+  id: StorageQuery
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.StorageQuery.#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String[],System.Nullable{System.Int64})
+  - Meridian.Storage.Services.StorageQuery.From
+  - Meridian.Storage.Services.StorageQuery.MinVolume
+  - Meridian.Storage.Services.StorageQuery.Sources
+  - Meridian.Storage.Services.StorageQuery.Symbols
+  - Meridian.Storage.Services.StorageQuery.To
+  - Meridian.Storage.Services.StorageQuery.Types
+  langs:
+  - csharp
+  - vb
+  name: StorageQuery
+  nameWithType: StorageQuery
+  fullName: Meridian.Storage.Services.StorageQuery
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageQuery
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 738
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record StorageQuery : IEquatable<StorageQuery>'
+    content.vb: Public NotInheritable Class StorageQuery Implements IEquatable(Of StorageQuery)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.StorageQuery}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.StorageQuery.#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String[],System.Nullable{System.Int64})
+  commentId: M:Meridian.Storage.Services.StorageQuery.#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String[],System.Nullable{System.Int64})
+  id: '#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String[],System.Nullable{System.Int64})'
+  parent: Meridian.Storage.Services.StorageQuery
+  langs:
+  - csharp
+  - vb
+  name: StorageQuery(string[]?, MarketEventType[]?, DateTimeOffset?, DateTimeOffset?, string[]?, long?)
+  nameWithType: StorageQuery.StorageQuery(string[]?, MarketEventType[]?, DateTimeOffset?, DateTimeOffset?, string[]?, long?)
+  fullName: Meridian.Storage.Services.StorageQuery.StorageQuery(string[]?, Meridian.Contracts.Domain.Enums.MarketEventType[]?, System.DateTimeOffset?, System.DateTimeOffset?, string[]?, long?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 738
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public StorageQuery(string[]? Symbols, MarketEventType[]? Types, DateTimeOffset? From, DateTimeOffset? To, string[]? Sources, long? MinVolume)
+    parameters:
+    - id: Symbols
+      type: System.String[]
+    - id: Types
+      type: Meridian.Contracts.Domain.Enums.MarketEventType[]
+    - id: From
+      type: System.Nullable{System.DateTimeOffset}
+    - id: To
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Sources
+      type: System.String[]
+    - id: MinVolume
+      type: System.Nullable{System.Int64}
+    content.vb: Public Sub New(Symbols As String(), Types As MarketEventType(), From As DateTimeOffset?, [To] As DateTimeOffset?, Sources As String(), MinVolume As Long?)
+  overload: Meridian.Storage.Services.StorageQuery.#ctor*
+  nameWithType.vb: StorageQuery.New(String(), MarketEventType(), DateTimeOffset?, DateTimeOffset?, String(), Long?)
+  fullName.vb: Meridian.Storage.Services.StorageQuery.New(String(), Meridian.Contracts.Domain.Enums.MarketEventType(), System.DateTimeOffset?, System.DateTimeOffset?, String(), Long?)
+  name.vb: New(String(), MarketEventType(), DateTimeOffset?, DateTimeOffset?, String(), Long?)
+- uid: Meridian.Storage.Services.StorageQuery.Symbols
+  commentId: P:Meridian.Storage.Services.StorageQuery.Symbols
+  id: Symbols
+  parent: Meridian.Storage.Services.StorageQuery
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: StorageQuery.Symbols
+  fullName: Meridian.Storage.Services.StorageQuery.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 739
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Storage.Services.StorageQuery.Symbols*
+- uid: Meridian.Storage.Services.StorageQuery.Types
+  commentId: P:Meridian.Storage.Services.StorageQuery.Types
+  id: Types
+  parent: Meridian.Storage.Services.StorageQuery
+  langs:
+  - csharp
+  - vb
+  name: Types
+  nameWithType: StorageQuery.Types
+  fullName: Meridian.Storage.Services.StorageQuery.Types
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Types
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 740
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MarketEventType[]? Types { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType[]
+    content.vb: Public Property Types As MarketEventType()
+  overload: Meridian.Storage.Services.StorageQuery.Types*
+- uid: Meridian.Storage.Services.StorageQuery.From
+  commentId: P:Meridian.Storage.Services.StorageQuery.From
+  id: From
+  parent: Meridian.Storage.Services.StorageQuery
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: StorageQuery.From
+  fullName: Meridian.Storage.Services.StorageQuery.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 741
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset? From { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property From As DateTimeOffset?
+  overload: Meridian.Storage.Services.StorageQuery.From*
+- uid: Meridian.Storage.Services.StorageQuery.To
+  commentId: P:Meridian.Storage.Services.StorageQuery.To
+  id: To
+  parent: Meridian.Storage.Services.StorageQuery
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: StorageQuery.To
+  fullName: Meridian.Storage.Services.StorageQuery.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 742
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset? To { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property [To] As DateTimeOffset?
+  overload: Meridian.Storage.Services.StorageQuery.To*
+- uid: Meridian.Storage.Services.StorageQuery.Sources
+  commentId: P:Meridian.Storage.Services.StorageQuery.Sources
+  id: Sources
+  parent: Meridian.Storage.Services.StorageQuery
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: StorageQuery.Sources
+  fullName: Meridian.Storage.Services.StorageQuery.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 743
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string[]? Sources { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Sources As String()
+  overload: Meridian.Storage.Services.StorageQuery.Sources*
+- uid: Meridian.Storage.Services.StorageQuery.MinVolume
+  commentId: P:Meridian.Storage.Services.StorageQuery.MinVolume
+  id: MinVolume
+  parent: Meridian.Storage.Services.StorageQuery
+  langs:
+  - csharp
+  - vb
+  name: MinVolume
+  nameWithType: StorageQuery.MinVolume
+  fullName: Meridian.Storage.Services.StorageQuery.MinVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinVolume
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 744
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? MinVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MinVolume As Long?
+  overload: Meridian.Storage.Services.StorageQuery.MinVolume*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.StorageQuery}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.StorageQuery}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StorageQuery>
+  nameWithType: IEquatable<StorageQuery>
+  fullName: System.IEquatable<Meridian.Storage.Services.StorageQuery>
+  nameWithType.vb: IEquatable(Of StorageQuery)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.StorageQuery)
+  name.vb: IEquatable(Of StorageQuery)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.StorageQuery
+    name: StorageQuery
+    href: Meridian.Storage.Services.StorageQuery.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.StorageQuery
+    name: StorageQuery
+    href: Meridian.Storage.Services.StorageQuery.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.StorageQuery.#ctor*
+  commentId: Overload:Meridian.Storage.Services.StorageQuery.#ctor
+  href: Meridian.Storage.Services.StorageQuery.html#Meridian_Storage_Services_StorageQuery__ctor_System_String___Meridian_Contracts_Domain_Enums_MarketEventType___System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_String___System_Nullable_System_Int64__
+  name: StorageQuery
+  nameWithType: StorageQuery.StorageQuery
+  fullName: Meridian.Storage.Services.StorageQuery.StorageQuery
+  nameWithType.vb: StorageQuery.New
+  fullName.vb: Meridian.Storage.Services.StorageQuery.New
+  name.vb: New
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType[]
+  isExternal: true
+  name: MarketEventType[]
+  nameWithType: MarketEventType[]
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType[]
+  nameWithType.vb: MarketEventType()
+  fullName.vb: Meridian.Contracts.Domain.Enums.MarketEventType()
+  name.vb: MarketEventType()
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.MarketEventType
+    name: MarketEventType
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.MarketEventType
+    name: MarketEventType
+  - name: (
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.StorageQuery.Symbols*
+  commentId: Overload:Meridian.Storage.Services.StorageQuery.Symbols
+  href: Meridian.Storage.Services.StorageQuery.html#Meridian_Storage_Services_StorageQuery_Symbols
+  name: Symbols
+  nameWithType: StorageQuery.Symbols
+  fullName: Meridian.Storage.Services.StorageQuery.Symbols
+- uid: Meridian.Storage.Services.StorageQuery.Types*
+  commentId: Overload:Meridian.Storage.Services.StorageQuery.Types
+  href: Meridian.Storage.Services.StorageQuery.html#Meridian_Storage_Services_StorageQuery_Types
+  name: Types
+  nameWithType: StorageQuery.Types
+  fullName: Meridian.Storage.Services.StorageQuery.Types
+- uid: Meridian.Storage.Services.StorageQuery.From*
+  commentId: Overload:Meridian.Storage.Services.StorageQuery.From
+  href: Meridian.Storage.Services.StorageQuery.html#Meridian_Storage_Services_StorageQuery_From
+  name: From
+  nameWithType: StorageQuery.From
+  fullName: Meridian.Storage.Services.StorageQuery.From
+- uid: Meridian.Storage.Services.StorageQuery.To*
+  commentId: Overload:Meridian.Storage.Services.StorageQuery.To
+  href: Meridian.Storage.Services.StorageQuery.html#Meridian_Storage_Services_StorageQuery_To
+  name: To
+  nameWithType: StorageQuery.To
+  fullName: Meridian.Storage.Services.StorageQuery.To
+- uid: Meridian.Storage.Services.StorageQuery.Sources*
+  commentId: Overload:Meridian.Storage.Services.StorageQuery.Sources
+  href: Meridian.Storage.Services.StorageQuery.html#Meridian_Storage_Services_StorageQuery_Sources
+  name: Sources
+  nameWithType: StorageQuery.Sources
+  fullName: Meridian.Storage.Services.StorageQuery.Sources
+- uid: Meridian.Storage.Services.StorageQuery.MinVolume*
+  commentId: Overload:Meridian.Storage.Services.StorageQuery.MinVolume
+  href: Meridian.Storage.Services.StorageQuery.html#Meridian_Storage_Services_StorageQuery_MinVolume
+  name: MinVolume
+  nameWithType: StorageQuery.MinVolume
+  fullName: Meridian.Storage.Services.StorageQuery.MinVolume

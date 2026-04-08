@@ -1,0 +1,255 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.AnalysisExportFormat
+  commentId: T:Meridian.Contracts.Export.AnalysisExportFormat
+  id: AnalysisExportFormat
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.AnalysisExportFormat.CSV
+  - Meridian.Contracts.Export.AnalysisExportFormat.Excel
+  - Meridian.Contracts.Export.AnalysisExportFormat.Feather
+  - Meridian.Contracts.Export.AnalysisExportFormat.HDF5
+  - Meridian.Contracts.Export.AnalysisExportFormat.JSON
+  - Meridian.Contracts.Export.AnalysisExportFormat.JSONL
+  - Meridian.Contracts.Export.AnalysisExportFormat.Parquet
+  langs:
+  - csharp
+  - vb
+  name: AnalysisExportFormat
+  nameWithType: AnalysisExportFormat
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnalysisExportFormat
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: 'public enum AnalysisExportFormat : byte'
+    content.vb: Public Enum AnalysisExportFormat As Byte
+- uid: Meridian.Contracts.Export.AnalysisExportFormat.CSV
+  commentId: F:Meridian.Contracts.Export.AnalysisExportFormat.CSV
+  id: CSV
+  parent: Meridian.Contracts.Export.AnalysisExportFormat
+  langs:
+  - csharp
+  - vb
+  name: CSV
+  nameWithType: AnalysisExportFormat.CSV
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat.CSV
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CSV
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: CSV = 0
+    return:
+      type: Meridian.Contracts.Export.AnalysisExportFormat
+- uid: Meridian.Contracts.Export.AnalysisExportFormat.Parquet
+  commentId: F:Meridian.Contracts.Export.AnalysisExportFormat.Parquet
+  id: Parquet
+  parent: Meridian.Contracts.Export.AnalysisExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Parquet
+  nameWithType: AnalysisExportFormat.Parquet
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat.Parquet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parquet
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Parquet = 1
+    return:
+      type: Meridian.Contracts.Export.AnalysisExportFormat
+- uid: Meridian.Contracts.Export.AnalysisExportFormat.JSON
+  commentId: F:Meridian.Contracts.Export.AnalysisExportFormat.JSON
+  id: JSON
+  parent: Meridian.Contracts.Export.AnalysisExportFormat
+  langs:
+  - csharp
+  - vb
+  name: JSON
+  nameWithType: AnalysisExportFormat.JSON
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat.JSON
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JSON
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: JSON = 2
+    return:
+      type: Meridian.Contracts.Export.AnalysisExportFormat
+- uid: Meridian.Contracts.Export.AnalysisExportFormat.JSONL
+  commentId: F:Meridian.Contracts.Export.AnalysisExportFormat.JSONL
+  id: JSONL
+  parent: Meridian.Contracts.Export.AnalysisExportFormat
+  langs:
+  - csharp
+  - vb
+  name: JSONL
+  nameWithType: AnalysisExportFormat.JSONL
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat.JSONL
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JSONL
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: JSONL = 3
+    return:
+      type: Meridian.Contracts.Export.AnalysisExportFormat
+- uid: Meridian.Contracts.Export.AnalysisExportFormat.Excel
+  commentId: F:Meridian.Contracts.Export.AnalysisExportFormat.Excel
+  id: Excel
+  parent: Meridian.Contracts.Export.AnalysisExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Excel
+  nameWithType: AnalysisExportFormat.Excel
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat.Excel
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Excel
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Excel = 4
+    return:
+      type: Meridian.Contracts.Export.AnalysisExportFormat
+- uid: Meridian.Contracts.Export.AnalysisExportFormat.HDF5
+  commentId: F:Meridian.Contracts.Export.AnalysisExportFormat.HDF5
+  id: HDF5
+  parent: Meridian.Contracts.Export.AnalysisExportFormat
+  langs:
+  - csharp
+  - vb
+  name: HDF5
+  nameWithType: AnalysisExportFormat.HDF5
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat.HDF5
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HDF5
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: HDF5 = 5
+    return:
+      type: Meridian.Contracts.Export.AnalysisExportFormat
+- uid: Meridian.Contracts.Export.AnalysisExportFormat.Feather
+  commentId: F:Meridian.Contracts.Export.AnalysisExportFormat.Feather
+  id: Feather
+  parent: Meridian.Contracts.Export.AnalysisExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Feather
+  nameWithType: AnalysisExportFormat.Feather
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat.Feather
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Feather
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Feather = 6
+    return:
+      type: Meridian.Contracts.Export.AnalysisExportFormat
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: Meridian.Contracts.Export.AnalysisExportFormat
+  commentId: T:Meridian.Contracts.Export.AnalysisExportFormat
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.AnalysisExportFormat.html
+  name: AnalysisExportFormat
+  nameWithType: AnalysisExportFormat
+  fullName: Meridian.Contracts.Export.AnalysisExportFormat

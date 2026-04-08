@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.ExecutionModel
+  commentId: T:Meridian.Backtesting.Sdk.ExecutionModel
+  id: ExecutionModel
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  - Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint
+  - Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact
+  - Meridian.Backtesting.Sdk.ExecutionModel.OrderBook
+  langs:
+  - csharp
+  - vb
+  name: ExecutionModel
+  nameWithType: ExecutionModel
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionModel
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Provider-independent execution model selection used by the historical simulator.
+
+    <xref href="Meridian.Backtesting.Sdk.ExecutionModel.Auto" data-throw-if-not-resolved="false"></xref> lets the engine pick the most detailed model available for the
+
+    current market event, while the remaining values force a specific fill approach.
+  example: []
+  syntax:
+    content: public enum ExecutionModel
+    content.vb: Public Enum ExecutionModel
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  id: Auto
+  parent: Meridian.Backtesting.Sdk.ExecutionModel
+  langs:
+  - csharp
+  - vb
+  name: Auto
+  nameWithType: ExecutionModel.Auto
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Auto
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Auto = 0
+    return:
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint
+  id: BarMidpoint
+  parent: Meridian.Backtesting.Sdk.ExecutionModel
+  langs:
+  - csharp
+  - vb
+  name: BarMidpoint
+  nameWithType: ExecutionModel.BarMidpoint
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.BarMidpoint
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BarMidpoint
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: BarMidpoint = 1
+    return:
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.OrderBook
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.OrderBook
+  id: OrderBook
+  parent: Meridian.Backtesting.Sdk.ExecutionModel
+  langs:
+  - csharp
+  - vb
+  name: OrderBook
+  nameWithType: ExecutionModel.OrderBook
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.OrderBook
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderBook
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: OrderBook = 2
+    return:
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact
+  id: MarketImpact
+  parent: Meridian.Backtesting.Sdk.ExecutionModel
+  langs:
+  - csharp
+  - vb
+  name: MarketImpact
+  nameWithType: ExecutionModel.MarketImpact
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.MarketImpact
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketImpact
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Uses volume-dependent market impact with partial fills and spread-aware slippage.
+
+    More realistic for large orders where participation rate matters.
+  example: []
+  syntax:
+    content: MarketImpact = 3
+    return:
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+references:
+- uid: Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  commentId: F:Meridian.Backtesting.Sdk.ExecutionModel.Auto
+  href: Meridian.Backtesting.Sdk.ExecutionModel.html#Meridian_Backtesting_Sdk_ExecutionModel_Auto
+  name: Auto
+  nameWithType: ExecutionModel.Auto
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel.Auto
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.ExecutionModel
+  commentId: T:Meridian.Backtesting.Sdk.ExecutionModel
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.ExecutionModel.html
+  name: ExecutionModel
+  nameWithType: ExecutionModel
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel

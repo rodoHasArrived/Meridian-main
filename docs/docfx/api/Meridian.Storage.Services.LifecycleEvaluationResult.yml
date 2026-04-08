@@ -1,0 +1,691 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult
+  commentId: T:Meridian.Storage.Services.LifecycleEvaluationResult
+  id: LifecycleEvaluationResult
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.LifecycleEvaluationResult.#ctor(System.DateTime,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction},System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Storage.Services.LifecycleEvaluationResult.Actions
+  - Meridian.Storage.Services.LifecycleEvaluationResult.Errors
+  - Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc
+  - Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated
+  langs:
+  - csharp
+  - vb
+  name: LifecycleEvaluationResult
+  nameWithType: LifecycleEvaluationResult
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LifecycleEvaluationResult
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record LifecycleEvaluationResult : IEquatable<LifecycleEvaluationResult>'
+    content.vb: Public NotInheritable Class LifecycleEvaluationResult Implements IEquatable(Of LifecycleEvaluationResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.LifecycleEvaluationResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.#ctor(System.DateTime,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction},System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Storage.Services.LifecycleEvaluationResult.#ctor(System.DateTime,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction},System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.DateTime,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction},System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Meridian.Storage.Services.LifecycleEvaluationResult
+  langs:
+  - csharp
+  - vb
+  name: LifecycleEvaluationResult(DateTime, int, IReadOnlyList<LifecycleAction>, IReadOnlyList<string>)
+  nameWithType: LifecycleEvaluationResult.LifecycleEvaluationResult(DateTime, int, IReadOnlyList<LifecycleAction>, IReadOnlyList<string>)
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.LifecycleEvaluationResult(System.DateTime, int, System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.LifecycleAction>, System.Collections.Generic.IReadOnlyList<string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public LifecycleEvaluationResult(DateTime EvaluatedAtUtc, int FilesEvaluated, IReadOnlyList<LifecycleAction> Actions, IReadOnlyList<string> Errors)
+    parameters:
+    - id: EvaluatedAtUtc
+      type: System.DateTime
+    - id: FilesEvaluated
+      type: System.Int32
+    - id: Actions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction}
+    - id: Errors
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Sub New(EvaluatedAtUtc As Date, FilesEvaluated As Integer, Actions As IReadOnlyList(Of LifecycleAction), Errors As IReadOnlyList(Of String))
+  overload: Meridian.Storage.Services.LifecycleEvaluationResult.#ctor*
+  nameWithType.vb: LifecycleEvaluationResult.New(Date, Integer, IReadOnlyList(Of LifecycleAction), IReadOnlyList(Of String))
+  fullName.vb: Meridian.Storage.Services.LifecycleEvaluationResult.New(Date, Integer, System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.LifecycleAction), System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(Date, Integer, IReadOnlyList(Of LifecycleAction), IReadOnlyList(Of String))
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc
+  commentId: P:Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc
+  id: EvaluatedAtUtc
+  parent: Meridian.Storage.Services.LifecycleEvaluationResult
+  langs:
+  - csharp
+  - vb
+  name: EvaluatedAtUtc
+  nameWithType: LifecycleEvaluationResult.EvaluatedAtUtc
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EvaluatedAtUtc
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 366
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTime EvaluatedAtUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property EvaluatedAtUtc As Date
+  overload: Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc*
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated
+  commentId: P:Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated
+  id: FilesEvaluated
+  parent: Meridian.Storage.Services.LifecycleEvaluationResult
+  langs:
+  - csharp
+  - vb
+  name: FilesEvaluated
+  nameWithType: LifecycleEvaluationResult.FilesEvaluated
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesEvaluated
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 367
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int FilesEvaluated { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesEvaluated As Integer
+  overload: Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated*
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.Actions
+  commentId: P:Meridian.Storage.Services.LifecycleEvaluationResult.Actions
+  id: Actions
+  parent: Meridian.Storage.Services.LifecycleEvaluationResult
+  langs:
+  - csharp
+  - vb
+  name: Actions
+  nameWithType: LifecycleEvaluationResult.Actions
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.Actions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Actions
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 368
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<LifecycleAction> Actions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction}
+    content.vb: Public Property Actions As IReadOnlyList(Of LifecycleAction)
+  overload: Meridian.Storage.Services.LifecycleEvaluationResult.Actions*
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.Errors
+  commentId: P:Meridian.Storage.Services.LifecycleEvaluationResult.Errors
+  id: Errors
+  parent: Meridian.Storage.Services.LifecycleEvaluationResult
+  langs:
+  - csharp
+  - vb
+  name: Errors
+  nameWithType: LifecycleEvaluationResult.Errors
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.Errors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Errors
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 369
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<string> Errors { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Errors As IReadOnlyList(Of String)
+  overload: Meridian.Storage.Services.LifecycleEvaluationResult.Errors*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.LifecycleEvaluationResult}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.LifecycleEvaluationResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LifecycleEvaluationResult>
+  nameWithType: IEquatable<LifecycleEvaluationResult>
+  fullName: System.IEquatable<Meridian.Storage.Services.LifecycleEvaluationResult>
+  nameWithType.vb: IEquatable(Of LifecycleEvaluationResult)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.LifecycleEvaluationResult)
+  name.vb: IEquatable(Of LifecycleEvaluationResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.LifecycleEvaluationResult
+    name: LifecycleEvaluationResult
+    href: Meridian.Storage.Services.LifecycleEvaluationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.LifecycleEvaluationResult
+    name: LifecycleEvaluationResult
+    href: Meridian.Storage.Services.LifecycleEvaluationResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.#ctor*
+  commentId: Overload:Meridian.Storage.Services.LifecycleEvaluationResult.#ctor
+  href: Meridian.Storage.Services.LifecycleEvaluationResult.html#Meridian_Storage_Services_LifecycleEvaluationResult__ctor_System_DateTime_System_Int32_System_Collections_Generic_IReadOnlyList_Meridian_Storage_Services_LifecycleAction__System_Collections_Generic_IReadOnlyList_System_String__
+  name: LifecycleEvaluationResult
+  nameWithType: LifecycleEvaluationResult.LifecycleEvaluationResult
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.LifecycleEvaluationResult
+  nameWithType.vb: LifecycleEvaluationResult.New
+  fullName.vb: Meridian.Storage.Services.LifecycleEvaluationResult.New
+  name.vb: New
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.LifecycleAction}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LifecycleAction>
+  nameWithType: IReadOnlyList<LifecycleAction>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.LifecycleAction>
+  nameWithType.vb: IReadOnlyList(Of LifecycleAction)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.LifecycleAction)
+  name.vb: IReadOnlyList(Of LifecycleAction)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Services.LifecycleAction
+    name: LifecycleAction
+    href: Meridian.Storage.Services.LifecycleAction.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.LifecycleAction
+    name: LifecycleAction
+    href: Meridian.Storage.Services.LifecycleAction.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc*
+  commentId: Overload:Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc
+  href: Meridian.Storage.Services.LifecycleEvaluationResult.html#Meridian_Storage_Services_LifecycleEvaluationResult_EvaluatedAtUtc
+  name: EvaluatedAtUtc
+  nameWithType: LifecycleEvaluationResult.EvaluatedAtUtc
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.EvaluatedAtUtc
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated*
+  commentId: Overload:Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated
+  href: Meridian.Storage.Services.LifecycleEvaluationResult.html#Meridian_Storage_Services_LifecycleEvaluationResult_FilesEvaluated
+  name: FilesEvaluated
+  nameWithType: LifecycleEvaluationResult.FilesEvaluated
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.FilesEvaluated
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.Actions*
+  commentId: Overload:Meridian.Storage.Services.LifecycleEvaluationResult.Actions
+  href: Meridian.Storage.Services.LifecycleEvaluationResult.html#Meridian_Storage_Services_LifecycleEvaluationResult_Actions
+  name: Actions
+  nameWithType: LifecycleEvaluationResult.Actions
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.Actions
+- uid: Meridian.Storage.Services.LifecycleEvaluationResult.Errors*
+  commentId: Overload:Meridian.Storage.Services.LifecycleEvaluationResult.Errors
+  href: Meridian.Storage.Services.LifecycleEvaluationResult.html#Meridian_Storage_Services_LifecycleEvaluationResult_Errors
+  name: Errors
+  nameWithType: LifecycleEvaluationResult.Errors
+  fullName: Meridian.Storage.Services.LifecycleEvaluationResult.Errors

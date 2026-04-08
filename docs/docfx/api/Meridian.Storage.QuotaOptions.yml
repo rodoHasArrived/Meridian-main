@@ -1,0 +1,595 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.QuotaOptions
+  commentId: T:Meridian.Storage.QuotaOptions
+  id: QuotaOptions
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.QuotaOptions.Dynamic
+  - Meridian.Storage.QuotaOptions.Global
+  - Meridian.Storage.QuotaOptions.PerEventType
+  - Meridian.Storage.QuotaOptions.PerSource
+  - Meridian.Storage.QuotaOptions.PerSymbol
+  langs:
+  - csharp
+  - vb
+  name: QuotaOptions
+  nameWithType: QuotaOptions
+  fullName: Meridian.Storage.QuotaOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotaOptions
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Quota configuration for capacity management.
+  example: []
+  syntax:
+    content: public sealed class QuotaOptions
+    content.vb: Public NotInheritable Class QuotaOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.QuotaOptions.Global
+  commentId: P:Meridian.Storage.QuotaOptions.Global
+  id: Global
+  parent: Meridian.Storage.QuotaOptions
+  langs:
+  - csharp
+  - vb
+  name: Global
+  nameWithType: QuotaOptions.Global
+  fullName: Meridian.Storage.QuotaOptions.Global
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Global
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 385
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Global storage quota.
+  example: []
+  syntax:
+    content: public StorageQuota? Global { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.StorageQuota
+    content.vb: Public Property [Global] As StorageQuota
+  overload: Meridian.Storage.QuotaOptions.Global*
+- uid: Meridian.Storage.QuotaOptions.PerSource
+  commentId: P:Meridian.Storage.QuotaOptions.PerSource
+  id: PerSource
+  parent: Meridian.Storage.QuotaOptions
+  langs:
+  - csharp
+  - vb
+  name: PerSource
+  nameWithType: QuotaOptions.PerSource
+  fullName: Meridian.Storage.QuotaOptions.PerSource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerSource
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 388
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Per-source quotas.
+  example: []
+  syntax:
+    content: public Dictionary<string, StorageQuota>? PerSource { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Storage.StorageQuota}
+    content.vb: Public Property PerSource As Dictionary(Of String, StorageQuota)
+  overload: Meridian.Storage.QuotaOptions.PerSource*
+- uid: Meridian.Storage.QuotaOptions.PerSymbol
+  commentId: P:Meridian.Storage.QuotaOptions.PerSymbol
+  id: PerSymbol
+  parent: Meridian.Storage.QuotaOptions
+  langs:
+  - csharp
+  - vb
+  name: PerSymbol
+  nameWithType: QuotaOptions.PerSymbol
+  fullName: Meridian.Storage.QuotaOptions.PerSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerSymbol
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Per-symbol quotas.
+  example: []
+  syntax:
+    content: public Dictionary<string, StorageQuota>? PerSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Storage.StorageQuota}
+    content.vb: Public Property PerSymbol As Dictionary(Of String, StorageQuota)
+  overload: Meridian.Storage.QuotaOptions.PerSymbol*
+- uid: Meridian.Storage.QuotaOptions.PerEventType
+  commentId: P:Meridian.Storage.QuotaOptions.PerEventType
+  id: PerEventType
+  parent: Meridian.Storage.QuotaOptions
+  langs:
+  - csharp
+  - vb
+  name: PerEventType
+  nameWithType: QuotaOptions.PerEventType
+  fullName: Meridian.Storage.QuotaOptions.PerEventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerEventType
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 394
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Per-event-type quotas.
+  example: []
+  syntax:
+    content: public Dictionary<string, StorageQuota>? PerEventType { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Storage.StorageQuota}
+    content.vb: Public Property PerEventType As Dictionary(Of String, StorageQuota)
+  overload: Meridian.Storage.QuotaOptions.PerEventType*
+- uid: Meridian.Storage.QuotaOptions.Dynamic
+  commentId: P:Meridian.Storage.QuotaOptions.Dynamic
+  id: Dynamic
+  parent: Meridian.Storage.QuotaOptions
+  langs:
+  - csharp
+  - vb
+  name: Dynamic
+  nameWithType: QuotaOptions.Dynamic
+  fullName: Meridian.Storage.QuotaOptions.Dynamic
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dynamic
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Dynamic quota configuration.
+  example: []
+  syntax:
+    content: public DynamicQuotaConfig? Dynamic { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.DynamicQuotaConfig
+    content.vb: Public Property Dynamic As DynamicQuotaConfig
+  overload: Meridian.Storage.QuotaOptions.Dynamic*
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.QuotaOptions.Global*
+  commentId: Overload:Meridian.Storage.QuotaOptions.Global
+  href: Meridian.Storage.QuotaOptions.html#Meridian_Storage_QuotaOptions_Global
+  name: Global
+  nameWithType: QuotaOptions.Global
+  fullName: Meridian.Storage.QuotaOptions.Global
+- uid: Meridian.Storage.StorageQuota
+  commentId: T:Meridian.Storage.StorageQuota
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageQuota.html
+  name: StorageQuota
+  nameWithType: StorageQuota
+  fullName: Meridian.Storage.StorageQuota
+- uid: Meridian.Storage.QuotaOptions.PerSource*
+  commentId: Overload:Meridian.Storage.QuotaOptions.PerSource
+  href: Meridian.Storage.QuotaOptions.html#Meridian_Storage_QuotaOptions_PerSource
+  name: PerSource
+  nameWithType: QuotaOptions.PerSource
+  fullName: Meridian.Storage.QuotaOptions.PerSource
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Storage.StorageQuota}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Storage.StorageQuota}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, StorageQuota>
+  nameWithType: Dictionary<string, StorageQuota>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Storage.StorageQuota>
+  nameWithType.vb: Dictionary(Of String, StorageQuota)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Storage.StorageQuota)
+  name.vb: Dictionary(Of String, StorageQuota)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.StorageQuota
+    name: StorageQuota
+    href: Meridian.Storage.StorageQuota.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.StorageQuota
+    name: StorageQuota
+    href: Meridian.Storage.StorageQuota.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.QuotaOptions.PerSymbol*
+  commentId: Overload:Meridian.Storage.QuotaOptions.PerSymbol
+  href: Meridian.Storage.QuotaOptions.html#Meridian_Storage_QuotaOptions_PerSymbol
+  name: PerSymbol
+  nameWithType: QuotaOptions.PerSymbol
+  fullName: Meridian.Storage.QuotaOptions.PerSymbol
+- uid: Meridian.Storage.QuotaOptions.PerEventType*
+  commentId: Overload:Meridian.Storage.QuotaOptions.PerEventType
+  href: Meridian.Storage.QuotaOptions.html#Meridian_Storage_QuotaOptions_PerEventType
+  name: PerEventType
+  nameWithType: QuotaOptions.PerEventType
+  fullName: Meridian.Storage.QuotaOptions.PerEventType
+- uid: Meridian.Storage.QuotaOptions.Dynamic*
+  commentId: Overload:Meridian.Storage.QuotaOptions.Dynamic
+  href: Meridian.Storage.QuotaOptions.html#Meridian_Storage_QuotaOptions_Dynamic
+  name: Dynamic
+  nameWithType: QuotaOptions.Dynamic
+  fullName: Meridian.Storage.QuotaOptions.Dynamic
+- uid: Meridian.Storage.DynamicQuotaConfig
+  commentId: T:Meridian.Storage.DynamicQuotaConfig
+  parent: Meridian.Storage
+  href: Meridian.Storage.DynamicQuotaConfig.html
+  name: DynamicQuotaConfig
+  nameWithType: DynamicQuotaConfig
+  fullName: Meridian.Storage.DynamicQuotaConfig

@@ -1,0 +1,871 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backfill.ProviderCostEstimate
+  commentId: T:Meridian.Application.Backfill.ProviderCostEstimate
+  id: ProviderCostEstimate
+  parent: Meridian.Application.Backfill
+  children:
+  - Meridian.Application.Backfill.ProviderCostEstimate.#ctor(System.String,System.String,System.Int32,System.Int64,System.TimeSpan,System.Nullable{System.Int32},System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)
+  - Meridian.Application.Backfill.ProviderCostEstimate.DisplayName
+  - Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls
+  - Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime
+  - Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow
+  - Meridian.Application.Backfill.ProviderCostEstimate.Priority
+  - Meridian.Application.Backfill.ProviderCostEstimate.ProviderName
+  - Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay
+  - Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow
+  - Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange
+  - Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota
+  langs:
+  - csharp
+  - vb
+  name: ProviderCostEstimate
+  nameWithType: ProviderCostEstimate
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCostEstimate
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Cost estimate for a specific provider.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderCostEstimate : IEquatable<ProviderCostEstimate>'
+    content.vb: Public NotInheritable Class ProviderCostEstimate Implements IEquatable(Of ProviderCostEstimate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Backfill.ProviderCostEstimate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.#ctor(System.String,System.String,System.Int32,System.Int64,System.TimeSpan,System.Nullable{System.Int32},System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Backfill.ProviderCostEstimate.#ctor(System.String,System.String,System.Int32,System.Int64,System.TimeSpan,System.Nullable{System.Int32},System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)
+  id: '#ctor(System.String,System.String,System.Int32,System.Int64,System.TimeSpan,System.Nullable{System.Int32},System.TimeSpan,System.TimeSpan,System.Boolean,System.Boolean)'
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: ProviderCostEstimate(string, string, int, long, TimeSpan, int?, TimeSpan, TimeSpan, bool, bool)
+  nameWithType: ProviderCostEstimate.ProviderCostEstimate(string, string, int, long, TimeSpan, int?, TimeSpan, TimeSpan, bool, bool)
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.ProviderCostEstimate(string, string, int, long, System.TimeSpan, int?, System.TimeSpan, System.TimeSpan, bool, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Cost estimate for a specific provider.
+  example: []
+  syntax:
+    content: public ProviderCostEstimate(string ProviderName, string DisplayName, int Priority, long EstimatedApiCalls, TimeSpan EstimatedWallClockTime, int? MaxRequestsPerWindow, TimeSpan RateLimitWindow, TimeSpan RateLimitDelay, bool WouldExceedFreeQuota, bool SupportsDateRange)
+    parameters:
+    - id: ProviderName
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: Priority
+      type: System.Int32
+    - id: EstimatedApiCalls
+      type: System.Int64
+    - id: EstimatedWallClockTime
+      type: System.TimeSpan
+    - id: MaxRequestsPerWindow
+      type: System.Nullable{System.Int32}
+    - id: RateLimitWindow
+      type: System.TimeSpan
+    - id: RateLimitDelay
+      type: System.TimeSpan
+    - id: WouldExceedFreeQuota
+      type: System.Boolean
+    - id: SupportsDateRange
+      type: System.Boolean
+    content.vb: Public Sub New(ProviderName As String, DisplayName As String, Priority As Integer, EstimatedApiCalls As Long, EstimatedWallClockTime As TimeSpan, MaxRequestsPerWindow As Integer?, RateLimitWindow As TimeSpan, RateLimitDelay As TimeSpan, WouldExceedFreeQuota As Boolean, SupportsDateRange As Boolean)
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.#ctor*
+  nameWithType.vb: ProviderCostEstimate.New(String, String, Integer, Long, TimeSpan, Integer?, TimeSpan, TimeSpan, Boolean, Boolean)
+  fullName.vb: Meridian.Application.Backfill.ProviderCostEstimate.New(String, String, Integer, Long, System.TimeSpan, Integer?, System.TimeSpan, System.TimeSpan, Boolean, Boolean)
+  name.vb: New(String, String, Integer, Long, TimeSpan, Integer?, TimeSpan, TimeSpan, Boolean, Boolean)
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.ProviderName
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.ProviderName
+  id: ProviderName
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: ProviderName
+  nameWithType: ProviderCostEstimate.ProviderName
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.ProviderName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderName
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public string ProviderName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderName As String
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.ProviderName*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.DisplayName
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.DisplayName
+  id: DisplayName
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: ProviderCostEstimate.DisplayName
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.DisplayName*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.Priority
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.Priority
+  id: Priority
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: ProviderCostEstimate.Priority
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.Priority*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls
+  id: EstimatedApiCalls
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: EstimatedApiCalls
+  nameWithType: ProviderCostEstimate.EstimatedApiCalls
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedApiCalls
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public long EstimatedApiCalls { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EstimatedApiCalls As Long
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime
+  id: EstimatedWallClockTime
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: EstimatedWallClockTime
+  nameWithType: ProviderCostEstimate.EstimatedWallClockTime
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedWallClockTime
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public TimeSpan EstimatedWallClockTime { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property EstimatedWallClockTime As TimeSpan
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: ProviderCostEstimate.MaxRequestsPerWindow
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public int? MaxRequestsPerWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property MaxRequestsPerWindow As Integer?
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow
+  id: RateLimitWindow
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: RateLimitWindow
+  nameWithType: ProviderCostEstimate.RateLimitWindow
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitWindow
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public TimeSpan RateLimitWindow { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property RateLimitWindow As TimeSpan
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay
+  id: RateLimitDelay
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: RateLimitDelay
+  nameWithType: ProviderCostEstimate.RateLimitDelay
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitDelay
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public TimeSpan RateLimitDelay { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property RateLimitDelay As TimeSpan
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota
+  id: WouldExceedFreeQuota
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: WouldExceedFreeQuota
+  nameWithType: ProviderCostEstimate.WouldExceedFreeQuota
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WouldExceedFreeQuota
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public bool WouldExceedFreeQuota { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property WouldExceedFreeQuota As Boolean
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota*
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange
+  commentId: P:Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange
+  id: SupportsDateRange
+  parent: Meridian.Application.Backfill.ProviderCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: SupportsDateRange
+  nameWithType: ProviderCostEstimate.SupportsDateRange
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsDateRange
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public bool SupportsDateRange { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsDateRange As Boolean
+  overload: Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange*
+references:
+- uid: Meridian.Application.Backfill
+  commentId: N:Meridian.Application.Backfill
+  href: Meridian.html
+  name: Meridian.Application.Backfill
+  nameWithType: Meridian.Application.Backfill
+  fullName: Meridian.Application.Backfill
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Backfill.ProviderCostEstimate}
+  commentId: T:System.IEquatable{Meridian.Application.Backfill.ProviderCostEstimate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderCostEstimate>
+  nameWithType: IEquatable<ProviderCostEstimate>
+  fullName: System.IEquatable<Meridian.Application.Backfill.ProviderCostEstimate>
+  nameWithType.vb: IEquatable(Of ProviderCostEstimate)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Backfill.ProviderCostEstimate)
+  name.vb: IEquatable(Of ProviderCostEstimate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Backfill.ProviderCostEstimate
+    name: ProviderCostEstimate
+    href: Meridian.Application.Backfill.ProviderCostEstimate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backfill.ProviderCostEstimate
+    name: ProviderCostEstimate
+    href: Meridian.Application.Backfill.ProviderCostEstimate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.#ctor*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.#ctor
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate__ctor_System_String_System_String_System_Int32_System_Int64_System_TimeSpan_System_Nullable_System_Int32__System_TimeSpan_System_TimeSpan_System_Boolean_System_Boolean_
+  name: ProviderCostEstimate
+  nameWithType: ProviderCostEstimate.ProviderCostEstimate
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.ProviderCostEstimate
+  nameWithType.vb: ProviderCostEstimate.New
+  fullName.vb: Meridian.Application.Backfill.ProviderCostEstimate.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.ProviderName*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.ProviderName
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_ProviderName
+  name: ProviderName
+  nameWithType: ProviderCostEstimate.ProviderName
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.ProviderName
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.DisplayName*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.DisplayName
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_DisplayName
+  name: DisplayName
+  nameWithType: ProviderCostEstimate.DisplayName
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.DisplayName
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.Priority*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.Priority
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_Priority
+  name: Priority
+  nameWithType: ProviderCostEstimate.Priority
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.Priority
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_EstimatedApiCalls
+  name: EstimatedApiCalls
+  nameWithType: ProviderCostEstimate.EstimatedApiCalls
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedApiCalls
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_EstimatedWallClockTime
+  name: EstimatedWallClockTime
+  nameWithType: ProviderCostEstimate.EstimatedWallClockTime
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.EstimatedWallClockTime
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: ProviderCostEstimate.MaxRequestsPerWindow
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.MaxRequestsPerWindow
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: ProviderCostEstimate.RateLimitWindow
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitWindow
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_RateLimitDelay
+  name: RateLimitDelay
+  nameWithType: ProviderCostEstimate.RateLimitDelay
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.RateLimitDelay
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_WouldExceedFreeQuota
+  name: WouldExceedFreeQuota
+  nameWithType: ProviderCostEstimate.WouldExceedFreeQuota
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.WouldExceedFreeQuota
+- uid: Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange*
+  commentId: Overload:Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html#Meridian_Application_Backfill_ProviderCostEstimate_SupportsDateRange
+  name: SupportsDateRange
+  nameWithType: ProviderCostEstimate.SupportsDateRange
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate.SupportsDateRange

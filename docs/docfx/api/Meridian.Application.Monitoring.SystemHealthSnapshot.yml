@@ -1,0 +1,616 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot
+  commentId: T:Meridian.Application.Monitoring.SystemHealthSnapshot
+  id: SystemHealthSnapshot
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo
+  - Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo
+  - Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus
+  - Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp
+  - Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings
+  langs:
+  - csharp
+  - vb
+  name: SystemHealthSnapshot
+  nameWithType: SystemHealthSnapshot
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SystemHealthSnapshot
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 325
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Snapshot of system health at a point in time.
+  example: []
+  syntax:
+    content: public sealed class SystemHealthSnapshot
+    content.vb: Public NotInheritable Class SystemHealthSnapshot
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp
+  commentId: P:Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.SystemHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: SystemHealthSnapshot.Timestamp
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 327
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp*
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo
+  commentId: P:Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo
+  id: DiskInfo
+  parent: Meridian.Application.Monitoring.SystemHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DiskInfo
+  nameWithType: SystemHealthSnapshot.DiskInfo
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiskInfo
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 328
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyList<DiskSpaceInfo> DiskInfo { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DiskSpaceInfo}
+    content.vb: Public Property DiskInfo As IReadOnlyList(Of DiskSpaceInfo)
+  overload: Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo*
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo
+  commentId: P:Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo
+  id: MemoryInfo
+  parent: Meridian.Application.Monitoring.SystemHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MemoryInfo
+  nameWithType: SystemHealthSnapshot.MemoryInfo
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MemoryInfo
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 329
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public MemoryInfo MemoryInfo { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.MemoryInfo
+    content.vb: Public Property MemoryInfo As MemoryInfo
+  overload: Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo*
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings
+  commentId: P:Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings
+  id: Warnings
+  parent: Meridian.Application.Monitoring.SystemHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: SystemHealthSnapshot.Warnings
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 330
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyList<SystemHealthWarning> Warnings { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.SystemHealthWarning}
+    content.vb: Public Property Warnings As IReadOnlyList(Of SystemHealthWarning)
+  overload: Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings*
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus
+  commentId: P:Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus
+  id: OverallStatus
+  parent: Meridian.Application.Monitoring.SystemHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: OverallStatus
+  nameWithType: SystemHealthSnapshot.OverallStatus
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallStatus
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 331
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public SystemHealthStatus OverallStatus { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.SystemHealthStatus
+    content.vb: Public Property OverallStatus As SystemHealthStatus
+  overload: Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp
+  href: Meridian.Application.Monitoring.SystemHealthSnapshot.html#Meridian_Application_Monitoring_SystemHealthSnapshot_Timestamp
+  name: Timestamp
+  nameWithType: SystemHealthSnapshot.Timestamp
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo*
+  commentId: Overload:Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo
+  href: Meridian.Application.Monitoring.SystemHealthSnapshot.html#Meridian_Application_Monitoring_SystemHealthSnapshot_DiskInfo
+  name: DiskInfo
+  nameWithType: SystemHealthSnapshot.DiskInfo
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.DiskInfo
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DiskSpaceInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DiskSpaceInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DiskSpaceInfo>
+  nameWithType: IReadOnlyList<DiskSpaceInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DiskSpaceInfo>
+  nameWithType.vb: IReadOnlyList(Of DiskSpaceInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DiskSpaceInfo)
+  name.vb: IReadOnlyList(Of DiskSpaceInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DiskSpaceInfo
+    name: DiskSpaceInfo
+    href: Meridian.Application.Monitoring.DiskSpaceInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DiskSpaceInfo
+    name: DiskSpaceInfo
+    href: Meridian.Application.Monitoring.DiskSpaceInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo*
+  commentId: Overload:Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo
+  href: Meridian.Application.Monitoring.SystemHealthSnapshot.html#Meridian_Application_Monitoring_SystemHealthSnapshot_MemoryInfo
+  name: MemoryInfo
+  nameWithType: SystemHealthSnapshot.MemoryInfo
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.MemoryInfo
+- uid: Meridian.Application.Monitoring.MemoryInfo
+  commentId: T:Meridian.Application.Monitoring.MemoryInfo
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.MemoryInfo.html
+  name: MemoryInfo
+  nameWithType: MemoryInfo
+  fullName: Meridian.Application.Monitoring.MemoryInfo
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings*
+  commentId: Overload:Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings
+  href: Meridian.Application.Monitoring.SystemHealthSnapshot.html#Meridian_Application_Monitoring_SystemHealthSnapshot_Warnings
+  name: Warnings
+  nameWithType: SystemHealthSnapshot.Warnings
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.Warnings
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.SystemHealthWarning}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.SystemHealthWarning}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SystemHealthWarning>
+  nameWithType: IReadOnlyList<SystemHealthWarning>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.SystemHealthWarning>
+  nameWithType.vb: IReadOnlyList(Of SystemHealthWarning)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.SystemHealthWarning)
+  name.vb: IReadOnlyList(Of SystemHealthWarning)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.SystemHealthWarning
+    name: SystemHealthWarning
+    href: Meridian.Application.Monitoring.SystemHealthWarning.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.SystemHealthWarning
+    name: SystemHealthWarning
+    href: Meridian.Application.Monitoring.SystemHealthWarning.html
+  - name: )
+- uid: Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus*
+  commentId: Overload:Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus
+  href: Meridian.Application.Monitoring.SystemHealthSnapshot.html#Meridian_Application_Monitoring_SystemHealthSnapshot_OverallStatus
+  name: OverallStatus
+  nameWithType: SystemHealthSnapshot.OverallStatus
+  fullName: Meridian.Application.Monitoring.SystemHealthSnapshot.OverallStatus
+- uid: Meridian.Application.Monitoring.SystemHealthStatus
+  commentId: T:Meridian.Application.Monitoring.SystemHealthStatus
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.SystemHealthStatus.html
+  name: SystemHealthStatus
+  nameWithType: SystemHealthStatus
+  fullName: Meridian.Application.Monitoring.SystemHealthStatus

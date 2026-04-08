@@ -1,0 +1,490 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+  id: PortfolioImportRequest
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.PortfolioImportRequest.#ctor(System.String,Meridian.Application.Subscriptions.Models.PortfolioImportOptions)
+  - Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker
+  - Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options
+  langs:
+  - csharp
+  - vb
+  name: PortfolioImportRequest
+  nameWithType: PortfolioImportRequest
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioImportRequest
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Request to import symbols from a broker portfolio.
+  example: []
+  syntax:
+    content: 'public sealed record PortfolioImportRequest : IEquatable<PortfolioImportRequest>'
+    content.vb: Public NotInheritable Class PortfolioImportRequest Implements IEquatable(Of PortfolioImportRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.PortfolioImportRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.#ctor(System.String,Meridian.Application.Subscriptions.Models.PortfolioImportOptions)
+  commentId: M:Meridian.Application.Subscriptions.Models.PortfolioImportRequest.#ctor(System.String,Meridian.Application.Subscriptions.Models.PortfolioImportOptions)
+  id: '#ctor(System.String,Meridian.Application.Subscriptions.Models.PortfolioImportOptions)'
+  parent: Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+  langs:
+  - csharp
+  - vb
+  name: PortfolioImportRequest(string, PortfolioImportOptions)
+  nameWithType: PortfolioImportRequest.PortfolioImportRequest(string, PortfolioImportOptions)
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.PortfolioImportRequest(string, Meridian.Application.Subscriptions.Models.PortfolioImportOptions)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Request to import symbols from a broker portfolio.
+  example: []
+  syntax:
+    content: public PortfolioImportRequest(string Broker, PortfolioImportOptions Options)
+    parameters:
+    - id: Broker
+      type: System.String
+    - id: Options
+      type: Meridian.Application.Subscriptions.Models.PortfolioImportOptions
+    content.vb: Public Sub New(Broker As String, Options As PortfolioImportOptions)
+  overload: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.#ctor*
+  nameWithType.vb: PortfolioImportRequest.New(String, PortfolioImportOptions)
+  fullName.vb: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.New(String, Meridian.Application.Subscriptions.Models.PortfolioImportOptions)
+  name.vb: New(String, PortfolioImportOptions)
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker
+  id: Broker
+  parent: Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+  langs:
+  - csharp
+  - vb
+  name: Broker
+  nameWithType: PortfolioImportRequest.Broker
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Broker
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Broker { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Broker As String
+  overload: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker*
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options
+  commentId: P:Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options
+  id: Options
+  parent: Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+  langs:
+  - csharp
+  - vb
+  name: Options
+  nameWithType: PortfolioImportRequest.Options
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Options
+    path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public PortfolioImportOptions Options { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Models.PortfolioImportOptions
+    content.vb: Public Property Options As PortfolioImportOptions
+  overload: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.PortfolioImportRequest}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.PortfolioImportRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PortfolioImportRequest>
+  nameWithType: IEquatable<PortfolioImportRequest>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.PortfolioImportRequest>
+  nameWithType.vb: IEquatable(Of PortfolioImportRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.PortfolioImportRequest)
+  name.vb: IEquatable(Of PortfolioImportRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+    name: PortfolioImportRequest
+    href: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest
+    name: PortfolioImportRequest
+    href: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioImportRequest.#ctor
+  href: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.html#Meridian_Application_Subscriptions_Models_PortfolioImportRequest__ctor_System_String_Meridian_Application_Subscriptions_Models_PortfolioImportOptions_
+  name: PortfolioImportRequest
+  nameWithType: PortfolioImportRequest.PortfolioImportRequest
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.PortfolioImportRequest
+  nameWithType.vb: PortfolioImportRequest.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportOptions
+  commentId: T:Meridian.Application.Subscriptions.Models.PortfolioImportOptions
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.PortfolioImportOptions.html
+  name: PortfolioImportOptions
+  nameWithType: PortfolioImportOptions
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportOptions
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker
+  href: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.html#Meridian_Application_Subscriptions_Models_PortfolioImportRequest_Broker
+  name: Broker
+  nameWithType: PortfolioImportRequest.Broker
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Broker
+- uid: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options
+  href: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.html#Meridian_Application_Subscriptions_Models_PortfolioImportRequest_Options
+  name: Options
+  nameWithType: PortfolioImportRequest.Options
+  fullName: Meridian.Application.Subscriptions.Models.PortfolioImportRequest.Options

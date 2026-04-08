@@ -1,0 +1,610 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator
+  commentId: T:Meridian.Application.Monitoring.ClockSkewEstimator
+  id: ClockSkewEstimator
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ClockSkewEstimator.#ctor(System.Double)
+  - Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots
+  - Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs(System.String)
+  - Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation(System.String,System.DateTimeOffset,System.DateTimeOffset)
+  langs:
+  - csharp
+  - vb
+  name: ClockSkewEstimator
+  nameWithType: ClockSkewEstimator
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClockSkewEstimator
+    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Maintains per-provider EWMA estimates of clock skew between exchange/provider
+
+    timestamps and local receive time. This enables gap detection and dedup logic
+
+    to be less brittle in the face of clock drift and NTP jumps.
+  example: []
+  syntax:
+    content: public sealed class ClockSkewEstimator
+    content.vb: Public NotInheritable Class ClockSkewEstimator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.#ctor(System.Double)
+  commentId: M:Meridian.Application.Monitoring.ClockSkewEstimator.#ctor(System.Double)
+  id: '#ctor(System.Double)'
+  parent: Meridian.Application.Monitoring.ClockSkewEstimator
+  langs:
+  - csharp
+  - vb
+  name: ClockSkewEstimator(double)
+  nameWithType: ClockSkewEstimator.ClockSkewEstimator(double)
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.ClockSkewEstimator(double)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Creates a new ClockSkewEstimator with configurable EWMA smoothing factor.
+  example: []
+  syntax:
+    content: public ClockSkewEstimator(double alpha = 0.05)
+    parameters:
+    - id: alpha
+      type: System.Double
+      description: EWMA smoothing factor (0..1). Higher = more reactive. Default 0.05.
+    content.vb: Public Sub New(alpha As Double = 0.05)
+  overload: Meridian.Application.Monitoring.ClockSkewEstimator.#ctor*
+  nameWithType.vb: ClockSkewEstimator.New(Double)
+  fullName.vb: Meridian.Application.Monitoring.ClockSkewEstimator.New(Double)
+  name.vb: New(Double)
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation(System.String,System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation(System.String,System.DateTimeOffset,System.DateTimeOffset)
+  id: RecordObservation(System.String,System.DateTimeOffset,System.DateTimeOffset)
+  parent: Meridian.Application.Monitoring.ClockSkewEstimator
+  langs:
+  - csharp
+  - vb
+  name: RecordObservation(string, DateTimeOffset, DateTimeOffset)
+  nameWithType: ClockSkewEstimator.RecordObservation(string, DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation(string, System.DateTimeOffset, System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordObservation
+    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records a timestamp observation for a provider.
+  example: []
+  syntax:
+    content: public void RecordObservation(string provider, DateTimeOffset exchangeTimestamp, DateTimeOffset receivedAtUtc)
+    parameters:
+    - id: provider
+      type: System.String
+      description: Provider/source identifier.
+    - id: exchangeTimestamp
+      type: System.DateTimeOffset
+      description: Timestamp reported by exchange/provider.
+    - id: receivedAtUtc
+      type: System.DateTimeOffset
+      description: Local wall-clock receive time.
+    content.vb: Public Sub RecordObservation(provider As String, exchangeTimestamp As DateTimeOffset, receivedAtUtc As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation*
+  nameWithType.vb: ClockSkewEstimator.RecordObservation(String, DateTimeOffset, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation(String, System.DateTimeOffset, System.DateTimeOffset)
+  name.vb: RecordObservation(String, DateTimeOffset, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs(System.String)
+  commentId: M:Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs(System.String)
+  id: GetEstimatedSkewMs(System.String)
+  parent: Meridian.Application.Monitoring.ClockSkewEstimator
+  langs:
+  - csharp
+  - vb
+  name: GetEstimatedSkewMs(string)
+  nameWithType: ClockSkewEstimator.GetEstimatedSkewMs(string)
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEstimatedSkewMs
+    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Gets the estimated clock skew in milliseconds for a provider.
+
+    Positive means the provider clock is behind local time.
+  example: []
+  syntax:
+    content: public double GetEstimatedSkewMs(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.Double
+    content.vb: Public Function GetEstimatedSkewMs(provider As String) As Double
+  overload: Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs*
+  nameWithType.vb: ClockSkewEstimator.GetEstimatedSkewMs(String)
+  fullName.vb: Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs(String)
+  name.vb: GetEstimatedSkewMs(String)
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots
+  commentId: M:Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots
+  id: GetAllSnapshots
+  parent: Meridian.Application.Monitoring.ClockSkewEstimator
+  langs:
+  - csharp
+  - vb
+  name: GetAllSnapshots()
+  nameWithType: ClockSkewEstimator.GetAllSnapshots()
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSnapshots
+    path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets a snapshot of all provider skew estimates.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, ClockSkewSnapshot> GetAllSnapshots()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Monitoring.ClockSkewSnapshot}
+    content.vb: Public Function GetAllSnapshots() As IReadOnlyDictionary(Of String, ClockSkewSnapshot)
+  overload: Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ClockSkewEstimator.#ctor
+  href: Meridian.Application.Monitoring.ClockSkewEstimator.html#Meridian_Application_Monitoring_ClockSkewEstimator__ctor_System_Double_
+  name: ClockSkewEstimator
+  nameWithType: ClockSkewEstimator.ClockSkewEstimator
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.ClockSkewEstimator
+  nameWithType.vb: ClockSkewEstimator.New
+  fullName.vb: Meridian.Application.Monitoring.ClockSkewEstimator.New
+  name.vb: New
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation*
+  commentId: Overload:Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation
+  href: Meridian.Application.Monitoring.ClockSkewEstimator.html#Meridian_Application_Monitoring_ClockSkewEstimator_RecordObservation_System_String_System_DateTimeOffset_System_DateTimeOffset_
+  name: RecordObservation
+  nameWithType: ClockSkewEstimator.RecordObservation
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.RecordObservation
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs*
+  commentId: Overload:Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs
+  href: Meridian.Application.Monitoring.ClockSkewEstimator.html#Meridian_Application_Monitoring_ClockSkewEstimator_GetEstimatedSkewMs_System_String_
+  name: GetEstimatedSkewMs
+  nameWithType: ClockSkewEstimator.GetEstimatedSkewMs
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.GetEstimatedSkewMs
+- uid: Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots*
+  commentId: Overload:Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots
+  href: Meridian.Application.Monitoring.ClockSkewEstimator.html#Meridian_Application_Monitoring_ClockSkewEstimator_GetAllSnapshots
+  name: GetAllSnapshots
+  nameWithType: ClockSkewEstimator.GetAllSnapshots
+  fullName: Meridian.Application.Monitoring.ClockSkewEstimator.GetAllSnapshots
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Monitoring.ClockSkewSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Monitoring.ClockSkewSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, ClockSkewSnapshot>
+  nameWithType: IReadOnlyDictionary<string, ClockSkewSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Application.Monitoring.ClockSkewSnapshot>
+  nameWithType.vb: IReadOnlyDictionary(Of String, ClockSkewSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Application.Monitoring.ClockSkewSnapshot)
+  name.vb: IReadOnlyDictionary(Of String, ClockSkewSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ClockSkewSnapshot
+    name: ClockSkewSnapshot
+    href: Meridian.Application.Monitoring.ClockSkewSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ClockSkewSnapshot
+    name: ClockSkewSnapshot
+    href: Meridian.Application.Monitoring.ClockSkewSnapshot.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

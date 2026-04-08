@@ -1,0 +1,918 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot
+  commentId: T:Meridian.Contracts.Workstation.BankAccountSnapshot
+  id: BankAccountSnapshot
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.String,System.Nullable{System.Decimal})
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.BankName
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.Currency
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement
+  - Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount
+  langs:
+  - csharp
+  - vb
+  name: BankAccountSnapshot
+  nameWithType: BankAccountSnapshot
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankAccountSnapshot
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Banking-focused projection for statement and balance review tabs.
+  example: []
+  syntax:
+    content: 'public sealed record BankAccountSnapshot : IEquatable<BankAccountSnapshot>'
+    content.vb: Public NotInheritable Class BankAccountSnapshot Implements IEquatable(Of BankAccountSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.BankAccountSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.String,System.Nullable{System.Decimal})
+  commentId: M:Meridian.Contracts.Workstation.BankAccountSnapshot.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.String,System.Nullable{System.Decimal})
+  id: '#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.String,System.Nullable{System.Decimal})'
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: BankAccountSnapshot(Guid, string, string, string, string, decimal, decimal, DateOnly?, int, string?, decimal?)
+  nameWithType: BankAccountSnapshot.BankAccountSnapshot(Guid, string, string, string, string, decimal, decimal, DateOnly?, int, string?, decimal?)
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.BankAccountSnapshot(System.Guid, string, string, string, string, decimal, decimal, System.DateOnly?, int, string?, decimal?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Banking-focused projection for statement and balance review tabs.
+  example: []
+  syntax:
+    content: public BankAccountSnapshot(Guid AccountId, string DisplayName, string AccountCode, string BankName, string Currency, decimal CurrentBalance, decimal PendingSettlement, DateOnly? LastStatementDate, int StatementLineCount, string? LatestTransactionType, decimal? LatestTransactionAmount)
+    parameters:
+    - id: AccountId
+      type: System.Guid
+    - id: DisplayName
+      type: System.String
+    - id: AccountCode
+      type: System.String
+    - id: BankName
+      type: System.String
+    - id: Currency
+      type: System.String
+    - id: CurrentBalance
+      type: System.Decimal
+    - id: PendingSettlement
+      type: System.Decimal
+    - id: LastStatementDate
+      type: System.Nullable{System.DateOnly}
+    - id: StatementLineCount
+      type: System.Int32
+    - id: LatestTransactionType
+      type: System.String
+    - id: LatestTransactionAmount
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Sub New(AccountId As Guid, DisplayName As String, AccountCode As String, BankName As String, Currency As String, CurrentBalance As Decimal, PendingSettlement As Decimal, LastStatementDate As DateOnly?, StatementLineCount As Integer, LatestTransactionType As String, LatestTransactionAmount As Decimal?)
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.#ctor*
+  nameWithType.vb: BankAccountSnapshot.New(Guid, String, String, String, String, Decimal, Decimal, DateOnly?, Integer, String, Decimal?)
+  fullName.vb: Meridian.Contracts.Workstation.BankAccountSnapshot.New(System.Guid, String, String, String, String, Decimal, Decimal, System.DateOnly?, Integer, String, Decimal?)
+  name.vb: New(Guid, String, String, String, String, Decimal, Decimal, DateOnly?, Integer, String, Decimal?)
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: BankAccountSnapshot.AccountId
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property AccountId As Guid
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName
+  id: DisplayName
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: BankAccountSnapshot.DisplayName
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode
+  id: AccountCode
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AccountCode
+  nameWithType: BankAccountSnapshot.AccountCode
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountCode
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AccountCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountCode As String
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.BankName
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.BankName
+  id: BankName
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: BankName
+  nameWithType: BankAccountSnapshot.BankName
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.BankName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string BankName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BankName As String
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.BankName*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.Currency
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.Currency
+  id: Currency
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: BankAccountSnapshot.Currency
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.Currency*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance
+  id: CurrentBalance
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CurrentBalance
+  nameWithType: BankAccountSnapshot.CurrentBalance
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentBalance
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal CurrentBalance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CurrentBalance As Decimal
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement
+  id: PendingSettlement
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: PendingSettlement
+  nameWithType: BankAccountSnapshot.PendingSettlement
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingSettlement
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal PendingSettlement { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PendingSettlement As Decimal
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate
+  id: LastStatementDate
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LastStatementDate
+  nameWithType: BankAccountSnapshot.LastStatementDate
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastStatementDate
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateOnly? LastStatementDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property LastStatementDate As DateOnly?
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount
+  id: StatementLineCount
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: StatementLineCount
+  nameWithType: BankAccountSnapshot.StatementLineCount
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatementLineCount
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int StatementLineCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property StatementLineCount As Integer
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType
+  id: LatestTransactionType
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LatestTransactionType
+  nameWithType: BankAccountSnapshot.LatestTransactionType
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatestTransactionType
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? LatestTransactionType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LatestTransactionType As String
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType*
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount
+  commentId: P:Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount
+  id: LatestTransactionAmount
+  parent: Meridian.Contracts.Workstation.BankAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LatestTransactionAmount
+  nameWithType: BankAccountSnapshot.LatestTransactionAmount
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatestTransactionAmount
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? LatestTransactionAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property LatestTransactionAmount As Decimal?
+  overload: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.BankAccountSnapshot}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.BankAccountSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BankAccountSnapshot>
+  nameWithType: IEquatable<BankAccountSnapshot>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.BankAccountSnapshot>
+  nameWithType.vb: IEquatable(Of BankAccountSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.BankAccountSnapshot)
+  name.vb: IEquatable(Of BankAccountSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.BankAccountSnapshot
+    name: BankAccountSnapshot
+    href: Meridian.Contracts.Workstation.BankAccountSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.BankAccountSnapshot
+    name: BankAccountSnapshot
+    href: Meridian.Contracts.Workstation.BankAccountSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.#ctor
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot__ctor_System_Guid_System_String_System_String_System_String_System_String_System_Decimal_System_Decimal_System_Nullable_System_DateOnly__System_Int32_System_String_System_Nullable_System_Decimal__
+  name: BankAccountSnapshot
+  nameWithType: BankAccountSnapshot.BankAccountSnapshot
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.BankAccountSnapshot
+  nameWithType.vb: BankAccountSnapshot.New
+  fullName.vb: Meridian.Contracts.Workstation.BankAccountSnapshot.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_AccountId
+  name: AccountId
+  nameWithType: BankAccountSnapshot.AccountId
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountId
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_DisplayName
+  name: DisplayName
+  nameWithType: BankAccountSnapshot.DisplayName
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.DisplayName
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_AccountCode
+  name: AccountCode
+  nameWithType: BankAccountSnapshot.AccountCode
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.AccountCode
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.BankName*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.BankName
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_BankName
+  name: BankName
+  nameWithType: BankAccountSnapshot.BankName
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.BankName
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.Currency*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.Currency
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_Currency
+  name: Currency
+  nameWithType: BankAccountSnapshot.Currency
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.Currency
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_CurrentBalance
+  name: CurrentBalance
+  nameWithType: BankAccountSnapshot.CurrentBalance
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.CurrentBalance
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_PendingSettlement
+  name: PendingSettlement
+  nameWithType: BankAccountSnapshot.PendingSettlement
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.PendingSettlement
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_LastStatementDate
+  name: LastStatementDate
+  nameWithType: BankAccountSnapshot.LastStatementDate
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.LastStatementDate
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_StatementLineCount
+  name: StatementLineCount
+  nameWithType: BankAccountSnapshot.StatementLineCount
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.StatementLineCount
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_LatestTransactionType
+  name: LatestTransactionType
+  nameWithType: BankAccountSnapshot.LatestTransactionType
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionType
+- uid: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount*
+  commentId: Overload:Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount
+  href: Meridian.Contracts.Workstation.BankAccountSnapshot.html#Meridian_Contracts_Workstation_BankAccountSnapshot_LatestTransactionAmount
+  name: LatestTransactionAmount
+  nameWithType: BankAccountSnapshot.LatestTransactionAmount
+  fullName: Meridian.Contracts.Workstation.BankAccountSnapshot.LatestTransactionAmount

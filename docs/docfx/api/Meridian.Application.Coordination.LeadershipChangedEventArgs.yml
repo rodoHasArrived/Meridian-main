@@ -1,0 +1,445 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs
+  commentId: T:Meridian.Application.Coordination.LeadershipChangedEventArgs
+  id: LeadershipChangedEventArgs
+  parent: Meridian.Application.Coordination
+  children:
+  - Meridian.Application.Coordination.LeadershipChangedEventArgs.#ctor(System.Boolean,System.String)
+  - Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId
+  - Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader
+  langs:
+  - csharp
+  - vb
+  name: LeadershipChangedEventArgs
+  nameWithType: LeadershipChangedEventArgs
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeadershipChangedEventArgs
+    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Event data raised when this instance gains or loses the coordinator role.
+  example: []
+  syntax:
+    content: 'public sealed class LeadershipChangedEventArgs : EventArgs'
+    content.vb: Public NotInheritable Class LeadershipChangedEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs.#ctor(System.Boolean,System.String)
+  commentId: M:Meridian.Application.Coordination.LeadershipChangedEventArgs.#ctor(System.Boolean,System.String)
+  id: '#ctor(System.Boolean,System.String)'
+  parent: Meridian.Application.Coordination.LeadershipChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: LeadershipChangedEventArgs(bool, string)
+  nameWithType: LeadershipChangedEventArgs.LeadershipChangedEventArgs(bool, string)
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs.LeadershipChangedEventArgs(bool, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Event data raised when this instance gains or loses the coordinator role.
+  example: []
+  syntax:
+    content: public LeadershipChangedEventArgs(bool isLeader, string instanceId)
+    parameters:
+    - id: isLeader
+      type: System.Boolean
+    - id: instanceId
+      type: System.String
+    content.vb: Public Sub New(isLeader As Boolean, instanceId As String)
+  overload: Meridian.Application.Coordination.LeadershipChangedEventArgs.#ctor*
+  nameWithType.vb: LeadershipChangedEventArgs.New(Boolean, String)
+  fullName.vb: Meridian.Application.Coordination.LeadershipChangedEventArgs.New(Boolean, String)
+  name.vb: New(Boolean, String)
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader
+  commentId: P:Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader
+  id: IsLeader
+  parent: Meridian.Application.Coordination.LeadershipChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: IsLeader
+  nameWithType: LeadershipChangedEventArgs.IsLeader
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsLeader
+    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: Whether this instance now holds coordinator leadership.
+  example: []
+  syntax:
+    content: public bool IsLeader { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsLeader As Boolean
+  overload: Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader*
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId
+  commentId: P:Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId
+  id: InstanceId
+  parent: Meridian.Application.Coordination.LeadershipChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: InstanceId
+  nameWithType: LeadershipChangedEventArgs.InstanceId
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/IClusterCoordinator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstanceId
+    path: ../../src/Meridian.Application/Coordination/IClusterCoordinator.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: The instance identifier that changed leadership state.
+  example: []
+  syntax:
+    content: public string InstanceId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property InstanceId As String
+  overload: Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId*
+references:
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs.#ctor*
+  commentId: Overload:Meridian.Application.Coordination.LeadershipChangedEventArgs.#ctor
+  href: Meridian.Application.Coordination.LeadershipChangedEventArgs.html#Meridian_Application_Coordination_LeadershipChangedEventArgs__ctor_System_Boolean_System_String_
+  name: LeadershipChangedEventArgs
+  nameWithType: LeadershipChangedEventArgs.LeadershipChangedEventArgs
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs.LeadershipChangedEventArgs
+  nameWithType.vb: LeadershipChangedEventArgs.New
+  fullName.vb: Meridian.Application.Coordination.LeadershipChangedEventArgs.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader*
+  commentId: Overload:Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader
+  href: Meridian.Application.Coordination.LeadershipChangedEventArgs.html#Meridian_Application_Coordination_LeadershipChangedEventArgs_IsLeader
+  name: IsLeader
+  nameWithType: LeadershipChangedEventArgs.IsLeader
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs.IsLeader
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId*
+  commentId: Overload:Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId
+  href: Meridian.Application.Coordination.LeadershipChangedEventArgs.html#Meridian_Application_Coordination_LeadershipChangedEventArgs_InstanceId
+  name: InstanceId
+  nameWithType: LeadershipChangedEventArgs.InstanceId
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs.InstanceId

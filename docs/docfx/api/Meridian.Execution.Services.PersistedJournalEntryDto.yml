@@ -1,0 +1,947 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto
+  commentId: T:Meridian.Execution.Services.PersistedJournalEntryDto
+  id: PersistedJournalEntryDto
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.PersistedJournalEntryDto.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto},System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String)
+  - Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType
+  - Meridian.Execution.Services.PersistedJournalEntryDto.Description
+  - Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId
+  - Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView
+  - Meridian.Execution.Services.PersistedJournalEntryDto.Lines
+  - Meridian.Execution.Services.PersistedJournalEntryDto.OrderId
+  - Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId
+  - Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId
+  - Meridian.Execution.Services.PersistedJournalEntryDto.Symbol
+  - Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: PersistedJournalEntryDto
+  nameWithType: PersistedJournalEntryDto
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PersistedJournalEntryDto
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Lightweight serialisation DTO for a complete journal entry plus its optional audit metadata.
+
+    Written one per line to <code>ledger.jsonl</code>.
+  example: []
+  syntax:
+    content: 'public sealed record PersistedJournalEntryDto : IEquatable<PersistedJournalEntryDto>'
+    content.vb: Public NotInheritable Class PersistedJournalEntryDto Implements IEquatable(Of PersistedJournalEntryDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.PersistedJournalEntryDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto},System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String)
+  commentId: M:Meridian.Execution.Services.PersistedJournalEntryDto.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto},System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String)
+  id: '#ctor(System.Guid,System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto},System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String)'
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: PersistedJournalEntryDto(Guid, DateTimeOffset, string, IReadOnlyList<PersistedLedgerLineDto>, string?, string?, Guid?, Guid?, string?, string?)
+  nameWithType: PersistedJournalEntryDto.PersistedJournalEntryDto(Guid, DateTimeOffset, string, IReadOnlyList<PersistedLedgerLineDto>, string?, string?, Guid?, Guid?, string?, string?)
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.PersistedJournalEntryDto(System.Guid, System.DateTimeOffset, string, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.PersistedLedgerLineDto>, string?, string?, System.Guid?, System.Guid?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Lightweight serialisation DTO for a complete journal entry plus its optional audit metadata.
+
+    Written one per line to <code>ledger.jsonl</code>.
+  example: []
+  syntax:
+    content: public PersistedJournalEntryDto(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, IReadOnlyList<PersistedLedgerLineDto> Lines, string? ActivityType = null, string? Symbol = null, Guid? SecurityId = null, Guid? OrderId = null, string? LedgerView = null, string? StrategyId = null)
+    parameters:
+    - id: JournalEntryId
+      type: System.Guid
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Description
+      type: System.String
+    - id: Lines
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto}
+    - id: ActivityType
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: SecurityId
+      type: System.Nullable{System.Guid}
+    - id: OrderId
+      type: System.Nullable{System.Guid}
+    - id: LedgerView
+      type: System.String
+    - id: StrategyId
+      type: System.String
+    content.vb: Public Sub New(JournalEntryId As Guid, Timestamp As DateTimeOffset, Description As String, Lines As IReadOnlyList(Of PersistedLedgerLineDto), ActivityType As String = Nothing, Symbol As String = Nothing, SecurityId As Guid? = Nothing, OrderId As Guid? = Nothing, LedgerView As String = Nothing, StrategyId As String = Nothing)
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.#ctor*
+  nameWithType.vb: PersistedJournalEntryDto.New(Guid, DateTimeOffset, String, IReadOnlyList(Of PersistedLedgerLineDto), String, String, Guid?, Guid?, String, String)
+  fullName.vb: Meridian.Execution.Services.PersistedJournalEntryDto.New(System.Guid, System.DateTimeOffset, String, System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.PersistedLedgerLineDto), String, String, System.Guid?, System.Guid?, String, String)
+  name.vb: New(Guid, DateTimeOffset, String, IReadOnlyList(Of PersistedLedgerLineDto), String, String, Guid?, Guid?, String, String)
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId
+  id: JournalEntryId
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: JournalEntryId
+  nameWithType: PersistedJournalEntryDto.JournalEntryId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JournalEntryId
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public Guid JournalEntryId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property JournalEntryId As Guid
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp
+  id: Timestamp
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: PersistedJournalEntryDto.Timestamp
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Description
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.Description
+  id: Description
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: PersistedJournalEntryDto.Description
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.Description*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Lines
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.Lines
+  id: Lines
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: Lines
+  nameWithType: PersistedJournalEntryDto.Lines
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Lines
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lines
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public IReadOnlyList<PersistedLedgerLineDto> Lines { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto}
+    content.vb: Public Property Lines As IReadOnlyList(Of PersistedLedgerLineDto)
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.Lines*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType
+  id: ActivityType
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: ActivityType
+  nameWithType: PersistedJournalEntryDto.ActivityType
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActivityType
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? ActivityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ActivityType As String
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Symbol
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: PersistedJournalEntryDto.Symbol
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.Symbol*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId
+  id: SecurityId
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: PersistedJournalEntryDto.SecurityId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public Guid? SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property SecurityId As Guid?
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.OrderId
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.OrderId
+  id: OrderId
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: PersistedJournalEntryDto.OrderId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public Guid? OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property OrderId As Guid?
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.OrderId*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView
+  id: LedgerView
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: LedgerView
+  nameWithType: PersistedJournalEntryDto.LedgerView
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerView
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? LedgerView { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerView As String
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView*
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId
+  commentId: P:Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId
+  id: StrategyId
+  parent: Meridian.Execution.Services.PersistedJournalEntryDto
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: PersistedJournalEntryDto.StrategyId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId*
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.PersistedJournalEntryDto}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.PersistedJournalEntryDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PersistedJournalEntryDto>
+  nameWithType: IEquatable<PersistedJournalEntryDto>
+  fullName: System.IEquatable<Meridian.Execution.Services.PersistedJournalEntryDto>
+  nameWithType.vb: IEquatable(Of PersistedJournalEntryDto)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.PersistedJournalEntryDto)
+  name.vb: IEquatable(Of PersistedJournalEntryDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.PersistedJournalEntryDto
+    name: PersistedJournalEntryDto
+    href: Meridian.Execution.Services.PersistedJournalEntryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PersistedJournalEntryDto
+    name: PersistedJournalEntryDto
+    href: Meridian.Execution.Services.PersistedJournalEntryDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.#ctor*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.#ctor
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto__ctor_System_Guid_System_DateTimeOffset_System_String_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Services_PersistedLedgerLineDto__System_String_System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_System_String_
+  name: PersistedJournalEntryDto
+  nameWithType: PersistedJournalEntryDto.PersistedJournalEntryDto
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.PersistedJournalEntryDto
+  nameWithType.vb: PersistedJournalEntryDto.New
+  fullName.vb: Meridian.Execution.Services.PersistedJournalEntryDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedLedgerLineDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PersistedLedgerLineDto>
+  nameWithType: IReadOnlyList<PersistedLedgerLineDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.PersistedLedgerLineDto>
+  nameWithType.vb: IReadOnlyList(Of PersistedLedgerLineDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.PersistedLedgerLineDto)
+  name.vb: IReadOnlyList(Of PersistedLedgerLineDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.PersistedLedgerLineDto
+    name: PersistedLedgerLineDto
+    href: Meridian.Execution.Services.PersistedLedgerLineDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PersistedLedgerLineDto
+    name: PersistedLedgerLineDto
+    href: Meridian.Execution.Services.PersistedLedgerLineDto.html
+  - name: )
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_JournalEntryId
+  name: JournalEntryId
+  nameWithType: PersistedJournalEntryDto.JournalEntryId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.JournalEntryId
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_Timestamp
+  name: Timestamp
+  nameWithType: PersistedJournalEntryDto.Timestamp
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Timestamp
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Description*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.Description
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_Description
+  name: Description
+  nameWithType: PersistedJournalEntryDto.Description
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Description
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Lines*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.Lines
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_Lines
+  name: Lines
+  nameWithType: PersistedJournalEntryDto.Lines
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Lines
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_ActivityType
+  name: ActivityType
+  nameWithType: PersistedJournalEntryDto.ActivityType
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.ActivityType
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.Symbol*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.Symbol
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_Symbol
+  name: Symbol
+  nameWithType: PersistedJournalEntryDto.Symbol
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.Symbol
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_SecurityId
+  name: SecurityId
+  nameWithType: PersistedJournalEntryDto.SecurityId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.SecurityId
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.OrderId*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.OrderId
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_OrderId
+  name: OrderId
+  nameWithType: PersistedJournalEntryDto.OrderId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.OrderId
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_LedgerView
+  name: LedgerView
+  nameWithType: PersistedJournalEntryDto.LedgerView
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.LedgerView
+- uid: Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId*
+  commentId: Overload:Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId
+  href: Meridian.Execution.Services.PersistedJournalEntryDto.html#Meridian_Execution_Services_PersistedJournalEntryDto_StrategyId
+  name: StrategyId
+  nameWithType: PersistedJournalEntryDto.StrategyId
+  fullName: Meridian.Execution.Services.PersistedJournalEntryDto.StrategyId

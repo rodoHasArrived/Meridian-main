@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  commentId: T:Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  id: FundStructureNodeKindDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Account
+  - Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Entity
+  - Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Fund
+  - Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Sleeve
+  - Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Vehicle
+  langs:
+  - csharp
+  - vb
+  name: FundStructureNodeKindDto
+  nameWithType: FundStructureNodeKindDto
+  fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundStructureNodeKindDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<FundStructureNodeKindDto>))]
+
+      public enum FundStructureNodeKindDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of FundStructureNodeKindDto)))>
+
+      Public Enum FundStructureNodeKindDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.FundStructure.FundStructureNodeKindDto}
+- uid: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Fund
+  commentId: F:Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Fund
+  id: Fund
+  parent: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Fund
+  nameWithType: FundStructureNodeKindDto.Fund
+  fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Fund
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fund
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Fund = 0
+    return:
+      type: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+- uid: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Sleeve
+  commentId: F:Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Sleeve
+  id: Sleeve
+  parent: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Sleeve
+  nameWithType: FundStructureNodeKindDto.Sleeve
+  fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Sleeve
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sleeve
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Sleeve = 1
+    return:
+      type: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+- uid: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Vehicle
+  commentId: F:Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Vehicle
+  id: Vehicle
+  parent: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Vehicle
+  nameWithType: FundStructureNodeKindDto.Vehicle
+  fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Vehicle
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vehicle
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Vehicle = 2
+    return:
+      type: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+- uid: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Entity
+  commentId: F:Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Entity
+  id: Entity
+  parent: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Entity
+  nameWithType: FundStructureNodeKindDto.Entity
+  fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Entity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Entity
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Entity = 3
+    return:
+      type: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+- uid: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Account
+  commentId: F:Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Account
+  id: Account
+  parent: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Account
+  nameWithType: FundStructureNodeKindDto.Account
+  fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Account
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Account
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Account = 4
+    return:
+      type: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  commentId: T:Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.FundStructureNodeKindDto.html
+  name: FundStructureNodeKindDto
+  nameWithType: FundStructureNodeKindDto
+  fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto

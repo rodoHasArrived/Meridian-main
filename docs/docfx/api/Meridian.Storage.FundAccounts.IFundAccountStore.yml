@@ -1,0 +1,1283 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore
+  commentId: T:Meridian.Storage.FundAccounts.IFundAccountStore
+  id: IFundAccountStore
+  parent: Meridian.Storage.FundAccounts
+  children:
+  - Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync(System.Guid,System.DateOnly,System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync(Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto,System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync(Meridian.Contracts.FundStructure.BankStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto},System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync(Meridian.Contracts.FundStructure.CustodianStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto},System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync(Meridian.Contracts.FundStructure.AccountReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto},System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync(Meridian.Contracts.FundStructure.AccountStructureQuery,System.Threading.CancellationToken)
+  - Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync(Meridian.Contracts.FundStructure.AccountSummaryDto,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IFundAccountStore
+  nameWithType: IFundAccountStore
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IFundAccountStore
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  summary: >-
+    Persistence interface for fund account data.
+
+    Implemented by <code>PostgresFundAccountStore</code> when a connection string is configured.
+  example: []
+  syntax:
+    content: public interface IFundAccountStore
+    content.vb: Public Interface IFundAccountStore
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync(Meridian.Contracts.FundStructure.AccountSummaryDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync(Meridian.Contracts.FundStructure.AccountSummaryDto,System.Threading.CancellationToken)
+  id: UpsertAccountAsync(Meridian.Contracts.FundStructure.AccountSummaryDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: UpsertAccountAsync(AccountSummaryDto, CancellationToken)
+  nameWithType: IFundAccountStore.UpsertAccountAsync(AccountSummaryDto, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync(Meridian.Contracts.FundStructure.AccountSummaryDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpsertAccountAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task UpsertAccountAsync(AccountSummaryDto account, CancellationToken ct = default)
+    parameters:
+    - id: account
+      type: Meridian.Contracts.FundStructure.AccountSummaryDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpsertAccountAsync(account As AccountSummaryDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetAccountAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: GetAccountAsync(Guid, CancellationToken)
+  nameWithType: IFundAccountStore.GetAccountAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAccountAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task<AccountSummaryDto?> GetAccountAsync(Guid accountId, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AccountSummaryDto}
+    content.vb: Function GetAccountAsync(accountId As Guid, ct As CancellationToken = Nothing) As Task(Of AccountSummaryDto)
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync(Meridian.Contracts.FundStructure.AccountStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync(Meridian.Contracts.FundStructure.AccountStructureQuery,System.Threading.CancellationToken)
+  id: QueryAccountsAsync(Meridian.Contracts.FundStructure.AccountStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: QueryAccountsAsync(AccountStructureQuery, CancellationToken)
+  nameWithType: IFundAccountStore.QueryAccountsAsync(AccountStructureQuery, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync(Meridian.Contracts.FundStructure.AccountStructureQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueryAccountsAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task<IReadOnlyList<AccountSummaryDto>> QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.FundStructure.AccountStructureQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto}}
+    content.vb: Function QueryAccountsAsync(query As AccountStructureQuery, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AccountSummaryDto))
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync(Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync(Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto,System.Threading.CancellationToken)
+  id: InsertBalanceSnapshotAsync(Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: InsertBalanceSnapshotAsync(AccountBalanceSnapshotDto, CancellationToken)
+  nameWithType: IFundAccountStore.InsertBalanceSnapshotAsync(AccountBalanceSnapshotDto, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync(Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsertBalanceSnapshotAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task InsertBalanceSnapshotAsync(AccountBalanceSnapshotDto snapshot, CancellationToken ct = default)
+    parameters:
+    - id: snapshot
+      type: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InsertBalanceSnapshotAsync(snapshot As AccountBalanceSnapshotDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetBalanceHistoryAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: GetBalanceHistoryAsync(Guid, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IFundAccountStore.GetBalanceHistoryAsync(Guid, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync(System.Guid, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBalanceHistoryAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceHistoryAsync(Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.Guid
+    - id: fromDate
+      type: System.Nullable{System.DateOnly}
+    - id: toDate
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto}}
+    content.vb: Function GetBalanceHistoryAsync(accountId As Guid, fromDate As DateOnly?, toDate As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AccountBalanceSnapshotDto))
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync(Meridian.Contracts.FundStructure.CustodianStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync(Meridian.Contracts.FundStructure.CustodianStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto},System.Threading.CancellationToken)
+  id: InsertCustodianStatementBatchAsync(Meridian.Contracts.FundStructure.CustodianStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto},System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: InsertCustodianStatementBatchAsync(CustodianStatementBatchDto, IReadOnlyList<CustodianPositionLineDto>, CancellationToken)
+  nameWithType: IFundAccountStore.InsertCustodianStatementBatchAsync(CustodianStatementBatchDto, IReadOnlyList<CustodianPositionLineDto>, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync(Meridian.Contracts.FundStructure.CustodianStatementBatchDto, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.CustodianPositionLineDto>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsertCustodianStatementBatchAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task InsertCustodianStatementBatchAsync(CustodianStatementBatchDto batch, IReadOnlyList<CustodianPositionLineDto> lines, CancellationToken ct = default)
+    parameters:
+    - id: batch
+      type: Meridian.Contracts.FundStructure.CustodianStatementBatchDto
+    - id: lines
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InsertCustodianStatementBatchAsync(batch As CustodianStatementBatchDto, lines As IReadOnlyList(Of CustodianPositionLineDto), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync*
+  nameWithType.vb: IFundAccountStore.InsertCustodianStatementBatchAsync(CustodianStatementBatchDto, IReadOnlyList(Of CustodianPositionLineDto), CancellationToken)
+  fullName.vb: Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync(Meridian.Contracts.FundStructure.CustodianStatementBatchDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.CustodianPositionLineDto), System.Threading.CancellationToken)
+  name.vb: InsertCustodianStatementBatchAsync(CustodianStatementBatchDto, IReadOnlyList(Of CustodianPositionLineDto), CancellationToken)
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync(Meridian.Contracts.FundStructure.BankStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync(Meridian.Contracts.FundStructure.BankStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto},System.Threading.CancellationToken)
+  id: InsertBankStatementBatchAsync(Meridian.Contracts.FundStructure.BankStatementBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto},System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: InsertBankStatementBatchAsync(BankStatementBatchDto, IReadOnlyList<BankStatementLineDto>, CancellationToken)
+  nameWithType: IFundAccountStore.InsertBankStatementBatchAsync(BankStatementBatchDto, IReadOnlyList<BankStatementLineDto>, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync(Meridian.Contracts.FundStructure.BankStatementBatchDto, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.BankStatementLineDto>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsertBankStatementBatchAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task InsertBankStatementBatchAsync(BankStatementBatchDto batch, IReadOnlyList<BankStatementLineDto> lines, CancellationToken ct = default)
+    parameters:
+    - id: batch
+      type: Meridian.Contracts.FundStructure.BankStatementBatchDto
+    - id: lines
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InsertBankStatementBatchAsync(batch As BankStatementBatchDto, lines As IReadOnlyList(Of BankStatementLineDto), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync*
+  nameWithType.vb: IFundAccountStore.InsertBankStatementBatchAsync(BankStatementBatchDto, IReadOnlyList(Of BankStatementLineDto), CancellationToken)
+  fullName.vb: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync(Meridian.Contracts.FundStructure.BankStatementBatchDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.BankStatementLineDto), System.Threading.CancellationToken)
+  name.vb: InsertBankStatementBatchAsync(BankStatementBatchDto, IReadOnlyList(Of BankStatementLineDto), CancellationToken)
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync(System.Guid,System.DateOnly,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync(System.Guid,System.DateOnly,System.Threading.CancellationToken)
+  id: GetCustodianPositionsAsync(System.Guid,System.DateOnly,System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: GetCustodianPositionsAsync(Guid, DateOnly, CancellationToken)
+  nameWithType: IFundAccountStore.GetCustodianPositionsAsync(Guid, DateOnly, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync(System.Guid, System.DateOnly, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCustodianPositionsAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.Guid
+    - id: asOfDate
+      type: System.DateOnly
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto}}
+    content.vb: Function GetCustodianPositionsAsync(accountId As Guid, asOfDate As DateOnly, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CustodianPositionLineDto))
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetBankStatementLinesAsync(System.Guid,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: GetBankStatementLinesAsync(Guid, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IFundAccountStore.GetBankStatementLinesAsync(Guid, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync(System.Guid, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBankStatementLinesAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.Guid
+    - id: fromDate
+      type: System.Nullable{System.DateOnly}
+    - id: toDate
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto}}
+    content.vb: Function GetBankStatementLinesAsync(accountId As Guid, fromDate As DateOnly?, toDate As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of BankStatementLineDto))
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync(Meridian.Contracts.FundStructure.AccountReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync(Meridian.Contracts.FundStructure.AccountReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto},System.Threading.CancellationToken)
+  id: InsertReconciliationRunAsync(Meridian.Contracts.FundStructure.AccountReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto},System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: InsertReconciliationRunAsync(AccountReconciliationRunDto, IReadOnlyList<AccountReconciliationResultDto>, CancellationToken)
+  nameWithType: IFundAccountStore.InsertReconciliationRunAsync(AccountReconciliationRunDto, IReadOnlyList<AccountReconciliationResultDto>, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync(Meridian.Contracts.FundStructure.AccountReconciliationRunDto, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountReconciliationResultDto>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsertReconciliationRunAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task InsertReconciliationRunAsync(AccountReconciliationRunDto run, IReadOnlyList<AccountReconciliationResultDto> results, CancellationToken ct = default)
+    parameters:
+    - id: run
+      type: Meridian.Contracts.FundStructure.AccountReconciliationRunDto
+    - id: results
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InsertReconciliationRunAsync(run As AccountReconciliationRunDto, results As IReadOnlyList(Of AccountReconciliationResultDto), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync*
+  nameWithType.vb: IFundAccountStore.InsertReconciliationRunAsync(AccountReconciliationRunDto, IReadOnlyList(Of AccountReconciliationResultDto), CancellationToken)
+  fullName.vb: Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync(Meridian.Contracts.FundStructure.AccountReconciliationRunDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountReconciliationResultDto), System.Threading.CancellationToken)
+  name.vb: InsertReconciliationRunAsync(AccountReconciliationRunDto, IReadOnlyList(Of AccountReconciliationResultDto), CancellationToken)
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: GetReconciliationRunsAsync(Guid, CancellationToken)
+  nameWithType: IFundAccountStore.GetReconciliationRunsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconciliationRunsAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default)
+    parameters:
+    - id: accountId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationRunDto}}
+    content.vb: Function GetReconciliationRunsAsync(accountId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AccountReconciliationRunDto))
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync*
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: GetReconciliationResultsAsync(Guid, CancellationToken)
+  nameWithType: IFundAccountStore.GetReconciliationResultsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconciliationResultsAsync
+    path: ../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.FundAccounts
+  syntax:
+    content: Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default)
+    parameters:
+    - id: reconciliationRunId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}}
+    content.vb: Function GetReconciliationResultsAsync(reconciliationRunId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AccountReconciliationResultDto))
+  overload: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync*
+references:
+- uid: Meridian.Storage.FundAccounts
+  commentId: N:Meridian.Storage.FundAccounts
+  href: Meridian.html
+  name: Meridian.Storage.FundAccounts
+  nameWithType: Meridian.Storage.FundAccounts
+  fullName: Meridian.Storage.FundAccounts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.FundAccounts
+    name: FundAccounts
+    href: Meridian.Storage.FundAccounts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.FundAccounts
+    name: FundAccounts
+    href: Meridian.Storage.FundAccounts.html
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_UpsertAccountAsync_Meridian_Contracts_FundStructure_AccountSummaryDto_System_Threading_CancellationToken_
+  name: UpsertAccountAsync
+  nameWithType: IFundAccountStore.UpsertAccountAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.UpsertAccountAsync
+- uid: Meridian.Contracts.FundStructure.AccountSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountSummaryDto.html
+  name: AccountSummaryDto
+  nameWithType: AccountSummaryDto
+  fullName: Meridian.Contracts.FundStructure.AccountSummaryDto
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_GetAccountAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetAccountAsync
+  nameWithType: IFundAccountStore.GetAccountAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetAccountAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AccountSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AccountSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AccountSummaryDto>
+  nameWithType: Task<AccountSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.AccountSummaryDto>
+  nameWithType.vb: Task(Of AccountSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.AccountSummaryDto)
+  name.vb: Task(Of AccountSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountSummaryDto
+    name: AccountSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountSummaryDto
+    name: AccountSummaryDto
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_QueryAccountsAsync_Meridian_Contracts_FundStructure_AccountStructureQuery_System_Threading_CancellationToken_
+  name: QueryAccountsAsync
+  nameWithType: IFundAccountStore.QueryAccountsAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.QueryAccountsAsync
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.AccountStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html
+  name: AccountStructureQuery
+  nameWithType: AccountStructureQuery
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AccountSummaryDto>>
+  nameWithType: Task<IReadOnlyList<AccountSummaryDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountSummaryDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AccountSummaryDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountSummaryDto))
+  name.vb: Task(Of IReadOnlyList(Of AccountSummaryDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountSummaryDto
+    name: AccountSummaryDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountSummaryDto
+    name: AccountSummaryDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_InsertBalanceSnapshotAsync_Meridian_Contracts_FundStructure_AccountBalanceSnapshotDto_System_Threading_CancellationToken_
+  name: InsertBalanceSnapshotAsync
+  nameWithType: IFundAccountStore.InsertBalanceSnapshotAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBalanceSnapshotAsync
+- uid: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto.html
+  name: AccountBalanceSnapshotDto
+  nameWithType: AccountBalanceSnapshotDto
+  fullName: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_GetBalanceHistoryAsync_System_Guid_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetBalanceHistoryAsync
+  nameWithType: IFundAccountStore.GetBalanceHistoryAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetBalanceHistoryAsync
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AccountBalanceSnapshotDto>>
+  nameWithType: Task<IReadOnlyList<AccountBalanceSnapshotDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AccountBalanceSnapshotDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto))
+  name.vb: Task(Of IReadOnlyList(Of AccountBalanceSnapshotDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+    name: AccountBalanceSnapshotDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+    name: AccountBalanceSnapshotDto
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_InsertCustodianStatementBatchAsync_Meridian_Contracts_FundStructure_CustodianStatementBatchDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_CustodianPositionLineDto__System_Threading_CancellationToken_
+  name: InsertCustodianStatementBatchAsync
+  nameWithType: IFundAccountStore.InsertCustodianStatementBatchAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertCustodianStatementBatchAsync
+- uid: Meridian.Contracts.FundStructure.CustodianStatementBatchDto
+  commentId: T:Meridian.Contracts.FundStructure.CustodianStatementBatchDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CustodianStatementBatchDto.html
+  name: CustodianStatementBatchDto
+  nameWithType: CustodianStatementBatchDto
+  fullName: Meridian.Contracts.FundStructure.CustodianStatementBatchDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CustodianPositionLineDto>
+  nameWithType: IReadOnlyList<CustodianPositionLineDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.CustodianPositionLineDto>
+  nameWithType.vb: IReadOnlyList(Of CustodianPositionLineDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.CustodianPositionLineDto)
+  name.vb: IReadOnlyList(Of CustodianPositionLineDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto
+    name: CustodianPositionLineDto
+    href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto
+    name: CustodianPositionLineDto
+    href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_InsertBankStatementBatchAsync_Meridian_Contracts_FundStructure_BankStatementBatchDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_BankStatementLineDto__System_Threading_CancellationToken_
+  name: InsertBankStatementBatchAsync
+  nameWithType: IFundAccountStore.InsertBankStatementBatchAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertBankStatementBatchAsync
+- uid: Meridian.Contracts.FundStructure.BankStatementBatchDto
+  commentId: T:Meridian.Contracts.FundStructure.BankStatementBatchDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BankStatementBatchDto.html
+  name: BankStatementBatchDto
+  nameWithType: BankStatementBatchDto
+  fullName: Meridian.Contracts.FundStructure.BankStatementBatchDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<BankStatementLineDto>
+  nameWithType: IReadOnlyList<BankStatementLineDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.BankStatementLineDto>
+  nameWithType.vb: IReadOnlyList(Of BankStatementLineDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.BankStatementLineDto)
+  name.vb: IReadOnlyList(Of BankStatementLineDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.BankStatementLineDto
+    name: BankStatementLineDto
+    href: Meridian.Contracts.FundStructure.BankStatementLineDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.BankStatementLineDto
+    name: BankStatementLineDto
+    href: Meridian.Contracts.FundStructure.BankStatementLineDto.html
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_GetCustodianPositionsAsync_System_Guid_System_DateOnly_System_Threading_CancellationToken_
+  name: GetCustodianPositionsAsync
+  nameWithType: IFundAccountStore.GetCustodianPositionsAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetCustodianPositionsAsync
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CustodianPositionLineDto>>
+  nameWithType: Task<IReadOnlyList<CustodianPositionLineDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.CustodianPositionLineDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CustodianPositionLineDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.CustodianPositionLineDto))
+  name.vb: Task(Of IReadOnlyList(Of CustodianPositionLineDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto
+    name: CustodianPositionLineDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto
+    name: CustodianPositionLineDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_GetBankStatementLinesAsync_System_Guid_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetBankStatementLinesAsync
+  nameWithType: IFundAccountStore.GetBankStatementLinesAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetBankStatementLinesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.BankStatementLineDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<BankStatementLineDto>>
+  nameWithType: Task<IReadOnlyList<BankStatementLineDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.BankStatementLineDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of BankStatementLineDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.BankStatementLineDto))
+  name.vb: Task(Of IReadOnlyList(Of BankStatementLineDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.BankStatementLineDto
+    name: BankStatementLineDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.BankStatementLineDto
+    name: BankStatementLineDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_InsertReconciliationRunAsync_Meridian_Contracts_FundStructure_AccountReconciliationRunDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_AccountReconciliationResultDto__System_Threading_CancellationToken_
+  name: InsertReconciliationRunAsync
+  nameWithType: IFundAccountStore.InsertReconciliationRunAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.InsertReconciliationRunAsync
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationRunDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountReconciliationRunDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountReconciliationRunDto.html
+  name: AccountReconciliationRunDto
+  nameWithType: AccountReconciliationRunDto
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationRunDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AccountReconciliationResultDto>
+  nameWithType: IReadOnlyList<AccountReconciliationResultDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountReconciliationResultDto>
+  nameWithType.vb: IReadOnlyList(Of AccountReconciliationResultDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountReconciliationResultDto)
+  name.vb: IReadOnlyList(Of AccountReconciliationResultDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+    name: AccountReconciliationResultDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+    name: AccountReconciliationResultDto
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_GetReconciliationRunsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetReconciliationRunsAsync
+  nameWithType: IFundAccountStore.GetReconciliationRunsAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationRunsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationRunDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationRunDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AccountReconciliationRunDto>>
+  nameWithType: Task<IReadOnlyList<AccountReconciliationRunDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountReconciliationRunDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AccountReconciliationRunDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountReconciliationRunDto))
+  name.vb: Task(Of IReadOnlyList(Of AccountReconciliationRunDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationRunDto
+    name: AccountReconciliationRunDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationRunDto
+    name: AccountReconciliationRunDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync*
+  commentId: Overload:Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html#Meridian_Storage_FundAccounts_IFundAccountStore_GetReconciliationResultsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetReconciliationResultsAsync
+  nameWithType: IFundAccountStore.GetReconciliationResultsAsync
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore.GetReconciliationResultsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AccountReconciliationResultDto>>
+  nameWithType: Task<IReadOnlyList<AccountReconciliationResultDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountReconciliationResultDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AccountReconciliationResultDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountReconciliationResultDto))
+  name.vb: Task(Of IReadOnlyList(Of AccountReconciliationResultDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+    name: AccountReconciliationResultDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+    name: AccountReconciliationResultDto
+  - name: )
+  - name: )

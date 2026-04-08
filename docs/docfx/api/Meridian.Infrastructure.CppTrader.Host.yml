@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Host
+  commentId: N:Meridian.Infrastructure.CppTrader.Host
+  id: Meridian.Infrastructure.CppTrader.Host
+  children:
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Host
+  nameWithType: Meridian.Infrastructure.CppTrader.Host
+  fullName: Meridian.Infrastructure.CppTrader.Host
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html
+  name: CppTraderHostManager
+  nameWithType: CppTraderHostManager
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  parent: Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html
+  name: ICppTraderHostManager
+  nameWithType: ICppTraderHostManager
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html
+  name: ICppTraderSessionClient
+  nameWithType: ICppTraderSessionClient
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+- uid: Meridian.Infrastructure.CppTrader.Host
+  commentId: N:Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Host
+  nameWithType: Meridian.Infrastructure.CppTrader.Host
+  fullName: Meridian.Infrastructure.CppTrader.Host
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html

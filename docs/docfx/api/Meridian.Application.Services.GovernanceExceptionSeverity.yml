@@ -1,0 +1,203 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity
+  commentId: T:Meridian.Application.Services.GovernanceExceptionSeverity
+  id: GovernanceExceptionSeverity
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.GovernanceExceptionSeverity.Critical
+  - Meridian.Application.Services.GovernanceExceptionSeverity.High
+  - Meridian.Application.Services.GovernanceExceptionSeverity.Info
+  - Meridian.Application.Services.GovernanceExceptionSeverity.Low
+  - Meridian.Application.Services.GovernanceExceptionSeverity.Medium
+  langs:
+  - csharp
+  - vb
+  name: GovernanceExceptionSeverity
+  nameWithType: GovernanceExceptionSeverity
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceExceptionSeverity
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Severity ordering for governance exceptions (higher value = more severe).
+  example: []
+  syntax:
+    content: public enum GovernanceExceptionSeverity
+    content.vb: Public Enum GovernanceExceptionSeverity
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity.Info
+  commentId: F:Meridian.Application.Services.GovernanceExceptionSeverity.Info
+  id: Info
+  parent: Meridian.Application.Services.GovernanceExceptionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: GovernanceExceptionSeverity.Info
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionSeverity
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity.Low
+  commentId: F:Meridian.Application.Services.GovernanceExceptionSeverity.Low
+  id: Low
+  parent: Meridian.Application.Services.GovernanceExceptionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: GovernanceExceptionSeverity.Low
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Low = 1
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionSeverity
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity.Medium
+  commentId: F:Meridian.Application.Services.GovernanceExceptionSeverity.Medium
+  id: Medium
+  parent: Meridian.Application.Services.GovernanceExceptionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Medium
+  nameWithType: GovernanceExceptionSeverity.Medium
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity.Medium
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Medium
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Medium = 2
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionSeverity
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity.High
+  commentId: F:Meridian.Application.Services.GovernanceExceptionSeverity.High
+  id: High
+  parent: Meridian.Application.Services.GovernanceExceptionSeverity
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: GovernanceExceptionSeverity.High
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: High = 3
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionSeverity
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity.Critical
+  commentId: F:Meridian.Application.Services.GovernanceExceptionSeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Services.GovernanceExceptionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: GovernanceExceptionSeverity.Critical
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Critical = 4
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionSeverity
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity
+  commentId: T:Meridian.Application.Services.GovernanceExceptionSeverity
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.GovernanceExceptionSeverity.html
+  name: GovernanceExceptionSeverity
+  nameWithType: GovernanceExceptionSeverity
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity

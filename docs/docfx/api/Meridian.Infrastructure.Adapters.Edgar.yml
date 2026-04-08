@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Edgar
+  commentId: N:Meridian.Infrastructure.Adapters.Edgar
+  id: Meridian.Infrastructure.Adapters.Edgar
+  children:
+  - Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  - Meridian.Infrastructure.Adapters.Edgar.EdgarSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Edgar
+  nameWithType: Meridian.Infrastructure.Adapters.Edgar
+  fullName: Meridian.Infrastructure.Adapters.Edgar
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  href: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.html
+  name: EdgarSecurityMasterIngestProvider
+  nameWithType: EdgarSecurityMasterIngestProvider
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Edgar.EdgarSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Edgar.EdgarSymbolSearchProvider.html
+  name: EdgarSymbolSearchProvider
+  nameWithType: EdgarSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSymbolSearchProvider

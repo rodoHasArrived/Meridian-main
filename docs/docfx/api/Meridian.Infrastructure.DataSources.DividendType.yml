@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DividendType
+  commentId: T:Meridian.Infrastructure.DataSources.DividendType
+  id: DividendType
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DividendType.Liquidation
+  - Meridian.Infrastructure.DataSources.DividendType.Regular
+  - Meridian.Infrastructure.DataSources.DividendType.Return
+  - Meridian.Infrastructure.DataSources.DividendType.Special
+  langs:
+  - csharp
+  - vb
+  name: DividendType
+  nameWithType: DividendType
+  fullName: Meridian.Infrastructure.DataSources.DividendType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendType
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 207
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Type of dividend.
+  example: []
+  syntax:
+    content: 'public enum DividendType : byte'
+    content.vb: Public Enum DividendType As Byte
+- uid: Meridian.Infrastructure.DataSources.DividendType.Regular
+  commentId: F:Meridian.Infrastructure.DataSources.DividendType.Regular
+  id: Regular
+  parent: Meridian.Infrastructure.DataSources.DividendType
+  langs:
+  - csharp
+  - vb
+  name: Regular
+  nameWithType: DividendType.Regular
+  fullName: Meridian.Infrastructure.DataSources.DividendType.Regular
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Regular
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 209
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: Regular = 0
+    return:
+      type: Meridian.Infrastructure.DataSources.DividendType
+- uid: Meridian.Infrastructure.DataSources.DividendType.Special
+  commentId: F:Meridian.Infrastructure.DataSources.DividendType.Special
+  id: Special
+  parent: Meridian.Infrastructure.DataSources.DividendType
+  langs:
+  - csharp
+  - vb
+  name: Special
+  nameWithType: DividendType.Special
+  fullName: Meridian.Infrastructure.DataSources.DividendType.Special
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Special
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 210
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: Special = 1
+    return:
+      type: Meridian.Infrastructure.DataSources.DividendType
+- uid: Meridian.Infrastructure.DataSources.DividendType.Return
+  commentId: F:Meridian.Infrastructure.DataSources.DividendType.Return
+  id: Return
+  parent: Meridian.Infrastructure.DataSources.DividendType
+  langs:
+  - csharp
+  - vb
+  name: Return
+  nameWithType: DividendType.Return
+  fullName: Meridian.Infrastructure.DataSources.DividendType.Return
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Return
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 211
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: Return = 2
+    return:
+      type: Meridian.Infrastructure.DataSources.DividendType
+- uid: Meridian.Infrastructure.DataSources.DividendType.Liquidation
+  commentId: F:Meridian.Infrastructure.DataSources.DividendType.Liquidation
+  id: Liquidation
+  parent: Meridian.Infrastructure.DataSources.DividendType
+  langs:
+  - csharp
+  - vb
+  name: Liquidation
+  nameWithType: DividendType.Liquidation
+  fullName: Meridian.Infrastructure.DataSources.DividendType.Liquidation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Liquidation
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 212
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: Liquidation = 3
+    return:
+      type: Meridian.Infrastructure.DataSources.DividendType
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.DividendType
+  commentId: T:Meridian.Infrastructure.DataSources.DividendType
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DividendType.html
+  name: DividendType
+  nameWithType: DividendType
+  fullName: Meridian.Infrastructure.DataSources.DividendType

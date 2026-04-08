@@ -1,0 +1,884 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigurationMetadata
+  commentId: T:Meridian.Application.Config.ConfigurationMetadata
+  id: ConfigurationMetadata
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigurationMetadata.#ctor(System.String,System.String,System.Type,System.String,System.Boolean,System.Object,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Application.Config.ConfigurationMetadata.DefaultValue
+  - Meridian.Application.Config.ConfigurationMetadata.Description
+  - Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable
+  - Meridian.Application.Config.ConfigurationMetadata.FullPath
+  - Meridian.Application.Config.ConfigurationMetadata.IsRequired
+  - Meridian.Application.Config.ConfigurationMetadata.Key
+  - Meridian.Application.Config.ConfigurationMetadata.Section
+  - Meridian.Application.Config.ConfigurationMetadata.ValidationRules
+  - Meridian.Application.Config.ConfigurationMetadata.ValueType
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationMetadata
+  nameWithType: ConfigurationMetadata
+  fullName: Meridian.Application.Config.ConfigurationMetadata
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationMetadata
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Metadata about a configuration value.
+  example: []
+  syntax:
+    content: 'public sealed record ConfigurationMetadata : IEquatable<ConfigurationMetadata>'
+    content.vb: Public NotInheritable Class ConfigurationMetadata Implements IEquatable(Of ConfigurationMetadata)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.ConfigurationMetadata}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ConfigurationMetadata.#ctor(System.String,System.String,System.Type,System.String,System.Boolean,System.Object,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Application.Config.ConfigurationMetadata.#ctor(System.String,System.String,System.Type,System.String,System.Boolean,System.Object,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.String,System.String,System.Type,System.String,System.Boolean,System.Object,System.String,System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationMetadata(string, string, Type, string, bool, object?, string?, IReadOnlyList<string>?)
+  nameWithType: ConfigurationMetadata.ConfigurationMetadata(string, string, Type, string, bool, object?, string?, IReadOnlyList<string>?)
+  fullName: Meridian.Application.Config.ConfigurationMetadata.ConfigurationMetadata(string, string, System.Type, string, bool, object?, string?, System.Collections.Generic.IReadOnlyList<string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Metadata about a configuration value.
+  example: []
+  syntax:
+    content: public ConfigurationMetadata(string Section, string Key, Type ValueType, string Description, bool IsRequired = false, object? DefaultValue = null, string? EnvironmentVariable = null, IReadOnlyList<string>? ValidationRules = null)
+    parameters:
+    - id: Section
+      type: System.String
+      description: Configuration section.
+    - id: Key
+      type: System.String
+      description: Configuration key.
+    - id: ValueType
+      type: System.Type
+      description: Type of the configuration value.
+    - id: Description
+      type: System.String
+      description: Human-readable description.
+    - id: IsRequired
+      type: System.Boolean
+      description: Whether the configuration is required.
+    - id: DefaultValue
+      type: System.Object
+      description: Default value if not configured.
+    - id: EnvironmentVariable
+      type: System.String
+      description: Environment variable that can override.
+    - id: ValidationRules
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+      description: Validation constraints.
+    content.vb: Public Sub New(Section As String, Key As String, ValueType As Type, Description As String, IsRequired As Boolean = False, DefaultValue As Object = Nothing, EnvironmentVariable As String = Nothing, ValidationRules As IReadOnlyList(Of String) = Nothing)
+  overload: Meridian.Application.Config.ConfigurationMetadata.#ctor*
+  nameWithType.vb: ConfigurationMetadata.New(String, String, Type, String, Boolean, Object, String, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Application.Config.ConfigurationMetadata.New(String, String, System.Type, String, Boolean, Object, String, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(String, String, Type, String, Boolean, Object, String, IReadOnlyList(Of String))
+- uid: Meridian.Application.Config.ConfigurationMetadata.Section
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.Section
+  id: Section
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: Section
+  nameWithType: ConfigurationMetadata.Section
+  fullName: Meridian.Application.Config.ConfigurationMetadata.Section
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Section
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration section.
+  example: []
+  syntax:
+    content: public string Section { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Section As String
+  overload: Meridian.Application.Config.ConfigurationMetadata.Section*
+- uid: Meridian.Application.Config.ConfigurationMetadata.Key
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.Key
+  id: Key
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: Key
+  nameWithType: ConfigurationMetadata.Key
+  fullName: Meridian.Application.Config.ConfigurationMetadata.Key
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Key
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration key.
+  example: []
+  syntax:
+    content: public string Key { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Key As String
+  overload: Meridian.Application.Config.ConfigurationMetadata.Key*
+- uid: Meridian.Application.Config.ConfigurationMetadata.ValueType
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.ValueType
+  id: ValueType
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: ValueType
+  nameWithType: ConfigurationMetadata.ValueType
+  fullName: Meridian.Application.Config.ConfigurationMetadata.ValueType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValueType
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Type of the configuration value.
+  example: []
+  syntax:
+    content: public Type ValueType { get; init; }
+    parameters: []
+    return:
+      type: System.Type
+    content.vb: Public Property ValueType As Type
+  overload: Meridian.Application.Config.ConfigurationMetadata.ValueType*
+- uid: Meridian.Application.Config.ConfigurationMetadata.Description
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.Description
+  id: Description
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ConfigurationMetadata.Description
+  fullName: Meridian.Application.Config.ConfigurationMetadata.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Human-readable description.
+  example: []
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.Config.ConfigurationMetadata.Description*
+- uid: Meridian.Application.Config.ConfigurationMetadata.IsRequired
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.IsRequired
+  id: IsRequired
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: IsRequired
+  nameWithType: ConfigurationMetadata.IsRequired
+  fullName: Meridian.Application.Config.ConfigurationMetadata.IsRequired
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRequired
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Whether the configuration is required.
+  example: []
+  syntax:
+    content: public bool IsRequired { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsRequired As Boolean
+  overload: Meridian.Application.Config.ConfigurationMetadata.IsRequired*
+- uid: Meridian.Application.Config.ConfigurationMetadata.DefaultValue
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.DefaultValue
+  id: DefaultValue
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: DefaultValue
+  nameWithType: ConfigurationMetadata.DefaultValue
+  fullName: Meridian.Application.Config.ConfigurationMetadata.DefaultValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultValue
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Default value if not configured.
+  example: []
+  syntax:
+    content: public object? DefaultValue { get; init; }
+    parameters: []
+    return:
+      type: System.Object
+    content.vb: Public Property DefaultValue As Object
+  overload: Meridian.Application.Config.ConfigurationMetadata.DefaultValue*
+- uid: Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable
+  id: EnvironmentVariable
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentVariable
+  nameWithType: ConfigurationMetadata.EnvironmentVariable
+  fullName: Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentVariable
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Environment variable that can override.
+  example: []
+  syntax:
+    content: public string? EnvironmentVariable { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EnvironmentVariable As String
+  overload: Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable*
+- uid: Meridian.Application.Config.ConfigurationMetadata.ValidationRules
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.ValidationRules
+  id: ValidationRules
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: ValidationRules
+  nameWithType: ConfigurationMetadata.ValidationRules
+  fullName: Meridian.Application.Config.ConfigurationMetadata.ValidationRules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidationRules
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Validation constraints.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string>? ValidationRules { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property ValidationRules As IReadOnlyList(Of String)
+  overload: Meridian.Application.Config.ConfigurationMetadata.ValidationRules*
+- uid: Meridian.Application.Config.ConfigurationMetadata.FullPath
+  commentId: P:Meridian.Application.Config.ConfigurationMetadata.FullPath
+  id: FullPath
+  parent: Meridian.Application.Config.ConfigurationMetadata
+  langs:
+  - csharp
+  - vb
+  name: FullPath
+  nameWithType: ConfigurationMetadata.FullPath
+  fullName: Meridian.Application.Config.ConfigurationMetadata.FullPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullPath
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Full path to the configuration value (Section:Key).
+  example: []
+  syntax:
+    content: public string FullPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property FullPath As String
+  overload: Meridian.Application.Config.ConfigurationMetadata.FullPath*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.ConfigurationMetadata}
+  commentId: T:System.IEquatable{Meridian.Application.Config.ConfigurationMetadata}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ConfigurationMetadata>
+  nameWithType: IEquatable<ConfigurationMetadata>
+  fullName: System.IEquatable<Meridian.Application.Config.ConfigurationMetadata>
+  nameWithType.vb: IEquatable(Of ConfigurationMetadata)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.ConfigurationMetadata)
+  name.vb: IEquatable(Of ConfigurationMetadata)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.ConfigurationMetadata
+    name: ConfigurationMetadata
+    href: Meridian.Application.Config.ConfigurationMetadata.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ConfigurationMetadata
+    name: ConfigurationMetadata
+    href: Meridian.Application.Config.ConfigurationMetadata.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationMetadata.#ctor*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.#ctor
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata__ctor_System_String_System_String_System_Type_System_String_System_Boolean_System_Object_System_String_System_Collections_Generic_IReadOnlyList_System_String__
+  name: ConfigurationMetadata
+  nameWithType: ConfigurationMetadata.ConfigurationMetadata
+  fullName: Meridian.Application.Config.ConfigurationMetadata.ConfigurationMetadata
+  nameWithType.vb: ConfigurationMetadata.New
+  fullName.vb: Meridian.Application.Config.ConfigurationMetadata.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Type
+  commentId: T:System.Type
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.type
+  name: Type
+  nameWithType: Type
+  fullName: System.Type
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Config.ConfigurationMetadata.Section*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.Section
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_Section
+  name: Section
+  nameWithType: ConfigurationMetadata.Section
+  fullName: Meridian.Application.Config.ConfigurationMetadata.Section
+- uid: Meridian.Application.Config.ConfigurationMetadata.Key*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.Key
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_Key
+  name: Key
+  nameWithType: ConfigurationMetadata.Key
+  fullName: Meridian.Application.Config.ConfigurationMetadata.Key
+- uid: Meridian.Application.Config.ConfigurationMetadata.ValueType*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.ValueType
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_ValueType
+  name: ValueType
+  nameWithType: ConfigurationMetadata.ValueType
+  fullName: Meridian.Application.Config.ConfigurationMetadata.ValueType
+- uid: Meridian.Application.Config.ConfigurationMetadata.Description*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.Description
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_Description
+  name: Description
+  nameWithType: ConfigurationMetadata.Description
+  fullName: Meridian.Application.Config.ConfigurationMetadata.Description
+- uid: Meridian.Application.Config.ConfigurationMetadata.IsRequired*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.IsRequired
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_IsRequired
+  name: IsRequired
+  nameWithType: ConfigurationMetadata.IsRequired
+  fullName: Meridian.Application.Config.ConfigurationMetadata.IsRequired
+- uid: Meridian.Application.Config.ConfigurationMetadata.DefaultValue*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.DefaultValue
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_DefaultValue
+  name: DefaultValue
+  nameWithType: ConfigurationMetadata.DefaultValue
+  fullName: Meridian.Application.Config.ConfigurationMetadata.DefaultValue
+- uid: Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_EnvironmentVariable
+  name: EnvironmentVariable
+  nameWithType: ConfigurationMetadata.EnvironmentVariable
+  fullName: Meridian.Application.Config.ConfigurationMetadata.EnvironmentVariable
+- uid: Meridian.Application.Config.ConfigurationMetadata.ValidationRules*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.ValidationRules
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_ValidationRules
+  name: ValidationRules
+  nameWithType: ConfigurationMetadata.ValidationRules
+  fullName: Meridian.Application.Config.ConfigurationMetadata.ValidationRules
+- uid: Meridian.Application.Config.ConfigurationMetadata.FullPath*
+  commentId: Overload:Meridian.Application.Config.ConfigurationMetadata.FullPath
+  href: Meridian.Application.Config.ConfigurationMetadata.html#Meridian_Application_Config_ConfigurationMetadata_FullPath
+  name: FullPath
+  nameWithType: ConfigurationMetadata.FullPath
+  fullName: Meridian.Application.Config.ConfigurationMetadata.FullPath

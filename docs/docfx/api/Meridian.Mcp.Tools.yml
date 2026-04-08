@@ -1,0 +1,51 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Mcp.Tools
+  commentId: N:Meridian.Mcp.Tools
+  id: Meridian.Mcp.Tools
+  children:
+  - Meridian.Mcp.Tools.AdrTools
+  - Meridian.Mcp.Tools.AuditTools
+  - Meridian.Mcp.Tools.ConventionTools
+  - Meridian.Mcp.Tools.KnownErrorTools
+  - Meridian.Mcp.Tools.ProviderTools
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Mcp.Tools
+  nameWithType: Meridian.Mcp.Tools
+  fullName: Meridian.Mcp.Tools
+  type: Namespace
+  assemblies:
+  - mdc-mcp
+references:
+- uid: Meridian.Mcp.Tools.AdrTools
+  commentId: T:Meridian.Mcp.Tools.AdrTools
+  href: Meridian.Mcp.Tools.AdrTools.html
+  name: AdrTools
+  nameWithType: AdrTools
+  fullName: Meridian.Mcp.Tools.AdrTools
+- uid: Meridian.Mcp.Tools.AuditTools
+  commentId: T:Meridian.Mcp.Tools.AuditTools
+  href: Meridian.Mcp.Tools.AuditTools.html
+  name: AuditTools
+  nameWithType: AuditTools
+  fullName: Meridian.Mcp.Tools.AuditTools
+- uid: Meridian.Mcp.Tools.ConventionTools
+  commentId: T:Meridian.Mcp.Tools.ConventionTools
+  href: Meridian.Mcp.Tools.ConventionTools.html
+  name: ConventionTools
+  nameWithType: ConventionTools
+  fullName: Meridian.Mcp.Tools.ConventionTools
+- uid: Meridian.Mcp.Tools.KnownErrorTools
+  commentId: T:Meridian.Mcp.Tools.KnownErrorTools
+  href: Meridian.Mcp.Tools.KnownErrorTools.html
+  name: KnownErrorTools
+  nameWithType: KnownErrorTools
+  fullName: Meridian.Mcp.Tools.KnownErrorTools
+- uid: Meridian.Mcp.Tools.ProviderTools
+  commentId: T:Meridian.Mcp.Tools.ProviderTools
+  href: Meridian.Mcp.Tools.ProviderTools.html
+  name: ProviderTools
+  nameWithType: ProviderTools
+  fullName: Meridian.Mcp.Tools.ProviderTools

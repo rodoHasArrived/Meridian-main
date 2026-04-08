@@ -1,0 +1,221 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  commentId: T:Meridian.Contracts.Domain.Enums.ConnectionStatus
+  id: ConnectionStatus
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.ConnectionStatus.Connected
+  - Meridian.Contracts.Domain.Enums.ConnectionStatus.Connecting
+  - Meridian.Contracts.Domain.Enums.ConnectionStatus.Disconnected
+  - Meridian.Contracts.Domain.Enums.ConnectionStatus.Faulted
+  - Meridian.Contracts.Domain.Enums.ConnectionStatus.Reconnecting
+  langs:
+  - csharp
+  - vb
+  name: ConnectionStatus
+  nameWithType: ConnectionStatus
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionStatus
+    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Connection status for data providers.
+  example: []
+  syntax:
+    content: 'public enum ConnectionStatus : byte'
+    content.vb: Public Enum ConnectionStatus As Byte
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus.Disconnected
+  commentId: F:Meridian.Contracts.Domain.Enums.ConnectionStatus.Disconnected
+  id: Disconnected
+  parent: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  langs:
+  - csharp
+  - vb
+  name: Disconnected
+  nameWithType: ConnectionStatus.Disconnected
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus.Disconnected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disconnected
+    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Not connected.
+  example: []
+  syntax:
+    content: Disconnected = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.ConnectionStatus
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus.Connecting
+  commentId: F:Meridian.Contracts.Domain.Enums.ConnectionStatus.Connecting
+  id: Connecting
+  parent: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  langs:
+  - csharp
+  - vb
+  name: Connecting
+  nameWithType: ConnectionStatus.Connecting
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus.Connecting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connecting
+    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Connection in progress.
+  example: []
+  syntax:
+    content: Connecting = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.ConnectionStatus
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus.Connected
+  commentId: F:Meridian.Contracts.Domain.Enums.ConnectionStatus.Connected
+  id: Connected
+  parent: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  langs:
+  - csharp
+  - vb
+  name: Connected
+  nameWithType: ConnectionStatus.Connected
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus.Connected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connected
+    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Successfully connected.
+  example: []
+  syntax:
+    content: Connected = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.ConnectionStatus
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus.Reconnecting
+  commentId: F:Meridian.Contracts.Domain.Enums.ConnectionStatus.Reconnecting
+  id: Reconnecting
+  parent: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  langs:
+  - csharp
+  - vb
+  name: Reconnecting
+  nameWithType: ConnectionStatus.Reconnecting
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus.Reconnecting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reconnecting
+    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Reconnection in progress.
+  example: []
+  syntax:
+    content: Reconnecting = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.ConnectionStatus
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus.Faulted
+  commentId: F:Meridian.Contracts.Domain.Enums.ConnectionStatus.Faulted
+  id: Faulted
+  parent: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  langs:
+  - csharp
+  - vb
+  name: Faulted
+  nameWithType: ConnectionStatus.Faulted
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus.Faulted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Faulted
+    path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Connection failed or in error state.
+  example: []
+  syntax:
+    content: Faulted = 4
+    return:
+      type: Meridian.Contracts.Domain.Enums.ConnectionStatus
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.ConnectionStatus
+  commentId: T:Meridian.Contracts.Domain.Enums.ConnectionStatus
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.ConnectionStatus.html
+  name: ConnectionStatus
+  nameWithType: ConnectionStatus
+  fullName: Meridian.Contracts.Domain.Enums.ConnectionStatus

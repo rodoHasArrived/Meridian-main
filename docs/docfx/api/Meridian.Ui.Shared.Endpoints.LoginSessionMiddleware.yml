@@ -1,0 +1,703 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  commentId: T:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  id: LoginSessionMiddleware
+  parent: Meridian.Ui.Shared.Endpoints
+  children:
+  - Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)
+  - Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserKey
+  - Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserPermissionsKey
+  - Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserRoleKey
+  - Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext,Meridian.Ui.Shared.LoginSessionService)
+  - Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.SessionCookieName
+  langs:
+  - csharp
+  - vb
+  name: LoginSessionMiddleware
+  nameWithType: LoginSessionMiddleware
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoginSessionMiddleware
+    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: >-
+    Middleware that enforces session-based authentication.
+
+
+    <ul><li>Health probes (/healthz, /readyz, /livez) are always exempt.</li><li>The login page (/login) and auth API endpoints (/api/auth/*) are exempt when authentication is configured.</li><li>Unauthenticated API requests receive a 401 JSON response.</li><li>Unauthenticated browser (non-/api) requests are redirected to /login.</li><li>Authentication is optional in Development/Test and required elsewhere by default.</li></ul>
+  example: []
+  syntax:
+    content: public sealed class LoginSessionMiddleware
+    content.vb: Public NotInheritable Class LoginSessionMiddleware
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.SessionCookieName
+  commentId: F:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.SessionCookieName
+  id: SessionCookieName
+  parent: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  langs:
+  - csharp
+  - vb
+  name: SessionCookieName
+  nameWithType: LoginSessionMiddleware.SessionCookieName
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.SessionCookieName
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionCookieName
+    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: Name of the HTTP-only session cookie set after successful login.
+  example: []
+  syntax:
+    content: public const string SessionCookieName = "mdc-session"
+    return:
+      type: System.String
+    content.vb: Public Const SessionCookieName As String = "mdc-session"
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserKey
+  commentId: F:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserKey
+  id: CurrentUserKey
+  parent: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  langs:
+  - csharp
+  - vb
+  name: CurrentUserKey
+  nameWithType: LoginSessionMiddleware.CurrentUserKey
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserKey
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentUserKey
+    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: >-
+    Key for the authenticated username stored in <xref href="Microsoft.AspNetCore.Http.HttpContext.Items" data-throw-if-not-resolved="false"></xref>.
+
+    Set by the middleware after successful session validation.
+  example: []
+  syntax:
+    content: public const string CurrentUserKey = "CurrentUser"
+    return:
+      type: System.String
+    content.vb: Public Const CurrentUserKey As String = "CurrentUser"
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserRoleKey
+  commentId: F:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserRoleKey
+  id: CurrentUserRoleKey
+  parent: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  langs:
+  - csharp
+  - vb
+  name: CurrentUserRoleKey
+  nameWithType: LoginSessionMiddleware.CurrentUserRoleKey
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserRoleKey
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentUserRoleKey
+    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: >-
+    Key for the authenticated user's <xref href="Meridian.Contracts.Auth.UserRole" data-throw-if-not-resolved="false"></xref> stored in
+
+    <xref href="Microsoft.AspNetCore.Http.HttpContext.Items" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public const string CurrentUserRoleKey = "CurrentUserRole"
+    return:
+      type: System.String
+    content.vb: Public Const CurrentUserRoleKey As String = "CurrentUserRole"
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserPermissionsKey
+  commentId: F:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserPermissionsKey
+  id: CurrentUserPermissionsKey
+  parent: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  langs:
+  - csharp
+  - vb
+  name: CurrentUserPermissionsKey
+  nameWithType: LoginSessionMiddleware.CurrentUserPermissionsKey
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.CurrentUserPermissionsKey
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentUserPermissionsKey
+    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: >-
+    Key for the authenticated user's <xref href="Meridian.Contracts.Auth.UserPermission" data-throw-if-not-resolved="false"></xref> flags
+
+    stored in <xref href="Microsoft.AspNetCore.Http.HttpContext.Items" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public const string CurrentUserPermissionsKey = "CurrentUserPermissions"
+    return:
+      type: System.String
+    content.vb: Public Const CurrentUserPermissionsKey As String = "CurrentUserPermissions"
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)
+  commentId: M:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)
+  id: '#ctor(Microsoft.AspNetCore.Http.RequestDelegate)'
+  parent: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  langs:
+  - csharp
+  - vb
+  name: LoginSessionMiddleware(RequestDelegate)
+  nameWithType: LoginSessionMiddleware.LoginSessionMiddleware(RequestDelegate)
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.LoginSessionMiddleware(Microsoft.AspNetCore.Http.RequestDelegate)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public LoginSessionMiddleware(RequestDelegate next)
+    parameters:
+    - id: next
+      type: Microsoft.AspNetCore.Http.RequestDelegate
+    content.vb: Public Sub New([next] As RequestDelegate)
+  overload: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.#ctor*
+  nameWithType.vb: LoginSessionMiddleware.New(RequestDelegate)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.New(Microsoft.AspNetCore.Http.RequestDelegate)
+  name.vb: New(RequestDelegate)
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext,Meridian.Ui.Shared.LoginSessionService)
+  commentId: M:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext,Meridian.Ui.Shared.LoginSessionService)
+  id: InvokeAsync(Microsoft.AspNetCore.Http.HttpContext,Meridian.Ui.Shared.LoginSessionService)
+  parent: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
+  langs:
+  - csharp
+  - vb
+  name: InvokeAsync(HttpContext, LoginSessionService)
+  nameWithType: LoginSessionMiddleware.InvokeAsync(HttpContext, LoginSessionService)
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext, Meridian.Ui.Shared.LoginSessionService)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvokeAsync
+    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public Task InvokeAsync(HttpContext context, LoginSessionService sessionService)
+    parameters:
+    - id: context
+      type: Microsoft.AspNetCore.Http.HttpContext
+    - id: sessionService
+      type: Meridian.Ui.Shared.LoginSessionService
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InvokeAsync(context As HttpContext, sessionService As LoginSessionService) As Task
+  overload: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync*
+references:
+- uid: Meridian.Ui.Shared.Endpoints
+  commentId: N:Meridian.Ui.Shared.Endpoints
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Endpoints
+  nameWithType: Meridian.Ui.Shared.Endpoints
+  fullName: Meridian.Ui.Shared.Endpoints
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Microsoft.AspNetCore.Http.HttpContext.Items
+  commentId: P:Microsoft.AspNetCore.Http.HttpContext.Items
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http.httpcontext.items
+  name: Items
+  nameWithType: HttpContext.Items
+  fullName: Microsoft.AspNetCore.Http.HttpContext.Items
+- uid: Meridian.Contracts.Auth.UserRole
+  commentId: T:Meridian.Contracts.Auth.UserRole
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserRole.html
+  name: UserRole
+  nameWithType: UserRole
+  fullName: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth
+  commentId: N:Meridian.Contracts.Auth
+  href: Meridian.html
+  name: Meridian.Contracts.Auth
+  nameWithType: Meridian.Contracts.Auth
+  fullName: Meridian.Contracts.Auth
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+- uid: Meridian.Contracts.Auth.UserPermission
+  commentId: T:Meridian.Contracts.Auth.UserPermission
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserPermission.html
+  name: UserPermission
+  nameWithType: UserPermission
+  fullName: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.#ctor
+  href: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.html#Meridian_Ui_Shared_Endpoints_LoginSessionMiddleware__ctor_Microsoft_AspNetCore_Http_RequestDelegate_
+  name: LoginSessionMiddleware
+  nameWithType: LoginSessionMiddleware.LoginSessionMiddleware
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.LoginSessionMiddleware
+  nameWithType.vb: LoginSessionMiddleware.New
+  fullName.vb: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.New
+  name.vb: New
+- uid: Microsoft.AspNetCore.Http.RequestDelegate
+  commentId: T:Microsoft.AspNetCore.Http.RequestDelegate
+  parent: Microsoft.AspNetCore.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http.requestdelegate
+  name: RequestDelegate
+  nameWithType: RequestDelegate
+  fullName: Microsoft.AspNetCore.Http.RequestDelegate
+- uid: Microsoft.AspNetCore.Http
+  commentId: N:Microsoft.AspNetCore.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.AspNetCore.Http
+  nameWithType: Microsoft.AspNetCore.Http
+  fullName: Microsoft.AspNetCore.Http
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.AspNetCore
+    name: AspNetCore
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore
+  - name: .
+  - uid: Microsoft.AspNetCore.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.AspNetCore
+    name: AspNetCore
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore
+  - name: .
+  - uid: Microsoft.AspNetCore.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http
+- uid: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync
+  href: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.html#Meridian_Ui_Shared_Endpoints_LoginSessionMiddleware_InvokeAsync_Microsoft_AspNetCore_Http_HttpContext_Meridian_Ui_Shared_LoginSessionService_
+  name: InvokeAsync
+  nameWithType: LoginSessionMiddleware.InvokeAsync
+  fullName: Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware.InvokeAsync
+- uid: Microsoft.AspNetCore.Http.HttpContext
+  commentId: T:Microsoft.AspNetCore.Http.HttpContext
+  parent: Microsoft.AspNetCore.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.http.httpcontext
+  name: HttpContext
+  nameWithType: HttpContext
+  fullName: Microsoft.AspNetCore.Http.HttpContext
+- uid: Meridian.Ui.Shared.LoginSessionService
+  commentId: T:Meridian.Ui.Shared.LoginSessionService
+  parent: Meridian.Ui.Shared
+  href: Meridian.Ui.Shared.LoginSessionService.html
+  name: LoginSessionService
+  nameWithType: LoginSessionService
+  fullName: Meridian.Ui.Shared.LoginSessionService
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ui.Shared
+  commentId: N:Meridian.Ui.Shared
+  href: Meridian.html
+  name: Meridian.Ui.Shared
+  nameWithType: Meridian.Ui.Shared
+  fullName: Meridian.Ui.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

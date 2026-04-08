@@ -1,0 +1,97 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  id: IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  children: []
+  langs:
+  - csharp
+  - vb
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/IMarketEventPayload.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IMarketEventPayload
+    path: ../../src/Meridian.Contracts/Domain/Events/IMarketEventPayload.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: Marker interface for strongly-typed market event payloads.
+  example: []
+  syntax:
+    content: public interface IMarketEventPayload
+    content.vb: Public Interface IMarketEventPayload
+  derivedClasses:
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  - Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  - Meridian.Contracts.Domain.Models.AggregateBarPayload
+  - Meridian.Contracts.Domain.Models.BboQuotePayload
+  - Meridian.Contracts.Domain.Models.DepthIntegrityEvent
+  - Meridian.Contracts.Domain.Models.GreeksSnapshot
+  - Meridian.Contracts.Domain.Models.HistoricalAuction
+  - Meridian.Contracts.Domain.Models.HistoricalBar
+  - Meridian.Contracts.Domain.Models.HistoricalQuote
+  - Meridian.Contracts.Domain.Models.HistoricalTrade
+  - Meridian.Contracts.Domain.Models.IntegrityEvent
+  - Meridian.Contracts.Domain.Models.L2SnapshotPayload
+  - Meridian.Contracts.Domain.Models.LOBSnapshot
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  - Meridian.Contracts.Domain.Models.OptionQuote
+  - Meridian.Contracts.Domain.Models.OptionTrade
+  - Meridian.Contracts.Domain.Models.OrderAdd
+  - Meridian.Contracts.Domain.Models.OrderCancel
+  - Meridian.Contracts.Domain.Models.OrderExecute
+  - Meridian.Contracts.Domain.Models.OrderFlowStatistics
+  - Meridian.Contracts.Domain.Models.OrderModify
+  - Meridian.Contracts.Domain.Models.OrderReplace
+  - Meridian.Contracts.Domain.Models.Trade
+  - Meridian.Domain.Events.MarketEventPayload
+  - Meridian.Domain.Models.AggregateBar
+references:
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html

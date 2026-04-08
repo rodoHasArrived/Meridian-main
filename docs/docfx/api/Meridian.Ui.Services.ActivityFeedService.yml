@@ -1,0 +1,1597 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ActivityFeedService
+  commentId: T:Meridian.Ui.Services.ActivityFeedService
+  id: ActivityFeedService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ActivityFeedService.Activities
+  - Meridian.Ui.Services.ActivityFeedService.ActivityAdded
+  - Meridian.Ui.Services.ActivityFeedService.AddActivity(Meridian.Ui.Services.ActivityItem)
+  - Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew(Meridian.Ui.Services.ActivityItem)
+  - Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType(Meridian.Ui.Services.ActivityType)
+  - Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol(System.String)
+  - Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince(System.DateTime)
+  - Meridian.Ui.Services.ActivityFeedService.Instance
+  - Meridian.Ui.Services.ActivityFeedService.LogActivityAsync(Meridian.Ui.Services.ActivityType,System.String,System.String,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync(System.String[],System.String,System.Boolean,System.Int32)
+  - Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync(System.Boolean,System.String)
+  - Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync(System.String,System.String,System.String)
+  - Meridian.Ui.Services.ActivityFeedService.LogExportAsync(System.String,System.String[],System.Int64)
+  - Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync(System.String,System.Boolean,System.String)
+  - Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync(System.String,System.Int64)
+  - Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync(System.String,System.Boolean)
+  langs:
+  - csharp
+  - vb
+  name: ActivityFeedService
+  nameWithType: ActivityFeedService
+  fullName: Meridian.Ui.Services.ActivityFeedService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActivityFeedService
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for tracking and displaying recent activity in the application.
+
+    Provides a timeline of events for user awareness and polls the backend
+
+    for server-side error events so the activity feed shows real backend logs.
+  example: []
+  syntax:
+    content: public sealed class ActivityFeedService
+    content.vb: Public NotInheritable Class ActivityFeedService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ActivityFeedService.Instance
+  commentId: P:Meridian.Ui.Services.ActivityFeedService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: ActivityFeedService.Instance
+  fullName: Meridian.Ui.Services.ActivityFeedService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the singleton instance of the ActivityFeedService.
+  example: []
+  syntax:
+    content: public static ActivityFeedService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ActivityFeedService
+    content.vb: Public Shared ReadOnly Property Instance As ActivityFeedService
+  overload: Meridian.Ui.Services.ActivityFeedService.Instance*
+- uid: Meridian.Ui.Services.ActivityFeedService.Activities
+  commentId: P:Meridian.Ui.Services.ActivityFeedService.Activities
+  id: Activities
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: Activities
+  nameWithType: ActivityFeedService.Activities
+  fullName: Meridian.Ui.Services.ActivityFeedService.Activities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Activities
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Gets the observable collection of activities.
+
+    Uses BoundedObservableCollection for efficient O(1) prepend operations.
+  example: []
+  syntax:
+    content: public BoundedObservableCollection<ActivityItem> Activities { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Collections.BoundedObservableCollection{Meridian.Ui.Services.ActivityItem}
+    content.vb: Public ReadOnly Property Activities As BoundedObservableCollection(Of ActivityItem)
+  overload: Meridian.Ui.Services.ActivityFeedService.Activities*
+- uid: Meridian.Ui.Services.ActivityFeedService.ActivityAdded
+  commentId: E:Meridian.Ui.Services.ActivityFeedService.ActivityAdded
+  id: ActivityAdded
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: ActivityAdded
+  nameWithType: ActivityFeedService.ActivityAdded
+  fullName: Meridian.Ui.Services.ActivityFeedService.ActivityAdded
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActivityAdded
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a new activity is added.
+  example: []
+  syntax:
+    content: public event EventHandler<ActivityItem>? ActivityAdded
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ActivityItem}
+    content.vb: Public Event ActivityAdded As EventHandler(Of ActivityItem)
+- uid: Meridian.Ui.Services.ActivityFeedService.AddActivity(Meridian.Ui.Services.ActivityItem)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.AddActivity(Meridian.Ui.Services.ActivityItem)
+  id: AddActivity(Meridian.Ui.Services.ActivityItem)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: AddActivity(ActivityItem)
+  nameWithType: ActivityFeedService.AddActivity(ActivityItem)
+  fullName: Meridian.Ui.Services.ActivityFeedService.AddActivity(Meridian.Ui.Services.ActivityItem)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddActivity
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Adds an activity item directly (for ViewModel convenience).
+
+    Uses efficient Prepend operation - O(1) with automatic capacity management.
+  example: []
+  syntax:
+    content: public void AddActivity(ActivityItem activity)
+    parameters:
+    - id: activity
+      type: Meridian.Ui.Services.ActivityItem
+    content.vb: Public Sub AddActivity(activity As ActivityItem)
+  overload: Meridian.Ui.Services.ActivityFeedService.AddActivity*
+- uid: Meridian.Ui.Services.ActivityFeedService.LogActivityAsync(Meridian.Ui.Services.ActivityType,System.String,System.String,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogActivityAsync(Meridian.Ui.Services.ActivityType,System.String,System.String,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)
+  id: LogActivityAsync(Meridian.Ui.Services.ActivityType,System.String,System.String,System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogActivityAsync(ActivityType, string, string?, string?, string?, Dictionary<string, object>?, CancellationToken)
+  nameWithType: ActivityFeedService.LogActivityAsync(ActivityType, string, string?, string?, string?, Dictionary<string, object>?, CancellationToken)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogActivityAsync(Meridian.Ui.Services.ActivityType, string, string?, string?, string?, System.Collections.Generic.Dictionary<string, object>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogActivityAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Logs a new activity event.
+
+    Uses efficient Prepend operation - O(1) with automatic capacity management.
+  example: []
+  syntax:
+    content: public Task LogActivityAsync(ActivityType type, string title, string? description = null, string? symbol = null, string? provider = null, Dictionary<string, object>? metadata = null, CancellationToken ct = default)
+    parameters:
+    - id: type
+      type: Meridian.Ui.Services.ActivityType
+    - id: title
+      type: System.String
+    - id: description
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    - id: metadata
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogActivityAsync(type As ActivityType, title As String, description As String = Nothing, symbol As String = Nothing, provider As String = Nothing, metadata As Dictionary(Of String, Object) = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogActivityAsync*
+  nameWithType.vb: ActivityFeedService.LogActivityAsync(ActivityType, String, String, String, String, Dictionary(Of String, Object), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogActivityAsync(Meridian.Ui.Services.ActivityType, String, String, String, String, System.Collections.Generic.Dictionary(Of String, Object), System.Threading.CancellationToken)
+  name.vb: LogActivityAsync(ActivityType, String, String, String, String, Dictionary(Of String, Object), CancellationToken)
+- uid: Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync(System.Boolean,System.String)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync(System.Boolean,System.String)
+  id: LogCollectorStatusAsync(System.Boolean,System.String)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogCollectorStatusAsync(bool, string?)
+  nameWithType: ActivityFeedService.LogCollectorStatusAsync(bool, string?)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync(bool, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogCollectorStatusAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Logs a collector status change.
+  example: []
+  syntax:
+    content: public Task LogCollectorStatusAsync(bool isConnected, string? provider = null)
+    parameters:
+    - id: isConnected
+      type: System.Boolean
+    - id: provider
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogCollectorStatusAsync(isConnected As Boolean, provider As String = Nothing) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync*
+  nameWithType.vb: ActivityFeedService.LogCollectorStatusAsync(Boolean, String)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync(Boolean, String)
+  name.vb: LogCollectorStatusAsync(Boolean, String)
+- uid: Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync(System.String[],System.String,System.Boolean,System.Int32)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync(System.String[],System.String,System.Boolean,System.Int32)
+  id: LogBackfillAsync(System.String[],System.String,System.Boolean,System.Int32)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogBackfillAsync(string[], string, bool, int)
+  nameWithType: ActivityFeedService.LogBackfillAsync(string[], string, bool, int)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync(string[], string, bool, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogBackfillAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Logs a backfill operation.
+  example: []
+  syntax:
+    content: public Task LogBackfillAsync(string[] symbols, string provider, bool success, int barsDownloaded)
+    parameters:
+    - id: symbols
+      type: System.String[]
+    - id: provider
+      type: System.String
+    - id: success
+      type: System.Boolean
+    - id: barsDownloaded
+      type: System.Int32
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogBackfillAsync(symbols As String(), provider As String, success As Boolean, barsDownloaded As Integer) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync*
+  nameWithType.vb: ActivityFeedService.LogBackfillAsync(String(), String, Boolean, Integer)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync(String(), String, Boolean, Integer)
+  name.vb: LogBackfillAsync(String(), String, Boolean, Integer)
+- uid: Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync(System.String,System.Boolean)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync(System.String,System.Boolean)
+  id: LogSymbolChangeAsync(System.String,System.Boolean)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogSymbolChangeAsync(string, bool)
+  nameWithType: ActivityFeedService.LogSymbolChangeAsync(string, bool)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync(string, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogSymbolChangeAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Logs a symbol subscription change.
+  example: []
+  syntax:
+    content: public Task LogSymbolChangeAsync(string symbol, bool added)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: added
+      type: System.Boolean
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogSymbolChangeAsync(symbol As String, added As Boolean) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync*
+  nameWithType.vb: ActivityFeedService.LogSymbolChangeAsync(String, Boolean)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync(String, Boolean)
+  name.vb: LogSymbolChangeAsync(String, Boolean)
+- uid: Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync(System.String,System.String,System.String)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync(System.String,System.String,System.String)
+  id: LogDataQualityEventAsync(System.String,System.String,System.String)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogDataQualityEventAsync(string, string, string)
+  nameWithType: ActivityFeedService.LogDataQualityEventAsync(string, string, string)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync(string, string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogDataQualityEventAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Logs a data quality event.
+  example: []
+  syntax:
+    content: public Task LogDataQualityEventAsync(string symbol, string issue, string severity)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: issue
+      type: System.String
+    - id: severity
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogDataQualityEventAsync(symbol As String, issue As String, severity As String) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync*
+  nameWithType.vb: ActivityFeedService.LogDataQualityEventAsync(String, String, String)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync(String, String, String)
+  name.vb: LogDataQualityEventAsync(String, String, String)
+- uid: Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync(System.String,System.Int64)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync(System.String,System.Int64)
+  id: LogStorageEventAsync(System.String,System.Int64)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogStorageEventAsync(string, long)
+  nameWithType: ActivityFeedService.LogStorageEventAsync(string, long)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync(string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogStorageEventAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Logs a storage event.
+  example: []
+  syntax:
+    content: public Task LogStorageEventAsync(string message, long bytesAffected = 0)
+    parameters:
+    - id: message
+      type: System.String
+    - id: bytesAffected
+      type: System.Int64
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogStorageEventAsync(message As String, bytesAffected As Long = 0) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync*
+  nameWithType.vb: ActivityFeedService.LogStorageEventAsync(String, Long)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync(String, Long)
+  name.vb: LogStorageEventAsync(String, Long)
+- uid: Meridian.Ui.Services.ActivityFeedService.LogExportAsync(System.String,System.String[],System.Int64)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogExportAsync(System.String,System.String[],System.Int64)
+  id: LogExportAsync(System.String,System.String[],System.Int64)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogExportAsync(string, string[], long)
+  nameWithType: ActivityFeedService.LogExportAsync(string, string[], long)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogExportAsync(string, string[], long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogExportAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Logs an export operation.
+  example: []
+  syntax:
+    content: public Task LogExportAsync(string format, string[] symbols, long bytesExported)
+    parameters:
+    - id: format
+      type: System.String
+    - id: symbols
+      type: System.String[]
+    - id: bytesExported
+      type: System.Int64
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogExportAsync(format As String, symbols As String(), bytesExported As Long) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogExportAsync*
+  nameWithType.vb: ActivityFeedService.LogExportAsync(String, String(), Long)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogExportAsync(String, String(), Long)
+  name.vb: LogExportAsync(String, String(), Long)
+- uid: Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync(System.String,System.Boolean,System.String)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync(System.String,System.Boolean,System.String)
+  id: LogProviderConnectionAsync(System.String,System.Boolean,System.String)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: LogProviderConnectionAsync(string, bool, string?)
+  nameWithType: ActivityFeedService.LogProviderConnectionAsync(string, bool, string?)
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync(string, bool, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogProviderConnectionAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Logs a provider connection event.
+  example: []
+  syntax:
+    content: public Task LogProviderConnectionAsync(string provider, bool connected, string? message = null)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: connected
+      type: System.Boolean
+    - id: message
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LogProviderConnectionAsync(provider As String, connected As Boolean, message As String = Nothing) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync*
+  nameWithType.vb: ActivityFeedService.LogProviderConnectionAsync(String, Boolean, String)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync(String, Boolean, String)
+  name.vb: LogProviderConnectionAsync(String, Boolean, String)
+- uid: Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew(Meridian.Ui.Services.ActivityItem)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew(Meridian.Ui.Services.ActivityItem)
+  id: AddServerEventIfNew(Meridian.Ui.Services.ActivityItem)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: AddServerEventIfNew(ActivityItem)
+  nameWithType: ActivityFeedService.AddServerEventIfNew(ActivityItem)
+  fullName: Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew(Meridian.Ui.Services.ActivityItem)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddServerEventIfNew
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Adds a server-side event to the activity feed only if it has not been seen before.
+
+    Deduplication is based on the item's <xref href="Meridian.Ui.Services.ActivityItem.Id" data-throw-if-not-resolved="false"></xref>.
+
+    Items without an ID are always added.
+  example: []
+  syntax:
+    content: public bool AddServerEventIfNew(ActivityItem item)
+    parameters:
+    - id: item
+      type: Meridian.Ui.Services.ActivityItem
+    return:
+      type: System.Boolean
+      description: <code>true</code> if the item was new and added; <code>false</code> if it was a duplicate.
+    content.vb: Public Function AddServerEventIfNew(item As ActivityItem) As Boolean
+  overload: Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew*
+- uid: Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync(System.Threading.CancellationToken)
+  id: FetchServerEventsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: FetchServerEventsAsync(CancellationToken)
+  nameWithType: ActivityFeedService.FetchServerEventsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FetchServerEventsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 268
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Polls the backend <code>/api/errors</code> endpoint and adds any new server-side error events
+
+    to the activity feed. Duplicate events (same ID) are silently skipped.
+
+    Errors from the HTTP call are silently swallowed so a missing backend never crashes the UI.
+  example: []
+  syntax:
+    content: public Task FetchServerEventsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FetchServerEventsAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync*
+- uid: Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType(Meridian.Ui.Services.ActivityType)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType(Meridian.Ui.Services.ActivityType)
+  id: GetActivitiesByType(Meridian.Ui.Services.ActivityType)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: GetActivitiesByType(ActivityType)
+  nameWithType: ActivityFeedService.GetActivitiesByType(ActivityType)
+  fullName: Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType(Meridian.Ui.Services.ActivityType)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActivitiesByType
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets activities filtered by type.
+  example: []
+  syntax:
+    content: public IEnumerable<ActivityItem> GetActivitiesByType(ActivityType type)
+    parameters:
+    - id: type
+      type: Meridian.Ui.Services.ActivityType
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.ActivityItem}
+    content.vb: Public Function GetActivitiesByType(type As ActivityType) As IEnumerable(Of ActivityItem)
+  overload: Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType*
+- uid: Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol(System.String)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol(System.String)
+  id: GetActivitiesForSymbol(System.String)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: GetActivitiesForSymbol(string)
+  nameWithType: ActivityFeedService.GetActivitiesForSymbol(string)
+  fullName: Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActivitiesForSymbol
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 327
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets activities for a specific symbol.
+  example: []
+  syntax:
+    content: public IEnumerable<ActivityItem> GetActivitiesForSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.ActivityItem}
+    content.vb: Public Function GetActivitiesForSymbol(symbol As String) As IEnumerable(Of ActivityItem)
+  overload: Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol*
+  nameWithType.vb: ActivityFeedService.GetActivitiesForSymbol(String)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol(String)
+  name.vb: GetActivitiesForSymbol(String)
+- uid: Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince(System.DateTime)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince(System.DateTime)
+  id: GetActivitiesSince(System.DateTime)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: GetActivitiesSince(DateTime)
+  nameWithType: ActivityFeedService.GetActivitiesSince(DateTime)
+  fullName: Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince(System.DateTime)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActivitiesSince
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets activities within a time range.
+  example: []
+  syntax:
+    content: public IEnumerable<ActivityItem> GetActivitiesSince(DateTime since)
+    parameters:
+    - id: since
+      type: System.DateTime
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.ActivityItem}
+    content.vb: Public Function GetActivitiesSince(since As Date) As IEnumerable(Of ActivityItem)
+  overload: Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince*
+  nameWithType.vb: ActivityFeedService.GetActivitiesSince(Date)
+  fullName.vb: Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince(Date)
+  name.vb: GetActivitiesSince(Date)
+- uid: Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync(System.Threading.CancellationToken)
+  id: ClearActivitiesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ActivityFeedService
+  langs:
+  - csharp
+  - vb
+  name: ClearActivitiesAsync(CancellationToken)
+  nameWithType: ActivityFeedService.ClearActivitiesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearActivitiesAsync
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Clears all activities.
+  example: []
+  syntax:
+    content: public Task ClearActivitiesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ClearActivitiesAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ActivityFeedService.Instance*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.Instance
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_Instance
+  name: Instance
+  nameWithType: ActivityFeedService.Instance
+  fullName: Meridian.Ui.Services.ActivityFeedService.Instance
+- uid: Meridian.Ui.Services.ActivityFeedService
+  commentId: T:Meridian.Ui.Services.ActivityFeedService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ActivityFeedService.html
+  name: ActivityFeedService
+  nameWithType: ActivityFeedService
+  fullName: Meridian.Ui.Services.ActivityFeedService
+- uid: Meridian.Ui.Services.ActivityFeedService.Activities*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.Activities
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_Activities
+  name: Activities
+  nameWithType: ActivityFeedService.Activities
+  fullName: Meridian.Ui.Services.ActivityFeedService.Activities
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection{Meridian.Ui.Services.ActivityItem}
+  commentId: T:Meridian.Ui.Services.Collections.BoundedObservableCollection{Meridian.Ui.Services.ActivityItem}
+  parent: Meridian.Ui.Services.Collections
+  definition: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  name: BoundedObservableCollection<ActivityItem>
+  nameWithType: BoundedObservableCollection<ActivityItem>
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<Meridian.Ui.Services.ActivityItem>
+  nameWithType.vb: BoundedObservableCollection(Of ActivityItem)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of Meridian.Ui.Services.ActivityItem)
+  name.vb: BoundedObservableCollection(Of ActivityItem)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+    name: BoundedObservableCollection
+    href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  - name: <
+  - uid: Meridian.Ui.Services.ActivityItem
+    name: ActivityItem
+    href: Meridian.Ui.Services.ActivityItem.html
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+    name: BoundedObservableCollection
+    href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ActivityItem
+    name: ActivityItem
+    href: Meridian.Ui.Services.ActivityItem.html
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  commentId: T:Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  name: BoundedObservableCollection<T>
+  nameWithType: BoundedObservableCollection<T>
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>
+  nameWithType.vb: BoundedObservableCollection(Of T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T)
+  name.vb: BoundedObservableCollection(Of T)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+    name: BoundedObservableCollection
+    href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+    name: BoundedObservableCollection
+    href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections
+  commentId: N:Meridian.Ui.Services.Collections
+  href: Meridian.html
+  name: Meridian.Ui.Services.Collections
+  nameWithType: Meridian.Ui.Services.Collections
+  fullName: Meridian.Ui.Services.Collections
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+- uid: System.EventHandler{Meridian.Ui.Services.ActivityItem}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.ActivityItem}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ActivityItem>
+  nameWithType: EventHandler<ActivityItem>
+  fullName: System.EventHandler<Meridian.Ui.Services.ActivityItem>
+  nameWithType.vb: EventHandler(Of ActivityItem)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.ActivityItem)
+  name.vb: EventHandler(Of ActivityItem)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.ActivityItem
+    name: ActivityItem
+    href: Meridian.Ui.Services.ActivityItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ActivityItem
+    name: ActivityItem
+    href: Meridian.Ui.Services.ActivityItem.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.ActivityFeedService.AddActivity*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.AddActivity
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_AddActivity_Meridian_Ui_Services_ActivityItem_
+  name: AddActivity
+  nameWithType: ActivityFeedService.AddActivity
+  fullName: Meridian.Ui.Services.ActivityFeedService.AddActivity
+- uid: Meridian.Ui.Services.ActivityItem
+  commentId: T:Meridian.Ui.Services.ActivityItem
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ActivityItem.html
+  name: ActivityItem
+  nameWithType: ActivityItem
+  fullName: Meridian.Ui.Services.ActivityItem
+- uid: Meridian.Ui.Services.ActivityFeedService.LogActivityAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogActivityAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogActivityAsync_Meridian_Ui_Services_ActivityType_System_String_System_String_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_Threading_CancellationToken_
+  name: LogActivityAsync
+  nameWithType: ActivityFeedService.LogActivityAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogActivityAsync
+- uid: Meridian.Ui.Services.ActivityType
+  commentId: T:Meridian.Ui.Services.ActivityType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ActivityType.html
+  name: ActivityType
+  nameWithType: ActivityType
+  fullName: Meridian.Ui.Services.ActivityType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogCollectorStatusAsync_System_Boolean_System_String_
+  name: LogCollectorStatusAsync
+  nameWithType: ActivityFeedService.LogCollectorStatusAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogCollectorStatusAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogBackfillAsync_System_String___System_String_System_Boolean_System_Int32_
+  name: LogBackfillAsync
+  nameWithType: ActivityFeedService.LogBackfillAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogBackfillAsync
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogSymbolChangeAsync_System_String_System_Boolean_
+  name: LogSymbolChangeAsync
+  nameWithType: ActivityFeedService.LogSymbolChangeAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogSymbolChangeAsync
+- uid: Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogDataQualityEventAsync_System_String_System_String_System_String_
+  name: LogDataQualityEventAsync
+  nameWithType: ActivityFeedService.LogDataQualityEventAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogDataQualityEventAsync
+- uid: Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogStorageEventAsync_System_String_System_Int64_
+  name: LogStorageEventAsync
+  nameWithType: ActivityFeedService.LogStorageEventAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogStorageEventAsync
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.ActivityFeedService.LogExportAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogExportAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogExportAsync_System_String_System_String___System_Int64_
+  name: LogExportAsync
+  nameWithType: ActivityFeedService.LogExportAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogExportAsync
+- uid: Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_LogProviderConnectionAsync_System_String_System_Boolean_System_String_
+  name: LogProviderConnectionAsync
+  nameWithType: ActivityFeedService.LogProviderConnectionAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.LogProviderConnectionAsync
+- uid: Meridian.Ui.Services.ActivityItem.Id
+  commentId: P:Meridian.Ui.Services.ActivityItem.Id
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Id
+  name: Id
+  nameWithType: ActivityItem.Id
+  fullName: Meridian.Ui.Services.ActivityItem.Id
+- uid: Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_AddServerEventIfNew_Meridian_Ui_Services_ActivityItem_
+  name: AddServerEventIfNew
+  nameWithType: ActivityFeedService.AddServerEventIfNew
+  fullName: Meridian.Ui.Services.ActivityFeedService.AddServerEventIfNew
+- uid: Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_FetchServerEventsAsync_System_Threading_CancellationToken_
+  name: FetchServerEventsAsync
+  nameWithType: ActivityFeedService.FetchServerEventsAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.FetchServerEventsAsync
+- uid: Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_GetActivitiesByType_Meridian_Ui_Services_ActivityType_
+  name: GetActivitiesByType
+  nameWithType: ActivityFeedService.GetActivitiesByType
+  fullName: Meridian.Ui.Services.ActivityFeedService.GetActivitiesByType
+- uid: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.ActivityItem}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Ui.Services.ActivityItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<ActivityItem>
+  nameWithType: IEnumerable<ActivityItem>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Ui.Services.ActivityItem>
+  nameWithType.vb: IEnumerable(Of ActivityItem)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Ui.Services.ActivityItem)
+  name.vb: IEnumerable(Of ActivityItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Ui.Services.ActivityItem
+    name: ActivityItem
+    href: Meridian.Ui.Services.ActivityItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ActivityItem
+    name: ActivityItem
+    href: Meridian.Ui.Services.ActivityItem.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_GetActivitiesForSymbol_System_String_
+  name: GetActivitiesForSymbol
+  nameWithType: ActivityFeedService.GetActivitiesForSymbol
+  fullName: Meridian.Ui.Services.ActivityFeedService.GetActivitiesForSymbol
+- uid: Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_GetActivitiesSince_System_DateTime_
+  name: GetActivitiesSince
+  nameWithType: ActivityFeedService.GetActivitiesSince
+  fullName: Meridian.Ui.Services.ActivityFeedService.GetActivitiesSince
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync*
+  commentId: Overload:Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync
+  href: Meridian.Ui.Services.ActivityFeedService.html#Meridian_Ui_Services_ActivityFeedService_ClearActivitiesAsync_System_Threading_CancellationToken_
+  name: ClearActivitiesAsync
+  nameWithType: ActivityFeedService.ClearActivitiesAsync
+  fullName: Meridian.Ui.Services.ActivityFeedService.ClearActivitiesAsync

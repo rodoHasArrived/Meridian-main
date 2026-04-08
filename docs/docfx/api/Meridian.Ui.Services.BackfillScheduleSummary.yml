@@ -1,0 +1,894 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BackfillScheduleSummary
+  commentId: T:Meridian.Ui.Services.BackfillScheduleSummary
+  id: BackfillScheduleSummary
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BackfillScheduleSummary.BackfillType
+  - Meridian.Ui.Services.BackfillScheduleSummary.CronExpression
+  - Meridian.Ui.Services.BackfillScheduleSummary.Description
+  - Meridian.Ui.Services.BackfillScheduleSummary.Enabled
+  - Meridian.Ui.Services.BackfillScheduleSummary.Granularity
+  - Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays
+  - Meridian.Ui.Services.BackfillScheduleSummary.Name
+  - Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt
+  - Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders
+  - Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId
+  - Meridian.Ui.Services.BackfillScheduleSummary.Symbols
+  - Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId
+  langs:
+  - csharp
+  - vb
+  name: BackfillScheduleSummary
+  nameWithType: BackfillScheduleSummary
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillScheduleSummary
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class BackfillScheduleSummary
+    content.vb: Public NotInheritable Class BackfillScheduleSummary
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId
+  id: ScheduleId
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: ScheduleId
+  nameWithType: BackfillScheduleSummary.ScheduleId
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleId
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string ScheduleId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScheduleId As String
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Name
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.Name
+  id: Name
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: BackfillScheduleSummary.Name
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.Name*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Description
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.Description
+  id: Description
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: BackfillScheduleSummary.Description
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.Description*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Enabled
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.Enabled
+  id: Enabled
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: BackfillScheduleSummary.Enabled
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool Enabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.Enabled*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.CronExpression
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.CronExpression
+  id: CronExpression
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: CronExpression
+  nameWithType: BackfillScheduleSummary.CronExpression
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.CronExpression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CronExpression
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string CronExpression { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CronExpression As String
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.CronExpression*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId
+  id: TimeZoneId
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: TimeZoneId
+  nameWithType: BackfillScheduleSummary.TimeZoneId
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeZoneId
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string TimeZoneId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TimeZoneId As String
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.BackfillType
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.BackfillType
+  id: BackfillType
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: BackfillType
+  nameWithType: BackfillScheduleSummary.BackfillType
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.BackfillType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillType
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string BackfillType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BackfillType As String
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.BackfillType*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Symbols
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.Symbols
+  id: Symbols
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: BackfillScheduleSummary.Symbols
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 287
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string> Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Symbols As List(Of String)
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.Symbols*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays
+  id: LookbackDays
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: LookbackDays
+  nameWithType: BackfillScheduleSummary.LookbackDays
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookbackDays
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int LookbackDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property LookbackDays As Integer
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Granularity
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.Granularity
+  id: Granularity
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: Granularity
+  nameWithType: BackfillScheduleSummary.Granularity
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Granularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Granularity
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Granularity { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Granularity As String
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.Granularity*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders
+  id: PreferredProviders
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: PreferredProviders
+  nameWithType: BackfillScheduleSummary.PreferredProviders
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreferredProviders
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string> PreferredProviders { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property PreferredProviders As List(Of String)
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders*
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt
+  commentId: P:Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt
+  id: NextExecutionAt
+  parent: Meridian.Ui.Services.BackfillScheduleSummary
+  langs:
+  - csharp
+  - vb
+  name: NextExecutionAt
+  nameWithType: BackfillScheduleSummary.NextExecutionAt
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextExecutionAt
+    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTimeOffset? NextExecutionAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property NextExecutionAt As DateTimeOffset?
+  overload: Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_ScheduleId
+  name: ScheduleId
+  nameWithType: BackfillScheduleSummary.ScheduleId
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.ScheduleId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Name*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.Name
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_Name
+  name: Name
+  nameWithType: BackfillScheduleSummary.Name
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Name
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Description*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.Description
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_Description
+  name: Description
+  nameWithType: BackfillScheduleSummary.Description
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Description
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Enabled*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.Enabled
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_Enabled
+  name: Enabled
+  nameWithType: BackfillScheduleSummary.Enabled
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.CronExpression*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.CronExpression
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_CronExpression
+  name: CronExpression
+  nameWithType: BackfillScheduleSummary.CronExpression
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.CronExpression
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_TimeZoneId
+  name: TimeZoneId
+  nameWithType: BackfillScheduleSummary.TimeZoneId
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.TimeZoneId
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.BackfillType*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.BackfillType
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_BackfillType
+  name: BackfillType
+  nameWithType: BackfillScheduleSummary.BackfillType
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.BackfillType
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Symbols*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.Symbols
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_Symbols
+  name: Symbols
+  nameWithType: BackfillScheduleSummary.Symbols
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Symbols
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_LookbackDays
+  name: LookbackDays
+  nameWithType: BackfillScheduleSummary.LookbackDays
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.LookbackDays
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.Granularity*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.Granularity
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_Granularity
+  name: Granularity
+  nameWithType: BackfillScheduleSummary.Granularity
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.Granularity
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_PreferredProviders
+  name: PreferredProviders
+  nameWithType: BackfillScheduleSummary.PreferredProviders
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.PreferredProviders
+- uid: Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt*
+  commentId: Overload:Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt
+  href: Meridian.Ui.Services.BackfillScheduleSummary.html#Meridian_Ui_Services_BackfillScheduleSummary_NextExecutionAt
+  name: NextExecutionAt
+  nameWithType: BackfillScheduleSummary.NextExecutionAt
+  fullName: Meridian.Ui.Services.BackfillScheduleSummary.NextExecutionAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

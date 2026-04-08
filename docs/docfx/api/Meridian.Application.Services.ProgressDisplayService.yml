@@ -1,0 +1,1129 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ProgressDisplayService
+  commentId: T:Meridian.Application.Services.ProgressDisplayService
+  id: ProgressDisplayService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ProgressDisplayService.#ctor(System.IO.TextWriter)
+  - Meridian.Application.Services.ProgressDisplayService.ClearLine
+  - Meridian.Application.Services.ProgressDisplayService.DisplayError(System.String)
+  - Meridian.Application.Services.ProgressDisplayService.DisplayProgress(System.String,System.Int32,System.Int32,System.String)
+  - Meridian.Application.Services.ProgressDisplayService.DisplayStatus(System.String)
+  - Meridian.Application.Services.ProgressDisplayService.DisplaySuccess(System.String)
+  - Meridian.Application.Services.ProgressDisplayService.DisplayTable(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  - Meridian.Application.Services.ProgressDisplayService.DisplayWarning(System.String)
+  - Meridian.Application.Services.ProgressDisplayService.Dispose
+  - Meridian.Application.Services.ProgressDisplayService.StartChecklist(System.String,System.String[])
+  - Meridian.Application.Services.ProgressDisplayService.StartOperation(System.String,System.Int32)
+  - Meridian.Application.Services.ProgressDisplayService.StartSpinner(System.String)
+  - Meridian.Application.Services.ProgressDisplayService.StartTiming
+  - Meridian.Application.Services.ProgressDisplayService.StopTiming
+  langs:
+  - csharp
+  - vb
+  name: ProgressDisplayService
+  nameWithType: ProgressDisplayService
+  fullName: Meridian.Application.Services.ProgressDisplayService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProgressDisplayService
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Service for displaying real-time progress feedback during long-running operations.
+
+    Provides terminal-based progress bars, spinners, and status updates.
+  example: []
+  syntax:
+    content: 'public sealed class ProgressDisplayService : IDisposable'
+    content.vb: Public NotInheritable Class ProgressDisplayService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ProgressDisplayService.#ctor(System.IO.TextWriter)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.#ctor(System.IO.TextWriter)
+  id: '#ctor(System.IO.TextWriter)'
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: ProgressDisplayService(TextWriter?)
+  nameWithType: ProgressDisplayService.ProgressDisplayService(TextWriter?)
+  fullName: Meridian.Application.Services.ProgressDisplayService.ProgressDisplayService(System.IO.TextWriter?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public ProgressDisplayService(TextWriter? output = null)
+    parameters:
+    - id: output
+      type: System.IO.TextWriter
+    content.vb: Public Sub New(output As TextWriter = Nothing)
+  overload: Meridian.Application.Services.ProgressDisplayService.#ctor*
+  nameWithType.vb: ProgressDisplayService.New(TextWriter)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.New(System.IO.TextWriter)
+  name.vb: New(TextWriter)
+- uid: Meridian.Application.Services.ProgressDisplayService.StartOperation(System.String,System.Int32)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.StartOperation(System.String,System.Int32)
+  id: StartOperation(System.String,System.Int32)
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: StartOperation(string, int)
+  nameWithType: ProgressDisplayService.StartOperation(string, int)
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartOperation(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartOperation
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Creates a progress tracker for a specific operation.
+  example: []
+  syntax:
+    content: public OperationProgress StartOperation(string operationName, int totalItems = 0)
+    parameters:
+    - id: operationName
+      type: System.String
+    - id: totalItems
+      type: System.Int32
+    return:
+      type: Meridian.Application.Services.OperationProgress
+    content.vb: Public Function StartOperation(operationName As String, totalItems As Integer = 0) As OperationProgress
+  overload: Meridian.Application.Services.ProgressDisplayService.StartOperation*
+  nameWithType.vb: ProgressDisplayService.StartOperation(String, Integer)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.StartOperation(String, Integer)
+  name.vb: StartOperation(String, Integer)
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayProgress(System.String,System.Int32,System.Int32,System.String)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.DisplayProgress(System.String,System.Int32,System.Int32,System.String)
+  id: DisplayProgress(System.String,System.Int32,System.Int32,System.String)
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: DisplayProgress(string, int, int, string?)
+  nameWithType: ProgressDisplayService.DisplayProgress(string, int, int, string?)
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayProgress(string, int, int, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayProgress
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a progress bar with percentage and ETA.
+  example: []
+  syntax:
+    content: public void DisplayProgress(string operation, int current, int total, string? currentItem = null)
+    parameters:
+    - id: operation
+      type: System.String
+    - id: current
+      type: System.Int32
+    - id: total
+      type: System.Int32
+    - id: currentItem
+      type: System.String
+    content.vb: Public Sub DisplayProgress(operation As String, current As Integer, total As Integer, currentItem As String = Nothing)
+  overload: Meridian.Application.Services.ProgressDisplayService.DisplayProgress*
+  nameWithType.vb: ProgressDisplayService.DisplayProgress(String, Integer, Integer, String)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.DisplayProgress(String, Integer, Integer, String)
+  name.vb: DisplayProgress(String, Integer, Integer, String)
+- uid: Meridian.Application.Services.ProgressDisplayService.StartSpinner(System.String)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.StartSpinner(System.String)
+  id: StartSpinner(System.String)
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: StartSpinner(string)
+  nameWithType: ProgressDisplayService.StartSpinner(string)
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartSpinner(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartSpinner
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a spinner for indeterminate progress.
+  example: []
+  syntax:
+    content: public IDisposable StartSpinner(string message)
+    parameters:
+    - id: message
+      type: System.String
+    return:
+      type: System.IDisposable
+    content.vb: Public Function StartSpinner(message As String) As IDisposable
+  overload: Meridian.Application.Services.ProgressDisplayService.StartSpinner*
+  nameWithType.vb: ProgressDisplayService.StartSpinner(String)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.StartSpinner(String)
+  name.vb: StartSpinner(String)
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayStatus(System.String)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.DisplayStatus(System.String)
+  id: DisplayStatus(System.String)
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: DisplayStatus(string)
+  nameWithType: ProgressDisplayService.DisplayStatus(string)
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayStatus(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayStatus
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a status line that can be updated.
+  example: []
+  syntax:
+    content: public void DisplayStatus(string status)
+    parameters:
+    - id: status
+      type: System.String
+    content.vb: Public Sub DisplayStatus(status As String)
+  overload: Meridian.Application.Services.ProgressDisplayService.DisplayStatus*
+  nameWithType.vb: ProgressDisplayService.DisplayStatus(String)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.DisplayStatus(String)
+  name.vb: DisplayStatus(String)
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplaySuccess(System.String)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.DisplaySuccess(System.String)
+  id: DisplaySuccess(System.String)
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: DisplaySuccess(string)
+  nameWithType: ProgressDisplayService.DisplaySuccess(string)
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplaySuccess(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplaySuccess
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a success message.
+  example: []
+  syntax:
+    content: public void DisplaySuccess(string message)
+    parameters:
+    - id: message
+      type: System.String
+    content.vb: Public Sub DisplaySuccess(message As String)
+  overload: Meridian.Application.Services.ProgressDisplayService.DisplaySuccess*
+  nameWithType.vb: ProgressDisplayService.DisplaySuccess(String)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.DisplaySuccess(String)
+  name.vb: DisplaySuccess(String)
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayWarning(System.String)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.DisplayWarning(System.String)
+  id: DisplayWarning(System.String)
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: DisplayWarning(string)
+  nameWithType: ProgressDisplayService.DisplayWarning(string)
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayWarning(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayWarning
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a warning message.
+  example: []
+  syntax:
+    content: public void DisplayWarning(string message)
+    parameters:
+    - id: message
+      type: System.String
+    content.vb: Public Sub DisplayWarning(message As String)
+  overload: Meridian.Application.Services.ProgressDisplayService.DisplayWarning*
+  nameWithType.vb: ProgressDisplayService.DisplayWarning(String)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.DisplayWarning(String)
+  name.vb: DisplayWarning(String)
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayError(System.String)
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.DisplayError(System.String)
+  id: DisplayError(System.String)
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: DisplayError(string)
+  nameWithType: ProgressDisplayService.DisplayError(string)
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayError(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayError
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays an error message.
+  example: []
+  syntax:
+    content: public void DisplayError(string message)
+    parameters:
+    - id: message
+      type: System.String
+    content.vb: Public Sub DisplayError(message As String)
+  overload: Meridian.Application.Services.ProgressDisplayService.DisplayError*
+  nameWithType.vb: ProgressDisplayService.DisplayError(String)
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.DisplayError(String)
+  name.vb: DisplayError(String)
+- uid: Meridian.Application.Services.ProgressDisplayService.ClearLine
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.ClearLine
+  id: ClearLine
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: ClearLine()
+  nameWithType: ProgressDisplayService.ClearLine()
+  fullName: Meridian.Application.Services.ProgressDisplayService.ClearLine()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearLine
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Clears the current line.
+  example: []
+  syntax:
+    content: public void ClearLine()
+    content.vb: Public Sub ClearLine()
+  overload: Meridian.Application.Services.ProgressDisplayService.ClearLine*
+- uid: Meridian.Application.Services.ProgressDisplayService.StartChecklist(System.String,System.String[])
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.StartChecklist(System.String,System.String[])
+  id: StartChecklist(System.String,System.String[])
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: StartChecklist(string, string[])
+  nameWithType: ProgressDisplayService.StartChecklist(string, string[])
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartChecklist(string, string[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartChecklist
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a multi-step checklist.
+  example: []
+  syntax:
+    content: public ChecklistDisplay StartChecklist(string title, string[] steps)
+    parameters:
+    - id: title
+      type: System.String
+    - id: steps
+      type: System.String[]
+    return:
+      type: Meridian.Application.Services.ChecklistDisplay
+    content.vb: Public Function StartChecklist(title As String, steps As String()) As ChecklistDisplay
+  overload: Meridian.Application.Services.ProgressDisplayService.StartChecklist*
+  nameWithType.vb: ProgressDisplayService.StartChecklist(String, String())
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.StartChecklist(String, String())
+  name.vb: StartChecklist(String, String())
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayTable(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.DisplayTable(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  id: DisplayTable(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: DisplayTable(string, IEnumerable<(string Key, string Value)>)
+  nameWithType: ProgressDisplayService.DisplayTable(string, IEnumerable<(string Key, string Value)>)
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayTable(string, System.Collections.Generic.IEnumerable<(string Key, string Value)>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayTable
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays a summary table.
+  example: []
+  syntax:
+    content: public void DisplayTable(string title, IEnumerable<(string Key, string Value)> rows)
+    parameters:
+    - id: title
+      type: System.String
+    - id: rows
+      type: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}}
+    content.vb: Public Sub DisplayTable(title As String, rows As IEnumerable(Of (Key As String, Value As String)))
+  overload: Meridian.Application.Services.ProgressDisplayService.DisplayTable*
+  nameWithType.vb: ProgressDisplayService.DisplayTable(String, IEnumerable(Of (Key As String, Value As String)))
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.DisplayTable(String, System.Collections.Generic.IEnumerable(Of (Key As String, Value As String)))
+  name.vb: DisplayTable(String, IEnumerable(Of (Key As String, Value As String)))
+- uid: Meridian.Application.Services.ProgressDisplayService.StartTiming
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.StartTiming
+  id: StartTiming
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: StartTiming()
+  nameWithType: ProgressDisplayService.StartTiming()
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartTiming()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartTiming
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Starts the internal stopwatch for ETA calculations.
+  example: []
+  syntax:
+    content: public void StartTiming()
+    content.vb: Public Sub StartTiming()
+  overload: Meridian.Application.Services.ProgressDisplayService.StartTiming*
+- uid: Meridian.Application.Services.ProgressDisplayService.StopTiming
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.StopTiming
+  id: StopTiming
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: StopTiming()
+  nameWithType: ProgressDisplayService.StopTiming()
+  fullName: Meridian.Application.Services.ProgressDisplayService.StopTiming()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopTiming
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Stops the internal stopwatch.
+  example: []
+  syntax:
+    content: public TimeSpan StopTiming()
+    return:
+      type: System.TimeSpan
+    content.vb: Public Function StopTiming() As TimeSpan
+  overload: Meridian.Application.Services.ProgressDisplayService.StopTiming*
+- uid: Meridian.Application.Services.ProgressDisplayService.Dispose
+  commentId: M:Meridian.Application.Services.ProgressDisplayService.Dispose
+  id: Dispose
+  parent: Meridian.Application.Services.ProgressDisplayService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ProgressDisplayService.Dispose()
+  fullName: Meridian.Application.Services.ProgressDisplayService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ProgressDisplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Services.ProgressDisplayService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ProgressDisplayService.#ctor*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.#ctor
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService__ctor_System_IO_TextWriter_
+  name: ProgressDisplayService
+  nameWithType: ProgressDisplayService.ProgressDisplayService
+  fullName: Meridian.Application.Services.ProgressDisplayService.ProgressDisplayService
+  nameWithType.vb: ProgressDisplayService.New
+  fullName.vb: Meridian.Application.Services.ProgressDisplayService.New
+  name.vb: New
+- uid: System.IO.TextWriter
+  commentId: T:System.IO.TextWriter
+  parent: System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.textwriter
+  name: TextWriter
+  nameWithType: TextWriter
+  fullName: System.IO.TextWriter
+- uid: System.IO
+  commentId: N:System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.IO
+  nameWithType: System.IO
+  fullName: System.IO
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+- uid: Meridian.Application.Services.ProgressDisplayService.StartOperation*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.StartOperation
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_StartOperation_System_String_System_Int32_
+  name: StartOperation
+  nameWithType: ProgressDisplayService.StartOperation
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartOperation
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.OperationProgress
+  commentId: T:Meridian.Application.Services.OperationProgress
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.OperationProgress.html
+  name: OperationProgress
+  nameWithType: OperationProgress
+  fullName: Meridian.Application.Services.OperationProgress
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayProgress*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.DisplayProgress
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_DisplayProgress_System_String_System_Int32_System_Int32_System_String_
+  name: DisplayProgress
+  nameWithType: ProgressDisplayService.DisplayProgress
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayProgress
+- uid: Meridian.Application.Services.ProgressDisplayService.StartSpinner*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.StartSpinner
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_StartSpinner_System_String_
+  name: StartSpinner
+  nameWithType: ProgressDisplayService.StartSpinner
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartSpinner
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayStatus*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.DisplayStatus
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_DisplayStatus_System_String_
+  name: DisplayStatus
+  nameWithType: ProgressDisplayService.DisplayStatus
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayStatus
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplaySuccess*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.DisplaySuccess
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_DisplaySuccess_System_String_
+  name: DisplaySuccess
+  nameWithType: ProgressDisplayService.DisplaySuccess
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplaySuccess
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayWarning*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.DisplayWarning
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_DisplayWarning_System_String_
+  name: DisplayWarning
+  nameWithType: ProgressDisplayService.DisplayWarning
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayWarning
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayError*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.DisplayError
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_DisplayError_System_String_
+  name: DisplayError
+  nameWithType: ProgressDisplayService.DisplayError
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayError
+- uid: Meridian.Application.Services.ProgressDisplayService.ClearLine*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.ClearLine
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_ClearLine
+  name: ClearLine
+  nameWithType: ProgressDisplayService.ClearLine
+  fullName: Meridian.Application.Services.ProgressDisplayService.ClearLine
+- uid: Meridian.Application.Services.ProgressDisplayService.StartChecklist*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.StartChecklist
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_StartChecklist_System_String_System_String___
+  name: StartChecklist
+  nameWithType: ProgressDisplayService.StartChecklist
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartChecklist
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Services.ChecklistDisplay
+  commentId: T:Meridian.Application.Services.ChecklistDisplay
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ChecklistDisplay.html
+  name: ChecklistDisplay
+  nameWithType: ChecklistDisplay
+  fullName: Meridian.Application.Services.ChecklistDisplay
+- uid: Meridian.Application.Services.ProgressDisplayService.DisplayTable*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.DisplayTable
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_DisplayTable_System_String_System_Collections_Generic_IEnumerable_System_ValueTuple_System_String_System_String___
+  name: DisplayTable
+  nameWithType: ProgressDisplayService.DisplayTable
+  fullName: Meridian.Application.Services.ProgressDisplayService.DisplayTable
+- uid: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}}
+  commentId: T:System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<(string Field, string Error)>
+  nameWithType: IEnumerable<(string Field, string Error)>
+  fullName: System.Collections.Generic.IEnumerable<(string Field, string Error)>
+  nameWithType.vb: IEnumerable(Of (Field As String, Error As String))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of (Field As String, Error As String))
+  name.vb: IEnumerable(Of (Field As String, Error As String))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Field
+    name: Field
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.field
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Error
+    name: Error
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.error
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.Field
+    name: Field
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.field
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Error
+    name: Error
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.error
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.ProgressDisplayService.StartTiming*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.StartTiming
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_StartTiming
+  name: StartTiming
+  nameWithType: ProgressDisplayService.StartTiming
+  fullName: Meridian.Application.Services.ProgressDisplayService.StartTiming
+- uid: Meridian.Application.Services.ProgressDisplayService.StopTiming*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.StopTiming
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_StopTiming
+  name: StopTiming
+  nameWithType: ProgressDisplayService.StopTiming
+  fullName: Meridian.Application.Services.ProgressDisplayService.StopTiming
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Services.ProgressDisplayService.Dispose*
+  commentId: Overload:Meridian.Application.Services.ProgressDisplayService.Dispose
+  href: Meridian.Application.Services.ProgressDisplayService.html#Meridian_Application_Services_ProgressDisplayService_Dispose
+  name: Dispose
+  nameWithType: ProgressDisplayService.Dispose
+  fullName: Meridian.Application.Services.ProgressDisplayService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

@@ -1,0 +1,749 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary
+  commentId: T:Meridian.Backtesting.Sdk.TcaCostSummary
+  id: TcaCostSummary
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.TcaCostSummary.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32,System.Int32,System.Int32)
+  - Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills
+  - Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps
+  - Meridian.Backtesting.Sdk.TcaCostSummary.SellFills
+  - Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional
+  - Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions
+  - Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills
+  - Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional
+  - Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional
+  langs:
+  - csharp
+  - vb
+  name: TcaCostSummary
+  nameWithType: TcaCostSummary
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TcaCostSummary
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Aggregate execution cost summary across all fills in a simulation run.
+  example: []
+  syntax:
+    content: 'public sealed record TcaCostSummary : IEquatable<TcaCostSummary>'
+    content.vb: Public NotInheritable Class TcaCostSummary Implements IEquatable(Of TcaCostSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.TcaCostSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32,System.Int32,System.Int32)
+  commentId: M:Meridian.Backtesting.Sdk.TcaCostSummary.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32,System.Int32,System.Int32)
+  id: '#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32,System.Int32,System.Int32)'
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: TcaCostSummary(decimal, decimal, decimal, decimal, double, int, int, int)
+  nameWithType: TcaCostSummary.TcaCostSummary(decimal, decimal, decimal, decimal, double, int, int, int)
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TcaCostSummary(decimal, decimal, decimal, decimal, double, int, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Aggregate execution cost summary across all fills in a simulation run.
+  example: []
+  syntax:
+    content: public TcaCostSummary(decimal TotalCommissions, decimal TotalBuyNotional, decimal TotalSellNotional, decimal TotalNotional, double CommissionRateBps, int TotalFills, int BuyFills, int SellFills)
+    parameters:
+    - id: TotalCommissions
+      type: System.Decimal
+      description: Sum of commissions paid across all fills.
+    - id: TotalBuyNotional
+      type: System.Decimal
+      description: Sum of (|quantity| × fillPrice) for buy-side fills.
+    - id: TotalSellNotional
+      type: System.Decimal
+      description: Sum of (|quantity| × fillPrice) for sell-side fills.
+    - id: TotalNotional
+      type: System.Decimal
+      description: Total two-sided notional (buy + sell).
+    - id: CommissionRateBps
+      type: System.Double
+      description: Average commission as a fraction of total notional, in basis points.
+    - id: TotalFills
+      type: System.Int32
+      description: Number of fill events.
+    - id: BuyFills
+      type: System.Int32
+      description: Number of buy-side fill events.
+    - id: SellFills
+      type: System.Int32
+      description: Number of sell-side fill events.
+    content.vb: Public Sub New(TotalCommissions As Decimal, TotalBuyNotional As Decimal, TotalSellNotional As Decimal, TotalNotional As Decimal, CommissionRateBps As Double, TotalFills As Integer, BuyFills As Integer, SellFills As Integer)
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.#ctor*
+  nameWithType.vb: TcaCostSummary.New(Decimal, Decimal, Decimal, Decimal, Double, Integer, Integer, Integer)
+  fullName.vb: Meridian.Backtesting.Sdk.TcaCostSummary.New(Decimal, Decimal, Decimal, Decimal, Double, Integer, Integer, Integer)
+  name.vb: New(Decimal, Decimal, Decimal, Decimal, Double, Integer, Integer, Integer)
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions
+  id: TotalCommissions
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalCommissions
+  nameWithType: TcaCostSummary.TotalCommissions
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCommissions
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Sum of commissions paid across all fills.
+  example: []
+  syntax:
+    content: public decimal TotalCommissions { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalCommissions As Decimal
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions*
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional
+  id: TotalBuyNotional
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalBuyNotional
+  nameWithType: TcaCostSummary.TotalBuyNotional
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBuyNotional
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Sum of (|quantity| × fillPrice) for buy-side fills.
+  example: []
+  syntax:
+    content: public decimal TotalBuyNotional { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalBuyNotional As Decimal
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional*
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional
+  id: TotalSellNotional
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalSellNotional
+  nameWithType: TcaCostSummary.TotalSellNotional
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSellNotional
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Sum of (|quantity| × fillPrice) for sell-side fills.
+  example: []
+  syntax:
+    content: public decimal TotalSellNotional { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalSellNotional As Decimal
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional*
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional
+  id: TotalNotional
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalNotional
+  nameWithType: TcaCostSummary.TotalNotional
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalNotional
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Total two-sided notional (buy + sell).
+  example: []
+  syntax:
+    content: public decimal TotalNotional { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalNotional As Decimal
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional*
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps
+  id: CommissionRateBps
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: CommissionRateBps
+  nameWithType: TcaCostSummary.CommissionRateBps
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionRateBps
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Average commission as a fraction of total notional, in basis points.
+  example: []
+  syntax:
+    content: public double CommissionRateBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CommissionRateBps As Double
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps*
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills
+  id: TotalFills
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalFills
+  nameWithType: TcaCostSummary.TotalFills
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFills
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Number of fill events.
+  example: []
+  syntax:
+    content: public int TotalFills { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFills As Integer
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills*
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills
+  id: BuyFills
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: BuyFills
+  nameWithType: TcaCostSummary.BuyFills
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuyFills
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Number of buy-side fill events.
+  example: []
+  syntax:
+    content: public int BuyFills { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BuyFills As Integer
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills*
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.SellFills
+  commentId: P:Meridian.Backtesting.Sdk.TcaCostSummary.SellFills
+  id: SellFills
+  parent: Meridian.Backtesting.Sdk.TcaCostSummary
+  langs:
+  - csharp
+  - vb
+  name: SellFills
+  nameWithType: TcaCostSummary.SellFills
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.SellFills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SellFills
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Number of sell-side fill events.
+  example: []
+  syntax:
+    content: public int SellFills { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SellFills As Integer
+  overload: Meridian.Backtesting.Sdk.TcaCostSummary.SellFills*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.TcaCostSummary}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.TcaCostSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TcaCostSummary>
+  nameWithType: IEquatable<TcaCostSummary>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.TcaCostSummary>
+  nameWithType.vb: IEquatable(Of TcaCostSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.TcaCostSummary)
+  name.vb: IEquatable(Of TcaCostSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.TcaCostSummary
+    name: TcaCostSummary
+    href: Meridian.Backtesting.Sdk.TcaCostSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.TcaCostSummary
+    name: TcaCostSummary
+    href: Meridian.Backtesting.Sdk.TcaCostSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.#ctor
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary__ctor_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Double_System_Int32_System_Int32_System_Int32_
+  name: TcaCostSummary
+  nameWithType: TcaCostSummary.TcaCostSummary
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TcaCostSummary
+  nameWithType.vb: TcaCostSummary.New
+  fullName.vb: Meridian.Backtesting.Sdk.TcaCostSummary.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_TotalCommissions
+  name: TotalCommissions
+  nameWithType: TcaCostSummary.TotalCommissions
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalCommissions
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_TotalBuyNotional
+  name: TotalBuyNotional
+  nameWithType: TcaCostSummary.TotalBuyNotional
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalBuyNotional
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_TotalSellNotional
+  name: TotalSellNotional
+  nameWithType: TcaCostSummary.TotalSellNotional
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalSellNotional
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_TotalNotional
+  name: TotalNotional
+  nameWithType: TcaCostSummary.TotalNotional
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalNotional
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_CommissionRateBps
+  name: CommissionRateBps
+  nameWithType: TcaCostSummary.CommissionRateBps
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.CommissionRateBps
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_TotalFills
+  name: TotalFills
+  nameWithType: TcaCostSummary.TotalFills
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.TotalFills
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_BuyFills
+  name: BuyFills
+  nameWithType: TcaCostSummary.BuyFills
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.BuyFills
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary.SellFills*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaCostSummary.SellFills
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html#Meridian_Backtesting_Sdk_TcaCostSummary_SellFills
+  name: SellFills
+  nameWithType: TcaCostSummary.SellFills
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary.SellFills

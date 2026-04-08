@@ -1,0 +1,794 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers
+  commentId: T:Meridian.Contracts.Catalog.SymbolIdentifiers
+  id: SymbolIdentifiers
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.Cik
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.Figi
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.Isin
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.Lei
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.Ric
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol
+  - Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi
+  langs:
+  - csharp
+  - vb
+  name: SymbolIdentifiers
+  nameWithType: SymbolIdentifiers
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolIdentifiers
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Industry standard identifiers for a symbol.
+  example: []
+  syntax:
+    content: public sealed class SymbolIdentifiers
+    content.vb: Public NotInheritable Class SymbolIdentifiers
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Isin
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.Isin
+  id: Isin
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: Isin
+  nameWithType: SymbolIdentifiers.Isin
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Isin
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Isin
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: ISIN (International Securities Identification Number).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isin")]
+
+      public string? Isin { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("isin")>
+
+      Public Property Isin As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.Isin*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isin
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Figi
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.Figi
+  id: Figi
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: Figi
+  nameWithType: SymbolIdentifiers.Figi
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Figi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Figi
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: FIGI (Financial Instrument Global Identifier).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("figi")]
+
+      public string? Figi { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("figi")>
+
+      Public Property Figi As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.Figi*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: figi
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi
+  id: CompositeFigi
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: CompositeFigi
+  nameWithType: SymbolIdentifiers.CompositeFigi
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositeFigi
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Composite FIGI.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compositeFigi")]
+
+      public string? CompositeFigi { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("compositeFigi")>
+
+      Public Property CompositeFigi As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compositeFigi
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi
+  id: ShareClassFigi
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: ShareClassFigi
+  nameWithType: SymbolIdentifiers.ShareClassFigi
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShareClassFigi
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Share class FIGI.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("shareClassFigi")]
+
+      public string? ShareClassFigi { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("shareClassFigi")>
+
+      Public Property ShareClassFigi As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: shareClassFigi
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol
+  id: Sedol
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: Sedol
+  nameWithType: SymbolIdentifiers.Sedol
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sedol
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: SEDOL (Stock Exchange Daily Official List).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sedol")]
+
+      public string? Sedol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("sedol")>
+
+      Public Property Sedol As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sedol
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip
+  id: Cusip
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: Cusip
+  nameWithType: SymbolIdentifiers.Cusip
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cusip
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: CUSIP (Committee on Uniform Securities Identification Procedures).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("cusip")]
+
+      public string? Cusip { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("cusip")>
+
+      Public Property Cusip As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: cusip
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Cik
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.Cik
+  id: Cik
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: Cik
+  nameWithType: SymbolIdentifiers.Cik
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Cik
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cik
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: CIK (SEC Central Index Key).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("cik")]
+
+      public string? Cik { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("cik")>
+
+      Public Property Cik As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.Cik*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: cik
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Lei
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.Lei
+  id: Lei
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: Lei
+  nameWithType: SymbolIdentifiers.Lei
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Lei
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lei
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: LEI (Legal Entity Identifier).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lei")]
+
+      public string? Lei { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("lei")>
+
+      Public Property Lei As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.Lei*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lei
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId
+  id: BloombergId
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: BloombergId
+  nameWithType: SymbolIdentifiers.BloombergId
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BloombergId
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Bloomberg ID.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("bloombergId")]
+
+      public string? BloombergId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("bloombergId")>
+
+      Public Property BloombergId As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: bloombergId
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Ric
+  commentId: P:Meridian.Contracts.Catalog.SymbolIdentifiers.Ric
+  id: Ric
+  parent: Meridian.Contracts.Catalog.SymbolIdentifiers
+  langs:
+  - csharp
+  - vb
+  name: Ric
+  nameWithType: SymbolIdentifiers.Ric
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Ric
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ric
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Reuters RIC.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("ric")]
+
+      public string? Ric { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("ric")>
+
+      Public Property Ric As String
+  overload: Meridian.Contracts.Catalog.SymbolIdentifiers.Ric*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ric
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Isin*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.Isin
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_Isin
+  name: Isin
+  nameWithType: SymbolIdentifiers.Isin
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Isin
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Figi*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.Figi
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_Figi
+  name: Figi
+  nameWithType: SymbolIdentifiers.Figi
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Figi
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_CompositeFigi
+  name: CompositeFigi
+  nameWithType: SymbolIdentifiers.CompositeFigi
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.CompositeFigi
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_ShareClassFigi
+  name: ShareClassFigi
+  nameWithType: SymbolIdentifiers.ShareClassFigi
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.ShareClassFigi
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_Sedol
+  name: Sedol
+  nameWithType: SymbolIdentifiers.Sedol
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Sedol
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_Cusip
+  name: Cusip
+  nameWithType: SymbolIdentifiers.Cusip
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Cusip
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Cik*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.Cik
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_Cik
+  name: Cik
+  nameWithType: SymbolIdentifiers.Cik
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Cik
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Lei*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.Lei
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_Lei
+  name: Lei
+  nameWithType: SymbolIdentifiers.Lei
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Lei
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_BloombergId
+  name: BloombergId
+  nameWithType: SymbolIdentifiers.BloombergId
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.BloombergId
+- uid: Meridian.Contracts.Catalog.SymbolIdentifiers.Ric*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolIdentifiers.Ric
+  href: Meridian.Contracts.Catalog.SymbolIdentifiers.html#Meridian_Contracts_Catalog_SymbolIdentifiers_Ric
+  name: Ric
+  nameWithType: SymbolIdentifiers.Ric
+  fullName: Meridian.Contracts.Catalog.SymbolIdentifiers.Ric

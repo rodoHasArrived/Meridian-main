@@ -1,0 +1,264 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1
+  commentId: T:Meridian.Contracts.Schema.ISchemaUpcaster`1
+  id: ISchemaUpcaster`1
+  parent: Meridian.Contracts.Schema
+  children:
+  - Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion
+  - Meridian.Contracts.Schema.ISchemaUpcaster`1.ToSchemaVersion
+  - Meridian.Contracts.Schema.ISchemaUpcaster`1.Upcast(System.String)
+  langs:
+  - csharp
+  - vb
+  name: ISchemaUpcaster<T>
+  nameWithType: ISchemaUpcaster<T>
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISchemaUpcaster
+    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Schema
+  summary: Contract for upgrading a stored record from an older schema version to the current one.
+  remarks: >-
+    Implement this interface for each schema version transition so that old JSONL files
+
+    remain readable as the domain model evolves, without requiring bulk data migration.
+
+
+    <p>Registration pattern:</p>
+
+    <pre><code class="lang-csharp">// Register in DI:
+
+    services.AddSingleton&lt;ISchemaUpcaster&lt;Trade&gt;&gt;, TradeV1ToCurrentUpcaster&gt;();</code></pre>
+
+
+    <p>Convention: the implementing class name should follow the pattern
+
+    <code>{DomainType}V{FromVersion}ToCurrentUpcaster</code> so it is self-documenting.</p>
+  example: []
+  syntax:
+    content: public interface ISchemaUpcaster<out T>
+    typeParameters:
+    - id: T
+      description: The current (latest) domain type that this upcaster produces.
+    content.vb: Public Interface ISchemaUpcaster(Of Out T)
+  nameWithType.vb: ISchemaUpcaster(Of T)
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T)
+  name.vb: ISchemaUpcaster(Of T)
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion
+  commentId: P:Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion
+  id: FromSchemaVersion
+  parent: Meridian.Contracts.Schema.ISchemaUpcaster`1
+  langs:
+  - csharp
+  - vb
+  name: FromSchemaVersion
+  nameWithType: ISchemaUpcaster<T>.FromSchemaVersion
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>.FromSchemaVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromSchemaVersion
+    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Schema
+  summary: The schema version this upcaster reads from (e.g., <code>"1"</code>, <code>"1.0.0"</code>).
+  example: []
+  syntax:
+    content: int FromSchemaVersion { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property FromSchemaVersion As Integer
+  overload: Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion*
+  nameWithType.vb: ISchemaUpcaster(Of T).FromSchemaVersion
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T).FromSchemaVersion
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1.ToSchemaVersion
+  commentId: P:Meridian.Contracts.Schema.ISchemaUpcaster`1.ToSchemaVersion
+  id: ToSchemaVersion
+  parent: Meridian.Contracts.Schema.ISchemaUpcaster`1
+  langs:
+  - csharp
+  - vb
+  name: ToSchemaVersion
+  nameWithType: ISchemaUpcaster<T>.ToSchemaVersion
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>.ToSchemaVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToSchemaVersion
+    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Schema
+  summary: The schema version this upcaster writes to (the <em>current</em> version of <code class="typeparamref">T</code>).
+  example: []
+  syntax:
+    content: int ToSchemaVersion { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property ToSchemaVersion As Integer
+  overload: Meridian.Contracts.Schema.ISchemaUpcaster`1.ToSchemaVersion*
+  nameWithType.vb: ISchemaUpcaster(Of T).ToSchemaVersion
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T).ToSchemaVersion
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1.Upcast(System.String)
+  commentId: M:Meridian.Contracts.Schema.ISchemaUpcaster`1.Upcast(System.String)
+  id: Upcast(System.String)
+  parent: Meridian.Contracts.Schema.ISchemaUpcaster`1
+  langs:
+  - csharp
+  - vb
+  name: Upcast(string)
+  nameWithType: ISchemaUpcaster<T>.Upcast(string)
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>.Upcast(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Upcast
+    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Schema
+  summary: >-
+    Converts a raw JSON element that was serialised under <xref href="Meridian.Contracts.Schema.ISchemaUpcaster%601.FromSchemaVersion" data-throw-if-not-resolved="false"></xref>
+
+    into an instance of the current domain type <code class="typeparamref">T</code>.
+  example: []
+  syntax:
+    content: T? Upcast(string json)
+    parameters:
+    - id: json
+      type: System.String
+      description: The raw JSON text of the stored record.
+    return:
+      type: '{T}'
+      description: The up-cast domain object, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if the record cannot be read.
+    content.vb: Function Upcast(json As String) As T
+  overload: Meridian.Contracts.Schema.ISchemaUpcaster`1.Upcast*
+  nameWithType.vb: ISchemaUpcaster(Of T).Upcast(String)
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T).Upcast(String)
+  name.vb: Upcast(String)
+references:
+- uid: Meridian.Contracts.Schema
+  commentId: N:Meridian.Contracts.Schema
+  href: Meridian.html
+  name: Meridian.Contracts.Schema
+  nameWithType: Meridian.Contracts.Schema
+  fullName: Meridian.Contracts.Schema
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Schema
+    name: Schema
+    href: Meridian.Contracts.Schema.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Schema
+    name: Schema
+    href: Meridian.Contracts.Schema.html
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion*
+  commentId: Overload:Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion
+  href: Meridian.Contracts.Schema.ISchemaUpcaster-1.html#Meridian_Contracts_Schema_ISchemaUpcaster_1_FromSchemaVersion
+  name: FromSchemaVersion
+  nameWithType: ISchemaUpcaster<T>.FromSchemaVersion
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>.FromSchemaVersion
+  nameWithType.vb: ISchemaUpcaster(Of T).FromSchemaVersion
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T).FromSchemaVersion
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1.ToSchemaVersion*
+  commentId: Overload:Meridian.Contracts.Schema.ISchemaUpcaster`1.ToSchemaVersion
+  href: Meridian.Contracts.Schema.ISchemaUpcaster-1.html#Meridian_Contracts_Schema_ISchemaUpcaster_1_ToSchemaVersion
+  name: ToSchemaVersion
+  nameWithType: ISchemaUpcaster<T>.ToSchemaVersion
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>.ToSchemaVersion
+  nameWithType.vb: ISchemaUpcaster(Of T).ToSchemaVersion
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T).ToSchemaVersion
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion
+  commentId: P:Meridian.Contracts.Schema.ISchemaUpcaster`1.FromSchemaVersion
+  href: Meridian.Contracts.Schema.ISchemaUpcaster-1.html#Meridian_Contracts_Schema_ISchemaUpcaster_1_FromSchemaVersion
+  name: FromSchemaVersion
+  nameWithType: ISchemaUpcaster<T>.FromSchemaVersion
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>.FromSchemaVersion
+  nameWithType.vb: ISchemaUpcaster(Of T).FromSchemaVersion
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T).FromSchemaVersion
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1.Upcast*
+  commentId: Overload:Meridian.Contracts.Schema.ISchemaUpcaster`1.Upcast
+  href: Meridian.Contracts.Schema.ISchemaUpcaster-1.html#Meridian_Contracts_Schema_ISchemaUpcaster_1_Upcast_System_String_
+  name: Upcast
+  nameWithType: ISchemaUpcaster<T>.Upcast
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>.Upcast
+  nameWithType.vb: ISchemaUpcaster(Of T).Upcast
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T).Upcast
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T

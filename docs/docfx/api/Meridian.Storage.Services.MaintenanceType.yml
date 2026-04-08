@@ -1,0 +1,363 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.MaintenanceType
+  commentId: T:Meridian.Storage.Services.MaintenanceType
+  id: MaintenanceType
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.MaintenanceType.All
+  - Meridian.Storage.Services.MaintenanceType.Archival
+  - Meridian.Storage.Services.MaintenanceType.Backfill
+  - Meridian.Storage.Services.MaintenanceType.Backup
+  - Meridian.Storage.Services.MaintenanceType.Compaction
+  - Meridian.Storage.Services.MaintenanceType.HealthCheck
+  - Meridian.Storage.Services.MaintenanceType.IndexRebuild
+  - Meridian.Storage.Services.MaintenanceType.IntegrityValidation
+  - Meridian.Storage.Services.MaintenanceType.QualityScoring
+  - Meridian.Storage.Services.MaintenanceType.Reconciliation
+  - Meridian.Storage.Services.MaintenanceType.TierMigration
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceType
+  nameWithType: MaintenanceType
+  fullName: Meridian.Storage.Services.MaintenanceType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceType
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 611
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum MaintenanceType : byte'
+    content.vb: Public Enum MaintenanceType As Byte
+- uid: Meridian.Storage.Services.MaintenanceType.All
+  commentId: F:Meridian.Storage.Services.MaintenanceType.All
+  id: All
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: All
+  nameWithType: MaintenanceType.All
+  fullName: Meridian.Storage.Services.MaintenanceType.All
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: All
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 613
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: All = 0
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.HealthCheck
+  commentId: F:Meridian.Storage.Services.MaintenanceType.HealthCheck
+  id: HealthCheck
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: HealthCheck
+  nameWithType: MaintenanceType.HealthCheck
+  fullName: Meridian.Storage.Services.MaintenanceType.HealthCheck
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheck
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 614
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: HealthCheck = 1
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.IntegrityValidation
+  commentId: F:Meridian.Storage.Services.MaintenanceType.IntegrityValidation
+  id: IntegrityValidation
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: IntegrityValidation
+  nameWithType: MaintenanceType.IntegrityValidation
+  fullName: Meridian.Storage.Services.MaintenanceType.IntegrityValidation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityValidation
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 615
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: IntegrityValidation = 2
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.Backfill
+  commentId: F:Meridian.Storage.Services.MaintenanceType.Backfill
+  id: Backfill
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: Backfill
+  nameWithType: MaintenanceType.Backfill
+  fullName: Meridian.Storage.Services.MaintenanceType.Backfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backfill
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Backfill = 3
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.Compaction
+  commentId: F:Meridian.Storage.Services.MaintenanceType.Compaction
+  id: Compaction
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: Compaction
+  nameWithType: MaintenanceType.Compaction
+  fullName: Meridian.Storage.Services.MaintenanceType.Compaction
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compaction
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 617
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Compaction = 4
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.TierMigration
+  commentId: F:Meridian.Storage.Services.MaintenanceType.TierMigration
+  id: TierMigration
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: TierMigration
+  nameWithType: MaintenanceType.TierMigration
+  fullName: Meridian.Storage.Services.MaintenanceType.TierMigration
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TierMigration
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 618
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: TierMigration = 5
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.IndexRebuild
+  commentId: F:Meridian.Storage.Services.MaintenanceType.IndexRebuild
+  id: IndexRebuild
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: IndexRebuild
+  nameWithType: MaintenanceType.IndexRebuild
+  fullName: Meridian.Storage.Services.MaintenanceType.IndexRebuild
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexRebuild
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 619
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: IndexRebuild = 6
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.Archival
+  commentId: F:Meridian.Storage.Services.MaintenanceType.Archival
+  id: Archival
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: Archival
+  nameWithType: MaintenanceType.Archival
+  fullName: Meridian.Storage.Services.MaintenanceType.Archival
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Archival
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 620
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Archival = 7
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.Backup
+  commentId: F:Meridian.Storage.Services.MaintenanceType.Backup
+  id: Backup
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: Backup
+  nameWithType: MaintenanceType.Backup
+  fullName: Meridian.Storage.Services.MaintenanceType.Backup
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backup
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 621
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Backup = 8
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.Reconciliation
+  commentId: F:Meridian.Storage.Services.MaintenanceType.Reconciliation
+  id: Reconciliation
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: Reconciliation
+  nameWithType: MaintenanceType.Reconciliation
+  fullName: Meridian.Storage.Services.MaintenanceType.Reconciliation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reconciliation
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 622
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Reconciliation = 9
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.MaintenanceType.QualityScoring
+  commentId: F:Meridian.Storage.Services.MaintenanceType.QualityScoring
+  id: QualityScoring
+  parent: Meridian.Storage.Services.MaintenanceType
+  langs:
+  - csharp
+  - vb
+  name: QualityScoring
+  nameWithType: MaintenanceType.QualityScoring
+  fullName: Meridian.Storage.Services.MaintenanceType.QualityScoring
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityScoring
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 623
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: QualityScoring = 10
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.MaintenanceType
+  commentId: T:Meridian.Storage.Services.MaintenanceType
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.MaintenanceType.html
+  name: MaintenanceType
+  nameWithType: MaintenanceType
+  fullName: Meridian.Storage.Services.MaintenanceType

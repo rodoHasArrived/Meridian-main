@@ -1,0 +1,611 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.OrderBookLevelDto
+  commentId: T:Meridian.Contracts.Api.OrderBookLevelDto
+  id: OrderBookLevelDto
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.OrderBookLevelDto.#ctor(System.String,System.Int32,System.Decimal,System.Decimal,System.String)
+  - Meridian.Contracts.Api.OrderBookLevelDto.Level
+  - Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker
+  - Meridian.Contracts.Api.OrderBookLevelDto.Price
+  - Meridian.Contracts.Api.OrderBookLevelDto.Side
+  - Meridian.Contracts.Api.OrderBookLevelDto.Size
+  langs:
+  - csharp
+  - vb
+  name: OrderBookLevelDto
+  nameWithType: OrderBookLevelDto
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderBookLevelDto
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for an order book level.
+  example: []
+  syntax:
+    content: 'public sealed record OrderBookLevelDto : IEquatable<OrderBookLevelDto>'
+    content.vb: Public NotInheritable Class OrderBookLevelDto Implements IEquatable(Of OrderBookLevelDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.OrderBookLevelDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.#ctor(System.String,System.Int32,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Contracts.Api.OrderBookLevelDto.#ctor(System.String,System.Int32,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.String,System.Int32,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Contracts.Api.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: OrderBookLevelDto(string, int, decimal, decimal, string?)
+  nameWithType: OrderBookLevelDto.OrderBookLevelDto(string, int, decimal, decimal, string?)
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.OrderBookLevelDto(string, int, decimal, decimal, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for an order book level.
+  example: []
+  syntax:
+    content: public OrderBookLevelDto(string Side, int Level, decimal Price, decimal Size, string? MarketMaker)
+    parameters:
+    - id: Side
+      type: System.String
+    - id: Level
+      type: System.Int32
+    - id: Price
+      type: System.Decimal
+    - id: Size
+      type: System.Decimal
+    - id: MarketMaker
+      type: System.String
+    content.vb: Public Sub New(Side As String, Level As Integer, Price As Decimal, Size As Decimal, MarketMaker As String)
+  overload: Meridian.Contracts.Api.OrderBookLevelDto.#ctor*
+  nameWithType.vb: OrderBookLevelDto.New(String, Integer, Decimal, Decimal, String)
+  fullName.vb: Meridian.Contracts.Api.OrderBookLevelDto.New(String, Integer, Decimal, Decimal, String)
+  name.vb: New(String, Integer, Decimal, Decimal, String)
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Side
+  commentId: P:Meridian.Contracts.Api.OrderBookLevelDto.Side
+  id: Side
+  parent: Meridian.Contracts.Api.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: OrderBookLevelDto.Side
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Side { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Side As String
+  overload: Meridian.Contracts.Api.OrderBookLevelDto.Side*
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Level
+  commentId: P:Meridian.Contracts.Api.OrderBookLevelDto.Level
+  id: Level
+  parent: Meridian.Contracts.Api.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: OrderBookLevelDto.Level
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int Level { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Level As Integer
+  overload: Meridian.Contracts.Api.OrderBookLevelDto.Level*
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Price
+  commentId: P:Meridian.Contracts.Api.OrderBookLevelDto.Price
+  id: Price
+  parent: Meridian.Contracts.Api.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: OrderBookLevelDto.Price
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Contracts.Api.OrderBookLevelDto.Price*
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Size
+  commentId: P:Meridian.Contracts.Api.OrderBookLevelDto.Size
+  id: Size
+  parent: Meridian.Contracts.Api.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: OrderBookLevelDto.Size
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal Size { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Size As Decimal
+  overload: Meridian.Contracts.Api.OrderBookLevelDto.Size*
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker
+  commentId: P:Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker
+  id: MarketMaker
+  parent: Meridian.Contracts.Api.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: MarketMaker
+  nameWithType: OrderBookLevelDto.MarketMaker
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketMaker
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? MarketMaker { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MarketMaker As String
+  overload: Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.OrderBookLevelDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.OrderBookLevelDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrderBookLevelDto>
+  nameWithType: IEquatable<OrderBookLevelDto>
+  fullName: System.IEquatable<Meridian.Contracts.Api.OrderBookLevelDto>
+  nameWithType.vb: IEquatable(Of OrderBookLevelDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.OrderBookLevelDto)
+  name.vb: IEquatable(Of OrderBookLevelDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OrderBookLevelDto
+    name: OrderBookLevelDto
+    href: Meridian.Contracts.Api.OrderBookLevelDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OrderBookLevelDto
+    name: OrderBookLevelDto
+    href: Meridian.Contracts.Api.OrderBookLevelDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.OrderBookLevelDto.#ctor
+  href: Meridian.Contracts.Api.OrderBookLevelDto.html#Meridian_Contracts_Api_OrderBookLevelDto__ctor_System_String_System_Int32_System_Decimal_System_Decimal_System_String_
+  name: OrderBookLevelDto
+  nameWithType: OrderBookLevelDto.OrderBookLevelDto
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.OrderBookLevelDto
+  nameWithType.vb: OrderBookLevelDto.New
+  fullName.vb: Meridian.Contracts.Api.OrderBookLevelDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Side*
+  commentId: Overload:Meridian.Contracts.Api.OrderBookLevelDto.Side
+  href: Meridian.Contracts.Api.OrderBookLevelDto.html#Meridian_Contracts_Api_OrderBookLevelDto_Side
+  name: Side
+  nameWithType: OrderBookLevelDto.Side
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Side
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Level*
+  commentId: Overload:Meridian.Contracts.Api.OrderBookLevelDto.Level
+  href: Meridian.Contracts.Api.OrderBookLevelDto.html#Meridian_Contracts_Api_OrderBookLevelDto_Level
+  name: Level
+  nameWithType: OrderBookLevelDto.Level
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Level
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Price*
+  commentId: Overload:Meridian.Contracts.Api.OrderBookLevelDto.Price
+  href: Meridian.Contracts.Api.OrderBookLevelDto.html#Meridian_Contracts_Api_OrderBookLevelDto_Price
+  name: Price
+  nameWithType: OrderBookLevelDto.Price
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Price
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.Size*
+  commentId: Overload:Meridian.Contracts.Api.OrderBookLevelDto.Size
+  href: Meridian.Contracts.Api.OrderBookLevelDto.html#Meridian_Contracts_Api_OrderBookLevelDto_Size
+  name: Size
+  nameWithType: OrderBookLevelDto.Size
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.Size
+- uid: Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker*
+  commentId: Overload:Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker
+  href: Meridian.Contracts.Api.OrderBookLevelDto.html#Meridian_Contracts_Api_OrderBookLevelDto_MarketMaker
+  name: MarketMaker
+  nameWithType: OrderBookLevelDto.MarketMaker
+  fullName: Meridian.Contracts.Api.OrderBookLevelDto.MarketMaker

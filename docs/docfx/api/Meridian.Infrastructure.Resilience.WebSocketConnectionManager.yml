@@ -1,0 +1,1735 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  id: WebSocketConnectionManager
+  parent: Meridian.Infrastructure.Resilience
+  children:
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,Serilog.ILogger)
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectionLost
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.GapDetected
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.Reconnected
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StateChanged
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Func{System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: WebSocketConnectionManager
+  nameWithType: WebSocketConnectionManager
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebSocketConnectionManager
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Centralized WebSocket connection manager that handles connection lifecycle,
+
+    resilience, heartbeat monitoring, and automatic reconnection.
+
+
+    This class eliminates duplicate connection management code across providers
+
+    (Alpaca, Polygon, StockSharp) by centralizing:
+
+    - Connection with resilience pipeline (retry + circuit breaker)
+
+    - Heartbeat monitoring for stale connection detection
+
+    - Reconnection gating (prevents reconnection storms)
+
+    - Clean disposal and state management
+  remarks: >-
+    Based on patterns from DataSourceBase, Marfusios/websocket-client, and
+
+    production WebSocket implementations.
+  example: []
+  syntax:
+    content: 'public sealed class WebSocketConnectionManager : IAsyncDisposable'
+    content.vb: Public NotInheritable Class WebSocketConnectionManager Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectionLost
+  commentId: E:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectionLost
+  id: ConnectionLost
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: ConnectionLost
+  nameWithType: WebSocketConnectionManager.ConnectionLost
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectionLost
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionLost
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Event raised when connection is lost (heartbeat timeout or WebSocket close).
+
+    Subscribers should handle reconnection logic if desired.
+  example: []
+  syntax:
+    content: public event Func<Task>? ConnectionLost
+    return:
+      type: System.Func{System.Threading.Tasks.Task}
+    content.vb: Public Event ConnectionLost As Func(Of Task)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.Reconnected
+  commentId: E:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.Reconnected
+  id: Reconnected
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: Reconnected
+  nameWithType: WebSocketConnectionManager.Reconnected
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.Reconnected
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reconnected
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Event raised after a successful reconnection (including any onReconnected callback).
+
+    Subscribers can use this for monitoring/logging reconnection events.
+
+    The int parameter is the number of reconnect attempts it took.
+  example: []
+  syntax:
+    content: public event Action<int>? Reconnected
+    return:
+      type: System.Action{System.Int32}
+    content.vb: Public Event Reconnected As Action(Of Integer)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.GapDetected
+  commentId: E:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.GapDetected
+  id: GapDetected
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: GapDetected
+  nameWithType: WebSocketConnectionManager.GapDetected
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.GapDetected
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapDetected
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Event raised when a reconnection gap is detected, providing the time window
+
+    during which data may have been missed. Subscribers should trigger gap backfill
+
+    for all active subscriptions covering this time range.
+  example: []
+  syntax:
+    content: public event Action<ReconnectionGap>? GapDetected
+    return:
+      type: System.Action{Meridian.Infrastructure.Resilience.ReconnectionGap}
+    content.vb: Public Event GapDetected As Action(Of ReconnectionGap)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StateChanged
+  commentId: E:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StateChanged
+  id: StateChanged
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: StateChanged
+  nameWithType: WebSocketConnectionManager.StateChanged
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StateChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StateChanged
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Event raised when connection state changes.
+  example: []
+  syntax:
+    content: public event Action<WebSocketState>? StateChanged
+    return:
+      type: System.Action{System.Net.WebSockets.WebSocketState}
+    content.vb: Public Event StateChanged As Action(Of WebSocketState)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected
+  id: IsConnected
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: WebSocketConnectionManager.IsConnected
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Gets whether the WebSocket is currently connected and open.
+  example: []
+  syntax:
+    content: public bool IsConnected { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsConnected As Boolean
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State
+  id: State
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: WebSocketConnectionManager.State
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Gets the current WebSocket state.
+  example: []
+  syntax:
+    content: public WebSocketState State { get; }
+    parameters: []
+    return:
+      type: System.Net.WebSockets.WebSocketState
+    content.vb: Public ReadOnly Property State As WebSocketState
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting
+  id: IsReconnecting
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: IsReconnecting
+  nameWithType: WebSocketConnectionManager.IsReconnecting
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsReconnecting
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Gets whether a reconnection is currently in progress.
+  example: []
+  syntax:
+    content: public bool IsReconnecting { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsReconnecting As Boolean
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,Serilog.ILogger)
+  id: '#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: WebSocketConnectionManager(string, WebSocketConnectionConfig?, ILogger?)
+  nameWithType: WebSocketConnectionManager.WebSocketConnectionManager(string, WebSocketConnectionConfig?, ILogger?)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.WebSocketConnectionManager(string, Meridian.Infrastructure.Resilience.WebSocketConnectionConfig?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Creates a new WebSocket connection manager.
+  example: []
+  syntax:
+    content: public WebSocketConnectionManager(string providerName, WebSocketConnectionConfig? config = null, ILogger? logger = null)
+    parameters:
+    - id: providerName
+      type: System.String
+      description: Name of the provider (for logging).
+    - id: config
+      type: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+      description: Connection configuration (uses Default if null).
+    - id: logger
+      type: Serilog.ILogger
+      description: Optional logger instance.
+    content.vb: Public Sub New(providerName As String, config As WebSocketConnectionConfig = Nothing, logger As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.#ctor*
+  nameWithType.vb: WebSocketConnectionManager.New(String, WebSocketConnectionConfig, ILogger)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.New(String, Meridian.Infrastructure.Resilience.WebSocketConnectionConfig, Serilog.ILogger)
+  name.vb: New(String, WebSocketConnectionConfig, ILogger)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+  id: ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(Uri, Action<ClientWebSocket>?, CancellationToken)
+  nameWithType: WebSocketConnectionManager.ConnectAsync(Uri, Action<ClientWebSocket>?, CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri, System.Action<System.Net.WebSockets.ClientWebSocket>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Connects to the specified WebSocket endpoint with resilience.
+
+    A semaphore ensures only one concurrent connection attempt proceeds at a time,
+
+    preventing duplicate connections from concurrent callers.
+  example: []
+  syntax:
+    content: public Task ConnectAsync(Uri uri, Action<ClientWebSocket>? configureSocket = null, CancellationToken ct = default)
+    parameters:
+    - id: uri
+      type: System.Uri
+      description: The WebSocket URI to connect to.
+    - id: configureSocket
+      type: System.Action{System.Net.WebSockets.ClientWebSocket}
+      description: Optional action to configure the ClientWebSocket before connecting.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ConnectAsync(uri As Uri, configureSocket As Action(Of ClientWebSocket) = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync*
+  nameWithType.vb: WebSocketConnectionManager.ConnectAsync(Uri, Action(Of ClientWebSocket), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri, System.Action(Of System.Net.WebSockets.ClientWebSocket), System.Threading.CancellationToken)
+  name.vb: ConnectAsync(Uri, Action(Of ClientWebSocket), CancellationToken)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  id: StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: StartReceiveLoop(Func<string, Task>, CancellationToken)
+  nameWithType: WebSocketConnectionManager.StartReceiveLoop(Func<string, Task>, CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func<string, System.Threading.Tasks.Task>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartReceiveLoop
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Starts the receive loop with the provided message handler.
+  example: []
+  syntax:
+    content: public void StartReceiveLoop(Func<string, Task> messageHandler, CancellationToken ct = default)
+    parameters:
+    - id: messageHandler
+      type: System.Func{System.String,System.Threading.Tasks.Task}
+      description: Handler called for each received text message.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    content.vb: Public Sub StartReceiveLoop(messageHandler As Func(Of String, Task), ct As CancellationToken = Nothing)
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop*
+  nameWithType.vb: WebSocketConnectionManager.StartReceiveLoop(Func(Of String, Task), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func(Of String, System.Threading.Tasks.Task), System.Threading.CancellationToken)
+  name.vb: StartReceiveLoop(Func(Of String, Task), CancellationToken)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync(System.Threading.CancellationToken)
+  id: ReadOneMessageAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: ReadOneMessageAsync(CancellationToken)
+  nameWithType: WebSocketConnectionManager.ReadOneMessageAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadOneMessageAsync
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Reads a single text message from the WebSocket.
+
+    Must only be called after <xref href="Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri%2cSystem.Action%7bSystem.Net.WebSockets.ClientWebSocket%7d%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> and before
+
+    <xref href="Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func%7bSystem.String%2cSystem.Threading.Tasks.Task%7d%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> — it reads directly from the socket
+
+    for initial handshake sequences (e.g., Polygon "connected" + "auth_success").
+  example: []
+  syntax:
+    content: public Task<string?> ReadOneMessageAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: The message text, or <code>null</code> if the connection closed.
+    content.vb: Public Function ReadOneMessageAsync(ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync(System.String,System.Threading.CancellationToken)
+  id: SendAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: SendAsync(string, CancellationToken)
+  nameWithType: WebSocketConnectionManager.SendAsync(string, CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SendAsync
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Sends a text message through the WebSocket.
+  example: []
+  syntax:
+    content: public Task SendAsync(string message, CancellationToken ct = default)
+    parameters:
+    - id: message
+      type: System.String
+      description: The message to send.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SendAsync(message As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync*
+  nameWithType.vb: WebSocketConnectionManager.SendAsync(String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync(String, System.Threading.CancellationToken)
+  name.vb: SendAsync(String, CancellationToken)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: WebSocketConnectionManager.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Disconnects from the WebSocket gracefully.
+  example: []
+  syntax:
+    content: public Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Func{System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Func{System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  id: TryReconnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Func{System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: TryReconnectAsync(Uri, Action<ClientWebSocket>?, Func<Task>?, CancellationToken)
+  nameWithType: WebSocketConnectionManager.TryReconnectAsync(Uri, Action<ClientWebSocket>?, Func<Task>?, CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync(System.Uri, System.Action<System.Net.WebSockets.ClientWebSocket>?, System.Func<System.Threading.Tasks.Task>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReconnectAsync
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Attempts automatic reconnection with exponential backoff.
+
+    Uses gating to prevent reconnection storms.
+  example: []
+  syntax:
+    content: public Task<bool> TryReconnectAsync(Uri uri, Action<ClientWebSocket>? configureSocket = null, Func<Task>? onReconnected = null, CancellationToken ct = default)
+    parameters:
+    - id: uri
+      type: System.Uri
+      description: The WebSocket URI to reconnect to.
+    - id: configureSocket
+      type: System.Action{System.Net.WebSockets.ClientWebSocket}
+      description: Optional socket configuration.
+    - id: onReconnected
+      type: System.Func{System.Threading.Tasks.Task}
+      description: Action to execute after successful reconnection (e.g., resubscribe).
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: True if reconnection succeeded, false otherwise.
+    content.vb: Public Function TryReconnectAsync(uri As Uri, configureSocket As Action(Of ClientWebSocket) = Nothing, onReconnected As Func(Of Task) = Nothing, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync*
+  nameWithType.vb: WebSocketConnectionManager.TryReconnectAsync(Uri, Action(Of ClientWebSocket), Func(Of Task), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync(System.Uri, System.Action(Of System.Net.WebSockets.ClientWebSocket), System.Func(Of System.Threading.Tasks.Task), System.Threading.CancellationToken)
+  name.vb: TryReconnectAsync(Uri, Action(Of ClientWebSocket), Func(Of Task), CancellationToken)
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived
+  id: RecordPongReceived
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: RecordPongReceived()
+  nameWithType: WebSocketConnectionManager.RecordPongReceived()
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordPongReceived
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Records that a pong/heartbeat response was received.
+
+    Call this when receiving data to indicate connection is alive.
+  example: []
+  syntax:
+    content: public void RecordPongReceived()
+    content.vb: Public Sub RecordPongReceived()
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: WebSocketConnectionManager.DisposeAsync()
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 434
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Infrastructure.Resilience
+  commentId: N:Meridian.Infrastructure.Resilience
+  href: Meridian.html
+  name: Meridian.Infrastructure.Resilience
+  nameWithType: Meridian.Infrastructure.Resilience
+  fullName: Meridian.Infrastructure.Resilience
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Func{System.Threading.Tasks.Task}
+  commentId: T:System.Func{System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<Task>
+  nameWithType: Func<Task>
+  fullName: System.Func<System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of Task)
+  fullName.vb: System.Func(Of System.Threading.Tasks.Task)
+  name.vb: Func(Of Task)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Action{System.Int32}
+  commentId: T:System.Action{System.Int32}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<int>
+  nameWithType: Action<int>
+  fullName: System.Action<int>
+  nameWithType.vb: Action(Of Integer)
+  fullName.vb: System.Action(Of Integer)
+  name.vb: Action(Of Integer)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action{Meridian.Infrastructure.Resilience.ReconnectionGap}
+  commentId: T:System.Action{Meridian.Infrastructure.Resilience.ReconnectionGap}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ReconnectionGap>
+  nameWithType: Action<ReconnectionGap>
+  fullName: System.Action<Meridian.Infrastructure.Resilience.ReconnectionGap>
+  nameWithType.vb: Action(Of ReconnectionGap)
+  fullName.vb: System.Action(Of Meridian.Infrastructure.Resilience.ReconnectionGap)
+  name.vb: Action(Of ReconnectionGap)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Infrastructure.Resilience.ReconnectionGap
+    name: ReconnectionGap
+    href: Meridian.Infrastructure.Resilience.ReconnectionGap.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Resilience.ReconnectionGap
+    name: ReconnectionGap
+    href: Meridian.Infrastructure.Resilience.ReconnectionGap.html
+  - name: )
+- uid: System.Action{System.Net.WebSockets.WebSocketState}
+  commentId: T:System.Action{System.Net.WebSockets.WebSocketState}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<WebSocketState>
+  nameWithType: Action<WebSocketState>
+  fullName: System.Action<System.Net.WebSockets.WebSocketState>
+  nameWithType.vb: Action(Of WebSocketState)
+  fullName.vb: System.Action(Of System.Net.WebSockets.WebSocketState)
+  name.vb: Action(Of WebSocketState)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Net.WebSockets.WebSocketState
+    name: WebSocketState
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.websocketstate
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Net.WebSockets.WebSocketState
+    name: WebSocketState
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.websocketstate
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_IsConnected
+  name: IsConnected
+  nameWithType: WebSocketConnectionManager.IsConnected
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsConnected
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_State
+  name: State
+  nameWithType: WebSocketConnectionManager.State
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.State
+- uid: System.Net.WebSockets.WebSocketState
+  commentId: T:System.Net.WebSockets.WebSocketState
+  parent: System.Net.WebSockets
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.websockets.websocketstate
+  name: WebSocketState
+  nameWithType: WebSocketState
+  fullName: System.Net.WebSockets.WebSocketState
+- uid: System.Net.WebSockets
+  commentId: N:System.Net.WebSockets
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.WebSockets
+  nameWithType: System.Net.WebSockets
+  fullName: System.Net.WebSockets
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.WebSockets
+    name: WebSockets
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.WebSockets
+    name: WebSockets
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_IsReconnecting
+  name: IsReconnecting
+  nameWithType: WebSocketConnectionManager.IsReconnecting
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.IsReconnecting
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.#ctor
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager__ctor_System_String_Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_Serilog_ILogger_
+  name: WebSocketConnectionManager
+  nameWithType: WebSocketConnectionManager.WebSocketConnectionManager
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.WebSocketConnectionManager
+  nameWithType.vb: WebSocketConnectionManager.New
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  parent: Meridian.Infrastructure.Resilience
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html
+  name: WebSocketConnectionConfig
+  nameWithType: WebSocketConnectionConfig
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_ConnectAsync_System_Uri_System_Action_System_Net_WebSockets_ClientWebSocket__System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: WebSocketConnectionManager.ConnectAsync
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync
+- uid: System.Uri
+  commentId: T:System.Uri
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uri
+  name: Uri
+  nameWithType: Uri
+  fullName: System.Uri
+- uid: System.Action{System.Net.WebSockets.ClientWebSocket}
+  commentId: T:System.Action{System.Net.WebSockets.ClientWebSocket}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ClientWebSocket>
+  nameWithType: Action<ClientWebSocket>
+  fullName: System.Action<System.Net.WebSockets.ClientWebSocket>
+  nameWithType.vb: Action(Of ClientWebSocket)
+  fullName.vb: System.Action(Of System.Net.WebSockets.ClientWebSocket)
+  name.vb: Action(Of ClientWebSocket)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Net.WebSockets.ClientWebSocket
+    name: ClientWebSocket
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Net.WebSockets.ClientWebSocket
+    name: ClientWebSocket
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_StartReceiveLoop_System_Func_System_String_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  name: StartReceiveLoop
+  nameWithType: WebSocketConnectionManager.StartReceiveLoop
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop
+- uid: System.Func{System.String,System.Threading.Tasks.Task}
+  commentId: T:System.Func{System.String,System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<string, Task>
+  nameWithType: Func<string, Task>
+  fullName: System.Func<string, System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of String, Task)
+  fullName.vb: System.Func(Of String, System.Threading.Tasks.Task)
+  name.vb: Func(Of String, Task)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_ConnectAsync_System_Uri_System_Action_System_Net_WebSockets_ClientWebSocket__System_Threading_CancellationToken_
+  name: ConnectAsync(Uri, Action<ClientWebSocket>, CancellationToken)
+  nameWithType: WebSocketConnectionManager.ConnectAsync(Uri, Action<ClientWebSocket>, CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri, System.Action<System.Net.WebSockets.ClientWebSocket>, System.Threading.CancellationToken)
+  nameWithType.vb: WebSocketConnectionManager.ConnectAsync(Uri, Action(Of ClientWebSocket), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri, System.Action(Of System.Net.WebSockets.ClientWebSocket), System.Threading.CancellationToken)
+  name.vb: ConnectAsync(Uri, Action(Of ClientWebSocket), CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+    name: ConnectAsync
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_ConnectAsync_System_Uri_System_Action_System_Net_WebSockets_ClientWebSocket__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Uri
+    name: Uri
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uri
+  - name: ','
+  - name: " "
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Net.WebSockets.ClientWebSocket
+    name: ClientWebSocket
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ConnectAsync(System.Uri,System.Action{System.Net.WebSockets.ClientWebSocket},System.Threading.CancellationToken)
+    name: ConnectAsync
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_ConnectAsync_System_Uri_System_Action_System_Net_WebSockets_ClientWebSocket__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Uri
+    name: Uri
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uri
+  - name: ','
+  - name: " "
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Net.WebSockets.ClientWebSocket
+    name: ClientWebSocket
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_StartReceiveLoop_System_Func_System_String_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  name: StartReceiveLoop(Func<string, Task>, CancellationToken)
+  nameWithType: WebSocketConnectionManager.StartReceiveLoop(Func<string, Task>, CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func<string, System.Threading.Tasks.Task>, System.Threading.CancellationToken)
+  nameWithType.vb: WebSocketConnectionManager.StartReceiveLoop(Func(Of String, Task), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func(Of String, System.Threading.Tasks.Task), System.Threading.CancellationToken)
+  name.vb: StartReceiveLoop(Func(Of String, Task), CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+    name: StartReceiveLoop
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_StartReceiveLoop_System_Func_System_String_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+    name: StartReceiveLoop
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_StartReceiveLoop_System_Func_System_String_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_ReadOneMessageAsync_System_Threading_CancellationToken_
+  name: ReadOneMessageAsync
+  nameWithType: WebSocketConnectionManager.ReadOneMessageAsync
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.ReadOneMessageAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_SendAsync_System_String_System_Threading_CancellationToken_
+  name: SendAsync
+  nameWithType: WebSocketConnectionManager.SendAsync
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.SendAsync
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: WebSocketConnectionManager.DisconnectAsync
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisconnectAsync
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_TryReconnectAsync_System_Uri_System_Action_System_Net_WebSockets_ClientWebSocket__System_Func_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  name: TryReconnectAsync
+  nameWithType: WebSocketConnectionManager.TryReconnectAsync
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.TryReconnectAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_RecordPongReceived
+  name: RecordPongReceived
+  nameWithType: WebSocketConnectionManager.RecordPongReceived
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.RecordPongReceived
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_DisposeAsync
+  name: DisposeAsync
+  nameWithType: WebSocketConnectionManager.DisposeAsync
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

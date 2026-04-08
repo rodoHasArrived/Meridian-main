@@ -1,0 +1,228 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.RepairStrategy
+  commentId: T:Meridian.Storage.Services.RepairStrategy
+  id: RepairStrategy
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.RepairStrategy.BackfillFromSource
+  - Meridian.Storage.Services.RepairStrategy.MergeFragments
+  - Meridian.Storage.Services.RepairStrategy.RebuildIndex
+  - Meridian.Storage.Services.RepairStrategy.RecompressOptimal
+  - Meridian.Storage.Services.RepairStrategy.RestoreFromBackup
+  - Meridian.Storage.Services.RepairStrategy.TruncateCorrupted
+  langs:
+  - csharp
+  - vb
+  name: RepairStrategy
+  nameWithType: RepairStrategy
+  fullName: Meridian.Storage.Services.RepairStrategy
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepairStrategy
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 634
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum RepairStrategy : byte'
+    content.vb: Public Enum RepairStrategy As Byte
+- uid: Meridian.Storage.Services.RepairStrategy.RestoreFromBackup
+  commentId: F:Meridian.Storage.Services.RepairStrategy.RestoreFromBackup
+  id: RestoreFromBackup
+  parent: Meridian.Storage.Services.RepairStrategy
+  langs:
+  - csharp
+  - vb
+  name: RestoreFromBackup
+  nameWithType: RepairStrategy.RestoreFromBackup
+  fullName: Meridian.Storage.Services.RepairStrategy.RestoreFromBackup
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RestoreFromBackup
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 636
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: RestoreFromBackup = 0
+    return:
+      type: Meridian.Storage.Services.RepairStrategy
+- uid: Meridian.Storage.Services.RepairStrategy.BackfillFromSource
+  commentId: F:Meridian.Storage.Services.RepairStrategy.BackfillFromSource
+  id: BackfillFromSource
+  parent: Meridian.Storage.Services.RepairStrategy
+  langs:
+  - csharp
+  - vb
+  name: BackfillFromSource
+  nameWithType: RepairStrategy.BackfillFromSource
+  fullName: Meridian.Storage.Services.RepairStrategy.BackfillFromSource
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillFromSource
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 637
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: BackfillFromSource = 1
+    return:
+      type: Meridian.Storage.Services.RepairStrategy
+- uid: Meridian.Storage.Services.RepairStrategy.TruncateCorrupted
+  commentId: F:Meridian.Storage.Services.RepairStrategy.TruncateCorrupted
+  id: TruncateCorrupted
+  parent: Meridian.Storage.Services.RepairStrategy
+  langs:
+  - csharp
+  - vb
+  name: TruncateCorrupted
+  nameWithType: RepairStrategy.TruncateCorrupted
+  fullName: Meridian.Storage.Services.RepairStrategy.TruncateCorrupted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TruncateCorrupted
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 638
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: TruncateCorrupted = 2
+    return:
+      type: Meridian.Storage.Services.RepairStrategy
+- uid: Meridian.Storage.Services.RepairStrategy.RebuildIndex
+  commentId: F:Meridian.Storage.Services.RepairStrategy.RebuildIndex
+  id: RebuildIndex
+  parent: Meridian.Storage.Services.RepairStrategy
+  langs:
+  - csharp
+  - vb
+  name: RebuildIndex
+  nameWithType: RepairStrategy.RebuildIndex
+  fullName: Meridian.Storage.Services.RepairStrategy.RebuildIndex
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebuildIndex
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 639
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: RebuildIndex = 3
+    return:
+      type: Meridian.Storage.Services.RepairStrategy
+- uid: Meridian.Storage.Services.RepairStrategy.MergeFragments
+  commentId: F:Meridian.Storage.Services.RepairStrategy.MergeFragments
+  id: MergeFragments
+  parent: Meridian.Storage.Services.RepairStrategy
+  langs:
+  - csharp
+  - vb
+  name: MergeFragments
+  nameWithType: RepairStrategy.MergeFragments
+  fullName: Meridian.Storage.Services.RepairStrategy.MergeFragments
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MergeFragments
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 640
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: MergeFragments = 4
+    return:
+      type: Meridian.Storage.Services.RepairStrategy
+- uid: Meridian.Storage.Services.RepairStrategy.RecompressOptimal
+  commentId: F:Meridian.Storage.Services.RepairStrategy.RecompressOptimal
+  id: RecompressOptimal
+  parent: Meridian.Storage.Services.RepairStrategy
+  langs:
+  - csharp
+  - vb
+  name: RecompressOptimal
+  nameWithType: RepairStrategy.RecompressOptimal
+  fullName: Meridian.Storage.Services.RepairStrategy.RecompressOptimal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecompressOptimal
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 641
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: RecompressOptimal = 5
+    return:
+      type: Meridian.Storage.Services.RepairStrategy
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.RepairStrategy
+  commentId: T:Meridian.Storage.Services.RepairStrategy
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.RepairStrategy.html
+  name: RepairStrategy
+  nameWithType: RepairStrategy
+  fullName: Meridian.Storage.Services.RepairStrategy

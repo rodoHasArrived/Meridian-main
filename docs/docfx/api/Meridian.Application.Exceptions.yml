@@ -1,0 +1,126 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Exceptions
+  commentId: N:Meridian.Application.Exceptions
+  id: Meridian.Application.Exceptions
+  children:
+  - Meridian.Application.Exceptions.ConfigurationException
+  - Meridian.Application.Exceptions.ConnectionException
+  - Meridian.Application.Exceptions.DataProviderException
+  - Meridian.Application.Exceptions.MeridianException
+  - Meridian.Application.Exceptions.OperationTimeoutException
+  - Meridian.Application.Exceptions.RateLimitException
+  - Meridian.Application.Exceptions.SequenceValidationException
+  - Meridian.Application.Exceptions.SequenceValidationType
+  - Meridian.Application.Exceptions.StorageException
+  - Meridian.Application.Exceptions.ValidationError
+  - Meridian.Application.Exceptions.ValidationException
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Exceptions
+  nameWithType: Meridian.Application.Exceptions
+  fullName: Meridian.Application.Exceptions
+  type: Namespace
+  assemblies:
+  - Meridian.Core
+references:
+- uid: Meridian.Application.Exceptions.ConfigurationException
+  commentId: T:Meridian.Application.Exceptions.ConfigurationException
+  href: Meridian.Application.Exceptions.ConfigurationException.html
+  name: ConfigurationException
+  nameWithType: ConfigurationException
+  fullName: Meridian.Application.Exceptions.ConfigurationException
+- uid: Meridian.Application.Exceptions.ConnectionException
+  commentId: T:Meridian.Application.Exceptions.ConnectionException
+  href: Meridian.Application.Exceptions.ConnectionException.html
+  name: ConnectionException
+  nameWithType: ConnectionException
+  fullName: Meridian.Application.Exceptions.ConnectionException
+- uid: Meridian.Application.Exceptions.DataProviderException
+  commentId: T:Meridian.Application.Exceptions.DataProviderException
+  parent: Meridian.Application.Exceptions
+  href: Meridian.Application.Exceptions.DataProviderException.html
+  name: DataProviderException
+  nameWithType: DataProviderException
+  fullName: Meridian.Application.Exceptions.DataProviderException
+- uid: Meridian.Application.Exceptions.MeridianException
+  commentId: T:Meridian.Application.Exceptions.MeridianException
+  parent: Meridian.Application.Exceptions
+  href: Meridian.Application.Exceptions.MeridianException.html
+  name: MeridianException
+  nameWithType: MeridianException
+  fullName: Meridian.Application.Exceptions.MeridianException
+- uid: Meridian.Application.Exceptions.OperationTimeoutException
+  commentId: T:Meridian.Application.Exceptions.OperationTimeoutException
+  href: Meridian.Application.Exceptions.OperationTimeoutException.html
+  name: OperationTimeoutException
+  nameWithType: OperationTimeoutException
+  fullName: Meridian.Application.Exceptions.OperationTimeoutException
+- uid: Meridian.Application.Exceptions.RateLimitException
+  commentId: T:Meridian.Application.Exceptions.RateLimitException
+  href: Meridian.Application.Exceptions.RateLimitException.html
+  name: RateLimitException
+  nameWithType: RateLimitException
+  fullName: Meridian.Application.Exceptions.RateLimitException
+- uid: Meridian.Application.Exceptions.SequenceValidationException
+  commentId: T:Meridian.Application.Exceptions.SequenceValidationException
+  href: Meridian.Application.Exceptions.SequenceValidationException.html
+  name: SequenceValidationException
+  nameWithType: SequenceValidationException
+  fullName: Meridian.Application.Exceptions.SequenceValidationException
+- uid: Meridian.Application.Exceptions.SequenceValidationType
+  commentId: T:Meridian.Application.Exceptions.SequenceValidationType
+  parent: Meridian.Application.Exceptions
+  href: Meridian.Application.Exceptions.SequenceValidationType.html
+  name: SequenceValidationType
+  nameWithType: SequenceValidationType
+  fullName: Meridian.Application.Exceptions.SequenceValidationType
+- uid: Meridian.Application.Exceptions.StorageException
+  commentId: T:Meridian.Application.Exceptions.StorageException
+  href: Meridian.Application.Exceptions.StorageException.html
+  name: StorageException
+  nameWithType: StorageException
+  fullName: Meridian.Application.Exceptions.StorageException
+- uid: Meridian.Application.Exceptions.ValidationException
+  commentId: T:Meridian.Application.Exceptions.ValidationException
+  href: Meridian.Application.Exceptions.ValidationException.html
+  name: ValidationException
+  nameWithType: ValidationException
+  fullName: Meridian.Application.Exceptions.ValidationException
+- uid: Meridian.Application.Exceptions.ValidationError
+  commentId: T:Meridian.Application.Exceptions.ValidationError
+  href: Meridian.Application.Exceptions.ValidationError.html
+  name: ValidationError
+  nameWithType: ValidationError
+  fullName: Meridian.Application.Exceptions.ValidationError
+- uid: Meridian.Application.Exceptions
+  commentId: N:Meridian.Application.Exceptions
+  href: Meridian.html
+  name: Meridian.Application.Exceptions
+  nameWithType: Meridian.Application.Exceptions
+  fullName: Meridian.Application.Exceptions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Exceptions
+    name: Exceptions
+    href: Meridian.Application.Exceptions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Exceptions
+    name: Exceptions
+    href: Meridian.Application.Exceptions.html

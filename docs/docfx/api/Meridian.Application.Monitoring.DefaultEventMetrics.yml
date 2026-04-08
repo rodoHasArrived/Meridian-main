@@ -1,0 +1,1314 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics
+  commentId: T:Meridian.Application.Monitoring.DefaultEventMetrics
+  id: DefaultEventMetrics
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates
+  - Meridian.Application.Monitoring.DefaultEventMetrics.DropRate
+  - Meridian.Application.Monitoring.DefaultEventMetrics.Dropped
+  - Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond
+  - Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot
+  - Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars
+  - Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates
+  - Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped
+  - Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars
+  - Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity
+  - Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished
+  - Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes
+  - Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades
+  - Meridian.Application.Monitoring.DefaultEventMetrics.Integrity
+  - Meridian.Application.Monitoring.DefaultEventMetrics.Published
+  - Meridian.Application.Monitoring.DefaultEventMetrics.Quotes
+  - Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency(System.Int64)
+  - Meridian.Application.Monitoring.DefaultEventMetrics.Reset
+  - Meridian.Application.Monitoring.DefaultEventMetrics.Trades
+  langs:
+  - csharp
+  - vb
+  name: DefaultEventMetrics
+  nameWithType: DefaultEventMetrics
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultEventMetrics
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Default implementation that delegates to the existing static <xref href="Meridian.Application.Monitoring.Metrics" data-throw-if-not-resolved="false"></xref> class.
+
+    Registered as a singleton in DI so all consumers share the same counters.
+  example: []
+  syntax:
+    content: 'public sealed class DefaultEventMetrics : IEventMetrics'
+    content.vb: Public NotInheritable Class DefaultEventMetrics Implements IEventMetrics
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Published
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.Published
+  id: Published
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: Published
+  nameWithType: DefaultEventMetrics.Published
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Published
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Published
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public long Published { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Published As Long
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.Published*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.Published
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Dropped
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.Dropped
+  id: Dropped
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: Dropped
+  nameWithType: DefaultEventMetrics.Dropped
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Dropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dropped
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public long Dropped { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Dropped As Long
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.Dropped*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.Dropped
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Integrity
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.Integrity
+  id: Integrity
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: Integrity
+  nameWithType: DefaultEventMetrics.Integrity
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Integrity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Integrity
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public long Integrity { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Integrity As Long
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.Integrity*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.Integrity
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Trades
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.Trades
+  id: Trades
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: Trades
+  nameWithType: DefaultEventMetrics.Trades
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Trades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trades
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public long Trades { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Trades As Long
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.Trades*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.Trades
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates
+  id: DepthUpdates
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdates
+  nameWithType: DefaultEventMetrics.DepthUpdates
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdates
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public long DepthUpdates { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property DepthUpdates As Long
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.DepthUpdates
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Quotes
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.Quotes
+  id: Quotes
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: Quotes
+  nameWithType: DefaultEventMetrics.Quotes
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Quotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quotes
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public long Quotes { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Quotes As Long
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.Quotes*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.Quotes
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars
+  id: HistoricalBars
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: HistoricalBars
+  nameWithType: DefaultEventMetrics.HistoricalBars
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalBars
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public long HistoricalBars { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property HistoricalBars As Long
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.HistoricalBars
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond
+  id: EventsPerSecond
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: EventsPerSecond
+  nameWithType: DefaultEventMetrics.EventsPerSecond
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventsPerSecond
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public double EventsPerSecond { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property EventsPerSecond As Double
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.EventsPerSecond
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.DropRate
+  commentId: P:Meridian.Application.Monitoring.DefaultEventMetrics.DropRate
+  id: DropRate
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: DropRate
+  nameWithType: DefaultEventMetrics.DropRate
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.DropRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DropRate
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public double DropRate { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property DropRate As Double
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.DropRate*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.DropRate
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished
+  id: IncPublished
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: IncPublished()
+  nameWithType: DefaultEventMetrics.IncPublished()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncPublished
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void IncPublished()
+    content.vb: Public Sub IncPublished()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.IncPublished
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped
+  id: IncDropped
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: IncDropped()
+  nameWithType: DefaultEventMetrics.IncDropped()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncDropped
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void IncDropped()
+    content.vb: Public Sub IncDropped()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.IncDropped
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity
+  id: IncIntegrity
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: IncIntegrity()
+  nameWithType: DefaultEventMetrics.IncIntegrity()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncIntegrity
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void IncIntegrity()
+    content.vb: Public Sub IncIntegrity()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.IncIntegrity
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades
+  id: IncTrades
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: IncTrades()
+  nameWithType: DefaultEventMetrics.IncTrades()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncTrades
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void IncTrades()
+    content.vb: Public Sub IncTrades()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.IncTrades
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates
+  id: IncDepthUpdates
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: IncDepthUpdates()
+  nameWithType: DefaultEventMetrics.IncDepthUpdates()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncDepthUpdates
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void IncDepthUpdates()
+    content.vb: Public Sub IncDepthUpdates()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.IncDepthUpdates
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes
+  id: IncQuotes
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: IncQuotes()
+  nameWithType: DefaultEventMetrics.IncQuotes()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncQuotes
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void IncQuotes()
+    content.vb: Public Sub IncQuotes()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.IncQuotes
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars
+  id: IncHistoricalBars
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: IncHistoricalBars()
+  nameWithType: DefaultEventMetrics.IncHistoricalBars()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncHistoricalBars
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void IncHistoricalBars()
+    content.vb: Public Sub IncHistoricalBars()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.IncHistoricalBars
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency(System.Int64)
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency(System.Int64)
+  id: RecordLatency(System.Int64)
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(long)
+  nameWithType: DefaultEventMetrics.RecordLatency(long)
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency(long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void RecordLatency(long startTimestamp)
+    parameters:
+    - id: startTimestamp
+      type: System.Int64
+    content.vb: Public Sub RecordLatency(startTimestamp As Long)
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.RecordLatency(System.Int64)
+  nameWithType.vb: DefaultEventMetrics.RecordLatency(Long)
+  fullName.vb: Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency(Long)
+  name.vb: RecordLatency(Long)
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Reset
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.Reset
+  id: Reset
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: Reset()
+  nameWithType: DefaultEventMetrics.Reset()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Reset()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public void Reset()
+    content.vb: Public Sub Reset()
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.Reset*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.Reset
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot
+  commentId: M:Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.Monitoring.DefaultEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: DefaultEventMetrics.GetSnapshot()
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/IEventMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/Monitoring/IEventMetrics.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  example: []
+  syntax:
+    content: public MetricsSnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.Monitoring.MetricsSnapshot
+    content.vb: Public Function GetSnapshot() As MetricsSnapshot
+  overload: Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot*
+  implements:
+  - Meridian.Application.Monitoring.IEventMetrics.GetSnapshot
+references:
+- uid: Meridian.Application.Monitoring.Metrics
+  commentId: T:Meridian.Application.Monitoring.Metrics
+  href: Meridian.Application.Monitoring.Metrics.html
+  name: Metrics
+  nameWithType: Metrics
+  fullName: Meridian.Application.Monitoring.Metrics
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.IEventMetrics
+  commentId: T:Meridian.Application.Monitoring.IEventMetrics
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IEventMetrics.html
+  name: IEventMetrics
+  nameWithType: IEventMetrics
+  fullName: Meridian.Application.Monitoring.IEventMetrics
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Published*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.Published
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_Published
+  name: Published
+  nameWithType: DefaultEventMetrics.Published
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Published
+- uid: Meridian.Application.Monitoring.IEventMetrics.Published
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.Published
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Published
+  name: Published
+  nameWithType: IEventMetrics.Published
+  fullName: Meridian.Application.Monitoring.IEventMetrics.Published
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Dropped*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.Dropped
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_Dropped
+  name: Dropped
+  nameWithType: DefaultEventMetrics.Dropped
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Dropped
+- uid: Meridian.Application.Monitoring.IEventMetrics.Dropped
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.Dropped
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Dropped
+  name: Dropped
+  nameWithType: IEventMetrics.Dropped
+  fullName: Meridian.Application.Monitoring.IEventMetrics.Dropped
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Integrity*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.Integrity
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_Integrity
+  name: Integrity
+  nameWithType: DefaultEventMetrics.Integrity
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Integrity
+- uid: Meridian.Application.Monitoring.IEventMetrics.Integrity
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.Integrity
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Integrity
+  name: Integrity
+  nameWithType: IEventMetrics.Integrity
+  fullName: Meridian.Application.Monitoring.IEventMetrics.Integrity
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Trades*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.Trades
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_Trades
+  name: Trades
+  nameWithType: DefaultEventMetrics.Trades
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Trades
+- uid: Meridian.Application.Monitoring.IEventMetrics.Trades
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.Trades
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Trades
+  name: Trades
+  nameWithType: IEventMetrics.Trades
+  fullName: Meridian.Application.Monitoring.IEventMetrics.Trades
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_DepthUpdates
+  name: DepthUpdates
+  nameWithType: DefaultEventMetrics.DepthUpdates
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.DepthUpdates
+- uid: Meridian.Application.Monitoring.IEventMetrics.DepthUpdates
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.DepthUpdates
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_DepthUpdates
+  name: DepthUpdates
+  nameWithType: IEventMetrics.DepthUpdates
+  fullName: Meridian.Application.Monitoring.IEventMetrics.DepthUpdates
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Quotes*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.Quotes
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_Quotes
+  name: Quotes
+  nameWithType: DefaultEventMetrics.Quotes
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Quotes
+- uid: Meridian.Application.Monitoring.IEventMetrics.Quotes
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.Quotes
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Quotes
+  name: Quotes
+  nameWithType: IEventMetrics.Quotes
+  fullName: Meridian.Application.Monitoring.IEventMetrics.Quotes
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_HistoricalBars
+  name: HistoricalBars
+  nameWithType: DefaultEventMetrics.HistoricalBars
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.HistoricalBars
+- uid: Meridian.Application.Monitoring.IEventMetrics.HistoricalBars
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.HistoricalBars
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_HistoricalBars
+  name: HistoricalBars
+  nameWithType: IEventMetrics.HistoricalBars
+  fullName: Meridian.Application.Monitoring.IEventMetrics.HistoricalBars
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_EventsPerSecond
+  name: EventsPerSecond
+  nameWithType: DefaultEventMetrics.EventsPerSecond
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.EventsPerSecond
+- uid: Meridian.Application.Monitoring.IEventMetrics.EventsPerSecond
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.EventsPerSecond
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_EventsPerSecond
+  name: EventsPerSecond
+  nameWithType: IEventMetrics.EventsPerSecond
+  fullName: Meridian.Application.Monitoring.IEventMetrics.EventsPerSecond
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.DropRate*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.DropRate
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_DropRate
+  name: DropRate
+  nameWithType: DefaultEventMetrics.DropRate
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.DropRate
+- uid: Meridian.Application.Monitoring.IEventMetrics.DropRate
+  commentId: P:Meridian.Application.Monitoring.IEventMetrics.DropRate
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_DropRate
+  name: DropRate
+  nameWithType: IEventMetrics.DropRate
+  fullName: Meridian.Application.Monitoring.IEventMetrics.DropRate
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_IncPublished
+  name: IncPublished
+  nameWithType: DefaultEventMetrics.IncPublished
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncPublished
+- uid: Meridian.Application.Monitoring.IEventMetrics.IncPublished
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.IncPublished
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncPublished
+  name: IncPublished()
+  nameWithType: IEventMetrics.IncPublished()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.IncPublished()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncPublished
+    name: IncPublished
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncPublished
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncPublished
+    name: IncPublished
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncPublished
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_IncDropped
+  name: IncDropped
+  nameWithType: DefaultEventMetrics.IncDropped
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncDropped
+- uid: Meridian.Application.Monitoring.IEventMetrics.IncDropped
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.IncDropped
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncDropped
+  name: IncDropped()
+  nameWithType: IEventMetrics.IncDropped()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.IncDropped()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncDropped
+    name: IncDropped
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncDropped
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncDropped
+    name: IncDropped
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncDropped
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_IncIntegrity
+  name: IncIntegrity
+  nameWithType: DefaultEventMetrics.IncIntegrity
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncIntegrity
+- uid: Meridian.Application.Monitoring.IEventMetrics.IncIntegrity
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.IncIntegrity
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncIntegrity
+  name: IncIntegrity()
+  nameWithType: IEventMetrics.IncIntegrity()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.IncIntegrity()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncIntegrity
+    name: IncIntegrity
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncIntegrity
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncIntegrity
+    name: IncIntegrity
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncIntegrity
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_IncTrades
+  name: IncTrades
+  nameWithType: DefaultEventMetrics.IncTrades
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncTrades
+- uid: Meridian.Application.Monitoring.IEventMetrics.IncTrades
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.IncTrades
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncTrades
+  name: IncTrades()
+  nameWithType: IEventMetrics.IncTrades()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.IncTrades()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncTrades
+    name: IncTrades
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncTrades
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncTrades
+    name: IncTrades
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncTrades
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_IncDepthUpdates
+  name: IncDepthUpdates
+  nameWithType: DefaultEventMetrics.IncDepthUpdates
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncDepthUpdates
+- uid: Meridian.Application.Monitoring.IEventMetrics.IncDepthUpdates
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.IncDepthUpdates
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncDepthUpdates
+  name: IncDepthUpdates()
+  nameWithType: IEventMetrics.IncDepthUpdates()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.IncDepthUpdates()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncDepthUpdates
+    name: IncDepthUpdates
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncDepthUpdates
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncDepthUpdates
+    name: IncDepthUpdates
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncDepthUpdates
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_IncQuotes
+  name: IncQuotes
+  nameWithType: DefaultEventMetrics.IncQuotes
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncQuotes
+- uid: Meridian.Application.Monitoring.IEventMetrics.IncQuotes
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.IncQuotes
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncQuotes
+  name: IncQuotes()
+  nameWithType: IEventMetrics.IncQuotes()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.IncQuotes()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncQuotes
+    name: IncQuotes
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncQuotes
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncQuotes
+    name: IncQuotes
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncQuotes
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_IncHistoricalBars
+  name: IncHistoricalBars
+  nameWithType: DefaultEventMetrics.IncHistoricalBars
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.IncHistoricalBars
+- uid: Meridian.Application.Monitoring.IEventMetrics.IncHistoricalBars
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.IncHistoricalBars
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncHistoricalBars
+  name: IncHistoricalBars()
+  nameWithType: IEventMetrics.IncHistoricalBars()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.IncHistoricalBars()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncHistoricalBars
+    name: IncHistoricalBars
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncHistoricalBars
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.IncHistoricalBars
+    name: IncHistoricalBars
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_IncHistoricalBars
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_RecordLatency_System_Int64_
+  name: RecordLatency
+  nameWithType: DefaultEventMetrics.RecordLatency
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.RecordLatency
+- uid: Meridian.Application.Monitoring.IEventMetrics.RecordLatency(System.Int64)
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.RecordLatency(System.Int64)
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  isExternal: true
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_RecordLatency_System_Int64_
+  name: RecordLatency(long)
+  nameWithType: IEventMetrics.RecordLatency(long)
+  fullName: Meridian.Application.Monitoring.IEventMetrics.RecordLatency(long)
+  nameWithType.vb: IEventMetrics.RecordLatency(Long)
+  fullName.vb: Meridian.Application.Monitoring.IEventMetrics.RecordLatency(Long)
+  name.vb: RecordLatency(Long)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.RecordLatency(System.Int64)
+    name: RecordLatency
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_RecordLatency_System_Int64_
+  - name: (
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.RecordLatency(System.Int64)
+    name: RecordLatency
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_RecordLatency_System_Int64_
+  - name: (
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.Reset
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_Reset
+  name: Reset
+  nameWithType: DefaultEventMetrics.Reset
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.Reset
+- uid: Meridian.Application.Monitoring.IEventMetrics.Reset
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.Reset
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Reset
+  name: Reset()
+  nameWithType: IEventMetrics.Reset()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.Reset()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.Reset
+    name: Reset
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Reset
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.Reset
+    name: Reset
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_Reset
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot*
+  commentId: Overload:Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot
+  href: Meridian.Application.Monitoring.DefaultEventMetrics.html#Meridian_Application_Monitoring_DefaultEventMetrics_GetSnapshot
+  name: GetSnapshot
+  nameWithType: DefaultEventMetrics.GetSnapshot
+  fullName: Meridian.Application.Monitoring.DefaultEventMetrics.GetSnapshot
+- uid: Meridian.Application.Monitoring.IEventMetrics.GetSnapshot
+  commentId: M:Meridian.Application.Monitoring.IEventMetrics.GetSnapshot
+  parent: Meridian.Application.Monitoring.IEventMetrics
+  href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_GetSnapshot
+  name: GetSnapshot()
+  nameWithType: IEventMetrics.GetSnapshot()
+  fullName: Meridian.Application.Monitoring.IEventMetrics.GetSnapshot()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_GetSnapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.IEventMetrics.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Application.Monitoring.IEventMetrics.html#Meridian_Application_Monitoring_IEventMetrics_GetSnapshot
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.MetricsSnapshot
+  commentId: T:Meridian.Application.Monitoring.MetricsSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.MetricsSnapshot.html
+  name: MetricsSnapshot
+  nameWithType: MetricsSnapshot
+  fullName: Meridian.Application.Monitoring.MetricsSnapshot

@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Models.RunType
+  commentId: T:Meridian.Strategies.Models.RunType
+  id: RunType
+  parent: Meridian.Strategies.Models
+  children:
+  - Meridian.Strategies.Models.RunType.Backtest
+  - Meridian.Strategies.Models.RunType.Live
+  - Meridian.Strategies.Models.RunType.Paper
+  langs:
+  - csharp
+  - vb
+  name: RunType
+  nameWithType: RunType
+  fullName: Meridian.Strategies.Models.RunType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/RunType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunType
+    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Classifies a strategy run by the execution environment it used.
+  example: []
+  syntax:
+    content: public enum RunType
+    content.vb: Public Enum RunType
+- uid: Meridian.Strategies.Models.RunType.Backtest
+  commentId: F:Meridian.Strategies.Models.RunType.Backtest
+  id: Backtest
+  parent: Meridian.Strategies.Models.RunType
+  langs:
+  - csharp
+  - vb
+  name: Backtest
+  nameWithType: RunType.Backtest
+  fullName: Meridian.Strategies.Models.RunType.Backtest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/RunType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backtest
+    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Run executed against historical data using the backtest engine.
+  example: []
+  syntax:
+    content: Backtest = 0
+    return:
+      type: Meridian.Strategies.Models.RunType
+- uid: Meridian.Strategies.Models.RunType.Paper
+  commentId: F:Meridian.Strategies.Models.RunType.Paper
+  id: Paper
+  parent: Meridian.Strategies.Models.RunType
+  langs:
+  - csharp
+  - vb
+  name: Paper
+  nameWithType: RunType.Paper
+  fullName: Meridian.Strategies.Models.RunType.Paper
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/RunType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paper
+    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Run executed against a live feed using <code>PaperTradingGateway</code>.
+  example: []
+  syntax:
+    content: Paper = 1
+    return:
+      type: Meridian.Strategies.Models.RunType
+- uid: Meridian.Strategies.Models.RunType.Live
+  commentId: F:Meridian.Strategies.Models.RunType.Live
+  id: Live
+  parent: Meridian.Strategies.Models.RunType
+  langs:
+  - csharp
+  - vb
+  name: Live
+  nameWithType: RunType.Live
+  fullName: Meridian.Strategies.Models.RunType.Live
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/RunType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Live
+    path: ../../src/Meridian.Strategies/Models/RunType.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Run executed against a live feed using a real broker.
+  example: []
+  syntax:
+    content: Live = 2
+    return:
+      type: Meridian.Strategies.Models.RunType
+references:
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+- uid: Meridian.Strategies.Models.RunType
+  commentId: T:Meridian.Strategies.Models.RunType
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.RunType.html
+  name: RunType
+  nameWithType: RunType
+  fullName: Meridian.Strategies.Models.RunType

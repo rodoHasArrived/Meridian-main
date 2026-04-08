@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.AlertSeverity
+  id: AlertSeverity
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.AlertSeverity.Critical
+  - Meridian.Application.Monitoring.Core.AlertSeverity.Error
+  - Meridian.Application.Monitoring.Core.AlertSeverity.Info
+  - Meridian.Application.Monitoring.Core.AlertSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: AlertSeverity
+  nameWithType: AlertSeverity
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertSeverity
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Severity levels for monitoring alerts.
+  example: []
+  syntax:
+    content: 'public enum AlertSeverity : byte'
+    content.vb: Public Enum AlertSeverity As Byte
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity.Info
+  commentId: F:Meridian.Application.Monitoring.Core.AlertSeverity.Info
+  id: Info
+  parent: Meridian.Application.Monitoring.Core.AlertSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: AlertSeverity.Info
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Informational message, no action required.
+  example: []
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertSeverity
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity.Warning
+  commentId: F:Meridian.Application.Monitoring.Core.AlertSeverity.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.Core.AlertSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: AlertSeverity.Warning
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Warning that may require attention.
+  example: []
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertSeverity
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity.Error
+  commentId: F:Meridian.Application.Monitoring.Core.AlertSeverity.Error
+  id: Error
+  parent: Meridian.Application.Monitoring.Core.AlertSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: AlertSeverity.Error
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Error that requires investigation.
+  example: []
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertSeverity
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity.Critical
+  commentId: F:Meridian.Application.Monitoring.Core.AlertSeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.Core.AlertSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: AlertSeverity.Critical
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Critical issue requiring immediate attention.
+  example: []
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertSeverity
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.AlertSeverity
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertSeverity.html
+  name: AlertSeverity
+  nameWithType: AlertSeverity
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity

@@ -1,0 +1,147 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.JournalEntryStatus
+  commentId: T:Meridian.Contracts.DirectLending.JournalEntryStatus
+  id: JournalEntryStatus
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.JournalEntryStatus.Draft
+  - Meridian.Contracts.DirectLending.JournalEntryStatus.Failed
+  - Meridian.Contracts.DirectLending.JournalEntryStatus.Posted
+  langs:
+  - csharp
+  - vb
+  name: JournalEntryStatus
+  nameWithType: JournalEntryStatus
+  fullName: Meridian.Contracts.DirectLending.JournalEntryStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JournalEntryStatus
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum JournalEntryStatus : byte'
+    content.vb: Public Enum JournalEntryStatus As Byte
+- uid: Meridian.Contracts.DirectLending.JournalEntryStatus.Draft
+  commentId: F:Meridian.Contracts.DirectLending.JournalEntryStatus.Draft
+  id: Draft
+  parent: Meridian.Contracts.DirectLending.JournalEntryStatus
+  langs:
+  - csharp
+  - vb
+  name: Draft
+  nameWithType: JournalEntryStatus.Draft
+  fullName: Meridian.Contracts.DirectLending.JournalEntryStatus.Draft
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Draft
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Draft = 0
+    return:
+      type: Meridian.Contracts.DirectLending.JournalEntryStatus
+- uid: Meridian.Contracts.DirectLending.JournalEntryStatus.Posted
+  commentId: F:Meridian.Contracts.DirectLending.JournalEntryStatus.Posted
+  id: Posted
+  parent: Meridian.Contracts.DirectLending.JournalEntryStatus
+  langs:
+  - csharp
+  - vb
+  name: Posted
+  nameWithType: JournalEntryStatus.Posted
+  fullName: Meridian.Contracts.DirectLending.JournalEntryStatus.Posted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Posted
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Posted = 1
+    return:
+      type: Meridian.Contracts.DirectLending.JournalEntryStatus
+- uid: Meridian.Contracts.DirectLending.JournalEntryStatus.Failed
+  commentId: F:Meridian.Contracts.DirectLending.JournalEntryStatus.Failed
+  id: Failed
+  parent: Meridian.Contracts.DirectLending.JournalEntryStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: JournalEntryStatus.Failed
+  fullName: Meridian.Contracts.DirectLending.JournalEntryStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Failed = 2
+    return:
+      type: Meridian.Contracts.DirectLending.JournalEntryStatus
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.JournalEntryStatus
+  commentId: T:Meridian.Contracts.DirectLending.JournalEntryStatus
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.JournalEntryStatus.html
+  name: JournalEntryStatus
+  nameWithType: JournalEntryStatus
+  fullName: Meridian.Contracts.DirectLending.JournalEntryStatus

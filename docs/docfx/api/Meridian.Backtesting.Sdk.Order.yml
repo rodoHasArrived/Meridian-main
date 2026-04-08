@@ -1,0 +1,1512 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Order
+  commentId: T:Meridian.Backtesting.Sdk.Order
+  id: Order
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.Order.#ctor(System.Guid,System.String,Meridian.Backtesting.Sdk.OrderType,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.DateTimeOffset,Meridian.Backtesting.Sdk.TimeInForce,Meridian.Backtesting.Sdk.ExecutionModel,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String,Meridian.Backtesting.Sdk.OrderStatus,System.Int64,System.Boolean,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Guid})
+  - Meridian.Backtesting.Sdk.Order.AccountId
+  - Meridian.Backtesting.Sdk.Order.AllowPartialFills
+  - Meridian.Backtesting.Sdk.Order.ExecutionModel
+  - Meridian.Backtesting.Sdk.Order.FilledQuantity
+  - Meridian.Backtesting.Sdk.Order.IsComplete
+  - Meridian.Backtesting.Sdk.Order.IsTriggered
+  - Meridian.Backtesting.Sdk.Order.LimitPrice
+  - Meridian.Backtesting.Sdk.Order.OcoGroupId
+  - Meridian.Backtesting.Sdk.Order.OrderId
+  - Meridian.Backtesting.Sdk.Order.ParentOrderId
+  - Meridian.Backtesting.Sdk.Order.ProviderParameters
+  - Meridian.Backtesting.Sdk.Order.Quantity
+  - Meridian.Backtesting.Sdk.Order.RemainingQuantity
+  - Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity
+  - Meridian.Backtesting.Sdk.Order.Status
+  - Meridian.Backtesting.Sdk.Order.StopLossPrice
+  - Meridian.Backtesting.Sdk.Order.StopPrice
+  - Meridian.Backtesting.Sdk.Order.SubmittedAt
+  - Meridian.Backtesting.Sdk.Order.Symbol
+  - Meridian.Backtesting.Sdk.Order.TakeProfitPrice
+  - Meridian.Backtesting.Sdk.Order.TimeInForce
+  - Meridian.Backtesting.Sdk.Order.Type
+  langs:
+  - csharp
+  - vb
+  name: Order
+  nameWithType: Order
+  fullName: Meridian.Backtesting.Sdk.Order
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Order
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Immutable order record submitted to the backtest context. Parent entry orders can
+
+    carry contingent exit prices, while generated child orders link back through
+
+    <xref href="Meridian.Backtesting.Sdk.Order.ParentOrderId" data-throw-if-not-resolved="false"></xref> and <xref href="Meridian.Backtesting.Sdk.Order.OcoGroupId" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed record Order : IEquatable<Order>'
+    content.vb: Public NotInheritable Class Order Implements IEquatable(Of Order)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Order}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Order.#ctor(System.Guid,System.String,Meridian.Backtesting.Sdk.OrderType,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.DateTimeOffset,Meridian.Backtesting.Sdk.TimeInForce,Meridian.Backtesting.Sdk.ExecutionModel,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String,Meridian.Backtesting.Sdk.OrderStatus,System.Int64,System.Boolean,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Guid})
+  commentId: M:Meridian.Backtesting.Sdk.Order.#ctor(System.Guid,System.String,Meridian.Backtesting.Sdk.OrderType,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.DateTimeOffset,Meridian.Backtesting.Sdk.TimeInForce,Meridian.Backtesting.Sdk.ExecutionModel,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String,Meridian.Backtesting.Sdk.OrderStatus,System.Int64,System.Boolean,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Guid})
+  id: '#ctor(System.Guid,System.String,Meridian.Backtesting.Sdk.OrderType,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.DateTimeOffset,Meridian.Backtesting.Sdk.TimeInForce,Meridian.Backtesting.Sdk.ExecutionModel,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.String,Meridian.Backtesting.Sdk.OrderStatus,System.Int64,System.Boolean,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Guid},System.Nullable{System.Guid})'
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: Order(Guid, string, OrderType, long, decimal?, decimal?, DateTimeOffset, TimeInForce, ExecutionModel, bool, IReadOnlyDictionary<string, string>?, string?, OrderStatus, long, bool, decimal?, decimal?, Guid?, Guid?)
+  nameWithType: Order.Order(Guid, string, OrderType, long, decimal?, decimal?, DateTimeOffset, TimeInForce, ExecutionModel, bool, IReadOnlyDictionary<string, string>?, string?, OrderStatus, long, bool, decimal?, decimal?, Guid?, Guid?)
+  fullName: Meridian.Backtesting.Sdk.Order.Order(System.Guid, string, Meridian.Backtesting.Sdk.OrderType, long, decimal?, decimal?, System.DateTimeOffset, Meridian.Backtesting.Sdk.TimeInForce, Meridian.Backtesting.Sdk.ExecutionModel, bool, System.Collections.Generic.IReadOnlyDictionary<string, string>?, string?, Meridian.Backtesting.Sdk.OrderStatus, long, bool, decimal?, decimal?, System.Guid?, System.Guid?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Immutable order record submitted to the backtest context. Parent entry orders can
+
+    carry contingent exit prices, while generated child orders link back through
+
+    <xref href="Meridian.Backtesting.Sdk.Order.ParentOrderId" data-throw-if-not-resolved="false"></xref> and <xref href="Meridian.Backtesting.Sdk.Order.OcoGroupId" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public Order(Guid OrderId, string Symbol, OrderType Type, long Quantity, decimal? LimitPrice, decimal? StopPrice, DateTimeOffset SubmittedAt, TimeInForce TimeInForce = TimeInForce.Day, ExecutionModel ExecutionModel = ExecutionModel.Auto, bool AllowPartialFills = true, IReadOnlyDictionary<string, string>? ProviderParameters = null, string? AccountId = null, OrderStatus Status = OrderStatus.Pending, long FilledQuantity = 0, bool IsTriggered = false, decimal? TakeProfitPrice = null, decimal? StopLossPrice = null, Guid? ParentOrderId = null, Guid? OcoGroupId = null)
+    parameters:
+    - id: OrderId
+      type: System.Guid
+    - id: Symbol
+      type: System.String
+    - id: Type
+      type: Meridian.Backtesting.Sdk.OrderType
+    - id: Quantity
+      type: System.Int64
+    - id: LimitPrice
+      type: System.Nullable{System.Decimal}
+    - id: StopPrice
+      type: System.Nullable{System.Decimal}
+    - id: SubmittedAt
+      type: System.DateTimeOffset
+    - id: TimeInForce
+      type: Meridian.Backtesting.Sdk.TimeInForce
+    - id: ExecutionModel
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+    - id: AllowPartialFills
+      type: System.Boolean
+    - id: ProviderParameters
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    - id: AccountId
+      type: System.String
+    - id: Status
+      type: Meridian.Backtesting.Sdk.OrderStatus
+    - id: FilledQuantity
+      type: System.Int64
+    - id: IsTriggered
+      type: System.Boolean
+    - id: TakeProfitPrice
+      type: System.Nullable{System.Decimal}
+    - id: StopLossPrice
+      type: System.Nullable{System.Decimal}
+    - id: ParentOrderId
+      type: System.Nullable{System.Guid}
+    - id: OcoGroupId
+      type: System.Nullable{System.Guid}
+    content.vb: Public Sub New(OrderId As Guid, Symbol As String, Type As OrderType, Quantity As Long, LimitPrice As Decimal?, StopPrice As Decimal?, SubmittedAt As DateTimeOffset, TimeInForce As TimeInForce = TimeInForce.Day, ExecutionModel As ExecutionModel = ExecutionModel.Auto, AllowPartialFills As Boolean = True, ProviderParameters As IReadOnlyDictionary(Of String, String) = Nothing, AccountId As String = Nothing, Status As OrderStatus = OrderStatus.Pending, FilledQuantity As Long = 0, IsTriggered As Boolean = False, TakeProfitPrice As Decimal? = Nothing, StopLossPrice As Decimal? = Nothing, ParentOrderId As Guid? = Nothing, OcoGroupId As Guid? = Nothing)
+  overload: Meridian.Backtesting.Sdk.Order.#ctor*
+  nameWithType.vb: Order.New(Guid, String, OrderType, Long, Decimal?, Decimal?, DateTimeOffset, TimeInForce, ExecutionModel, Boolean, IReadOnlyDictionary(Of String, String), String, OrderStatus, Long, Boolean, Decimal?, Decimal?, Guid?, Guid?)
+  fullName.vb: Meridian.Backtesting.Sdk.Order.New(System.Guid, String, Meridian.Backtesting.Sdk.OrderType, Long, Decimal?, Decimal?, System.DateTimeOffset, Meridian.Backtesting.Sdk.TimeInForce, Meridian.Backtesting.Sdk.ExecutionModel, Boolean, System.Collections.Generic.IReadOnlyDictionary(Of String, String), String, Meridian.Backtesting.Sdk.OrderStatus, Long, Boolean, Decimal?, Decimal?, System.Guid?, System.Guid?)
+  name.vb: New(Guid, String, OrderType, Long, Decimal?, Decimal?, DateTimeOffset, TimeInForce, ExecutionModel, Boolean, IReadOnlyDictionary(Of String, String), String, OrderStatus, Long, Boolean, Decimal?, Decimal?, Guid?, Guid?)
+- uid: Meridian.Backtesting.Sdk.Order.OrderId
+  commentId: P:Meridian.Backtesting.Sdk.Order.OrderId
+  id: OrderId
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: Order.OrderId
+  fullName: Meridian.Backtesting.Sdk.Order.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OrderId As Guid
+  overload: Meridian.Backtesting.Sdk.Order.OrderId*
+- uid: Meridian.Backtesting.Sdk.Order.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.Order.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: Order.Symbol
+  fullName: Meridian.Backtesting.Sdk.Order.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.Order.Symbol*
+- uid: Meridian.Backtesting.Sdk.Order.Type
+  commentId: P:Meridian.Backtesting.Sdk.Order.Type
+  id: Type
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: Order.Type
+  fullName: Meridian.Backtesting.Sdk.Order.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public OrderType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.OrderType
+    content.vb: Public Property Type As OrderType
+  overload: Meridian.Backtesting.Sdk.Order.Type*
+- uid: Meridian.Backtesting.Sdk.Order.Quantity
+  commentId: P:Meridian.Backtesting.Sdk.Order.Quantity
+  id: Quantity
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: Order.Quantity
+  fullName: Meridian.Backtesting.Sdk.Order.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public long Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Quantity As Long
+  overload: Meridian.Backtesting.Sdk.Order.Quantity*
+- uid: Meridian.Backtesting.Sdk.Order.LimitPrice
+  commentId: P:Meridian.Backtesting.Sdk.Order.LimitPrice
+  id: LimitPrice
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: LimitPrice
+  nameWithType: Order.LimitPrice
+  fullName: Meridian.Backtesting.Sdk.Order.LimitPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LimitPrice
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal? LimitPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property LimitPrice As Decimal?
+  overload: Meridian.Backtesting.Sdk.Order.LimitPrice*
+- uid: Meridian.Backtesting.Sdk.Order.StopPrice
+  commentId: P:Meridian.Backtesting.Sdk.Order.StopPrice
+  id: StopPrice
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: StopPrice
+  nameWithType: Order.StopPrice
+  fullName: Meridian.Backtesting.Sdk.Order.StopPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopPrice
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal? StopPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property StopPrice As Decimal?
+  overload: Meridian.Backtesting.Sdk.Order.StopPrice*
+- uid: Meridian.Backtesting.Sdk.Order.SubmittedAt
+  commentId: P:Meridian.Backtesting.Sdk.Order.SubmittedAt
+  id: SubmittedAt
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: SubmittedAt
+  nameWithType: Order.SubmittedAt
+  fullName: Meridian.Backtesting.Sdk.Order.SubmittedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubmittedAt
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public DateTimeOffset SubmittedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property SubmittedAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.Order.SubmittedAt*
+- uid: Meridian.Backtesting.Sdk.Order.TimeInForce
+  commentId: P:Meridian.Backtesting.Sdk.Order.TimeInForce
+  id: TimeInForce
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: TimeInForce
+  nameWithType: Order.TimeInForce
+  fullName: Meridian.Backtesting.Sdk.Order.TimeInForce
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeInForce
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public TimeInForce TimeInForce { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.TimeInForce
+    content.vb: Public Property TimeInForce As TimeInForce
+  overload: Meridian.Backtesting.Sdk.Order.TimeInForce*
+- uid: Meridian.Backtesting.Sdk.Order.ExecutionModel
+  commentId: P:Meridian.Backtesting.Sdk.Order.ExecutionModel
+  id: ExecutionModel
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: ExecutionModel
+  nameWithType: Order.ExecutionModel
+  fullName: Meridian.Backtesting.Sdk.Order.ExecutionModel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionModel
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public ExecutionModel ExecutionModel { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.ExecutionModel
+    content.vb: Public Property ExecutionModel As ExecutionModel
+  overload: Meridian.Backtesting.Sdk.Order.ExecutionModel*
+- uid: Meridian.Backtesting.Sdk.Order.AllowPartialFills
+  commentId: P:Meridian.Backtesting.Sdk.Order.AllowPartialFills
+  id: AllowPartialFills
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: AllowPartialFills
+  nameWithType: Order.AllowPartialFills
+  fullName: Meridian.Backtesting.Sdk.Order.AllowPartialFills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllowPartialFills
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public bool AllowPartialFills { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AllowPartialFills As Boolean
+  overload: Meridian.Backtesting.Sdk.Order.AllowPartialFills*
+- uid: Meridian.Backtesting.Sdk.Order.ProviderParameters
+  commentId: P:Meridian.Backtesting.Sdk.Order.ProviderParameters
+  id: ProviderParameters
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: ProviderParameters
+  nameWithType: Order.ProviderParameters
+  fullName: Meridian.Backtesting.Sdk.Order.ProviderParameters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderParameters
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? ProviderParameters { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property ProviderParameters As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Backtesting.Sdk.Order.ProviderParameters*
+- uid: Meridian.Backtesting.Sdk.Order.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.Order.AccountId
+  id: AccountId
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: Order.AccountId
+  fullName: Meridian.Backtesting.Sdk.Order.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Backtesting.Sdk.Order.AccountId*
+- uid: Meridian.Backtesting.Sdk.Order.Status
+  commentId: P:Meridian.Backtesting.Sdk.Order.Status
+  id: Status
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: Order.Status
+  fullName: Meridian.Backtesting.Sdk.Order.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public OrderStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.OrderStatus
+    content.vb: Public Property Status As OrderStatus
+  overload: Meridian.Backtesting.Sdk.Order.Status*
+- uid: Meridian.Backtesting.Sdk.Order.FilledQuantity
+  commentId: P:Meridian.Backtesting.Sdk.Order.FilledQuantity
+  id: FilledQuantity
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: FilledQuantity
+  nameWithType: Order.FilledQuantity
+  fullName: Meridian.Backtesting.Sdk.Order.FilledQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilledQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public long FilledQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property FilledQuantity As Long
+  overload: Meridian.Backtesting.Sdk.Order.FilledQuantity*
+- uid: Meridian.Backtesting.Sdk.Order.IsTriggered
+  commentId: P:Meridian.Backtesting.Sdk.Order.IsTriggered
+  id: IsTriggered
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: IsTriggered
+  nameWithType: Order.IsTriggered
+  fullName: Meridian.Backtesting.Sdk.Order.IsTriggered
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTriggered
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public bool IsTriggered { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsTriggered As Boolean
+  overload: Meridian.Backtesting.Sdk.Order.IsTriggered*
+- uid: Meridian.Backtesting.Sdk.Order.TakeProfitPrice
+  commentId: P:Meridian.Backtesting.Sdk.Order.TakeProfitPrice
+  id: TakeProfitPrice
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: TakeProfitPrice
+  nameWithType: Order.TakeProfitPrice
+  fullName: Meridian.Backtesting.Sdk.Order.TakeProfitPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TakeProfitPrice
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal? TakeProfitPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property TakeProfitPrice As Decimal?
+  overload: Meridian.Backtesting.Sdk.Order.TakeProfitPrice*
+- uid: Meridian.Backtesting.Sdk.Order.StopLossPrice
+  commentId: P:Meridian.Backtesting.Sdk.Order.StopLossPrice
+  id: StopLossPrice
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: StopLossPrice
+  nameWithType: Order.StopLossPrice
+  fullName: Meridian.Backtesting.Sdk.Order.StopLossPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopLossPrice
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal? StopLossPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property StopLossPrice As Decimal?
+  overload: Meridian.Backtesting.Sdk.Order.StopLossPrice*
+- uid: Meridian.Backtesting.Sdk.Order.ParentOrderId
+  commentId: P:Meridian.Backtesting.Sdk.Order.ParentOrderId
+  id: ParentOrderId
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: ParentOrderId
+  nameWithType: Order.ParentOrderId
+  fullName: Meridian.Backtesting.Sdk.Order.ParentOrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParentOrderId
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid? ParentOrderId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property ParentOrderId As Guid?
+  overload: Meridian.Backtesting.Sdk.Order.ParentOrderId*
+- uid: Meridian.Backtesting.Sdk.Order.OcoGroupId
+  commentId: P:Meridian.Backtesting.Sdk.Order.OcoGroupId
+  id: OcoGroupId
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: OcoGroupId
+  nameWithType: Order.OcoGroupId
+  fullName: Meridian.Backtesting.Sdk.Order.OcoGroupId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OcoGroupId
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid? OcoGroupId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property OcoGroupId As Guid?
+  overload: Meridian.Backtesting.Sdk.Order.OcoGroupId*
+- uid: Meridian.Backtesting.Sdk.Order.RemainingQuantity
+  commentId: P:Meridian.Backtesting.Sdk.Order.RemainingQuantity
+  id: RemainingQuantity
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: RemainingQuantity
+  nameWithType: Order.RemainingQuantity
+  fullName: Meridian.Backtesting.Sdk.Order.RemainingQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemainingQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Absolute quantity that still needs to be executed.
+  example: []
+  syntax:
+    content: public long RemainingQuantity { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property RemainingQuantity As Long
+  overload: Meridian.Backtesting.Sdk.Order.RemainingQuantity*
+- uid: Meridian.Backtesting.Sdk.Order.IsComplete
+  commentId: P:Meridian.Backtesting.Sdk.Order.IsComplete
+  id: IsComplete
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: IsComplete
+  nameWithType: Order.IsComplete
+  fullName: Meridian.Backtesting.Sdk.Order.IsComplete
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsComplete
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: True when the order has no remaining quantity to execute.
+  example: []
+  syntax:
+    content: public bool IsComplete { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsComplete As Boolean
+  overload: Meridian.Backtesting.Sdk.Order.IsComplete*
+- uid: Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity
+  commentId: P:Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity
+  id: RemainingSignedQuantity
+  parent: Meridian.Backtesting.Sdk.Order
+  langs:
+  - csharp
+  - vb
+  name: RemainingSignedQuantity
+  nameWithType: Order.RemainingSignedQuantity
+  fullName: Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemainingSignedQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Signed quantity still open, retaining the original side of the order.
+  example: []
+  syntax:
+    content: public long RemainingSignedQuantity { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property RemainingSignedQuantity As Long
+  overload: Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity*
+references:
+- uid: Meridian.Backtesting.Sdk.Order.ParentOrderId
+  commentId: P:Meridian.Backtesting.Sdk.Order.ParentOrderId
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_ParentOrderId
+  name: ParentOrderId
+  nameWithType: Order.ParentOrderId
+  fullName: Meridian.Backtesting.Sdk.Order.ParentOrderId
+- uid: Meridian.Backtesting.Sdk.Order.OcoGroupId
+  commentId: P:Meridian.Backtesting.Sdk.Order.OcoGroupId
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_OcoGroupId
+  name: OcoGroupId
+  nameWithType: Order.OcoGroupId
+  fullName: Meridian.Backtesting.Sdk.Order.OcoGroupId
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Order}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Order}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<Order>
+  nameWithType: IEquatable<Order>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Order>
+  nameWithType.vb: IEquatable(Of Order)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Order)
+  name.vb: IEquatable(Of Order)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Order
+    name: Order
+    href: Meridian.Backtesting.Sdk.Order.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Order
+    name: Order
+    href: Meridian.Backtesting.Sdk.Order.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Order.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.#ctor
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order__ctor_System_Guid_System_String_Meridian_Backtesting_Sdk_OrderType_System_Int64_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_DateTimeOffset_Meridian_Backtesting_Sdk_TimeInForce_Meridian_Backtesting_Sdk_ExecutionModel_System_Boolean_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__System_String_Meridian_Backtesting_Sdk_OrderStatus_System_Int64_System_Boolean_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Guid__System_Nullable_System_Guid__
+  name: Order
+  nameWithType: Order.Order
+  fullName: Meridian.Backtesting.Sdk.Order.Order
+  nameWithType.vb: Order.New
+  fullName.vb: Meridian.Backtesting.Sdk.Order.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.OrderType
+  commentId: T:Meridian.Backtesting.Sdk.OrderType
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.OrderType.html
+  name: OrderType
+  nameWithType: OrderType
+  fullName: Meridian.Backtesting.Sdk.OrderType
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Backtesting.Sdk.TimeInForce
+  commentId: T:Meridian.Backtesting.Sdk.TimeInForce
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.TimeInForce.html
+  name: TimeInForce
+  nameWithType: TimeInForce
+  fullName: Meridian.Backtesting.Sdk.TimeInForce
+- uid: Meridian.Backtesting.Sdk.ExecutionModel
+  commentId: T:Meridian.Backtesting.Sdk.ExecutionModel
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.ExecutionModel.html
+  name: ExecutionModel
+  nameWithType: ExecutionModel
+  fullName: Meridian.Backtesting.Sdk.ExecutionModel
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Backtesting.Sdk.OrderStatus
+  commentId: T:Meridian.Backtesting.Sdk.OrderStatus
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.OrderStatus.html
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Backtesting.Sdk.OrderStatus
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.Order.OrderId*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.OrderId
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_OrderId
+  name: OrderId
+  nameWithType: Order.OrderId
+  fullName: Meridian.Backtesting.Sdk.Order.OrderId
+- uid: Meridian.Backtesting.Sdk.Order.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.Symbol
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_Symbol
+  name: Symbol
+  nameWithType: Order.Symbol
+  fullName: Meridian.Backtesting.Sdk.Order.Symbol
+- uid: Meridian.Backtesting.Sdk.Order.Type*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.Type
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_Type
+  name: Type
+  nameWithType: Order.Type
+  fullName: Meridian.Backtesting.Sdk.Order.Type
+- uid: Meridian.Backtesting.Sdk.Order.Quantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.Quantity
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_Quantity
+  name: Quantity
+  nameWithType: Order.Quantity
+  fullName: Meridian.Backtesting.Sdk.Order.Quantity
+- uid: Meridian.Backtesting.Sdk.Order.LimitPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.LimitPrice
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_LimitPrice
+  name: LimitPrice
+  nameWithType: Order.LimitPrice
+  fullName: Meridian.Backtesting.Sdk.Order.LimitPrice
+- uid: Meridian.Backtesting.Sdk.Order.StopPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.StopPrice
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_StopPrice
+  name: StopPrice
+  nameWithType: Order.StopPrice
+  fullName: Meridian.Backtesting.Sdk.Order.StopPrice
+- uid: Meridian.Backtesting.Sdk.Order.SubmittedAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.SubmittedAt
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_SubmittedAt
+  name: SubmittedAt
+  nameWithType: Order.SubmittedAt
+  fullName: Meridian.Backtesting.Sdk.Order.SubmittedAt
+- uid: Meridian.Backtesting.Sdk.Order.TimeInForce*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.TimeInForce
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_TimeInForce
+  name: TimeInForce
+  nameWithType: Order.TimeInForce
+  fullName: Meridian.Backtesting.Sdk.Order.TimeInForce
+- uid: Meridian.Backtesting.Sdk.Order.ExecutionModel*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.ExecutionModel
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_ExecutionModel
+  name: ExecutionModel
+  nameWithType: Order.ExecutionModel
+  fullName: Meridian.Backtesting.Sdk.Order.ExecutionModel
+- uid: Meridian.Backtesting.Sdk.Order.AllowPartialFills*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.AllowPartialFills
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_AllowPartialFills
+  name: AllowPartialFills
+  nameWithType: Order.AllowPartialFills
+  fullName: Meridian.Backtesting.Sdk.Order.AllowPartialFills
+- uid: Meridian.Backtesting.Sdk.Order.ProviderParameters*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.ProviderParameters
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_ProviderParameters
+  name: ProviderParameters
+  nameWithType: Order.ProviderParameters
+  fullName: Meridian.Backtesting.Sdk.Order.ProviderParameters
+- uid: Meridian.Backtesting.Sdk.Order.AccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.AccountId
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_AccountId
+  name: AccountId
+  nameWithType: Order.AccountId
+  fullName: Meridian.Backtesting.Sdk.Order.AccountId
+- uid: Meridian.Backtesting.Sdk.Order.Status*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.Status
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_Status
+  name: Status
+  nameWithType: Order.Status
+  fullName: Meridian.Backtesting.Sdk.Order.Status
+- uid: Meridian.Backtesting.Sdk.Order.FilledQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.FilledQuantity
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_FilledQuantity
+  name: FilledQuantity
+  nameWithType: Order.FilledQuantity
+  fullName: Meridian.Backtesting.Sdk.Order.FilledQuantity
+- uid: Meridian.Backtesting.Sdk.Order.IsTriggered*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.IsTriggered
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_IsTriggered
+  name: IsTriggered
+  nameWithType: Order.IsTriggered
+  fullName: Meridian.Backtesting.Sdk.Order.IsTriggered
+- uid: Meridian.Backtesting.Sdk.Order.TakeProfitPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.TakeProfitPrice
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_TakeProfitPrice
+  name: TakeProfitPrice
+  nameWithType: Order.TakeProfitPrice
+  fullName: Meridian.Backtesting.Sdk.Order.TakeProfitPrice
+- uid: Meridian.Backtesting.Sdk.Order.StopLossPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.StopLossPrice
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_StopLossPrice
+  name: StopLossPrice
+  nameWithType: Order.StopLossPrice
+  fullName: Meridian.Backtesting.Sdk.Order.StopLossPrice
+- uid: Meridian.Backtesting.Sdk.Order.ParentOrderId*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.ParentOrderId
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_ParentOrderId
+  name: ParentOrderId
+  nameWithType: Order.ParentOrderId
+  fullName: Meridian.Backtesting.Sdk.Order.ParentOrderId
+- uid: Meridian.Backtesting.Sdk.Order.OcoGroupId*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.OcoGroupId
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_OcoGroupId
+  name: OcoGroupId
+  nameWithType: Order.OcoGroupId
+  fullName: Meridian.Backtesting.Sdk.Order.OcoGroupId
+- uid: Meridian.Backtesting.Sdk.Order.RemainingQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.RemainingQuantity
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_RemainingQuantity
+  name: RemainingQuantity
+  nameWithType: Order.RemainingQuantity
+  fullName: Meridian.Backtesting.Sdk.Order.RemainingQuantity
+- uid: Meridian.Backtesting.Sdk.Order.IsComplete*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.IsComplete
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_IsComplete
+  name: IsComplete
+  nameWithType: Order.IsComplete
+  fullName: Meridian.Backtesting.Sdk.Order.IsComplete
+- uid: Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity
+  href: Meridian.Backtesting.Sdk.Order.html#Meridian_Backtesting_Sdk_Order_RemainingSignedQuantity
+  name: RemainingSignedQuantity
+  nameWithType: Order.RemainingSignedQuantity
+  fullName: Meridian.Backtesting.Sdk.Order.RemainingSignedQuantity

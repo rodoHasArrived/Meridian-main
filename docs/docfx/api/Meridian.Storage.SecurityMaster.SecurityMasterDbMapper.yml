@@ -1,0 +1,433 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  commentId: T:Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  id: SecurityMasterDbMapper
+  parent: Meridian.Storage.SecurityMaster
+  children:
+  - Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  - Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterDbMapper
+  nameWithType: SecurityMasterDbMapper
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterDbMapper
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public static class SecurityMasterDbMapper
+    content.vb: Public Module SecurityMasterDbMapper
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  commentId: M:Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  id: ToSummary(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  parent: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  langs:
+  - csharp
+  - vb
+  name: ToSummary(SecurityProjectionRecord)
+  nameWithType: SecurityMasterDbMapper.ToSummary(SecurityProjectionRecord)
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToSummary
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record)
+    parameters:
+    - id: record
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+    content.vb: Public Shared Function ToSummary(record As SecurityProjectionRecord) As SecuritySummaryDto
+  overload: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary*
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  commentId: M:Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  id: ToDetail(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  parent: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  langs:
+  - csharp
+  - vb
+  name: ToDetail(SecurityProjectionRecord)
+  nameWithType: SecurityMasterDbMapper.ToDetail(SecurityProjectionRecord)
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDetail
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public static SecurityDetailDto ToDetail(SecurityProjectionRecord record)
+    parameters:
+    - id: record
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    content.vb: Public Shared Function ToDetail(record As SecurityProjectionRecord) As SecurityDetailDto
+  overload: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail*
+references:
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary*
+  commentId: Overload:Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary
+  href: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.html#Meridian_Storage_SecurityMaster_SecurityMasterDbMapper_ToSummary_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_
+  name: ToSummary
+  nameWithType: SecurityMasterDbMapper.ToSummary
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToSummary
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html
+  name: SecurityProjectionRecord
+  nameWithType: SecurityProjectionRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+- uid: Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+  commentId: T:Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecuritySummaryDto.html
+  name: SecuritySummaryDto
+  nameWithType: SecuritySummaryDto
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail*
+  commentId: Overload:Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail
+  href: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.html#Meridian_Storage_SecurityMaster_SecurityMasterDbMapper_ToDetail_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_
+  name: ToDetail
+  nameWithType: SecurityMasterDbMapper.ToDetail
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.ToDetail
+- uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityDetailDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityDetailDto.html
+  name: SecurityDetailDto
+  nameWithType: SecurityDetailDto
+  fullName: Meridian.Contracts.SecurityMaster.SecurityDetailDto

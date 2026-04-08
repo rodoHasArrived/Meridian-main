@@ -1,0 +1,925 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.QuoteDto
+  commentId: T:Meridian.Contracts.Domain.QuoteDto
+  id: QuoteDto
+  parent: Meridian.Contracts.Domain
+  children:
+  - Meridian.Contracts.Domain.QuoteDto.AskPrice
+  - Meridian.Contracts.Domain.QuoteDto.AskSize
+  - Meridian.Contracts.Domain.QuoteDto.BidPrice
+  - Meridian.Contracts.Domain.QuoteDto.BidSize
+  - Meridian.Contracts.Domain.QuoteDto.MidPrice
+  - Meridian.Contracts.Domain.QuoteDto.SequenceNumber
+  - Meridian.Contracts.Domain.QuoteDto.Spread
+  - Meridian.Contracts.Domain.QuoteDto.StreamId
+  - Meridian.Contracts.Domain.QuoteDto.Symbol
+  - Meridian.Contracts.Domain.QuoteDto.Timestamp
+  - Meridian.Contracts.Domain.QuoteDto.Venue
+  langs:
+  - csharp
+  - vb
+  name: QuoteDto
+  nameWithType: QuoteDto
+  fullName: Meridian.Contracts.Domain.QuoteDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuoteDto
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Quote (BBO) data transfer object.
+  example: []
+  syntax:
+    content: public sealed class QuoteDto
+    content.vb: Public NotInheritable Class QuoteDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.QuoteDto.Timestamp
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: QuoteDto.Timestamp
+  fullName: Meridian.Contracts.Domain.QuoteDto.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the quote timestamp.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("timestamp")]
+
+      public DateTimeOffset Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: >-
+      <JsonPropertyName("timestamp")>
+
+      Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Domain.QuoteDto.Timestamp*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: timestamp
+- uid: Meridian.Contracts.Domain.QuoteDto.Symbol
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: QuoteDto.Symbol
+  fullName: Meridian.Contracts.Domain.QuoteDto.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the quoted symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Contracts.Domain.QuoteDto.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Contracts.Domain.QuoteDto.BidPrice
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.BidPrice
+  id: BidPrice
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: BidPrice
+  nameWithType: QuoteDto.BidPrice
+  fullName: Meridian.Contracts.Domain.QuoteDto.BidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidPrice
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the bid price.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("bidPrice")]
+
+      public decimal BidPrice { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("bidPrice")>
+
+      Public Property BidPrice As Decimal
+  overload: Meridian.Contracts.Domain.QuoteDto.BidPrice*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: bidPrice
+- uid: Meridian.Contracts.Domain.QuoteDto.BidSize
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.BidSize
+  id: BidSize
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: BidSize
+  nameWithType: QuoteDto.BidSize
+  fullName: Meridian.Contracts.Domain.QuoteDto.BidSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidSize
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the bid size.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("bidSize")]
+
+      public long BidSize { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("bidSize")>
+
+      Public Property BidSize As Long
+  overload: Meridian.Contracts.Domain.QuoteDto.BidSize*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: bidSize
+- uid: Meridian.Contracts.Domain.QuoteDto.AskPrice
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.AskPrice
+  id: AskPrice
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: AskPrice
+  nameWithType: QuoteDto.AskPrice
+  fullName: Meridian.Contracts.Domain.QuoteDto.AskPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskPrice
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the ask price.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("askPrice")]
+
+      public decimal AskPrice { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("askPrice")>
+
+      Public Property AskPrice As Decimal
+  overload: Meridian.Contracts.Domain.QuoteDto.AskPrice*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: askPrice
+- uid: Meridian.Contracts.Domain.QuoteDto.AskSize
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.AskSize
+  id: AskSize
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: AskSize
+  nameWithType: QuoteDto.AskSize
+  fullName: Meridian.Contracts.Domain.QuoteDto.AskSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskSize
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the ask size.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("askSize")]
+
+      public long AskSize { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("askSize")>
+
+      Public Property AskSize As Long
+  overload: Meridian.Contracts.Domain.QuoteDto.AskSize*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: askSize
+- uid: Meridian.Contracts.Domain.QuoteDto.MidPrice
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.MidPrice
+  id: MidPrice
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: MidPrice
+  nameWithType: QuoteDto.MidPrice
+  fullName: Meridian.Contracts.Domain.QuoteDto.MidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MidPrice
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the derived mid price, if available.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("midPrice")]
+
+      public decimal? MidPrice { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: >-
+      <JsonPropertyName("midPrice")>
+
+      Public Property MidPrice As Decimal?
+  overload: Meridian.Contracts.Domain.QuoteDto.MidPrice*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: midPrice
+- uid: Meridian.Contracts.Domain.QuoteDto.Spread
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.Spread
+  id: Spread
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: Spread
+  nameWithType: QuoteDto.Spread
+  fullName: Meridian.Contracts.Domain.QuoteDto.Spread
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Spread
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the quoted spread, if available.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("spread")]
+
+      public decimal? Spread { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: >-
+      <JsonPropertyName("spread")>
+
+      Public Property Spread As Decimal?
+  overload: Meridian.Contracts.Domain.QuoteDto.Spread*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: spread
+- uid: Meridian.Contracts.Domain.QuoteDto.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: QuoteDto.SequenceNumber
+  fullName: Meridian.Contracts.Domain.QuoteDto.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the sequence number associated with the quote.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sequenceNumber")]
+
+      public long SequenceNumber { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("sequenceNumber")>
+
+      Public Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.QuoteDto.SequenceNumber*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sequenceNumber
+- uid: Meridian.Contracts.Domain.QuoteDto.StreamId
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.StreamId
+  id: StreamId
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: StreamId
+  nameWithType: QuoteDto.StreamId
+  fullName: Meridian.Contracts.Domain.QuoteDto.StreamId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamId
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the stream identifier for the quote.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("streamId")]
+
+      public string? StreamId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("streamId")>
+
+      Public Property StreamId As String
+  overload: Meridian.Contracts.Domain.QuoteDto.StreamId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: streamId
+- uid: Meridian.Contracts.Domain.QuoteDto.Venue
+  commentId: P:Meridian.Contracts.Domain.QuoteDto.Venue
+  id: Venue
+  parent: Meridian.Contracts.Domain.QuoteDto
+  langs:
+  - csharp
+  - vb
+  name: Venue
+  nameWithType: QuoteDto.Venue
+  fullName: Meridian.Contracts.Domain.QuoteDto.Venue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Venue
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the venue for the quote.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("venue")]
+
+      public string? Venue { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("venue")>
+
+      Public Property Venue As String
+  overload: Meridian.Contracts.Domain.QuoteDto.Venue*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: venue
+references:
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.QuoteDto.Timestamp*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.Timestamp
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_Timestamp
+  name: Timestamp
+  nameWithType: QuoteDto.Timestamp
+  fullName: Meridian.Contracts.Domain.QuoteDto.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Domain.QuoteDto.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.Symbol
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_Symbol
+  name: Symbol
+  nameWithType: QuoteDto.Symbol
+  fullName: Meridian.Contracts.Domain.QuoteDto.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.QuoteDto.BidPrice*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.BidPrice
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_BidPrice
+  name: BidPrice
+  nameWithType: QuoteDto.BidPrice
+  fullName: Meridian.Contracts.Domain.QuoteDto.BidPrice
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.QuoteDto.BidSize*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.BidSize
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_BidSize
+  name: BidSize
+  nameWithType: QuoteDto.BidSize
+  fullName: Meridian.Contracts.Domain.QuoteDto.BidSize
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Domain.QuoteDto.AskPrice*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.AskPrice
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_AskPrice
+  name: AskPrice
+  nameWithType: QuoteDto.AskPrice
+  fullName: Meridian.Contracts.Domain.QuoteDto.AskPrice
+- uid: Meridian.Contracts.Domain.QuoteDto.AskSize*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.AskSize
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_AskSize
+  name: AskSize
+  nameWithType: QuoteDto.AskSize
+  fullName: Meridian.Contracts.Domain.QuoteDto.AskSize
+- uid: Meridian.Contracts.Domain.QuoteDto.MidPrice*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.MidPrice
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_MidPrice
+  name: MidPrice
+  nameWithType: QuoteDto.MidPrice
+  fullName: Meridian.Contracts.Domain.QuoteDto.MidPrice
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.QuoteDto.Spread*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.Spread
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_Spread
+  name: Spread
+  nameWithType: QuoteDto.Spread
+  fullName: Meridian.Contracts.Domain.QuoteDto.Spread
+- uid: Meridian.Contracts.Domain.QuoteDto.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.SequenceNumber
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_SequenceNumber
+  name: SequenceNumber
+  nameWithType: QuoteDto.SequenceNumber
+  fullName: Meridian.Contracts.Domain.QuoteDto.SequenceNumber
+- uid: Meridian.Contracts.Domain.QuoteDto.StreamId*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.StreamId
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_StreamId
+  name: StreamId
+  nameWithType: QuoteDto.StreamId
+  fullName: Meridian.Contracts.Domain.QuoteDto.StreamId
+- uid: Meridian.Contracts.Domain.QuoteDto.Venue*
+  commentId: Overload:Meridian.Contracts.Domain.QuoteDto.Venue
+  href: Meridian.Contracts.Domain.QuoteDto.html#Meridian_Contracts_Domain_QuoteDto_Venue
+  name: Venue
+  nameWithType: QuoteDto.Venue
+  fullName: Meridian.Contracts.Domain.QuoteDto.Venue

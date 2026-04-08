@@ -1,0 +1,1031 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  id: CarryAssetSnapshot
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.#ctor(System.String,System.Decimal,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{System.Double})
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol
+  langs:
+  - csharp
+  - vb
+  name: CarryAssetSnapshot
+  nameWithType: CarryAssetSnapshot
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CarryAssetSnapshot
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record CarryAssetSnapshot : IEquatable<CarryAssetSnapshot>'
+    content.vb: Public NotInheritable Class CarryAssetSnapshot Implements IEquatable(Of CarryAssetSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.#ctor(System.String,System.Decimal,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{System.Double})
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.#ctor(System.String,System.Decimal,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{System.Double})
+  id: '#ctor(System.String,System.Decimal,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{System.Double})'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CarryAssetSnapshot(string, decimal, double, double, double, double, double, double, double, double, double, IReadOnlyList<double>?)
+  nameWithType: CarryAssetSnapshot.CarryAssetSnapshot(string, decimal, double, double, double, double, double, double, double, double, double, IReadOnlyList<double>?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.CarryAssetSnapshot(string, decimal, double, double, double, double, double, double, double, double, double, System.Collections.Generic.IReadOnlyList<double>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public CarryAssetSnapshot(string Symbol, decimal LastPrice, double ExpectedAnnualReturn, double AnnualCarryYield, double AnnualPriceReturn, double AnnualVolatility, double DurationYears, double SpreadDurationYears, double AverageDailyVolume, double BidAskSpreadBps, double MarketBeta = 0.5, IReadOnlyList<double>? HistoricalDailyReturns = null)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: LastPrice
+      type: System.Decimal
+    - id: ExpectedAnnualReturn
+      type: System.Double
+    - id: AnnualCarryYield
+      type: System.Double
+    - id: AnnualPriceReturn
+      type: System.Double
+    - id: AnnualVolatility
+      type: System.Double
+    - id: DurationYears
+      type: System.Double
+    - id: SpreadDurationYears
+      type: System.Double
+    - id: AverageDailyVolume
+      type: System.Double
+    - id: BidAskSpreadBps
+      type: System.Double
+    - id: MarketBeta
+      type: System.Double
+    - id: HistoricalDailyReturns
+      type: System.Collections.Generic.IReadOnlyList{System.Double}
+    content.vb: Public Sub New(Symbol As String, LastPrice As Decimal, ExpectedAnnualReturn As Double, AnnualCarryYield As Double, AnnualPriceReturn As Double, AnnualVolatility As Double, DurationYears As Double, SpreadDurationYears As Double, AverageDailyVolume As Double, BidAskSpreadBps As Double, MarketBeta As Double = 0.5, HistoricalDailyReturns As IReadOnlyList(Of Double) = Nothing)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.#ctor*
+  nameWithType.vb: CarryAssetSnapshot.New(String, Decimal, Double, Double, Double, Double, Double, Double, Double, Double, Double, IReadOnlyList(Of Double))
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.New(String, Decimal, Double, Double, Double, Double, Double, Double, Double, Double, Double, System.Collections.Generic.IReadOnlyList(Of Double))
+  name.vb: New(String, Decimal, Double, Double, Double, Double, Double, Double, Double, Double, Double, IReadOnlyList(Of Double))
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: CarryAssetSnapshot.Symbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice
+  id: LastPrice
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LastPrice
+  nameWithType: CarryAssetSnapshot.LastPrice
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPrice
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public decimal LastPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LastPrice As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn
+  id: ExpectedAnnualReturn
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ExpectedAnnualReturn
+  nameWithType: CarryAssetSnapshot.ExpectedAnnualReturn
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedAnnualReturn
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double ExpectedAnnualReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ExpectedAnnualReturn As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield
+  id: AnnualCarryYield
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AnnualCarryYield
+  nameWithType: CarryAssetSnapshot.AnnualCarryYield
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualCarryYield
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double AnnualCarryYield { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualCarryYield As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn
+  id: AnnualPriceReturn
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AnnualPriceReturn
+  nameWithType: CarryAssetSnapshot.AnnualPriceReturn
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualPriceReturn
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double AnnualPriceReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualPriceReturn As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility
+  id: AnnualVolatility
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AnnualVolatility
+  nameWithType: CarryAssetSnapshot.AnnualVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualVolatility
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double AnnualVolatility { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualVolatility As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears
+  id: DurationYears
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DurationYears
+  nameWithType: CarryAssetSnapshot.DurationYears
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DurationYears
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double DurationYears { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DurationYears As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears
+  id: SpreadDurationYears
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SpreadDurationYears
+  nameWithType: CarryAssetSnapshot.SpreadDurationYears
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadDurationYears
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double SpreadDurationYears { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SpreadDurationYears As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume
+  id: AverageDailyVolume
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AverageDailyVolume
+  nameWithType: CarryAssetSnapshot.AverageDailyVolume
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageDailyVolume
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double AverageDailyVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageDailyVolume As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps
+  id: BidAskSpreadBps
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: BidAskSpreadBps
+  nameWithType: CarryAssetSnapshot.BidAskSpreadBps
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidAskSpreadBps
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double BidAskSpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property BidAskSpreadBps As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta
+  id: MarketBeta
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MarketBeta
+  nameWithType: CarryAssetSnapshot.MarketBeta
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketBeta
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double MarketBeta { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MarketBeta As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns
+  id: HistoricalDailyReturns
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: HistoricalDailyReturns
+  nameWithType: CarryAssetSnapshot.HistoricalDailyReturns
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalDailyReturns
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyList<double>? HistoricalDailyReturns { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.Double}
+    content.vb: Public Property HistoricalDailyReturns As IReadOnlyList(Of Double)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize
+  id: Normalize
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Normalize()
+  nameWithType: CarryAssetSnapshot.Normalize()
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normalize
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public CarryAssetSnapshot Normalize()
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+    content.vb: Public Function Normalize() As CarryAssetSnapshot
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CarryAssetSnapshot>
+  nameWithType: IEquatable<CarryAssetSnapshot>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot>
+  nameWithType.vb: IEquatable(Of CarryAssetSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot)
+  name.vb: IEquatable(Of CarryAssetSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+    name: CarryAssetSnapshot
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+    name: CarryAssetSnapshot
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot__ctor_System_String_System_Decimal_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_Collections_Generic_IReadOnlyList_System_Double__
+  name: CarryAssetSnapshot
+  nameWithType: CarryAssetSnapshot.CarryAssetSnapshot
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.CarryAssetSnapshot
+  nameWithType.vb: CarryAssetSnapshot.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.IReadOnlyList{System.Double}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.Double}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<double>
+  nameWithType: IReadOnlyList<double>
+  fullName: System.Collections.Generic.IReadOnlyList<double>
+  nameWithType.vb: IReadOnlyList(Of Double)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Double)
+  name.vb: IReadOnlyList(Of Double)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_Symbol
+  name: Symbol
+  nameWithType: CarryAssetSnapshot.Symbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Symbol
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_LastPrice
+  name: LastPrice
+  nameWithType: CarryAssetSnapshot.LastPrice
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.LastPrice
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_ExpectedAnnualReturn
+  name: ExpectedAnnualReturn
+  nameWithType: CarryAssetSnapshot.ExpectedAnnualReturn
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.ExpectedAnnualReturn
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_AnnualCarryYield
+  name: AnnualCarryYield
+  nameWithType: CarryAssetSnapshot.AnnualCarryYield
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualCarryYield
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_AnnualPriceReturn
+  name: AnnualPriceReturn
+  nameWithType: CarryAssetSnapshot.AnnualPriceReturn
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualPriceReturn
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_AnnualVolatility
+  name: AnnualVolatility
+  nameWithType: CarryAssetSnapshot.AnnualVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AnnualVolatility
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_DurationYears
+  name: DurationYears
+  nameWithType: CarryAssetSnapshot.DurationYears
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.DurationYears
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_SpreadDurationYears
+  name: SpreadDurationYears
+  nameWithType: CarryAssetSnapshot.SpreadDurationYears
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.SpreadDurationYears
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_AverageDailyVolume
+  name: AverageDailyVolume
+  nameWithType: CarryAssetSnapshot.AverageDailyVolume
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.AverageDailyVolume
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_BidAskSpreadBps
+  name: BidAskSpreadBps
+  nameWithType: CarryAssetSnapshot.BidAskSpreadBps
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.BidAskSpreadBps
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_MarketBeta
+  name: MarketBeta
+  nameWithType: CarryAssetSnapshot.MarketBeta
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.MarketBeta
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_HistoricalDailyReturns
+  name: HistoricalDailyReturns
+  nameWithType: CarryAssetSnapshot.HistoricalDailyReturns
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.HistoricalDailyReturns
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_Normalize
+  name: Normalize
+  nameWithType: CarryAssetSnapshot.Normalize
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.Normalize
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html
+  name: CarryAssetSnapshot
+  nameWithType: CarryAssetSnapshot
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot

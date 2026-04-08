@@ -1,0 +1,772 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.TcaReport
+  commentId: T:Meridian.Backtesting.Sdk.TcaReport
+  id: TcaReport
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.TcaReport.#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.TcaCostSummary,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier})
+  - Meridian.Backtesting.Sdk.TcaReport.CostSummary
+  - Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc
+  - Meridian.Backtesting.Sdk.TcaReport.Outliers
+  - Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath
+  - Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries
+  langs:
+  - csharp
+  - vb
+  name: TcaReport
+  nameWithType: TcaReport
+  fullName: Meridian.Backtesting.Sdk.TcaReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TcaReport
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Complete Transaction Cost Analysis (TCA) report generated after each simulation run.
+
+    Contains aggregate cost attribution, per-symbol breakdowns, and outlier fills sorted
+
+    by cost rate descending.
+  example: []
+  syntax:
+    content: 'public sealed record TcaReport : IEquatable<TcaReport>'
+    content.vb: Public NotInheritable Class TcaReport Implements IEquatable(Of TcaReport)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.TcaReport}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.TcaReport.#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.TcaCostSummary,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier})
+  commentId: M:Meridian.Backtesting.Sdk.TcaReport.#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.TcaCostSummary,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier})
+  id: '#ctor(System.DateTimeOffset,System.String,Meridian.Backtesting.Sdk.TcaCostSummary,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier})'
+  parent: Meridian.Backtesting.Sdk.TcaReport
+  langs:
+  - csharp
+  - vb
+  name: TcaReport(DateTimeOffset, string?, TcaCostSummary, IReadOnlyList<SymbolTcaSummary>, IReadOnlyList<TcaFillOutlier>)
+  nameWithType: TcaReport.TcaReport(DateTimeOffset, string?, TcaCostSummary, IReadOnlyList<SymbolTcaSummary>, IReadOnlyList<TcaFillOutlier>)
+  fullName: Meridian.Backtesting.Sdk.TcaReport.TcaReport(System.DateTimeOffset, string?, Meridian.Backtesting.Sdk.TcaCostSummary, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.SymbolTcaSummary>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.TcaFillOutlier>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Complete Transaction Cost Analysis (TCA) report generated after each simulation run.
+
+    Contains aggregate cost attribution, per-symbol breakdowns, and outlier fills sorted
+
+    by cost rate descending.
+  example: []
+  syntax:
+    content: public TcaReport(DateTimeOffset GeneratedAtUtc, string? StrategyAssemblyPath, TcaCostSummary CostSummary, IReadOnlyList<SymbolTcaSummary> SymbolSummaries, IReadOnlyList<TcaFillOutlier> Outliers)
+    parameters:
+    - id: GeneratedAtUtc
+      type: System.DateTimeOffset
+      description: Wall-clock time when the report was produced.
+    - id: StrategyAssemblyPath
+      type: System.String
+      description: >-
+        Path to the strategy assembly, taken directly from <xref href="Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath" data-throw-if-not-resolved="false"></xref>.
+
+        <code>null</code> when a strategy instance is injected directly.
+    - id: CostSummary
+      type: Meridian.Backtesting.Sdk.TcaCostSummary
+      description: Run-level aggregate cost metrics.
+    - id: SymbolSummaries
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary}
+      description: Per-symbol cost breakdowns, ordered by total commission descending.
+    - id: Outliers
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier}
+      description: Fills with commission rate &gt; 3× the run average, ordered by rate descending.
+    content.vb: Public Sub New(GeneratedAtUtc As DateTimeOffset, StrategyAssemblyPath As String, CostSummary As TcaCostSummary, SymbolSummaries As IReadOnlyList(Of SymbolTcaSummary), Outliers As IReadOnlyList(Of TcaFillOutlier))
+  overload: Meridian.Backtesting.Sdk.TcaReport.#ctor*
+  nameWithType.vb: TcaReport.New(DateTimeOffset, String, TcaCostSummary, IReadOnlyList(Of SymbolTcaSummary), IReadOnlyList(Of TcaFillOutlier))
+  fullName.vb: Meridian.Backtesting.Sdk.TcaReport.New(System.DateTimeOffset, String, Meridian.Backtesting.Sdk.TcaCostSummary, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.SymbolTcaSummary), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.TcaFillOutlier))
+  name.vb: New(DateTimeOffset, String, TcaCostSummary, IReadOnlyList(Of SymbolTcaSummary), IReadOnlyList(Of TcaFillOutlier))
+- uid: Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc
+  commentId: P:Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc
+  id: GeneratedAtUtc
+  parent: Meridian.Backtesting.Sdk.TcaReport
+  langs:
+  - csharp
+  - vb
+  name: GeneratedAtUtc
+  nameWithType: TcaReport.GeneratedAtUtc
+  fullName: Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneratedAtUtc
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Wall-clock time when the report was produced.
+  example: []
+  syntax:
+    content: public DateTimeOffset GeneratedAtUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property GeneratedAtUtc As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc*
+- uid: Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath
+  commentId: P:Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath
+  id: StrategyAssemblyPath
+  parent: Meridian.Backtesting.Sdk.TcaReport
+  langs:
+  - csharp
+  - vb
+  name: StrategyAssemblyPath
+  nameWithType: TcaReport.StrategyAssemblyPath
+  fullName: Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyAssemblyPath
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Path to the strategy assembly, taken directly from <xref href="Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath" data-throw-if-not-resolved="false"></xref>.
+
+    <code>null</code> when a strategy instance is injected directly.
+  example: []
+  syntax:
+    content: public string? StrategyAssemblyPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyAssemblyPath As String
+  overload: Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath*
+- uid: Meridian.Backtesting.Sdk.TcaReport.CostSummary
+  commentId: P:Meridian.Backtesting.Sdk.TcaReport.CostSummary
+  id: CostSummary
+  parent: Meridian.Backtesting.Sdk.TcaReport
+  langs:
+  - csharp
+  - vb
+  name: CostSummary
+  nameWithType: TcaReport.CostSummary
+  fullName: Meridian.Backtesting.Sdk.TcaReport.CostSummary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CostSummary
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Run-level aggregate cost metrics.
+  example: []
+  syntax:
+    content: public TcaCostSummary CostSummary { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.TcaCostSummary
+    content.vb: Public Property CostSummary As TcaCostSummary
+  overload: Meridian.Backtesting.Sdk.TcaReport.CostSummary*
+- uid: Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries
+  commentId: P:Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries
+  id: SymbolSummaries
+  parent: Meridian.Backtesting.Sdk.TcaReport
+  langs:
+  - csharp
+  - vb
+  name: SymbolSummaries
+  nameWithType: TcaReport.SymbolSummaries
+  fullName: Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSummaries
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Per-symbol cost breakdowns, ordered by total commission descending.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SymbolTcaSummary> SymbolSummaries { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary}
+    content.vb: Public Property SymbolSummaries As IReadOnlyList(Of SymbolTcaSummary)
+  overload: Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries*
+- uid: Meridian.Backtesting.Sdk.TcaReport.Outliers
+  commentId: P:Meridian.Backtesting.Sdk.TcaReport.Outliers
+  id: Outliers
+  parent: Meridian.Backtesting.Sdk.TcaReport
+  langs:
+  - csharp
+  - vb
+  name: Outliers
+  nameWithType: TcaReport.Outliers
+  fullName: Meridian.Backtesting.Sdk.TcaReport.Outliers
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Outliers
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Fills with commission rate &gt; 3× the run average, ordered by rate descending.
+  example: []
+  syntax:
+    content: public IReadOnlyList<TcaFillOutlier> Outliers { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier}
+    content.vb: Public Property Outliers As IReadOnlyList(Of TcaFillOutlier)
+  overload: Meridian.Backtesting.Sdk.TcaReport.Outliers*
+references:
+- uid: Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+  commentId: P:Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html#Meridian_Backtesting_Sdk_BacktestRequest_StrategyAssemblyPath
+  name: StrategyAssemblyPath
+  nameWithType: BacktestRequest.StrategyAssemblyPath
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest.StrategyAssemblyPath
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.TcaReport}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.TcaReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TcaReport>
+  nameWithType: IEquatable<TcaReport>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.TcaReport>
+  nameWithType.vb: IEquatable(Of TcaReport)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.TcaReport)
+  name.vb: IEquatable(Of TcaReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.TcaReport
+    name: TcaReport
+    href: Meridian.Backtesting.Sdk.TcaReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.TcaReport
+    name: TcaReport
+    href: Meridian.Backtesting.Sdk.TcaReport.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.TcaReport.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaReport.#ctor
+  href: Meridian.Backtesting.Sdk.TcaReport.html#Meridian_Backtesting_Sdk_TcaReport__ctor_System_DateTimeOffset_System_String_Meridian_Backtesting_Sdk_TcaCostSummary_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_SymbolTcaSummary__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_TcaFillOutlier__
+  name: TcaReport
+  nameWithType: TcaReport.TcaReport
+  fullName: Meridian.Backtesting.Sdk.TcaReport.TcaReport
+  nameWithType.vb: TcaReport.New
+  fullName.vb: Meridian.Backtesting.Sdk.TcaReport.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.TcaCostSummary
+  commentId: T:Meridian.Backtesting.Sdk.TcaCostSummary
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.TcaCostSummary.html
+  name: TcaCostSummary
+  nameWithType: TcaCostSummary
+  fullName: Meridian.Backtesting.Sdk.TcaCostSummary
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.SymbolTcaSummary}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SymbolTcaSummary>
+  nameWithType: IReadOnlyList<SymbolTcaSummary>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.SymbolTcaSummary>
+  nameWithType.vb: IReadOnlyList(Of SymbolTcaSummary)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.SymbolTcaSummary)
+  name.vb: IReadOnlyList(Of SymbolTcaSummary)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.SymbolTcaSummary
+    name: SymbolTcaSummary
+    href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.SymbolTcaSummary
+    name: SymbolTcaSummary
+    href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TcaFillOutlier}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TcaFillOutlier>
+  nameWithType: IReadOnlyList<TcaFillOutlier>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.TcaFillOutlier>
+  nameWithType.vb: IReadOnlyList(Of TcaFillOutlier)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.TcaFillOutlier)
+  name.vb: IReadOnlyList(Of TcaFillOutlier)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.TcaFillOutlier
+    name: TcaFillOutlier
+    href: Meridian.Backtesting.Sdk.TcaFillOutlier.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.TcaFillOutlier
+    name: TcaFillOutlier
+    href: Meridian.Backtesting.Sdk.TcaFillOutlier.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc
+  href: Meridian.Backtesting.Sdk.TcaReport.html#Meridian_Backtesting_Sdk_TcaReport_GeneratedAtUtc
+  name: GeneratedAtUtc
+  nameWithType: TcaReport.GeneratedAtUtc
+  fullName: Meridian.Backtesting.Sdk.TcaReport.GeneratedAtUtc
+- uid: Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath
+  href: Meridian.Backtesting.Sdk.TcaReport.html#Meridian_Backtesting_Sdk_TcaReport_StrategyAssemblyPath
+  name: StrategyAssemblyPath
+  nameWithType: TcaReport.StrategyAssemblyPath
+  fullName: Meridian.Backtesting.Sdk.TcaReport.StrategyAssemblyPath
+- uid: Meridian.Backtesting.Sdk.TcaReport.CostSummary*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaReport.CostSummary
+  href: Meridian.Backtesting.Sdk.TcaReport.html#Meridian_Backtesting_Sdk_TcaReport_CostSummary
+  name: CostSummary
+  nameWithType: TcaReport.CostSummary
+  fullName: Meridian.Backtesting.Sdk.TcaReport.CostSummary
+- uid: Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries
+  href: Meridian.Backtesting.Sdk.TcaReport.html#Meridian_Backtesting_Sdk_TcaReport_SymbolSummaries
+  name: SymbolSummaries
+  nameWithType: TcaReport.SymbolSummaries
+  fullName: Meridian.Backtesting.Sdk.TcaReport.SymbolSummaries
+- uid: Meridian.Backtesting.Sdk.TcaReport.Outliers*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaReport.Outliers
+  href: Meridian.Backtesting.Sdk.TcaReport.html#Meridian_Backtesting_Sdk_TcaReport_Outliers
+  name: Outliers
+  nameWithType: TcaReport.Outliers
+  fullName: Meridian.Backtesting.Sdk.TcaReport.Outliers

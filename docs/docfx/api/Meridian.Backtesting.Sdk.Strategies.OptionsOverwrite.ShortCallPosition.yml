@@ -1,0 +1,1074 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  id: ShortCallPosition
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: ShortCallPosition
+  nameWithType: ShortCallPosition
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortCallPosition
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Tracks a single open simulated short call position.
+
+    P&amp;L is computed by comparing the current BSM mark-to-close against the
+
+    original entry credit.
+  example: []
+  syntax:
+    content: public sealed class ShortCallPosition
+    content.vb: Public NotInheritable Class ShortCallPosition
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId
+  id: PositionId
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: PositionId
+  nameWithType: ShortCallPosition.PositionId
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionId
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Unique position identifier.
+  example: []
+  syntax:
+    content: public Guid PositionId { get; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public ReadOnly Property PositionId As Guid
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: ShortCallPosition.UnderlyingSymbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Underlying symbol (e.g. "SPY").
+  example: []
+  syntax:
+    content: public required string UnderlyingSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UnderlyingSymbol As String
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike
+  id: Strike
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: Strike
+  nameWithType: ShortCallPosition.Strike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strike
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Strike price of the short call.
+  example: []
+  syntax:
+    content: public required decimal Strike { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Strike As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration
+  id: Expiration
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: Expiration
+  nameWithType: ShortCallPosition.Expiration
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expiration
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Expiration date.
+  example: []
+  syntax:
+    content: public required DateOnly Expiration { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property Expiration As DateOnly
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts
+  id: Contracts
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: Contracts
+  nameWithType: ShortCallPosition.Contracts
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contracts
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Number of contracts (positive integer; the position is short).
+  example: []
+  syntax:
+    content: public required int Contracts { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Contracts As Integer
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier
+  id: Multiplier
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: Multiplier
+  nameWithType: ShortCallPosition.Multiplier
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Multiplier
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Contract multiplier (typically 100).
+  example: []
+  syntax:
+    content: public required int Multiplier { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Multiplier As Integer
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style
+  id: Style
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: Style
+  nameWithType: ShortCallPosition.Style
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Style
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Exercise style.
+  example: []
+  syntax:
+    content: public required OptionStyle Style { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionStyle
+    content.vb: Public Property Style As OptionStyle
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate
+  id: EntryDate
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: EntryDate
+  nameWithType: ShortCallPosition.EntryDate
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryDate
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Date the position was opened.
+  example: []
+  syntax:
+    content: public required DateOnly EntryDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EntryDate As DateOnly
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit
+  id: EntryCredit
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: EntryCredit
+  nameWithType: ShortCallPosition.EntryCredit
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryCredit
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Premium collected per share at entry (bid price used conservatively).
+  example: []
+  syntax:
+    content: public required decimal EntryCredit { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property EntryCredit As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility
+  id: EntryImpliedVolatility
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: EntryImpliedVolatility
+  nameWithType: ShortCallPosition.EntryImpliedVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryImpliedVolatility
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Entry implied volatility (for relative scoring and BSM mark-to-market).
+
+    Settable so tests and position managers can override the IV used for daily re-marking.
+  example: []
+  syntax:
+    content: public double? EntryImpliedVolatility { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property EntryImpliedVolatility As Double?
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose
+  id: MarkToClose
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: MarkToClose
+  nameWithType: ShortCallPosition.MarkToClose
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkToClose
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Current mark-to-close (BSM value of the short call). Updated daily.
+  example: []
+  syntax:
+    content: public decimal MarkToClose { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarkToClose As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta
+  id: CurrentDelta
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: CurrentDelta
+  nameWithType: ShortCallPosition.CurrentDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentDelta
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Current delta (absolute value). Updated daily.
+  example: []
+  syntax:
+    content: public double CurrentDelta { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CurrentDelta As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte
+  id: CurrentDte
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: CurrentDte
+  nameWithType: ShortCallPosition.CurrentDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentDte
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Days to expiration as of last mark. Updated daily.
+  example: []
+  syntax:
+    content: public int CurrentDte { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CurrentDte As Integer
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived
+  id: TotalPremiumReceived
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: TotalPremiumReceived
+  nameWithType: ShortCallPosition.TotalPremiumReceived
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalPremiumReceived
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Total premium received (entry credit × contracts × multiplier).
+  example: []
+  syntax:
+    content: public decimal TotalPremiumReceived { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property TotalPremiumReceived As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: ShortCallPosition.UnrealisedPnl
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Current unrealised P&amp;L on the short option (positive = profit).
+  example: []
+  syntax:
+    content: public decimal UnrealisedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property UnrealisedPnl As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured
+  id: PremiumCaptured
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  langs:
+  - csharp
+  - vb
+  name: PremiumCaptured
+  nameWithType: ShortCallPosition.PremiumCaptured
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PremiumCaptured
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Fraction of the original premium that has been "captured".
+
+    A value of 1.0 means the option has gone to zero (full profit).
+  example: []
+  syntax:
+    content: public double PremiumCaptured { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property PremiumCaptured As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_PositionId
+  name: PositionId
+  nameWithType: ShortCallPosition.PositionId
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PositionId
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: ShortCallPosition.UnderlyingSymbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnderlyingSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_Strike
+  name: Strike
+  nameWithType: ShortCallPosition.Strike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Strike
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_Expiration
+  name: Expiration
+  nameWithType: ShortCallPosition.Expiration
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Expiration
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_Contracts
+  name: Contracts
+  nameWithType: ShortCallPosition.Contracts
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Contracts
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_Multiplier
+  name: Multiplier
+  nameWithType: ShortCallPosition.Multiplier
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Multiplier
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_Style
+  name: Style
+  nameWithType: ShortCallPosition.Style
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.Style
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionStyle
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  name: OptionStyle
+  nameWithType: OptionStyle
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_EntryDate
+  name: EntryDate
+  nameWithType: ShortCallPosition.EntryDate
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryDate
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_EntryCredit
+  name: EntryCredit
+  nameWithType: ShortCallPosition.EntryCredit
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryCredit
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_EntryImpliedVolatility
+  name: EntryImpliedVolatility
+  nameWithType: ShortCallPosition.EntryImpliedVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.EntryImpliedVolatility
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_MarkToClose
+  name: MarkToClose
+  nameWithType: ShortCallPosition.MarkToClose
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.MarkToClose
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_CurrentDelta
+  name: CurrentDelta
+  nameWithType: ShortCallPosition.CurrentDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDelta
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_CurrentDte
+  name: CurrentDte
+  nameWithType: ShortCallPosition.CurrentDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.CurrentDte
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_TotalPremiumReceived
+  name: TotalPremiumReceived
+  nameWithType: ShortCallPosition.TotalPremiumReceived
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.TotalPremiumReceived
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: ShortCallPosition.UnrealisedPnl
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.UnrealisedPnl
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_PremiumCaptured
+  name: PremiumCaptured
+  nameWithType: ShortCallPosition.PremiumCaptured
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.PremiumCaptured

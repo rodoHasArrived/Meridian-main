@@ -1,0 +1,427 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyType
+  id: AnomalyType
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.AbnormalVolatility
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.CrossedMarket
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.DuplicateData
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidPrice
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidVolume
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.MissingData
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceDrop
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceSpike
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.RapidPriceChange
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.SpreadWide
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.StaleData
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeDrop
+  - Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeSpike
+  langs:
+  - csharp
+  - vb
+  name: AnomalyType
+  nameWithType: AnomalyType
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Type of anomaly detected.
+  example: []
+  syntax:
+    content: 'public enum AnomalyType : byte'
+    content.vb: Public Enum AnomalyType As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceSpike
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceSpike
+  id: PriceSpike
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: PriceSpike
+  nameWithType: AnomalyType.PriceSpike
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceSpike
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceSpike
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: PriceSpike = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceDrop
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceDrop
+  id: PriceDrop
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: PriceDrop
+  nameWithType: AnomalyType.PriceDrop
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.PriceDrop
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceDrop
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: PriceDrop = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeSpike
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeSpike
+  id: VolumeSpike
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: VolumeSpike
+  nameWithType: AnomalyType.VolumeSpike
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeSpike
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeSpike
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: VolumeSpike = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeDrop
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeDrop
+  id: VolumeDrop
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: VolumeDrop
+  nameWithType: AnomalyType.VolumeDrop
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.VolumeDrop
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeDrop
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: VolumeDrop = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.SpreadWide
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.SpreadWide
+  id: SpreadWide
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: SpreadWide
+  nameWithType: AnomalyType.SpreadWide
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.SpreadWide
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadWide
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: SpreadWide = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.StaleData
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.StaleData
+  id: StaleData
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: StaleData
+  nameWithType: AnomalyType.StaleData
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.StaleData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StaleData
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: StaleData = 5
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.RapidPriceChange
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.RapidPriceChange
+  id: RapidPriceChange
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: RapidPriceChange
+  nameWithType: AnomalyType.RapidPriceChange
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.RapidPriceChange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RapidPriceChange
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: RapidPriceChange = 6
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.AbnormalVolatility
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.AbnormalVolatility
+  id: AbnormalVolatility
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: AbnormalVolatility
+  nameWithType: AnomalyType.AbnormalVolatility
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.AbnormalVolatility
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AbnormalVolatility
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 261
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: AbnormalVolatility = 7
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.MissingData
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.MissingData
+  id: MissingData
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: MissingData
+  nameWithType: AnomalyType.MissingData
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.MissingData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingData
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: MissingData = 8
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.DuplicateData
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.DuplicateData
+  id: DuplicateData
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: DuplicateData
+  nameWithType: AnomalyType.DuplicateData
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.DuplicateData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuplicateData
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 263
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: DuplicateData = 9
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.CrossedMarket
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.CrossedMarket
+  id: CrossedMarket
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: CrossedMarket
+  nameWithType: AnomalyType.CrossedMarket
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.CrossedMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrossedMarket
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 264
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: CrossedMarket = 10
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidPrice
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidPrice
+  id: InvalidPrice
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: InvalidPrice
+  nameWithType: AnomalyType.InvalidPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidPrice
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 265
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: InvalidPrice = 11
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidVolume
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidVolume
+  id: InvalidVolume
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  langs:
+  - csharp
+  - vb
+  name: InvalidVolume
+  nameWithType: AnomalyType.InvalidVolume
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType.InvalidVolume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidVolume
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: InvalidVolume = 12
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyType.html
+  name: AnomalyType
+  nameWithType: AnomalyType
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType

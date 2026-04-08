@@ -1,0 +1,1343 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics
+  commentId: T:Meridian.Application.Monitoring.MigrationDiagnostics
+  id: MigrationDiagnostics
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits
+  - Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider(System.String)
+  - Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider(System.String)
+  - Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot
+  - Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind(System.String)
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt(System.String)
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure(System.String)
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess(System.String)
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit(System.String)
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered
+  - Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit
+  - Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered
+  - Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts
+  - Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures
+  - Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses
+  - Meridian.Application.Monitoring.MigrationDiagnostics.Reset
+  - Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts
+  - Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures
+  - Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses
+  - Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered
+  - Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits
+  - Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits
+  langs:
+  - csharp
+  - vb
+  name: MigrationDiagnostics
+  nameWithType: MigrationDiagnostics
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MigrationDiagnostics
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Temporary observability counters for the provider-registry migration.
+
+    Tracks factory hit counts, reconnect attempts, and resubscription outcomes
+
+    so that behavioral parity can be verified during migration phases.
+
+
+    Part of Phase 0 — Baseline &amp; Safety Rails (refactor-map Step 0.2).
+
+
+    These counters are intentionally additive: they do not alter runtime behavior
+
+    and can be removed once the migration is complete (Phase 7).
+
+
+    NOTE: This class lives in the Core project (not Application) so that
+
+    Infrastructure can reference it without creating a circular dependency.
+
+    The namespace is kept as Meridian.Application.Monitoring for
+
+    consistency with other monitoring abstractions in this namespace.
+  example: []
+  syntax:
+    content: public static class MigrationDiagnostics
+    content.vb: Public Module MigrationDiagnostics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits
+  id: StreamingFactoryHits
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: StreamingFactoryHits
+  nameWithType: MigrationDiagnostics.StreamingFactoryHits
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamingFactoryHits
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long StreamingFactoryHits { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property StreamingFactoryHits As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits
+  id: BackfillFactoryHits
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: BackfillFactoryHits
+  nameWithType: MigrationDiagnostics.BackfillFactoryHits
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillFactoryHits
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long BackfillFactoryHits { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property BackfillFactoryHits As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits
+  id: SymbolSearchFactoryHits
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchFactoryHits
+  nameWithType: MigrationDiagnostics.SymbolSearchFactoryHits
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearchFactoryHits
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long SymbolSearchFactoryHits { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property SymbolSearchFactoryHits As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit(System.String)
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit(System.String)
+  id: IncStreamingFactoryHit(System.String)
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncStreamingFactoryHit(string)
+  nameWithType: MigrationDiagnostics.IncStreamingFactoryHit(string)
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncStreamingFactoryHit
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncStreamingFactoryHit(string dataSourceKind)
+    parameters:
+    - id: dataSourceKind
+      type: System.String
+    content.vb: Public Shared Sub IncStreamingFactoryHit(dataSourceKind As String)
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit*
+  nameWithType.vb: MigrationDiagnostics.IncStreamingFactoryHit(String)
+  fullName.vb: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit(String)
+  name.vb: IncStreamingFactoryHit(String)
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit
+  id: IncBackfillFactoryHit
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncBackfillFactoryHit()
+  nameWithType: MigrationDiagnostics.IncBackfillFactoryHit()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncBackfillFactoryHit
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncBackfillFactoryHit()
+    content.vb: Public Shared Sub IncBackfillFactoryHit()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit
+  id: IncSymbolSearchFactoryHit
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncSymbolSearchFactoryHit()
+  nameWithType: MigrationDiagnostics.IncSymbolSearchFactoryHit()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncSymbolSearchFactoryHit
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncSymbolSearchFactoryHit()
+    content.vb: Public Shared Sub IncSymbolSearchFactoryHit()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind(System.String)
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind(System.String)
+  id: GetStreamingFactoryHitsByKind(System.String)
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: GetStreamingFactoryHitsByKind(string)
+  nameWithType: MigrationDiagnostics.GetStreamingFactoryHitsByKind(string)
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStreamingFactoryHitsByKind
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the streaming factory hit count for a specific data source kind.
+  example: []
+  syntax:
+    content: public static long GetStreamingFactoryHitsByKind(string dataSourceKind)
+    parameters:
+    - id: dataSourceKind
+      type: System.String
+    return:
+      type: System.Int64
+    content.vb: Public Shared Function GetStreamingFactoryHitsByKind(dataSourceKind As String) As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind*
+  nameWithType.vb: MigrationDiagnostics.GetStreamingFactoryHitsByKind(String)
+  fullName.vb: Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind(String)
+  name.vb: GetStreamingFactoryHitsByKind(String)
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts
+  id: ReconnectAttempts
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: ReconnectAttempts
+  nameWithType: MigrationDiagnostics.ReconnectAttempts
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectAttempts
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long ReconnectAttempts { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ReconnectAttempts As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses
+  id: ReconnectSuccesses
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: ReconnectSuccesses
+  nameWithType: MigrationDiagnostics.ReconnectSuccesses
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectSuccesses
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long ReconnectSuccesses { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ReconnectSuccesses As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures
+  id: ReconnectFailures
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: ReconnectFailures
+  nameWithType: MigrationDiagnostics.ReconnectFailures
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectFailures
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long ReconnectFailures { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ReconnectFailures As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt(System.String)
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt(System.String)
+  id: IncReconnectAttempt(System.String)
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncReconnectAttempt(string)
+  nameWithType: MigrationDiagnostics.IncReconnectAttempt(string)
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncReconnectAttempt
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncReconnectAttempt(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    content.vb: Public Shared Sub IncReconnectAttempt(provider As String)
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt*
+  nameWithType.vb: MigrationDiagnostics.IncReconnectAttempt(String)
+  fullName.vb: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt(String)
+  name.vb: IncReconnectAttempt(String)
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess(System.String)
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess(System.String)
+  id: IncReconnectSuccess(System.String)
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncReconnectSuccess(string)
+  nameWithType: MigrationDiagnostics.IncReconnectSuccess(string)
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncReconnectSuccess
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncReconnectSuccess(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    content.vb: Public Shared Sub IncReconnectSuccess(provider As String)
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess*
+  nameWithType.vb: MigrationDiagnostics.IncReconnectSuccess(String)
+  fullName.vb: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess(String)
+  name.vb: IncReconnectSuccess(String)
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure(System.String)
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure(System.String)
+  id: IncReconnectFailure(System.String)
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncReconnectFailure(string)
+  nameWithType: MigrationDiagnostics.IncReconnectFailure(string)
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncReconnectFailure
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncReconnectFailure(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    content.vb: Public Shared Sub IncReconnectFailure(provider As String)
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure*
+  nameWithType.vb: MigrationDiagnostics.IncReconnectFailure(String)
+  fullName.vb: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure(String)
+  name.vb: IncReconnectFailure(String)
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider(System.String)
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider(System.String)
+  id: GetReconnectAttemptsByProvider(System.String)
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: GetReconnectAttemptsByProvider(string)
+  nameWithType: MigrationDiagnostics.GetReconnectAttemptsByProvider(string)
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconnectAttemptsByProvider
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the reconnect attempt count for a specific provider.
+  example: []
+  syntax:
+    content: public static long GetReconnectAttemptsByProvider(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.Int64
+    content.vb: Public Shared Function GetReconnectAttemptsByProvider(provider As String) As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider*
+  nameWithType.vb: MigrationDiagnostics.GetReconnectAttemptsByProvider(String)
+  fullName.vb: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider(String)
+  name.vb: GetReconnectAttemptsByProvider(String)
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider(System.String)
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider(System.String)
+  id: GetReconnectSuccessesByProvider(System.String)
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: GetReconnectSuccessesByProvider(string)
+  nameWithType: MigrationDiagnostics.GetReconnectSuccessesByProvider(string)
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconnectSuccessesByProvider
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the reconnect success count for a specific provider.
+  example: []
+  syntax:
+    content: public static long GetReconnectSuccessesByProvider(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.Int64
+    content.vb: Public Shared Function GetReconnectSuccessesByProvider(provider As String) As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider*
+  nameWithType.vb: MigrationDiagnostics.GetReconnectSuccessesByProvider(String)
+  fullName.vb: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider(String)
+  name.vb: GetReconnectSuccessesByProvider(String)
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts
+  id: ResubscribeAttempts
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeAttempts
+  nameWithType: MigrationDiagnostics.ResubscribeAttempts
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeAttempts
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long ResubscribeAttempts { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ResubscribeAttempts As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses
+  id: ResubscribeSuccesses
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeSuccesses
+  nameWithType: MigrationDiagnostics.ResubscribeSuccesses
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeSuccesses
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long ResubscribeSuccesses { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ResubscribeSuccesses As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures
+  id: ResubscribeFailures
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeFailures
+  nameWithType: MigrationDiagnostics.ResubscribeFailures
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeFailures
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long ResubscribeFailures { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ResubscribeFailures As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt
+  id: IncResubscribeAttempt
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncResubscribeAttempt()
+  nameWithType: MigrationDiagnostics.IncResubscribeAttempt()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncResubscribeAttempt
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncResubscribeAttempt()
+    content.vb: Public Shared Sub IncResubscribeAttempt()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess
+  id: IncResubscribeSuccess
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncResubscribeSuccess()
+  nameWithType: MigrationDiagnostics.IncResubscribeSuccess()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncResubscribeSuccess
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncResubscribeSuccess()
+    content.vb: Public Shared Sub IncResubscribeSuccess()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure
+  id: IncResubscribeFailure
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncResubscribeFailure()
+  nameWithType: MigrationDiagnostics.IncResubscribeFailure()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncResubscribeFailure
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncResubscribeFailure()
+    content.vb: Public Shared Sub IncResubscribeFailure()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered
+  id: ProvidersRegistered
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: ProvidersRegistered
+  nameWithType: MigrationDiagnostics.ProvidersRegistered
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProvidersRegistered
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long ProvidersRegistered { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ProvidersRegistered As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered
+  commentId: P:Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered
+  id: StreamingFactoriesRegistered
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: StreamingFactoriesRegistered
+  nameWithType: MigrationDiagnostics.StreamingFactoriesRegistered
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamingFactoriesRegistered
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static long StreamingFactoriesRegistered { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property StreamingFactoriesRegistered As Long
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered
+  id: IncProviderRegistered
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncProviderRegistered()
+  nameWithType: MigrationDiagnostics.IncProviderRegistered()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncProviderRegistered
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncProviderRegistered()
+    content.vb: Public Shared Sub IncProviderRegistered()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered
+  id: IncStreamingFactoryRegistered
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: IncStreamingFactoryRegistered()
+  nameWithType: MigrationDiagnostics.IncStreamingFactoryRegistered()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncStreamingFactoryRegistered
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncStreamingFactoryRegistered()
+    content.vb: Public Shared Sub IncStreamingFactoryRegistered()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: MigrationDiagnostics.GetSnapshot()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Gets a point-in-time snapshot of all migration diagnostics counters.
+  example: []
+  syntax:
+    content: public static MigrationDiagnosticsSnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.Monitoring.MigrationDiagnosticsSnapshot
+    content.vb: Public Shared Function GetSnapshot() As MigrationDiagnosticsSnapshot
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot*
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.Reset
+  commentId: M:Meridian.Application.Monitoring.MigrationDiagnostics.Reset
+  id: Reset
+  parent: Meridian.Application.Monitoring.MigrationDiagnostics
+  langs:
+  - csharp
+  - vb
+  name: Reset()
+  nameWithType: MigrationDiagnostics.Reset()
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.Reset()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Resets all counters to zero. Intended for test isolation only.
+  example: []
+  syntax:
+    content: public static void Reset()
+    content.vb: Public Shared Sub Reset()
+  overload: Meridian.Application.Monitoring.MigrationDiagnostics.Reset*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_StreamingFactoryHits
+  name: StreamingFactoryHits
+  nameWithType: MigrationDiagnostics.StreamingFactoryHits
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoryHits
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_BackfillFactoryHits
+  name: BackfillFactoryHits
+  nameWithType: MigrationDiagnostics.BackfillFactoryHits
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.BackfillFactoryHits
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_SymbolSearchFactoryHits
+  name: SymbolSearchFactoryHits
+  nameWithType: MigrationDiagnostics.SymbolSearchFactoryHits
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.SymbolSearchFactoryHits
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncStreamingFactoryHit_System_String_
+  name: IncStreamingFactoryHit
+  nameWithType: MigrationDiagnostics.IncStreamingFactoryHit
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryHit
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncBackfillFactoryHit
+  name: IncBackfillFactoryHit
+  nameWithType: MigrationDiagnostics.IncBackfillFactoryHit
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncBackfillFactoryHit
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncSymbolSearchFactoryHit
+  name: IncSymbolSearchFactoryHit
+  nameWithType: MigrationDiagnostics.IncSymbolSearchFactoryHit
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncSymbolSearchFactoryHit
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_GetStreamingFactoryHitsByKind_System_String_
+  name: GetStreamingFactoryHitsByKind
+  nameWithType: MigrationDiagnostics.GetStreamingFactoryHitsByKind
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetStreamingFactoryHitsByKind
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_ReconnectAttempts
+  name: ReconnectAttempts
+  nameWithType: MigrationDiagnostics.ReconnectAttempts
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectAttempts
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_ReconnectSuccesses
+  name: ReconnectSuccesses
+  nameWithType: MigrationDiagnostics.ReconnectSuccesses
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectSuccesses
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_ReconnectFailures
+  name: ReconnectFailures
+  nameWithType: MigrationDiagnostics.ReconnectFailures
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ReconnectFailures
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncReconnectAttempt_System_String_
+  name: IncReconnectAttempt
+  nameWithType: MigrationDiagnostics.IncReconnectAttempt
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectAttempt
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncReconnectSuccess_System_String_
+  name: IncReconnectSuccess
+  nameWithType: MigrationDiagnostics.IncReconnectSuccess
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectSuccess
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncReconnectFailure_System_String_
+  name: IncReconnectFailure
+  nameWithType: MigrationDiagnostics.IncReconnectFailure
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncReconnectFailure
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_GetReconnectAttemptsByProvider_System_String_
+  name: GetReconnectAttemptsByProvider
+  nameWithType: MigrationDiagnostics.GetReconnectAttemptsByProvider
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectAttemptsByProvider
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_GetReconnectSuccessesByProvider_System_String_
+  name: GetReconnectSuccessesByProvider
+  nameWithType: MigrationDiagnostics.GetReconnectSuccessesByProvider
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetReconnectSuccessesByProvider
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_ResubscribeAttempts
+  name: ResubscribeAttempts
+  nameWithType: MigrationDiagnostics.ResubscribeAttempts
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeAttempts
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_ResubscribeSuccesses
+  name: ResubscribeSuccesses
+  nameWithType: MigrationDiagnostics.ResubscribeSuccesses
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeSuccesses
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_ResubscribeFailures
+  name: ResubscribeFailures
+  nameWithType: MigrationDiagnostics.ResubscribeFailures
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ResubscribeFailures
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncResubscribeAttempt
+  name: IncResubscribeAttempt
+  nameWithType: MigrationDiagnostics.IncResubscribeAttempt
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeAttempt
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncResubscribeSuccess
+  name: IncResubscribeSuccess
+  nameWithType: MigrationDiagnostics.IncResubscribeSuccess
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeSuccess
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncResubscribeFailure
+  name: IncResubscribeFailure
+  nameWithType: MigrationDiagnostics.IncResubscribeFailure
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncResubscribeFailure
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_ProvidersRegistered
+  name: ProvidersRegistered
+  nameWithType: MigrationDiagnostics.ProvidersRegistered
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.ProvidersRegistered
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_StreamingFactoriesRegistered
+  name: StreamingFactoriesRegistered
+  nameWithType: MigrationDiagnostics.StreamingFactoriesRegistered
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.StreamingFactoriesRegistered
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncProviderRegistered
+  name: IncProviderRegistered
+  nameWithType: MigrationDiagnostics.IncProviderRegistered
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncProviderRegistered
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_IncStreamingFactoryRegistered
+  name: IncStreamingFactoryRegistered
+  nameWithType: MigrationDiagnostics.IncStreamingFactoryRegistered
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.IncStreamingFactoryRegistered
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_GetSnapshot
+  name: GetSnapshot
+  nameWithType: MigrationDiagnostics.GetSnapshot
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.GetSnapshot
+- uid: Meridian.Application.Monitoring.MigrationDiagnosticsSnapshot
+  commentId: T:Meridian.Application.Monitoring.MigrationDiagnosticsSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.MigrationDiagnosticsSnapshot.html
+  name: MigrationDiagnosticsSnapshot
+  nameWithType: MigrationDiagnosticsSnapshot
+  fullName: Meridian.Application.Monitoring.MigrationDiagnosticsSnapshot
+- uid: Meridian.Application.Monitoring.MigrationDiagnostics.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.MigrationDiagnostics.Reset
+  href: Meridian.Application.Monitoring.MigrationDiagnostics.html#Meridian_Application_Monitoring_MigrationDiagnostics_Reset
+  name: Reset
+  nameWithType: MigrationDiagnostics.Reset
+  fullName: Meridian.Application.Monitoring.MigrationDiagnostics.Reset

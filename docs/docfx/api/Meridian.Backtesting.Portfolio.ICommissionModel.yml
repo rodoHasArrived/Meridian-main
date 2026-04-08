@@ -1,0 +1,150 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Portfolio.ICommissionModel
+  commentId: T:Meridian.Backtesting.Portfolio.ICommissionModel
+  id: ICommissionModel
+  parent: Meridian.Backtesting.Portfolio
+  children:
+  - Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  langs:
+  - csharp
+  - vb
+  name: ICommissionModel
+  nameWithType: ICommissionModel
+  fullName: Meridian.Backtesting.Portfolio.ICommissionModel
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICommissionModel
+    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Portfolio
+  summary: Computes brokerage commission for a single fill.
+  example: []
+  syntax:
+    content: public interface ICommissionModel
+    content.vb: Public Interface ICommissionModel
+  derivedClasses:
+  - Meridian.Backtesting.Portfolio.FixedCommissionModel
+  - Meridian.Backtesting.Portfolio.PerShareCommissionModel
+  - Meridian.Backtesting.Portfolio.PercentageCommissionModel
+- uid: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  commentId: M:Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  id: Calculate(System.String,System.Int64,System.Decimal)
+  parent: Meridian.Backtesting.Portfolio.ICommissionModel
+  langs:
+  - csharp
+  - vb
+  name: Calculate(string, long, decimal)
+  nameWithType: ICommissionModel.Calculate(string, long, decimal)
+  fullName: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(string, long, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Calculate
+    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Portfolio
+  syntax:
+    content: decimal Calculate(string symbol, long quantity, decimal fillPrice)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: fillPrice
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Function Calculate(symbol As String, quantity As Long, fillPrice As Decimal) As Decimal
+  overload: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate*
+  nameWithType.vb: ICommissionModel.Calculate(String, Long, Decimal)
+  fullName.vb: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(String, Long, Decimal)
+  name.vb: Calculate(String, Long, Decimal)
+references:
+- uid: Meridian.Backtesting.Portfolio
+  commentId: N:Meridian.Backtesting.Portfolio
+  href: Meridian.html
+  name: Meridian.Backtesting.Portfolio
+  nameWithType: Meridian.Backtesting.Portfolio
+  fullName: Meridian.Backtesting.Portfolio
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Portfolio
+    name: Portfolio
+    href: Meridian.Backtesting.Portfolio.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Portfolio
+    name: Portfolio
+    href: Meridian.Backtesting.Portfolio.html
+- uid: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate*
+  commentId: Overload:Meridian.Backtesting.Portfolio.ICommissionModel.Calculate
+  href: Meridian.Backtesting.Portfolio.ICommissionModel.html#Meridian_Backtesting_Portfolio_ICommissionModel_Calculate_System_String_System_Int64_System_Decimal_
+  name: Calculate
+  nameWithType: ICommissionModel.Calculate
+  fullName: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

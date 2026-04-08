@@ -1,0 +1,664 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.PositionState
+  commentId: T:Meridian.Execution.Sdk.PositionState
+  id: PositionState
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.PositionState.AverageCostBasis
+  - Meridian.Execution.Sdk.PositionState.LastUpdated
+  - Meridian.Execution.Sdk.PositionState.MarketPrice
+  - Meridian.Execution.Sdk.PositionState.MarketValue
+  - Meridian.Execution.Sdk.PositionState.Quantity
+  - Meridian.Execution.Sdk.PositionState.RealizedPnl
+  - Meridian.Execution.Sdk.PositionState.Symbol
+  - Meridian.Execution.Sdk.PositionState.UnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: PositionState
+  nameWithType: PositionState
+  fullName: Meridian.Execution.Sdk.PositionState
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionState
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Current position state for a symbol.
+  example: []
+  syntax:
+    content: 'public sealed record PositionState : IEquatable<PositionState>'
+    content.vb: Public NotInheritable Class PositionState Implements IEquatable(Of PositionState)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.PositionState}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.PositionState.Symbol
+  commentId: P:Meridian.Execution.Sdk.PositionState.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: PositionState.Symbol
+  fullName: Meridian.Execution.Sdk.PositionState.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public required string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Sdk.PositionState.Symbol*
+- uid: Meridian.Execution.Sdk.PositionState.Quantity
+  commentId: P:Meridian.Execution.Sdk.PositionState.Quantity
+  id: Quantity
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: PositionState.Quantity
+  fullName: Meridian.Execution.Sdk.PositionState.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Quantity As Decimal
+  overload: Meridian.Execution.Sdk.PositionState.Quantity*
+- uid: Meridian.Execution.Sdk.PositionState.AverageCostBasis
+  commentId: P:Meridian.Execution.Sdk.PositionState.AverageCostBasis
+  id: AverageCostBasis
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: AverageCostBasis
+  nameWithType: PositionState.AverageCostBasis
+  fullName: Meridian.Execution.Sdk.PositionState.AverageCostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageCostBasis
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal AverageCostBasis { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AverageCostBasis As Decimal
+  overload: Meridian.Execution.Sdk.PositionState.AverageCostBasis*
+- uid: Meridian.Execution.Sdk.PositionState.MarketPrice
+  commentId: P:Meridian.Execution.Sdk.PositionState.MarketPrice
+  id: MarketPrice
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: MarketPrice
+  nameWithType: PositionState.MarketPrice
+  fullName: Meridian.Execution.Sdk.PositionState.MarketPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketPrice
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal MarketPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarketPrice As Decimal
+  overload: Meridian.Execution.Sdk.PositionState.MarketPrice*
+- uid: Meridian.Execution.Sdk.PositionState.UnrealizedPnl
+  commentId: P:Meridian.Execution.Sdk.PositionState.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: PositionState.UnrealizedPnl
+  fullName: Meridian.Execution.Sdk.PositionState.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal UnrealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property UnrealizedPnl As Decimal
+  overload: Meridian.Execution.Sdk.PositionState.UnrealizedPnl*
+- uid: Meridian.Execution.Sdk.PositionState.RealizedPnl
+  commentId: P:Meridian.Execution.Sdk.PositionState.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: PositionState.RealizedPnl
+  fullName: Meridian.Execution.Sdk.PositionState.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal RealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedPnl As Decimal
+  overload: Meridian.Execution.Sdk.PositionState.RealizedPnl*
+- uid: Meridian.Execution.Sdk.PositionState.MarketValue
+  commentId: P:Meridian.Execution.Sdk.PositionState.MarketValue
+  id: MarketValue
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: MarketValue
+  nameWithType: PositionState.MarketValue
+  fullName: Meridian.Execution.Sdk.PositionState.MarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketValue
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public decimal MarketValue { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property MarketValue As Decimal
+  overload: Meridian.Execution.Sdk.PositionState.MarketValue*
+- uid: Meridian.Execution.Sdk.PositionState.LastUpdated
+  commentId: P:Meridian.Execution.Sdk.PositionState.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Execution.Sdk.PositionState
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: PositionState.LastUpdated
+  fullName: Meridian.Execution.Sdk.PositionState.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public DateTimeOffset LastUpdated { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastUpdated As DateTimeOffset
+  overload: Meridian.Execution.Sdk.PositionState.LastUpdated*
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.PositionState}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.PositionState}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PositionState>
+  nameWithType: IEquatable<PositionState>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.PositionState>
+  nameWithType.vb: IEquatable(Of PositionState)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.PositionState)
+  name.vb: IEquatable(Of PositionState)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.PositionState
+    name: PositionState
+    href: Meridian.Execution.Sdk.PositionState.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.PositionState
+    name: PositionState
+    href: Meridian.Execution.Sdk.PositionState.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.PositionState.Symbol*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.Symbol
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_Symbol
+  name: Symbol
+  nameWithType: PositionState.Symbol
+  fullName: Meridian.Execution.Sdk.PositionState.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.PositionState.Quantity*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.Quantity
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_Quantity
+  name: Quantity
+  nameWithType: PositionState.Quantity
+  fullName: Meridian.Execution.Sdk.PositionState.Quantity
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.PositionState.AverageCostBasis*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.AverageCostBasis
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_AverageCostBasis
+  name: AverageCostBasis
+  nameWithType: PositionState.AverageCostBasis
+  fullName: Meridian.Execution.Sdk.PositionState.AverageCostBasis
+- uid: Meridian.Execution.Sdk.PositionState.MarketPrice*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.MarketPrice
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_MarketPrice
+  name: MarketPrice
+  nameWithType: PositionState.MarketPrice
+  fullName: Meridian.Execution.Sdk.PositionState.MarketPrice
+- uid: Meridian.Execution.Sdk.PositionState.UnrealizedPnl*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.UnrealizedPnl
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: PositionState.UnrealizedPnl
+  fullName: Meridian.Execution.Sdk.PositionState.UnrealizedPnl
+- uid: Meridian.Execution.Sdk.PositionState.RealizedPnl*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.RealizedPnl
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_RealizedPnl
+  name: RealizedPnl
+  nameWithType: PositionState.RealizedPnl
+  fullName: Meridian.Execution.Sdk.PositionState.RealizedPnl
+- uid: Meridian.Execution.Sdk.PositionState.MarketValue*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.MarketValue
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_MarketValue
+  name: MarketValue
+  nameWithType: PositionState.MarketValue
+  fullName: Meridian.Execution.Sdk.PositionState.MarketValue
+- uid: Meridian.Execution.Sdk.PositionState.LastUpdated*
+  commentId: Overload:Meridian.Execution.Sdk.PositionState.LastUpdated
+  href: Meridian.Execution.Sdk.PositionState.html#Meridian_Execution_Sdk_PositionState_LastUpdated
+  name: LastUpdated
+  nameWithType: PositionState.LastUpdated
+  fullName: Meridian.Execution.Sdk.PositionState.LastUpdated
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
