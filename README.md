@@ -2792,6 +2792,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
+│       │   ├── FloatingPageService.cs
 │       │   ├── FormValidationService.cs
 │       │   ├── FundAccountReadService.cs
 │       │   ├── FundContextService.cs
@@ -2987,6 +2988,8 @@ Use these documents together when planning or implementing new work:
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
 │           ├── ExportPresetsPage.xaml.cs
+│           ├── FloatingPageWindow.xaml
+│           ├── FloatingPageWindow.xaml.cs
 │           ├── FundAccountsPage.xaml
 │           ├── FundAccountsPage.xaml.cs
 │           ├── FundLedgerPage.xaml
@@ -3692,6 +3695,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-491 directories, 3071 files
+491 directories, 3074 files
 ```
 <!-- readme-tree end -->
