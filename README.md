@@ -1855,9 +1855,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
+│   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── PositionExtensions.cs
 │   │   └── TaxLot.cs
 │   ├── Meridian.FSharp
 │   │   ├── Calculations
@@ -3695,6 +3697,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-491 directories, 3074 files
+491 directories, 3076 files
 ```
 <!-- readme-tree end -->
