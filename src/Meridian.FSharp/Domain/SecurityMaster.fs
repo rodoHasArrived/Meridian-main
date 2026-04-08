@@ -148,13 +148,13 @@ type BondTerms = {
 [<RequireQualifiedAccess>]
 module BondTerms =
     let fixedRate maturity couponRate dayCount issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Other "Unknown" }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
 
     let floatingRate maturity index spreadBps issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.FloatingRate }
 
     let zeroCoupon maturity issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Other "Unknown" }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with

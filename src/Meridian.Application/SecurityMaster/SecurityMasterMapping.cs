@@ -171,6 +171,13 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.Figi => IdentifierKind.Figi,
             SecurityIdentifierKind.ProviderSymbol => IdentifierKind.NewProviderSymbol(provider ?? string.Empty),
             SecurityIdentifierKind.InternalCode => IdentifierKind.InternalCode,
+            SecurityIdentifierKind.Lei => IdentifierKind.Lei,
+            SecurityIdentifierKind.PermId => IdentifierKind.PermId,
+            SecurityIdentifierKind.Bbgid => IdentifierKind.Bbgid,
+            SecurityIdentifierKind.Wkn => IdentifierKind.Wkn,
+            SecurityIdentifierKind.Valoren => IdentifierKind.Valoren,
+            SecurityIdentifierKind.PermTicker => IdentifierKind.PermTicker,
+            SecurityIdentifierKind.Ric => IdentifierKind.Ric,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
@@ -211,7 +218,7 @@ internal static class SecurityMasterMapping
                 GetRequiredDateOnly(json, "expiry"),
                 GetRequiredDecimal(json, "multiplier"),
                 ToOption(GetOptionalString(json, "optChainId")),
-                FSharpOption<ExerciseStyle>.None,
+                ParseExerciseStyle(GetOptionalString(json, "exerciseStyle")),
                 ToOption(GetOptionalString(json, "settlementType")),
                 GetOptionalBoolean(json, "isAdjusted") ?? false,
                 ToOption(GetOptionalDateOnly(json, "lastTradingDt")))),
@@ -385,6 +392,15 @@ internal static class SecurityMasterMapping
 
     private static FSharpList<T> ToFSharpList<T>(IEnumerable<T> values)
         => ListModule.OfSeq(values);
+
+    private static FSharpOption<ExerciseStyle> ParseExerciseStyle(string? value)
+        => value?.Trim() switch
+        {
+            "American" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.American),
+            "European" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.European),
+            "Bermudan" => FSharpOption<ExerciseStyle>.Some(ExerciseStyle.Bermudan),
+            _ => FSharpOption<ExerciseStyle>.None
+        };
 
     private static FSharpOption<string> ToOption(string? value)
         => string.IsNullOrWhiteSpace(value) ? FSharpOption<string>.None : FSharpOption<string>.Some(value);

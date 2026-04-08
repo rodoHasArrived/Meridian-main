@@ -32,6 +32,13 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.Figi -> "Figi"
         | IdentifierKind.ProviderSymbol _ -> "ProviderSymbol"
         | IdentifierKind.InternalCode -> "InternalCode"
+        | IdentifierKind.Lei -> "Lei"
+        | IdentifierKind.PermId -> "PermId"
+        | IdentifierKind.Bbgid -> "Bbgid"
+        | IdentifierKind.Wkn -> "Wkn"
+        | IdentifierKind.Valoren -> "Valoren"
+        | IdentifierKind.PermTicker -> "PermTicker"
+        | IdentifierKind.Ric -> "Ric"
 
     member _.Kind = kind
     member _.Value = identifier.Value

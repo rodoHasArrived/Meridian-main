@@ -304,7 +304,7 @@ let ``BondSubclass Clo is distinct from Cmo and AssetBacked`` () =
     BondSubclass.Clo |> should not' (equal BondSubclass.AssetBacked)
 
 [<Fact>]
-let ``StructuredProductTerms factor defaults to None for fresh record`` () =
+let ``StructuredProductTerms round-trips pool analytics fields`` () =
     let sp = {
         Factor = Some 0.85m
         FactorDate = Some (DateOnly(2025, 3, 1))

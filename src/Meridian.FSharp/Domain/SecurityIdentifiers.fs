@@ -94,7 +94,7 @@ module SecurityIdentifier =
                 |> Seq.toArray
             let len = digits.Length
             let mutable sum = 0
-            let mutable doubleIt = true           // rightmost digit (excluding check) is not doubled for Luhn
+            let mutable doubleIt = false          // check digit (rightmost) is never doubled in Luhn
             for i = len - 1 downto 0 do
                 let mutable d = digits.[i]
                 if doubleIt then
