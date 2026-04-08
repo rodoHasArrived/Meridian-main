@@ -8,13 +8,13 @@ This document is the master index for AI guidance in the Meridian repository. It
 
 | Task | Start Here | Deep Dive |
 |------|-----------|-----------|
-| Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
+| Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
-| GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/agents) |
-| Portable skills | [`skills/README.md`](skills/README.md) | [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian/blob/main/.claude/skills) |
+| GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents) |
+| Portable skills | [`skills/README.md`](skills/README.md) | [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills | [`.codex/skills/README.md`](../../.codex/skills/README.md) | [`.codex/skills/`](../../.codex/skills/) |
-| Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/copilot-instructions.md) |
+| Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
 ---
 
@@ -43,7 +43,7 @@ The generated navigation artifacts are the canonical orientation surface:
 
 | File | Purpose |
 |------|---------|
-| [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) | Master project context, architecture, commands, and conventions |
+| [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Master project context, architecture, commands, and conventions |
 | [`ai-known-errors.md`](ai-known-errors.md) | Canonical registry of recurring AI mistakes and prevention checklists |
 
 ### Tier 2: Navigation and Routing
@@ -81,8 +81,8 @@ Located mainly in `docs/ai/claude/`.
 | Resource | Purpose |
 |----------|---------|
 | [`instructions/README.md`](instructions/README.md) | Index for path-specific instruction files |
-| [`.github/instructions/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/instructions) | Auto-applied Copilot instruction files |
-| [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/copilot-instructions.md) | Repository-wide Copilot guidance |
+| [`.github/instructions/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/instructions) | Auto-applied Copilot instruction files |
+| [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) | Repository-wide Copilot guidance |
 
 ---
 
@@ -96,7 +96,7 @@ Located mainly in `docs/ai/claude/`.
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Portable skill catalog | [`skills/README.md`](skills/README.md) |
 | Codex skill catalog | [`.codex/skills/README.md`](../../.codex/skills/README.md) |
-| Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) |
+| Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
 
 ### Adding a New AI Resource

@@ -48,7 +48,6 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 Machine-readable sidecars that remain active in this folder:
 
 - `docs-automation-summary.json` - automation run summary consumed by docs tooling
-- `todo-scan-results.json` - machine-readable TODO scan output used by issue automation and follow-up scripts
 
 ## Archived Snapshots
 
