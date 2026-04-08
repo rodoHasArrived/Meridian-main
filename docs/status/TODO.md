@@ -1,6 +1,6 @@
 # TODO / FIXME / NOTE Scan
 
-Total items: **227**
+Total items: **228**
 
 | File | Line | Tag | Linked Issue | Text |
 |---|---:|---|:---:|---|
@@ -34,7 +34,7 @@ Total items: **227**
 | `.github/agents/cleanup-agent.md` | 188 | `NOTE` | ❌ | **Residual Risk / Handoff:** [none, bounded note, or target specialist] |
 | `.github/agents/documentation-agent.md` | 379 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `.github/agents/documentation-agent.md` | 897 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3683 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/documentation-agent.md` | 3684 | `TODO` | ❌ | - `TODO.md` - Pending work items |
 | `.github/agents/implementation-assurance-agent.md` | 88 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
@@ -63,7 +63,7 @@ Total items: **227**
 | `CLAUDE.md` | 433 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `CLAUDE.md` | 951 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 505 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `README.md` | 1016 | `TODO` | ❌ | │   │   ├── TODO.md |
+| `README.md` | 1017 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `build/scripts/run/start-collector.ps1` | 109 | `NOTE` | ❌ | if ($depth -gt 0) { Write-Host "[NOTE] L2 depth requires provider depth entitlements for venues." } |
 | `build/scripts/run/start-collector.sh` | 114 | `NOTE` | ❌ | print("[NOTE] L2 depth requires provider depth subscription for venues.") |
@@ -81,7 +81,7 @@ Total items: **227**
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md). |
 | `docs/ai/copilot/instructions.md` | 418 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/copilot/instructions.md` | 936 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3631 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 3632 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/architecture/wpf-shell-mvvm.md` | 5 | `NOTE` | ❌ | This note defines the MVVM boundary for the Meridian desktop shell so workstation state, navigation, and operator actions stay testable and do not drift back into WPF code-behind. |
@@ -114,6 +114,7 @@ Total items: **227**
 | `docs/operations/operator-runbook.md` | 207 | `NOTE` | ❌ | - note: L2 depth requires provider depth entitlements |
 | `docs/operations/portable-data-packager.md` | 303 | `NOTE` | ❌ | 2. **Document filters**: Note any symbols, dates, or types that were excluded |
 | `docs/plans/l3-inference-implementation-plan.md` | 180 | `NOTE` | ❌ | > **Note:** Providers that supply L2 depth data include Interactive Brokers, Polygon, NYSE, and StockSharp. Providers that supply only daily OHLCV bars (e.g. Stooq, Yahoo Finance) are **not sufficient** for queue inference — depth tick data is required. |
+| `docs/plans/options-roadmap.md` | 194 | `TODO` | ❌ | **TODO:** Implement explicit fallback chain in `OptionsChainService` using `IEnumerable<IOptionsChainProvider>` (registered in DI for all three) with health-check gating. |
 | `docs/plans/quant-script-environment-blueprint.md` | 1193 | `TODO` | ❌ | - [ ] `Api/PortfolioBuilder.cs` + `PortfolioResult.cs` (`EfficientFrontier` returns equal-weight stub + `// TODO` comment) |
 | `docs/plans/quant-script-page-implementation-guide.md` | 1191 | `TODO` | ❌ | - [ ] `PortfolioBuilder`, `PortfolioResult` (EfficientFrontier stub + `// TODO`) |
 | `docs/plans/quantscript-l3-multiinstance-round2-roadmap.md` | 362 | `NOTE` | ❌ | Note: `ISecurityMasterQueryService` is at `src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs` (not `src/Meridian.Application/SecurityMaster/`). |
