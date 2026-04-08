@@ -6,8 +6,6 @@ namespace Meridian.Tests.SecurityMaster;
 
 public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
 {
-    private const string EnvVar = "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING";
-
     // Non-null only when no external connection string is supplied.
     private readonly PostgreSqlContainer? _container;
 
@@ -18,7 +16,7 @@ public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
 
     public SecurityMasterDatabaseFixture()
     {
-        var externalConnectionString = Environment.GetEnvironmentVariable(EnvVar);
+        var externalConnectionString = SecurityMasterDatabaseTestEnvironment.GetExternalConnectionString();
 
         if (!string.IsNullOrWhiteSpace(externalConnectionString))
         {
@@ -28,6 +26,10 @@ public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
                 Schema = $"sm_test_{Guid.NewGuid():N}",
                 PreloadProjectionCache = false
             };
+        }
+        else if (SecurityMasterDatabaseTestEnvironment.TryGetSkipReason(out _))
+        {
+            Options = new SecurityMasterOptions { PreloadProjectionCache = false };
         }
         else
         {
@@ -44,6 +46,11 @@ public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        if (_container is null && string.IsNullOrWhiteSpace(Options.ConnectionString))
+        {
+            return;
+        }
+
         if (_container is not null)
         {
             await _container.StartAsync().ConfigureAwait(false);
@@ -62,6 +69,11 @@ public sealed class SecurityMasterDatabaseFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        if (_container is null && string.IsNullOrWhiteSpace(Options.ConnectionString))
+        {
+            return;
+        }
+
         if (_container is not null)
         {
             await _container.DisposeAsync().ConfigureAwait(false);

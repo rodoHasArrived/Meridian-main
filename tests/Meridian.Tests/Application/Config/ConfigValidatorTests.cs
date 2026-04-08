@@ -82,6 +82,29 @@ public class ConfigValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName.Contains("KeyId"));
     }
 
+    [Theory]
+    [InlineData("CHANGE_ME")]
+    [InlineData("<API_KEY>")]
+    [InlineData("your-key-here")]
+    public void Validate_AlpacaWithAdditionalPlaceholderFormats_IsInvalid(string placeholder)
+    {
+        var config = new AppConfig(
+            DataSource: DataSourceKind.Alpaca,
+            Alpaca: new AlpacaOptions
+            {
+                KeyId = placeholder,
+                SecretKey = placeholder,
+                Feed = "iex"
+            }
+        );
+
+        var result = _validator.Validate(config);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName.Contains("KeyId"));
+        result.Errors.Should().Contain(e => e.PropertyName.Contains("SecretKey"));
+    }
+
     [Fact]
     public void Validate_AlpacaWithValidKeys_IsValid()
     {
@@ -123,6 +146,34 @@ public class ConfigValidatorTests
         // Assert
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName.Contains("Feed"));
+    }
+
+    [Theory]
+    [InlineData("flat")]
+    [InlineData("bysymbol")]
+    [InlineData("bydate")]
+    [InlineData("bytype")]
+    public void Validate_StorageWithValidatorSupportedNamingConventions_IsValid(string namingConvention)
+    {
+        var config = new AppConfig(
+            Storage: new StorageConfig(NamingConvention: namingConvention));
+
+        var result = _validator.Validate(config);
+
+        result.Errors.Should().NotContain(e => e.PropertyName.Contains("NamingConvention"));
+    }
+
+    [Theory]
+    [InlineData("hierarchical")]
+    [InlineData("canonical")]
+    public void Validate_StorageWithParserOnlyNamingConventions_IsInvalid(string namingConvention)
+    {
+        var config = new AppConfig(
+            Storage: new StorageConfig(NamingConvention: namingConvention));
+
+        var result = _validator.Validate(config);
+
+        result.Errors.Should().Contain(e => e.PropertyName.Contains("NamingConvention"));
     }
 
     [Fact]

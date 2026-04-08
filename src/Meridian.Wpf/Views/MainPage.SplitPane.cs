@@ -52,6 +52,7 @@ public partial class MainPage
 
         _viewModel.SplitPane.PaneAssignmentsChanged += (_, _) => RefreshSplitPaneContent();
         host.PaneActivated += (_, idx) => _viewModel.SplitPane.FocusPaneCommand.Execute(idx);
+        host.PaneCloseRequested += (_, paneId) => _viewModel.SplitPane.ClosePaneCommand.Execute(paneId);
     }
 
     private void OnSplitPanePaneDropRequested(object sender, PaneDropEventArgs e)
@@ -61,7 +62,22 @@ public partial class MainPage
             0,
             Math.Max(0, _viewModel.SplitPane.SelectedLayout.PaneCount - 1));
 
-        if (e.Action == PaneDropAction.SplitRight)
+        if (e.Action == PaneDropAction.FloatWindow)
+        {
+            // Pop the dragged page out into a standalone floating window.
+            Services.FloatingPageService.Instance.OpenPage(
+                e.PageTag,
+                tag => _navigationService.CreatePageContent(tag));
+            return;
+        }
+
+        if (e.Action == PaneDropAction.SplitLeft)
+        {
+            _viewModel.SplitPane.FocusPaneCommand.Execute(targetPaneIndex);
+            _viewModel.SplitPane.SplitPaneCommand.Execute("Left");
+            // SplitLeft inserts the new pane at the same index; targetPaneIndex stays unchanged.
+        }
+        else if (e.Action == PaneDropAction.SplitRight)
         {
             _viewModel.SplitPane.FocusPaneCommand.Execute(targetPaneIndex);
             _viewModel.SplitPane.SplitPaneCommand.Execute("Right");

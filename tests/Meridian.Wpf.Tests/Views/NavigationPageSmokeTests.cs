@@ -16,6 +16,8 @@ public sealed class NavigationPageSmokeTests
     {
         WpfTestThread.Run(() =>
         {
+            Environment.SetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null);
+            Environment.SetEnvironmentVariable("POLYGON_API_KEY", null);
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             var services = new ServiceCollection();
@@ -36,6 +38,9 @@ public sealed class NavigationPageSmokeTests
 
             var notificationCenterException = Record.Exception(() => serviceProvider.GetRequiredService<NotificationCenterPage>());
             notificationCenterException.Should().BeNull();
+
+            var securityMasterException = Record.Exception(() => serviceProvider.GetRequiredService<SecurityMasterPage>());
+            securityMasterException.Should().BeNull();
 
             Window? leanIntegrationHost = null;
             try

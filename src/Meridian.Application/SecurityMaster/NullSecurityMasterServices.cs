@@ -1,4 +1,5 @@
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
@@ -19,10 +20,14 @@ namespace Meridian.Application.SecurityMaster;
 // Query service (read-only) — returns null / empty so endpoint callers see 404
 // ──────────────────────────────────────────────────────────────────────────────
 
-internal sealed class NullSecurityMasterQueryService
+public sealed class NullSecurityMasterQueryService
     : ISecurityMasterQueryService,
-      Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+      Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,
+      ISecurityMasterRuntimeStatus
 {
+    internal const string NotConfiguredMessage =
+        "Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable this feature.";
+
     private static readonly IReadOnlyList<SecuritySummaryDto> _emptySummaries =
         Array.Empty<SecuritySummaryDto>();
 
@@ -31,6 +36,11 @@ internal sealed class NullSecurityMasterQueryService
 
     private static readonly IReadOnlyList<CorporateActionDto> _emptyActions =
         Array.Empty<CorporateActionDto>();
+
+    public bool IsAvailable => false;
+
+    public string AvailabilityDescription =>
+        "Security Master is unavailable because MERIDIAN_SECURITY_MASTER_CONNECTION_STRING is not configured.";
 
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
         => Task.FromResult<SecurityDetailDto?>(null);
@@ -67,18 +77,27 @@ internal sealed class NullSecurityMasterQueryService
         Guid securityId,
         CancellationToken ct = default)
         => Task.FromResult(_emptyActions);
+
+    public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(
+        Guid securityId,
+        CancellationToken ct = default)
+        => Task.FromResult<PreferredEquityTermsDto?>(null);
+
+    public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(
+        Guid securityId,
+        CancellationToken ct = default)
+        => Task.FromResult<ConvertibleEquityTermsDto?>(null);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Command service — throws when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
-internal sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService
+public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService
 {
     private static Task<T> NotConfigured<T>() =>
         Task.FromException<T>(new InvalidOperationException(
-            "Security Master is not configured. " +
-            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
+            NullSecurityMasterQueryService.NotConfiguredMessage));
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
@@ -86,10 +105,12 @@ internal sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMas
     public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
 
+    public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
+
     public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
         => Task.FromException(new InvalidOperationException(
-            "Security Master is not configured. " +
-            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
+            NullSecurityMasterQueryService.NotConfiguredMessage));
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityAliasDto>();
@@ -121,7 +142,7 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
 // Import service — returns error result when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
-internal sealed class NullSecurityMasterImportService : ISecurityMasterImportService
+public sealed class NullSecurityMasterImportService : ISecurityMasterImportService
 {
     public Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
@@ -133,7 +154,18 @@ internal sealed class NullSecurityMasterImportService : ISecurityMasterImportSer
             Skipped: 0,
             Failed: 1,
             ConflictsDetected: 0,
-            Errors: ["Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable."]));
+            Errors: [NullSecurityMasterQueryService.NotConfiguredMessage]));
+}
+
+/// <summary>
+/// No-op backfill service registered when either Security Master or Polygon credentials are unavailable.
+/// </summary>
+public sealed class NullTradingParametersBackfillService : ITradingParametersBackfillService
+{
+    public Task BackfillAllAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+    public Task BackfillTickerAsync(string ticker, Guid securityId, CancellationToken ct = default)
+        => Task.CompletedTask;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -150,8 +182,7 @@ internal sealed class NullSecurityMasterEventStore : ISecurityMasterEventStore
 
     private static Task NotConfigured() =>
         Task.FromException(new InvalidOperationException(
-            "Security Master is not configured. " +
-            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
+            NullSecurityMasterQueryService.NotConfiguredMessage));
 
     public Task AppendAsync(
         Guid securityId,

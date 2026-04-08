@@ -25,6 +25,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ITradingParametersBackfillService _backfillService;
     private readonly ISecurityMasterImportService _importService;
+    private readonly ISecurityMasterRuntimeStatus _securityMasterRuntimeStatus;
+    private readonly bool _hasPolygonApiKey;
     private CancellationTokenSource? _cts;
 
     // ── Public collections ──────────────────────────────────────────────────
@@ -55,7 +57,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsLoading
     {
         get => _isLoading;
-        private set => SetProperty(ref _isLoading, value);
+        private set
+        {
+            if (SetProperty(ref _isLoading, value))
+            {
+                RaisePropertyChanged(nameof(CanSearchSecurityMaster));
+            }
+        }
     }
 
     private string _statusText = "Enter a query and press Search.";
@@ -78,6 +86,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 RaisePropertyChanged(nameof(SelectedCurrency));
                 RaisePropertyChanged(nameof(SelectedStatusBadge));
                 RaisePropertyChanged(nameof(SelectedIdentifier));
+                EditSelectedCommand.NotifyCanExecuteChanged();
+                DeactivateSelectedCommand.NotifyCanExecuteChanged();
+                LoadCorporateActionsCommand.NotifyCanExecuteChanged();
+                ShowRecordCorpActionCommand.NotifyCanExecuteChanged();
+                RecordCorpActionCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -163,7 +176,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsBackfillingTradingParams
     {
         get => _isBackfillingTradingParams;
-        private set => SetProperty(ref _isBackfillingTradingParams, value);
+        private set
+        {
+            if (SetProperty(ref _isBackfillingTradingParams, value))
+            {
+                RaisePropertyChanged(nameof(CanBackfillTradingParameters));
+                BackfillTradingParamsCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     private string _backfillStatus = string.Empty;
@@ -206,7 +226,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsImporting
     {
         get => _isImporting;
-        private set => SetProperty(ref _isImporting, value);
+        private set
+        {
+            if (SetProperty(ref _isImporting, value))
+            {
+                RaisePropertyChanged(nameof(CanImportSecurityMaster));
+                ImportFromFileCommand.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     public string ImportStatus
@@ -231,6 +258,39 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get => _importResultSummary;
         private set => SetProperty(ref _importResultSummary, value);
+    }
+
+    public bool IsSecurityMasterAvailable => _securityMasterRuntimeStatus.IsAvailable;
+
+    public bool CanMaintainSecurityMaster => IsSecurityMasterAvailable;
+
+    public bool CanSearchSecurityMaster => IsSecurityMasterAvailable && !IsLoading;
+
+    public bool CanImportSecurityMaster => IsSecurityMasterAvailable && !IsImporting;
+
+    public bool CanBackfillTradingParameters =>
+        IsSecurityMasterAvailable &&
+        _hasPolygonApiKey &&
+        !IsBackfillingTradingParams;
+
+    public bool IsSecurityMasterDegraded => !IsSecurityMasterAvailable || !_hasPolygonApiKey;
+
+    public string CapabilityStatusText
+    {
+        get
+        {
+            if (!IsSecurityMasterAvailable)
+            {
+                return _securityMasterRuntimeStatus.AvailabilityDescription;
+            }
+
+            if (!_hasPolygonApiKey)
+            {
+                return "Security Master is available, but trading-parameter backfill is disabled because POLYGON_API_KEY is not configured.";
+            }
+
+            return "Security Master is fully available.";
+        }
     }
 
     // ── Derived display helpers ─────────────────────────────────────────────
@@ -284,24 +344,35 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ITradingParametersBackfillService backfillService,
-        ISecurityMasterImportService importService)
+        ISecurityMasterImportService importService,
+        ISecurityMasterRuntimeStatus securityMasterRuntimeStatus)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _backfillService = backfillService;
         _importService = importService;
+        _securityMasterRuntimeStatus = securityMasterRuntimeStatus ?? throw new ArgumentNullException(nameof(securityMasterRuntimeStatus));
+        _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
-        CreateNewCommand = new RelayCommand(OnCreateNew);
-        EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
-        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => HasSelectedSecurity && IsSelectedSecurityActive());
-        LoadCorporateActionsCommand = new AsyncRelayCommand(OnLoadCorporateActions, () => HasSelectedSecurity);
-        ShowRecordCorpActionCommand = new RelayCommand(OnShowRecordCorpAction, () => HasSelectedSecurity);
+        CreateNewCommand = new RelayCommand(OnCreateNew, () => CanMaintainSecurityMaster);
+        EditSelectedCommand = new RelayCommand(OnEditSelected, () => CanMaintainSecurityMaster && HasSelectedSecurity);
+        DeactivateSelectedCommand = new RelayCommand(OnDeactivateSelected, () => CanMaintainSecurityMaster && HasSelectedSecurity && IsSelectedSecurityActive());
+        LoadCorporateActionsCommand = new AsyncRelayCommand(OnLoadCorporateActions, () => IsSecurityMasterAvailable && HasSelectedSecurity);
+        ShowRecordCorpActionCommand = new RelayCommand(OnShowRecordCorpAction, () => CanMaintainSecurityMaster && HasSelectedSecurity);
         CancelRecordCorpActionCommand = new RelayCommand(OnCancelRecordCorpAction);
-        RecordCorpActionCommand = new AsyncRelayCommand(OnRecordCorpAction);
-        BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams);
-        ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
+        RecordCorpActionCommand = new AsyncRelayCommand(OnRecordCorpAction, () => CanMaintainSecurityMaster && HasSelectedSecurity);
+        BackfillTradingParamsCommand = new AsyncRelayCommand(OnBackfillTradingParams, () => CanBackfillTradingParameters);
+        ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => CanImportSecurityMaster);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
-        RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
+        RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync, () => IsSecurityMasterAvailable);
+
+        StatusText = IsSecurityMasterAvailable
+            ? "Enter a query and press Search."
+            : _securityMasterRuntimeStatus.AvailabilityDescription;
+        BackfillStatus = IsSecurityMasterAvailable
+            ? (_hasPolygonApiKey ? string.Empty : "Polygon credentials missing; backfill is disabled.")
+            : "Security Master is unavailable.";
+        UpdateCapabilityState();
 
         // Fire-and-forget initial conflict count load; failures are suppressed
         _ = RefreshConflictCountAsync();
@@ -478,6 +549,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     // ── Search ──────────────────────────────────────────────────────────────
     public async Task SearchAsync(CancellationToken ct = default)
     {
+        if (!IsSecurityMasterAvailable)
+        {
+            StatusText = _securityMasterRuntimeStatus.AvailabilityDescription;
+            return;
+        }
+
         var query = SearchQuery.Trim();
         if (string.IsNullOrEmpty(query))
         {
@@ -741,6 +818,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     // ── Conflict badge ───────────────────────────────────────────────────────
     private async Task RefreshConflictCountAsync(CancellationToken ct = default)
     {
+        if (!IsSecurityMasterAvailable)
+        {
+            OpenConflictCount = 0;
+            return;
+        }
+
         try
         {
             var conflicts = await ApiClientService.Instance
@@ -841,5 +924,26 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         IsImportResultVisible = false;
         ImportResultSummary = string.Empty;
+    }
+
+    private void UpdateCapabilityState()
+    {
+        RaisePropertyChanged(nameof(IsSecurityMasterAvailable));
+        RaisePropertyChanged(nameof(CanMaintainSecurityMaster));
+        RaisePropertyChanged(nameof(CanSearchSecurityMaster));
+        RaisePropertyChanged(nameof(CanImportSecurityMaster));
+        RaisePropertyChanged(nameof(CanBackfillTradingParameters));
+        RaisePropertyChanged(nameof(IsSecurityMasterDegraded));
+        RaisePropertyChanged(nameof(CapabilityStatusText));
+
+        CreateNewCommand.NotifyCanExecuteChanged();
+        EditSelectedCommand.NotifyCanExecuteChanged();
+        DeactivateSelectedCommand.NotifyCanExecuteChanged();
+        LoadCorporateActionsCommand.NotifyCanExecuteChanged();
+        ShowRecordCorpActionCommand.NotifyCanExecuteChanged();
+        RecordCorpActionCommand.NotifyCanExecuteChanged();
+        BackfillTradingParamsCommand.NotifyCanExecuteChanged();
+        ImportFromFileCommand.NotifyCanExecuteChanged();
+        RefreshConflictCountCommand.NotifyCanExecuteChanged();
     }
 }

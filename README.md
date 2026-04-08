@@ -203,6 +203,19 @@ Use these documents together when planning or implementing new work:
 │       ├── README.md
 │       ├── _shared
 │       │   └── project-context.md
+│       ├── meridian-archive-organizer
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   ├── evals
+│       │   │   └── evals.json
+│       │   ├── references
+│       │   │   ├── archive-placement-guide.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── run_evals.py
+│       │       ├── score_eval.py
+│       │       └── trace_archive_candidates.py
 │       ├── meridian-blueprint
 │       │   ├── SKILL.md
 │       │   └── references
@@ -381,6 +394,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── AUDIT_REPORT_2026_03_20.md
 │       │   ├── CLEANUP_OPPORTUNITIES.md
 │       │   ├── CLEANUP_SUMMARY.md
+│       │   ├── CODE_REVIEW_2026-03-16.md
 │       │   ├── CONFIG_CONSOLIDATION_REPORT.md
 │       │   ├── DUPLICATE_CODE_ANALYSIS.md
 │       │   ├── H3_DEBUG_CODE_ANALYSIS.md
@@ -410,8 +424,10 @@ Use these documents together when planning or implementing new work:
 │           ├── 2026-02_VISUAL_CODE_EXAMPLES.md
 │           ├── CHANGES_SUMMARY.md
 │           ├── CS0101_FIX_SUMMARY.md
+│           ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │           ├── IMPROVEMENTS_2026-02.md
 │           ├── REDESIGN_IMPROVEMENTS.md
+│           ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │           ├── ROADMAP_UPDATE_SUMMARY.md
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
 │           └── TEST_MATRIX_FIX_SUMMARY.md
@@ -563,6 +579,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── prometheus.yml
 │   └── systemd
 │       └── meridian.service
+├── docfx.json
 ├── docs
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -631,11 +648,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
-│   │   └── wpf-shell-mvvm.md
+│   │   ├── wpf-shell-mvvm.md
+│   │   └── wpf-workstation-shell-ux.md
 │   ├── audits
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
-│   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── README.md
 │   │   ├── audit-architecture-results.txt
@@ -812,7 +829,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── README.md
 │   │   ├── api
 │   │   │   └── index.md
-│   │   ├── docfx.json
 │   │   └── filterConfig.yml
 │   ├── evaluations
 │   │   ├── 2026-03-brainstorm-next-frontier.md
@@ -885,6 +901,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── options-roadmap.md
+│   │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
 │   │   ├── quant-script-page-implementation-guide.md
 │   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
@@ -930,6 +948,7 @@ Use these documents together when planning or implementing new work:
 │   ├── reference
 │   │   ├── README.md
 │   │   ├── api-reference.md
+│   │   ├── brand-assets.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
@@ -986,7 +1005,6 @@ Use these documents together when planning or implementing new work:
 │   │   └── known-vulnerabilities.md
 │   ├── status
 │   │   ├── CHANGELOG.md
-│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
@@ -995,7 +1013,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
-│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
@@ -1032,6 +1049,31 @@ Use these documents together when planning or implementing new work:
 │           └── main.cpp
 ├── package-lock.json
 ├── package.json
+├── plugins
+│   └── csharp-dotnet-development
+│       ├── .github
+│       │   └── plugin
+│       │       └── plugin.json
+│       ├── README.md
+│       ├── agents
+│       │   └── expert-dotnet-software-engineer.md
+│       └── skills
+│           ├── aspnet-minimal-api-openapi
+│           │   └── SKILL.md
+│           ├── csharp-async
+│           │   └── SKILL.md
+│           ├── csharp-mstest
+│           │   └── SKILL.md
+│           ├── csharp-nunit
+│           │   └── SKILL.md
+│           ├── csharp-tunit
+│           │   └── SKILL.md
+│           ├── csharp-xunit
+│           │   └── SKILL.md
+│           ├── dotnet-best-practices
+│           │   └── SKILL.md
+│           └── dotnet-upgrade
+│               └── SKILL.md
 ├── scripts
 │   ├── ai
 │   │   ├── cleanup.sh
@@ -1055,11 +1097,13 @@ Use these documents together when planning or implementing new work:
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
-│   └── report_canonicalization_drift.py
+│   ├── report_canonicalization_drift.py
+│   └── wpf_finance_ux_checks.py
 ├── src
 │   ├── Meridian
 │   │   ├── DashboardServerBridge.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── HostedBrokerageGatewayServiceCollectionExtensions.cs
 │   │   ├── Integrations
 │   │   │   └── Lean
 │   │   │       ├── MeridianDataProvider.cs
@@ -1072,6 +1116,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Tools
 │   │   │   └── DataValidator.cs
 │   │   ├── UiServer.cs
+│   │   ├── app.ico
 │   │   ├── app.manifest
 │   │   ├── runtimeconfig.template.json
 │   │   └── wwwroot
@@ -1170,6 +1215,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ConfigValidatorCli.cs
 │   │   │   ├── ConfigWatcher.cs
 │   │   │   ├── ConfigurationPipeline.cs
+│   │   │   ├── CredentialPlaceholderDetector.cs
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialStatus.cs
 │   │   │   │   ├── CredentialTestingService.cs
@@ -1180,7 +1226,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DeploymentContext.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── SensitiveValueMasker.cs
-│   │   │   └── StorageConfigExtensions.cs
+│   │   │   ├── StorageConfigExtensions.cs
+│   │   │   └── StorageConfigRules.cs
 │   │   ├── Coordination
 │   │   │   ├── ClusterCoordinatorService.cs
 │   │   │   ├── CoordinationSnapshot.cs
@@ -1610,6 +1657,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── SecurityMaster
 │   │   │   ├── ISecurityMasterAmender.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
+│   │   │   ├── ISecurityMasterRuntimeStatus.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
@@ -1892,6 +1940,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
+│   │   │   │   ├── AlpacaOptionsChainProvider.cs
 │   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
@@ -1971,6 +2020,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
+│   │   │   │   ├── PolygonOptionsChainProvider.cs
 │   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
@@ -1978,6 +2028,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RobinhoodBrokerageGateway.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
 │   │   │   │   ├── RobinhoodMarketDataClient.cs
+│   │   │   │   ├── RobinhoodOptionsChainProvider.cs
 │   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
@@ -1995,6 +2046,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Synthetic
 │   │   │   │   ├── SyntheticHistoricalDataProvider.cs
 │   │   │   │   ├── SyntheticMarketDataClient.cs
+│   │   │   │   ├── SyntheticOptionsChainProvider.cs
 │   │   │   │   └── SyntheticReferenceDataCatalog.cs
 │   │   │   ├── Templates
 │   │   │   │   └── TemplateBrokerageGateway.cs
@@ -2095,7 +2147,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LedgerValidationException.cs
 │   │   ├── LedgerViewKind.cs
 │   │   ├── Meridian.Ledger.csproj
-│   │   └── ProjectLedgerBook.cs
+│   │   ├── ProjectLedgerBook.cs
+│   │   └── ReadOnlyCollectionHelpers.cs
 │   ├── Meridian.Mcp
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Mcp.csproj
@@ -2420,8 +2473,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   └── dashboard.css
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BykwJCPj.js
-│   │           │   └── index-Daqy6egl.css
+│   │           │   ├── index-DqrOY4_3.css
+│   │           │   └── index-RWNTLiOV.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -2618,54 +2671,61 @@ Use these documents together when planning or implementing new work:
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
 │       ├── Assets
-│       │   └── Icons
-│       │       ├── README.md
-│       │       ├── account-portfolio.svg
-│       │       ├── admin-maintenance.svg
-│       │       ├── aggregate-portfolio.svg
-│       │       ├── archive-health.svg
-│       │       ├── backfill.svg
-│       │       ├── backtest.svg
-│       │       ├── charting.svg
-│       │       ├── collection-sessions.svg
-│       │       ├── dashboard.svg
-│       │       ├── data-browser.svg
-│       │       ├── data-calendar.svg
-│       │       ├── data-export.svg
-│       │       ├── data-operations.svg
-│       │       ├── data-quality.svg
-│       │       ├── data-sampling.svg
-│       │       ├── data-sources.svg
-│       │       ├── diagnostics.svg
-│       │       ├── event-replay.svg
-│       │       ├── governance.svg
-│       │       ├── help.svg
-│       │       ├── index-subscription.svg
-│       │       ├── keyboard-shortcuts.svg
-│       │       ├── lean-integration.svg
-│       │       ├── live-data.svg
-│       │       ├── order-book.svg
-│       │       ├── portfolio-import.svg
-│       │       ├── provider-health.svg
-│       │       ├── research.svg
-│       │       ├── retention-assurance.svg
-│       │       ├── run-detail.svg
-│       │       ├── run-ledger.svg
-│       │       ├── run-mat.svg
-│       │       ├── run-portfolio.svg
-│       │       ├── schedule-manager.svg
-│       │       ├── security-master.svg
-│       │       ├── service-manager.svg
-│       │       ├── settings.svg
-│       │       ├── storage-optimization.svg
-│       │       ├── storage.svg
-│       │       ├── strategy-runs.svg
-│       │       ├── symbol-storage.svg
-│       │       ├── symbols.svg
-│       │       ├── system-health.svg
-│       │       ├── trading-hours.svg
-│       │       ├── trading.svg
-│       │       └── watchlist.svg
+│       │   ├── Brand
+│       │   │   ├── meridian-hero.svg
+│       │   │   ├── meridian-mark.svg
+│       │   │   ├── meridian-tile-256.png
+│       │   │   ├── meridian-tile.svg
+│       │   │   └── meridian-wordmark.svg
+│       │   ├── Icons
+│       │   │   ├── README.md
+│       │   │   ├── account-portfolio.svg
+│       │   │   ├── admin-maintenance.svg
+│       │   │   ├── aggregate-portfolio.svg
+│       │   │   ├── archive-health.svg
+│       │   │   ├── backfill.svg
+│       │   │   ├── backtest.svg
+│       │   │   ├── charting.svg
+│       │   │   ├── collection-sessions.svg
+│       │   │   ├── dashboard.svg
+│       │   │   ├── data-browser.svg
+│       │   │   ├── data-calendar.svg
+│       │   │   ├── data-export.svg
+│       │   │   ├── data-operations.svg
+│       │   │   ├── data-quality.svg
+│       │   │   ├── data-sampling.svg
+│       │   │   ├── data-sources.svg
+│       │   │   ├── diagnostics.svg
+│       │   │   ├── event-replay.svg
+│       │   │   ├── governance.svg
+│       │   │   ├── help.svg
+│       │   │   ├── index-subscription.svg
+│       │   │   ├── keyboard-shortcuts.svg
+│       │   │   ├── lean-integration.svg
+│       │   │   ├── live-data.svg
+│       │   │   ├── order-book.svg
+│       │   │   ├── portfolio-import.svg
+│       │   │   ├── provider-health.svg
+│       │   │   ├── research.svg
+│       │   │   ├── retention-assurance.svg
+│       │   │   ├── run-detail.svg
+│       │   │   ├── run-ledger.svg
+│       │   │   ├── run-mat.svg
+│       │   │   ├── run-portfolio.svg
+│       │   │   ├── schedule-manager.svg
+│       │   │   ├── security-master.svg
+│       │   │   ├── service-manager.svg
+│       │   │   ├── settings.svg
+│       │   │   ├── storage-optimization.svg
+│       │   │   ├── storage.svg
+│       │   │   ├── strategy-runs.svg
+│       │   │   ├── symbol-storage.svg
+│       │   │   ├── symbols.svg
+│       │   │   ├── system-health.svg
+│       │   │   ├── trading-hours.svg
+│       │   │   ├── trading.svg
+│       │   │   └── watchlist.svg
+│       │   └── app.ico
 │       ├── Behaviors
 │       │   ├── AvalonEditNotebookBehavior.cs
 │       │   ├── ParameterTemplateSelector.cs
@@ -2712,6 +2772,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
+│       │   ├── WorkspaceShellChromeModels.cs
 │       │   └── WorkspaceShellModels.cs
 │       ├── README.md
 │       ├── Services
@@ -2731,6 +2792,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
+│       │   ├── FloatingPageService.cs
 │       │   ├── FormValidationService.cs
 │       │   ├── FundAccountReadService.cs
 │       │   ├── FundContextService.cs
@@ -2769,10 +2831,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
 │       │   ├── WorkspaceService.cs
+│       │   ├── WorkspaceShellContextService.cs
 │       │   └── WorkstationReconciliationApiClient.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
+│       │   ├── BrandResources.xaml
 │       │   ├── IconResources.xaml
 │       │   ├── ThemeControls.xaml
 │       │   ├── ThemeSurfaces.xaml
@@ -2924,6 +2988,8 @@ Use these documents together when planning or implementing new work:
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
 │           ├── ExportPresetsPage.xaml.cs
+│           ├── FloatingPageWindow.xaml
+│           ├── FloatingPageWindow.xaml.cs
 │           ├── FundAccountsPage.xaml
 │           ├── FundAccountsPage.xaml.cs
 │           ├── FundLedgerPage.xaml
@@ -3038,8 +3104,12 @@ Use these documents together when planning or implementing new work:
 │           ├── WatchlistPage.xaml.cs
 │           ├── WelcomePage.xaml
 │           ├── WelcomePage.xaml.cs
+│           ├── WorkspaceCommandBarControl.xaml
+│           ├── WorkspaceCommandBarControl.xaml.cs
 │           ├── WorkspacePage.xaml
-│           └── WorkspacePage.xaml.cs
+│           ├── WorkspacePage.xaml.cs
+│           ├── WorkspaceShellContextStripControl.xaml
+│           └── WorkspaceShellContextStripControl.xaml.cs
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
@@ -3064,6 +3134,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.DirectLending.Tests
 │   │   ├── BankTransactionSeedTests.cs
+│   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
 │   │   ├── DirectLendingServiceTests.cs
@@ -3154,7 +3225,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
 │   │   │   │   ├── ConfigValidationPipelineTests.cs
 │   │   │   │   ├── ConfigValidatorTests.cs
-│   │   │   │   └── ConfigurationUnificationTests.cs
+│   │   │   │   ├── ConfigurationUnificationTests.cs
+│   │   │   │   └── ProviderCredentialResolverTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   ├── ClusterCoordinatorServiceTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
@@ -3286,6 +3358,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── CredentialConfigTests.cs
 │   │   │   ├── Etl
 │   │   │   │   └── CsvPartnerFileParserTests.cs
+│   │   │   ├── Http
+│   │   │   │   └── HttpClientConfigurationTests.cs
 │   │   │   ├── Providers
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -3351,6 +3425,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── StockSharpSubscriptionTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
+│   │   │   │   ├── SyntheticOptionsChainProviderTests.cs
 │   │   │   │   └── WebSocketProviderBaseTests.cs
 │   │   │   ├── Resilience
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
@@ -3389,7 +3464,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RoleAuthorizationTests.cs
 │   │   │   │   ├── StatusEndpointTests.cs
 │   │   │   │   ├── StorageEndpointTests.cs
-│   │   │   │   └── SymbolEndpointTests.cs
+│   │   │   │   ├── SymbolEndpointTests.cs
+│   │   │   │   └── UiEndpointsJsonOptionsTests.cs
 │   │   │   ├── FixtureProviderTests.cs
 │   │   │   ├── GracefulShutdownIntegrationTests.cs
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
@@ -3420,7 +3496,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
+│   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
+│   │   │   ├── SecurityMasterQueryServiceEquityTermsTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
@@ -3492,6 +3570,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── DirectLendingEndpointsTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
+│   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │       ├── StaticAssetPathResolverTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
@@ -3581,7 +3660,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunWorkspaceServiceTests.cs
 │   │   │   ├── TooltipServiceTests.cs
 │   │   │   ├── WatchlistServiceTests.cs
-│   │   │   └── WorkspaceServiceTests.cs
+│   │   │   ├── WorkspaceServiceTests.cs
+│   │   │   └── WorkspaceShellContextServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -3615,6 +3695,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-470 directories, 3015 files
+491 directories, 3074 files
 ```
 <!-- readme-tree end -->

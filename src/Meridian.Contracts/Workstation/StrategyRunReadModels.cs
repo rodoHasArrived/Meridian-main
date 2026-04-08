@@ -56,6 +56,18 @@ public enum StrategyRunPromotionState : byte
 }
 
 /// <summary>
+/// Coverage/provenance state for Security Master enrichment shared across workstation surfaces.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<WorkstationSecurityCoverageStatus>))]
+public enum WorkstationSecurityCoverageStatus : byte
+{
+    Resolved,
+    Partial,
+    Missing,
+    Unavailable
+}
+
+/// <summary>
 /// Shared execution summary used by workstation drill-ins and governance surfaces.
 /// </summary>
 public sealed record StrategyRunExecutionSummary(
@@ -146,7 +158,12 @@ public sealed record WorkstationSecurityReference(
     string Currency,
     SecurityStatusDto Status,
     string? PrimaryIdentifier,
-    string? SubType = null);
+    string? SubType = null,
+    WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved,
+    string? MatchedIdentifierKind = null,
+    string? MatchedIdentifierValue = null,
+    string? MatchedProvider = null,
+    string? ResolutionReason = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.

@@ -54,12 +54,12 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md`
 - `.claude/skills/meridian-provider-builder/SKILL.md`
 - `.claude/skills/meridian-test-writer/SKILL.md`
+- `.codex/skills/meridian-archive-organizer/SKILL.md`
+- `.codex/skills/meridian-archive-organizer/references/archive-placement-guide.md`
+- `.codex/skills/meridian-archive-organizer/references/evaluation-harness.md`
 - `.codex/skills/meridian-blueprint/references/blueprint-patterns.md`
 - `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
-- `.codex/skills/meridian-implementation-assurance/references/documentation-routing.md`
-- `.codex/skills/meridian-implementation-assurance/references/evaluation-harness.md`
-- `.codex/skills/meridian-provider-builder/references/provider-patterns.md`
-- ... and 39 more
+- ... and 51 more
 
 ## Trend
 

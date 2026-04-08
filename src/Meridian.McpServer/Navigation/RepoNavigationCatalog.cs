@@ -149,6 +149,28 @@ public sealed class RepoNavigationCatalog
     public object FindRelatedProjects(string query)
     {
         var data = Load();
+        var normalizedQuery = Normalize(query);
+
+        var exactProject = data.Projects.FirstOrDefault(item =>
+            Normalize(item.Name).Equals(normalizedQuery, StringComparison.Ordinal));
+
+        if (exactProject is not null)
+        {
+            var exactEdges = data.Dependencies
+                .Where(edge => edge.From.Equals(exactProject.Name, StringComparison.OrdinalIgnoreCase)
+                    || edge.To.Equals(exactProject.Name, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            return new
+            {
+                query,
+                project = exactProject.Name,
+                exactProject.Path,
+                references = exactProject.ProjectReferences,
+                dependencyEdges = exactEdges
+            };
+        }
+
         var subsystem = FindSubsystem(query);
         if (subsystem is not null)
         {
@@ -167,7 +189,7 @@ public sealed class RepoNavigationCatalog
         }
 
         var project = data.Projects.FirstOrDefault(item =>
-            Normalize(item.Name).Contains(Normalize(query), StringComparison.Ordinal));
+            Normalize(item.Name).Contains(normalizedQuery, StringComparison.Ordinal));
 
         if (project is null)
         {

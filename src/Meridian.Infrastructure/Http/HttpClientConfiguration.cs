@@ -288,6 +288,16 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
+        // Robinhood symbol search client
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
         // OpenFIGI client
         services.AddHttpClient(HttpClientNames.OpenFigi)
             .ConfigureHttpClient(client =>
@@ -627,6 +637,15 @@ public static class HttpClientConfiguration
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodBrokerage, onStateChanged);
+
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodSymbolSearch, onStateChanged);
 
         // OpenFIGI client
         services.AddHttpClient(HttpClientNames.OpenFigi)

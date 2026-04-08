@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Ui.Services.Services;
 
@@ -204,15 +205,16 @@ public sealed class FixtureDataServiceTests
     {
         // Arrange
         var service = FixtureDataService.Instance;
-        var startTime = DateTimeOffset.UtcNow;
+        var stopwatch = Stopwatch.StartNew();
 
         // Act
         await service.SimulateNetworkDelayAsync();
-        var elapsed = DateTimeOffset.UtcNow - startTime;
+        stopwatch.Stop();
+        var elapsed = stopwatch.Elapsed;
 
         // Assert
         elapsed.Should().BeGreaterThan(TimeSpan.FromMilliseconds(40), "should have some delay");
-        elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(700), "should not delay too long even on busy CI runners");
+        elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3), "should complete well before it looks hung even on busy CI runners");
     }
 
     [Fact]

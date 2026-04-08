@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Meridian application tile</title>
+  <desc id="desc">Rounded-square Meridian application icon with a meridian beam and rising market line.</desc>
+  <defs>
+    <linearGradient id="panel" x1="28" y1="20" x2="228" y2="236" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F1B28"/>
+      <stop offset="0.55" stop-color="#0B1524"/>
+      <stop offset="1" stop-color="#07101C"/>
+    </linearGradient>
+    <linearGradient id="signal" x1="76" y1="174" x2="184" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A6BB5"/>
+      <stop offset="0.55" stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#16A34A"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="128" y1="52" x2="128" y2="198" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="0.55" stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#86EFAC"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#panel)"/>
+  <circle cx="128" cy="128" r="82" fill="#0B1524" stroke="#1A2F42" stroke-width="6"/>
+  <path d="M128 50V196" fill="none" stroke="url(#beam)" stroke-width="12" stroke-linecap="round"/>
+  <path d="M76 170L104 128L132 154L184 92" fill="none" stroke="url(#signal)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M76 188C102 168 154 168 180 188" fill="none" stroke="#3B82F6" stroke-opacity="0.28" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="128" cy="44" r="12" fill="#84F3B6"/>
+  <circle cx="128" cy="44" r="20" fill="none" stroke="#84F3B6" stroke-opacity="0.24" stroke-width="6"/>
+</svg>

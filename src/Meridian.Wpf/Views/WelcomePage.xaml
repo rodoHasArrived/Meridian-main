@@ -27,17 +27,45 @@
                                 Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
                                 BorderBrush="{StaticResource InfoColorBrush}"
                                 BorderThickness="1">
-                            <TextBlock Text="{StaticResource IconHome}"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="24"
-                                       Foreground="{StaticResource InfoColorBrush}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
+                            <Viewbox Width="24"
+                                     Height="24"
+                                     Stretch="Uniform"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center">
+                                <Grid Width="24" Height="24">
+                                    <Ellipse Width="18"
+                                             Height="18"
+                                             Stroke="{StaticResource MeridianBrandHaloBrush}"
+                                             StrokeThickness="1.1"
+                                             Opacity="0.55" />
+                                    <Path Data="{StaticResource MeridianBrandMeridianGeometry}"
+                                          Stroke="{StaticResource MeridianBrandBeamBrush}"
+                                          StrokeThickness="1.25"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round" />
+                                    <Path Data="{StaticResource MeridianBrandChartGeometry}"
+                                          Stroke="{StaticResource MeridianBrandGradientBrush}"
+                                          StrokeThickness="2.1"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          StrokeLineJoin="Round" />
+                                    <Path Data="{StaticResource MeridianBrandHorizonGeometry}"
+                                          Stroke="{StaticResource MeridianBrandHorizonBrush}"
+                                          StrokeThickness="1.2"
+                                          StrokeStartLineCap="Round"
+                                          Opacity="0.8" />
+                                    <Ellipse Width="2.9"
+                                             Height="2.9"
+                                             Fill="{StaticResource MeridianBrandStarBrush}"
+                                             VerticalAlignment="Top"
+                                             Margin="0,1,0,0" />
+                                </Grid>
+                            </Viewbox>
                         </Border>
                         <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Meridian Command Center"
+                            <TextBlock Text="Meridian Operator Workstation"
                                        Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="High-performance market data collection for real-time and historical workflows across providers."
+                            <TextBlock Text="Connected research, trading, data operations, and governance workflows in one desktop shell."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap" />
                         </StackPanel>

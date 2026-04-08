@@ -8,6 +8,7 @@ using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Contracts;
 using Xunit;
@@ -45,7 +46,8 @@ public sealed class ProviderFactoryCredentialContextTests
                         Polygon: new PolygonConfig(ApiKey: "cfg-polygon-key"),
                         AlphaVantage: new AlphaVantageConfig(Enabled: true, ApiKey: "cfg-alpha-key"),
                         Finnhub: new FinnhubConfig(ApiKey: "cfg-finnhub-key"),
-                        Fred: new FredConfig(Enabled: true, ApiKey: "cfg-fred-key")))),
+                        Fred: new FredConfig(Enabled: true, ApiKey: "cfg-fred-key"),
+                        Robinhood: new RobinhoodConfig(Enabled: true, Priority: 35, RateLimitPerHour: 120)))),
             resolver);
 
         var providers = factory.CreateBackfillProviders();
@@ -57,6 +59,7 @@ public sealed class ProviderFactoryCredentialContextTests
         providers.Should().ContainSingle(p => p is AlphaVantageHistoricalDataProvider);
         providers.Should().ContainSingle(p => p is FredHistoricalDataProvider);
         providers.Should().ContainSingle(p => p is NasdaqDataLinkHistoricalDataProvider);
+        providers.Should().ContainSingle(p => p is RobinhoodHistoricalDataProvider);
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
@@ -106,6 +109,23 @@ public sealed class ProviderFactoryCredentialContextTests
             new ContextRequest(typeof(FinnhubHistoricalDataProvider), ["FINNHUB_API_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(PolygonHistoricalDataProvider), ["POLYGON_API_KEY"]));
+    }
+
+    [Fact]
+    public void CreateSymbolSearchProviders_IncludesRobinhoodWhenProviderFamilyIsEnabled()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Robinhood: new RobinhoodConfig(Enabled: true)))),
+            resolver);
+
+        var providers = factory.CreateSymbolSearchProviders();
+
+        providers.Should().ContainSingle(p => p is RobinhoodSymbolSearchProvider);
+        providers.Should().ContainSingle(p => p is EdgarSymbolSearchProvider);
     }
 
     private sealed class TrackingCredentialResolver : IProviderCredentialResolver

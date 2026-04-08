@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ResearchScreen } from "@/screens/research-screen";
 import * as api from "@/lib/api";
@@ -36,7 +36,78 @@ const twoRuns: ResearchWorkspaceResponse = {
       pnl: "+1.9%",
       sharpe: "0.91",
       lastUpdated: "5m ago",
-      notes: "Completed backtest run."
+      notes: "Completed backtest run.",
+      securityCoverage: {
+        portfolioResolved: 2,
+        portfolioMissing: 1,
+        portfolioPartial: 0,
+        ledgerResolved: 2,
+        ledgerMissing: 0,
+        ledgerPartial: 1,
+        hasIssues: true,
+        tone: "warning",
+        summary: "4 references linked, 1 partial, 1 unresolved.",
+        resolvedReferences: [
+          {
+            source: "portfolio",
+            symbol: "AAPL",
+            accountName: null,
+            securityId: "security-aapl",
+            displayName: "Apple Inc.",
+            assetClass: "Equity",
+            subType: "CommonShare",
+            currency: "USD",
+            status: "Active",
+            primaryIdentifier: "AAPL",
+            coverageStatus: "Resolved",
+            coverageReason: null,
+            matchedIdentifierKind: "Ticker",
+            matchedIdentifierValue: "AAPL",
+            matchedProvider: "Polygon",
+            securityDetailUrl: "/workstation/governance/security-master?securityId=security-aapl"
+          }
+        ],
+        reviewReferences: [
+          {
+            source: "portfolio",
+            symbol: "TSLA",
+            accountName: null,
+            securityId: null,
+            displayName: "TSLA",
+            assetClass: null,
+            subType: null,
+            currency: null,
+            status: null,
+            primaryIdentifier: "TSLA",
+            coverageStatus: "Missing",
+            coverageReason: "Portfolio symbol uses a provisional ticker match.",
+            matchedIdentifierKind: null,
+            matchedIdentifierValue: null,
+            matchedProvider: null,
+            securityDetailUrl: null
+          }
+        ],
+        missingReferences: [
+          {
+            source: "portfolio",
+            symbol: "TSLA",
+            accountName: null,
+            securityId: null,
+            displayName: "TSLA",
+            assetClass: null,
+            subType: null,
+            currency: null,
+            status: null,
+            primaryIdentifier: "TSLA",
+            coverageStatus: "Missing",
+            coverageReason: "Portfolio symbol uses a provisional ticker match.",
+            matchedIdentifierKind: null,
+            matchedIdentifierValue: null,
+            matchedProvider: null,
+            securityDetailUrl: null
+          }
+        ]
+      }
     }
   ]
 };
@@ -61,6 +132,24 @@ describe("ResearchScreen", () => {
     render(<ResearchScreen data={twoRuns} />);
 
     expect(screen.getByText("PAPER")).toBeInTheDocument();
+  });
+
+  it("shows security master coverage in the run overview dialog", async () => {
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    const runRow = screen.getByText("Index Momentum").closest("tr");
+    expect(runRow).not.toBeNull();
+
+    await user.click(within(runRow!).getByRole("button", { name: /open/i }));
+
+    expect(screen.getByText("Security Master coverage")).toBeInTheDocument();
+    expect(screen.getByText("4 references linked, 1 partial, 1 unresolved.")).toBeInTheDocument();
+    expect(screen.getByText("Portfolio symbol uses a provisional ticker match.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /search symbol/i })).toHaveAttribute(
+      "href",
+      "/governance/security-master?query=TSLA"
+    );
   });
 
   it("shows compare and diff buttons after two runs are checked", async () => {

@@ -14,9 +14,6 @@ Use this harness to evaluate whether outputs from `meridian-implementation-assur
 
 - Use `scripts/score_eval.py` to enforce rubric key coverage, compute totals, and emit a report block.
 - Use `scripts/doc_route.py` before documentation edits when placement is unclear.
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< Updated upstream
 - Use `.codex/skills/meridian-implementation-assurance/scripts/run_evals.py` to run deterministic checks against `.codex/skills/meridian-implementation-assurance/evals/evals.json` cases and compare against `evals/benchmark_baseline.json`.
 
 ## Prompt-Based Eval Infrastructure
@@ -92,12 +89,6 @@ Add new rows to `.codex/skills/meridian-implementation-assurance/evals/evals.jso
 - A real fix was made to address a skill regression.
 
 Every manual correction to the skill is a candidate for a new eval case so the behavior is locked in.
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs
 
 ## Scenario Set
 
@@ -200,13 +191,3 @@ Automatically fail if any of these occur:
 - Docs are claimed updated but no file/path is cited.
 - New docs are added with no README/index cross-link.
 - Performance-sensitive request has no performance discussion.
-<<<<<<< ours
-<<<<<<< ours
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> theirs
-=======
->>>>>>> theirs

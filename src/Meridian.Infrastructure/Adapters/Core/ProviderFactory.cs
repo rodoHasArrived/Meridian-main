@@ -10,6 +10,7 @@ using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Tiingo;
@@ -132,6 +133,9 @@ public sealed class ProviderFactory
 
         // FRED economic data
         TryAddBackfillProvider(providers, () => CreateFredBackfillProvider(providersCfg?.Fred));
+
+        // Robinhood (unofficial API; opt-in)
+        TryAddBackfillProvider(providers, () => CreateRobinhoodBackfillProvider(providersCfg?.Robinhood));
 
         // Nasdaq Data Link
         TryAddBackfillProvider(providers, () => CreateNasdaqBackfillProvider(providersCfg?.Nasdaq));
@@ -276,6 +280,16 @@ public sealed class ProviderFactory
         return new FredHistoricalDataProvider(apiKey: apiKey, log: _log);
     }
 
+    private IHistoricalDataProvider? CreateRobinhoodBackfillProvider(RobinhoodConfig? cfg)
+    {
+        if (!(cfg?.Enabled ?? false))
+            return null;
+
+        return new RobinhoodHistoricalDataProvider(
+            priority: cfg?.Priority ?? 35,
+            log: _log);
+    }
+
     private IHistoricalDataProvider? CreateNasdaqBackfillProvider(NasdaqBackfillConfig? cfg)
     {
         if (!(cfg?.Enabled ?? true))
@@ -313,6 +327,9 @@ public sealed class ProviderFactory
 
         // EDGAR (SEC public API — no credentials required, covers all SEC-reporting US companies)
         TryAddSearchProvider(providers, () => new EdgarSymbolSearchProvider(log: _log));
+
+        // Robinhood public symbol search is available when the Robinhood family is enabled.
+        TryAddSearchProvider(providers, () => CreateRobinhoodSearchProvider(backfillProviders?.Robinhood));
 
         return providers
             .OrderBy(p => p.Priority)
@@ -391,6 +408,14 @@ public sealed class ProviderFactory
             return null;
 
         return new PolygonSymbolSearchProvider(apiKey, httpClient: null, log: _log);
+    }
+
+    private ISymbolSearchProvider? CreateRobinhoodSearchProvider(RobinhoodConfig? cfg)
+    {
+        if (!(cfg?.Enabled ?? false))
+            return null;
+
+        return new RobinhoodSymbolSearchProvider(log: _log);
     }
 
     /// <summary>

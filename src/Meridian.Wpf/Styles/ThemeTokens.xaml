@@ -221,4 +221,5 @@
     <!-- ConsoleWindowBackgroundBrush / ConsoleWindowBorderBrush: shell-level aliases -->
     <SolidColorBrush x:Key="ConsoleWindowBackgroundBrush"   Color="{StaticResource ConsoleBackgroundDark}" />
     <SolidColorBrush x:Key="ConsoleWindowBorderBrush"       Color="{StaticResource ConsoleBorderColor}" />
+    <SolidColorBrush x:Key="BorderSubtleBrush"              Color="{StaticResource ConsoleBorderColor}" />
 </ResourceDictionary>

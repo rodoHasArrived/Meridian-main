@@ -144,7 +144,10 @@ public sealed class WorkstationEndpointsTests
                 AssetClass: "Equity",
                 Currency: "USD",
                 Status: SecurityStatusDto.Active,
-                PrimaryIdentifier: "AAPL"));
+                PrimaryIdentifier: "AAPL",
+                MatchedIdentifierKind: "Ticker",
+                MatchedIdentifierValue: "AAPL",
+                MatchedProvider: "Polygon"));
 
             services.AddSingleton<IStrategyRepository>(new StrategyRunStore());
             services.AddSingleton<ISecurityReferenceLookup>(lookup);
@@ -169,13 +172,24 @@ public sealed class WorkstationEndpointsTests
         var latestCoverage = session.RootElement.GetProperty("latestRun").GetProperty("securityCoverage");
         latestCoverage.GetProperty("portfolioResolved").GetInt32().Should().Be(1);
         latestCoverage.GetProperty("portfolioMissing").GetInt32().Should().Be(0);
+        latestCoverage.GetProperty("portfolioPartial").GetInt32().Should().Be(0);
         latestCoverage.GetProperty("ledgerResolved").GetInt32().Should().Be(1);
         latestCoverage.GetProperty("ledgerMissing").GetInt32().Should().Be(0);
+        latestCoverage.GetProperty("ledgerPartial").GetInt32().Should().Be(0);
         latestCoverage.GetProperty("hasIssues").GetBoolean().Should().BeFalse();
         latestCoverage.GetProperty("tone").GetString().Should().Be("success");
         latestCoverage.GetProperty("resolvedReferences").GetArrayLength().Should().Be(2);
+        latestCoverage.GetProperty("reviewReferences").GetArrayLength().Should().Be(0);
         latestCoverage.GetProperty("missingReferences").GetArrayLength().Should().Be(0);
         latestCoverage.GetProperty("summary").GetString().Should().Contain("no unresolved symbols");
+        latestCoverage.GetProperty("resolvedReferences").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("securityId").GetString() == "22222222222222222222222222222222" &&
+                item.GetProperty("coverageStatus").GetString() == "Resolved" &&
+                item.GetProperty("matchedIdentifierKind").GetString() == "Ticker" &&
+                item.GetProperty("matchedIdentifierValue").GetString() == "AAPL" &&
+                item.GetProperty("matchedProvider").GetString() == "Polygon");
 
         using var research = await ReadJsonAsync(client, "/api/workstation/research");
         var runCoverage = research.RootElement.GetProperty("runs")[0].GetProperty("securityCoverage");
@@ -187,7 +201,73 @@ public sealed class WorkstationEndpointsTests
             .Contain(item =>
                 item.GetProperty("source").GetString() == "portfolio" &&
                 item.GetProperty("symbol").GetString() == "AAPL" &&
-                item.GetProperty("displayName").GetString() == "Apple Inc.");
+                item.GetProperty("displayName").GetString() == "Apple Inc." &&
+                item.GetProperty("coverageStatus").GetString() == "Resolved" &&
+                item.GetProperty("matchedIdentifierKind").GetString() == "Ticker");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingWorkspace_ShouldExposeInlineSecurityCoverageAndDetailLinks()
+    {
+        var securityId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            var lookup = new StubSecurityReferenceLookup();
+            lookup.Register("AAPL", new WorkstationSecurityReference(
+                SecurityId: securityId,
+                DisplayName: "Apple Inc.",
+                AssetClass: "Equity",
+                Currency: "USD",
+                Status: SecurityStatusDto.Active,
+                PrimaryIdentifier: "AAPL",
+                SubType: "CommonShare",
+                CoverageStatus: WorkstationSecurityCoverageStatus.Partial,
+                MatchedIdentifierKind: "Ticker",
+                MatchedIdentifierValue: "AAPL",
+                MatchedProvider: "Polygon",
+                ResolutionReason: "Matched by ticker only; upstream identifier family was unavailable."));
+
+            services.AddSingleton<IStrategyRepository>(new StrategyRunStore());
+            services.AddSingleton<ISecurityReferenceLookup>(lookup);
+            services.AddSingleton<PortfolioReadService>();
+            services.AddSingleton<LedgerReadService>();
+            services.AddSingleton<StrategyRunReadService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-trading-security",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var client = app.GetTestClient();
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+
+        var positions = trading.RootElement.GetProperty("positions");
+        positions.GetArrayLength().Should().BeGreaterThan(0);
+
+        var position = positions[0];
+        position.GetProperty("symbol").GetString().Should().Be("AAPL");
+        position.GetProperty("securityDetailUrl").GetString()
+            .Should()
+            .Be("/workstation/governance/security-master?securityId=aaaaaaaabbbbccccddddeeeeeeeeeeee");
+
+        var security = position.GetProperty("security");
+        security.GetProperty("securityId").GetString().Should().Be("aaaaaaaabbbbccccddddeeeeeeeeeeee");
+        security.GetProperty("displayName").GetString().Should().Be("Apple Inc.");
+        security.GetProperty("assetClass").GetString().Should().Be("Equity");
+        security.GetProperty("subType").GetString().Should().Be("CommonShare");
+        security.GetProperty("currency").GetString().Should().Be("USD");
+        security.GetProperty("coverageStatus").GetString().Should().Be("Partial");
+        security.GetProperty("matchedIdentifierKind").GetString().Should().Be("Ticker");
+        security.GetProperty("matchedIdentifierValue").GetString().Should().Be("AAPL");
+        security.GetProperty("matchedProvider").GetString().Should().Be("Polygon");
+        security.GetProperty("resolutionReason").GetString().Should().Contain("ticker only");
     }
 
     [Fact]
@@ -202,7 +282,10 @@ public sealed class WorkstationEndpointsTests
                 AssetClass: "Equity",
                 Currency: "USD",
                 Status: SecurityStatusDto.Active,
-                PrimaryIdentifier: "AAPL"));
+                PrimaryIdentifier: "AAPL",
+                MatchedIdentifierKind: "Ticker",
+                MatchedIdentifierValue: "AAPL",
+                MatchedProvider: "Polygon"));
 
             services.AddSingleton<IStrategyRepository>(new StrategyRunStore());
             services.AddSingleton<ISecurityReferenceLookup>(lookup);
@@ -260,10 +343,17 @@ public sealed class WorkstationEndpointsTests
         breakRun.GetProperty("reconciliationStatus").GetString().Should().Be("BreaksOpen");
         breakRun.GetProperty("openBreakCount").GetInt32().Should().BeGreaterThan(0);
         breakRun.GetProperty("securityCoverage").GetProperty("hasIssues").GetBoolean().Should().BeTrue();
+        breakRun.GetProperty("securityCoverage").GetProperty("reviewReferences").GetArrayLength().Should().BeGreaterThan(0);
         breakRun.GetProperty("securityCoverage").GetProperty("missingReferences").GetArrayLength().Should().BeGreaterThan(0);
         breakRun.GetProperty("cashFlow").GetProperty("cashVariance").GetDecimal().Should().Be(-100m);
         breakRun.GetProperty("latestReconciliation").GetProperty("hasSecurityCoverageIssues").GetBoolean().Should().BeTrue();
         breakRun.GetProperty("latestReconciliation").GetProperty("securityIssueCount").GetInt32().Should().BeGreaterThan(0);
+        breakRun.GetProperty("latestReconciliation").GetProperty("securityCoverageIssues").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("symbol").GetString() == "TSLA" &&
+                item.GetProperty("coverageStatus").GetString() == "Missing" &&
+                item.GetProperty("coverageReason").GetString() != null);
 
         var balancedRun = queue.EnumerateArray()
             .Single(item => item.GetProperty("runId").GetString() == "run-governance-balanced");
@@ -271,9 +361,21 @@ public sealed class WorkstationEndpointsTests
         balancedRun.GetProperty("breakCount").GetInt32().Should().Be(0);
         balancedRun.GetProperty("cashFlow").GetProperty("cashVariance").GetDecimal().Should().Be(0m);
         balancedRun.GetProperty("latestReconciliation").GetProperty("hasSecurityCoverageIssues").GetBoolean().Should().BeTrue();
+        balancedRun.GetProperty("securityCoverage").GetProperty("reviewReferences").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("symbol").GetString() == "TSLA" &&
+                item.GetProperty("coverageStatus").GetString() == "Missing" &&
+                item.GetProperty("coverageReason").GetString() != null);
         balancedRun.GetProperty("securityCoverage").GetProperty("missingReferences").EnumerateArray()
             .Should()
             .Contain(item => item.GetProperty("symbol").GetString() == "TSLA");
+        balancedRun.GetProperty("securityCoverage").GetProperty("resolvedReferences").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("securityId").GetString() == "33333333333333333333333333333333" &&
+                item.GetProperty("matchedIdentifierKind").GetString() == "Ticker" &&
+                item.GetProperty("matchedProvider").GetString() == "Polygon");
     }
 
     [Fact]

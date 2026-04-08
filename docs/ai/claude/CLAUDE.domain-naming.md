@@ -189,6 +189,20 @@ unless there is a distinct conceptual reason (e.g. `MaturityTerms` is a value-ob
 | New option instrument type | `OptDef` |
 | New future instrument type | `FutDef` |
 
+### 5.4a Preferred / Convertible Equity Naming
+
+When extending the Phase 1.5 equity model, use the following names consistently:
+
+- `PrefShrDef` for preferred-share definition payloads
+- `ConvPrefDef` for convertible preferred-share definition payloads
+- `DivTr` for dividend and income traits
+- `RedTr` for redemption traits
+- `CallTr` for callable traits
+- `ConvTr` for convertibility traits
+
+Do not mix these with longer alternates such as `PreferredShareDefinition`, `DividendTrait`,
+or `ConversionTermsTrait` in adjacent domain code.
+
 ### 5.5 Category / Taxonomy Unions — marker suffix
 
 Closed sets used for classification. Apply the correct semantic suffix:
