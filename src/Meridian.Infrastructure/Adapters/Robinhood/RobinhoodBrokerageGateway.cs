@@ -91,7 +91,10 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             partialFills: true,
             shortSelling: false,
             fractional: true,
-            extendedHours: false);
+            extendedHours: false) with
+        {
+            SupportedAssetClasses = ["equity", "option"]
+        };
 
     /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken ct = default)
