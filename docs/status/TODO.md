@@ -29,17 +29,13 @@ Total items: **228**
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 13 | `NOTE` | ❌ | "Must note the hot-path risk of channel capacity and DropOldest policy", |
 | `.codex/skills/meridian-implementation-assurance/evals/evals.json` | 53 | `NOTE` | ❌ | "Must note DataSourceAttribute decoration requirement (ADR-005)", |
 | `.github/agents/adr-generator.agent.md` | 135 | `NOTE` | ❌ | - Note any migration steps required |
-| `.github/agents/cleanup-agent.md` | 162 | `TODO` | ❌ | - Remove commented-out `InitializeComponent()` calls and leftover TODO tombstones. |
-| `.github/agents/cleanup-agent.md` | 170 | `NOTE` | ❌ | - Business logic in code-behind — flag it as a note but do not move it. |
-| `.github/agents/cleanup-agent.md` | 327 | `TODO` | ❌ | `_logger.LogWarning("TODO: implement")`. |
-| `.github/agents/cleanup-agent.md` | 385 | `TODO` | ❌ | - `// TODO: implement` in methods that are already implemented. |
-| `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - `// TODO:` or `// FIXME:` comments that describe genuine open work items — flag |
-| `.github/agents/cleanup-agent.md` | 436 | `NOTE` | ❌ | - **No new features** — cleanup only; if something is missing, note it but do not add it. |
-| `.github/agents/cleanup-agent.md` | 438 | `NOTE` | ❌ | - **No ViewModel extraction** — flag it as a note; full MVVM refactors belong in code review. |
-| `.github/agents/documentation-agent.md` | 369 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `.github/agents/documentation-agent.md` | 888 | `TODO` | ❌ | │   │   └── TODO.md |
-| `.github/agents/documentation-agent.md` | 3573 | `TODO` | ❌ | - `TODO.md` - Pending work items |
-| `.github/agents/implementation-assurance-agent.md` | 71 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
+| `.github/agents/cleanup-agent.md` | 76 | `NOTE` | ❌ | - Removing `[Obsolete]` members only when there are no remaining callers and no reflection/DI note. |
+| `.github/agents/cleanup-agent.md` | 161 | `NOTE` | ❌ | ### PowerShell Note |
+| `.github/agents/cleanup-agent.md` | 188 | `NOTE` | ❌ | **Residual Risk / Handoff:** [none, bounded note, or target specialist] |
+| `.github/agents/documentation-agent.md` | 379 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `.github/agents/documentation-agent.md` | 898 | `TODO` | ❌ | │   │   └── TODO.md |
+| `.github/agents/documentation-agent.md` | 3692 | `TODO` | ❌ | - `TODO.md` - Pending work items |
+| `.github/agents/implementation-assurance-agent.md` | 88 | `NOTE` | ❌ | - **Performance-sensitive paths are noted:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk. |
 | `.github/agents/performance-agent.md` | 248 | `NOTE` | ❌ | - **No new features** — if a performance win requires a new feature, note it but defer it. |
 | `.github/agents/provider-builder-agent.md` | 81 | `TODO` | ❌ | Read the full template before writing any code. Templates contain inline `// TODO:` comments |
 | `.github/workflows/README.md` | 11 | `TODO` | ❌ | \| `documentation.yml` \| `docs-comprehensive.yml`, `docs-auto-update.yml`, `docs-structure-sync.yml`, `ai-instructions-sync.yml`, `todo-automation.yml`, `docs-check.yml` \| AI documentation quality review, AI TODO triage \| |
@@ -65,7 +61,8 @@ Total items: **228**
 | `.github/workflows/validate-workflows.yml` | 233 | `NOTE` | ❌ | echo "Note: Ensure cron schedules are distributed to avoid rate limits" |
 | `CLAUDE.md` | 100 | `NOTE` | ❌ | **Note:** Always use `/p:EnableWindowsTargeting=true` on non-Windows systems to avoid NETSDK1100 errors. |
 | `CLAUDE.md` | 433 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `CLAUDE.md` | 951 | `TODO` | ❌ | │   │   └── TODO.md |
+| `CLAUDE.md` | 951 | `TODO` | ❌ | │   │   ├── todo-scan-results.json |
+| `CLAUDE.md` | 952 | `TODO` | ❌ | │   │   └── TODO.md |
 | `README.md` | 505 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `README.md` | 1017 | `TODO` | ❌ | │   │   ├── TODO.md |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
@@ -83,9 +80,9 @@ Total items: **228**
 | `docs/ai/claude/CLAUDE.structure.md` | 160 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
 | `docs/ai/claude/CLAUDE.structure.md` | 473 | `TODO` | ❌ | │   │   └── TODO.md |
 | `docs/ai/copilot/instructions.md` | 5 | `NOTE` | ❌ | > **Note:** For comprehensive project context, see [CLAUDE.md](https://github.com/rodoHasArrived/Meridian/blob/main/CLAUDE.md) in the repository root. For the master AI resource index, see [docs/ai/README.md](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md). |
-| `docs/ai/copilot/instructions.md` | 407 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
-| `docs/ai/copilot/instructions.md` | 926 | `TODO` | ❌ | │   │   └── TODO.md |
-| `docs/ai/copilot/instructions.md` | 3519 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
+| `docs/ai/copilot/instructions.md` | 418 | `TODO` | ❌ | │       │   ├── create-todo-issues.py |
+| `docs/ai/copilot/instructions.md` | 937 | `TODO` | ❌ | │   │   └── TODO.md |
+| `docs/ai/copilot/instructions.md` | 3640 | `TODO` | ❌ | - `documentation.yml` — Doc generation, TODO scanning, AI error intake |
 | `docs/architecture/deterministic-canonicalization.md` | 365 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 111 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `docs/architecture/wpf-shell-mvvm.md` | 5 | `NOTE` | ❌ | This note defines the MVVM boundary for the Meridian desktop shell so workstation state, navigation, and operator actions stay testable and do not drift back into WPF code-behind. |
@@ -135,13 +132,14 @@ Total items: **228**
 | `docs/reference/data-uniformity.md` | 5 | `NOTE` | ❌ | This note expands on the data-quality goals for the collector so downstream users receive a uniform, analysis-ready tape regardless of provider quirks. |
 | `docs/status/EVALUATIONS_AND_AUDITS.md` | 394 | `NOTE` | ❌ | - Historical note: the original audit flagged generated docs as stale, but `docs/generated/` has since been refreshed and expanded |
 | `docs/status/IMPROVEMENTS.md` | 1351 | `TODO` | ❌ | - **[TODO.md](TODO.md)** — Auto-generated task marker tracking from code comments |
-| `docs/status/README.md` | 31 | `TODO` | ❌ | \| [TODO.md](TODO.md) \| Auto-generated TODO tracking from source comments \| |
+| `docs/status/README.md` | 13 | `TODO` | ❌ | - generated reports that summarize documentation, coverage, TODO, or validation state |
+| `docs/status/README.md` | 37 | `TODO` | ❌ | \| [TODO.md](TODO.md) \| TODO/FIXME aggregation from source comments \| |
+| `docs/status/README.md` | 51 | `TODO` | ❌ | - `todo-scan-results.json` - machine-readable TODO scan output used by issue automation and follow-up scripts |
 | `docs/status/docs-automation-summary.json` | 25 | `TODO` | ❌ | "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.json` | 27 | `TODO` | ❌ | "docs/status/todo-scan-results.json" |
 | `docs/status/docs-automation-summary.json` | 32 | `TODO` | ❌ | "output_file": "docs/status/TODO.md", |
 | `docs/status/docs-automation-summary.md` | 9 | `TODO` | ❌ | \| `scan-todos` \| `success` \| `175.615` \| `docs/status/TODO.md` \| |
-| `docs/status/example-validation.md` | 148 | `TODO` | ❌ | \| `docs\status\TODO.md` \| 1 \| |
-| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 313 \| |
+| `docs/status/health-dashboard.md` | 23 | `TODO` | ❌ | \| TODO/FIXME markers \| 317 \| |
 | `docs/status/health-dashboard.md` | 33 | `TODO` | ❌ | \| TODO density \| 15 pts \| Lower density of TODO/FIXME markers \| |
 | `docs/status/rules-report.md` | 431 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded API keys in docs \| error \| |
 | `docs/status/rules-report.md` | 432 | `TODO` | ❌ | \| `docs\status\TODO.md` \| No hardcoded localhost URLs in docs \| info \| |
@@ -191,10 +189,10 @@ Total items: **228**
 | `src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs` | 1043 | `NOTE` | ❌ | // Fallback: Note that tier migration requires storage configuration |
 | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | 721 | `NOTE` | ❌ | // ADR-014 note: DirectLendingCommandEnvelope<TCommand> and TCommand are open-generic type |
 | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` | 733 | `NOTE` | ❌ | // ADR-014 note: Same open-generic constraint applies here — TCommand is not statically known. |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1236 | `NOTE` | ❌ | note = p.IsConnected |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1303 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1304 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1305 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1278 | `NOTE` | ❌ | note = p.IsConnected |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1345 | `NOTE` | ❌ | new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1346 | `NOTE` | ❌ | new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." }, |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | 1347 | `NOTE` | ❌ | new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." } |
 | `src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs` | 55 | `NOTE` | ❌ | /// <para><b>Migration Note:</b> This class wraps the core implementation from |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.test.tsx` | 22 | `NOTE` | ❌ | note: "Realtime subscriptions are stable." |
 | `src/Meridian.Ui/dashboard/src/screens/data-operations-screen.tsx` | 372 | `NOTE` | ❌ | <div className="mt-3 text-sm leading-6 text-foreground">{provider.note}</div> |
