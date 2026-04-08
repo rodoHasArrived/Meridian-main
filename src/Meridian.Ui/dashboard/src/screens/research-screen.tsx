@@ -12,9 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EntityDataTable } from "@/components/meridian/entity-data-table";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { RunStatusBadge } from "@/components/meridian/run-status-badge";
-import { approvePromotion, compareRuns, diffRuns, evaluatePromotion, getPromotionHistory, getRunAttribution, getRunFills, rejectPromotion } from "@/lib/api";
+import { EquityCurveChart } from "@/components/meridian/equity-curve-chart";
+import { approvePromotion, compareRuns, diffRuns, evaluatePromotion, getPromotionHistory, getRunAttribution, getRunEquityCurve, getRunFills, rejectPromotion } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { MetricsDiff, ParameterDiff, PositionDiffEntry, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, ResearchRunRecord, ResearchWorkspaceResponse, RunAttributionSummary, RunComparisonRow, RunDiff, RunFillSummary, SecurityCoverageReference, SecurityCoverageSummary } from "@/types";
+import type { EquityCurveSummary, MetricsDiff, ParameterDiff, PositionDiffEntry, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, ResearchRunRecord, ResearchWorkspaceResponse, RunAttributionSummary, RunComparisonRow, RunDiff, RunFillSummary, SecurityCoverageReference, SecurityCoverageSummary } from "@/types";
 
 interface ResearchScreenProps {
   data: ResearchWorkspaceResponse | null;
@@ -75,12 +76,26 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
   const [showHistory, setShowHistory] = useState(false);
 
   // --- Run detail drill-in tabs ---
-  type RunDetailTab = "overview" | "attribution" | "fills";
+  type RunDetailTab = "overview" | "chart" | "attribution" | "fills";
   const [runDetailTab, setRunDetailTab] = useState<RunDetailTab>("overview");
   const [attribution, setAttribution] = useState<RunAttributionSummary | null>(null);
   const [attributionLoading, setAttributionLoading] = useState(false);
   const [fills, setFills] = useState<RunFillSummary | null>(null);
   const [fillsLoading, setFillsLoading] = useState(false);
+  const [equityCurve, setEquityCurve] = useState<EquityCurveSummary | null>(null);
+  const [equityCurveLoading, setEquityCurveLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedRun || runDetailTab !== "chart") return;
+    setEquityCurveLoading(true);
+    getRunEquityCurve(selectedRun.id)
+      .then(setEquityCurve)
+      .catch((err: unknown) => {
+        console.error("Failed to load equity curve", err);
+        setEquityCurve(null);
+      })
+      .finally(() => setEquityCurveLoading(false));
+  }, [selectedRun, runDetailTab]);
 
   useEffect(() => {
     if (!selectedRun || runDetailTab !== "attribution") return;
@@ -135,6 +150,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       setRunDetailTab("overview");
       setAttribution(null);
       setFills(null);
+      setEquityCurve(null);
     }
   }
 
@@ -355,7 +371,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 
               {/* Tab bar */}
               <div className="flex gap-1 rounded-lg border border-border/60 bg-secondary/30 p-1">
-                {(["overview", "attribution", "fills"] as const).map((tab) => (
+                {(["overview", "chart", "attribution", "fills"] as const).map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -371,6 +387,16 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                   </button>
                 ))}
               </div>
+
+              {runDetailTab === "chart" && (
+                <div className="space-y-4">
+                  {equityCurveLoading && <p className="text-sm text-muted-foreground">Loading equity curve…</p>}
+                  {!equityCurveLoading && !equityCurve && (
+                    <p className="text-sm text-muted-foreground">No equity curve data available for this run.</p>
+                  )}
+                  {equityCurve && <EquityCurveChart data={equityCurve} />}
+                </div>
+              )}
 
               {runDetailTab === "overview" && (
                 <>
