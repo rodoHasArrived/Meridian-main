@@ -2,7 +2,9 @@ using System.IO;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
+using Meridian.Domain.Models;
 using Meridian.Storage.Archival;
 using Xunit;
 
@@ -42,6 +44,10 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     private const long WalChecksumSmallMaxBytes = 0;
     private const long WalChecksumMediumMaxBytes = 0;
     private const long WalChecksumLargeMaxBytes = 1024;
+
+    // P1 combined-lock fix budgets (BOTTLENECK_REPORT.md P1 items)
+    private const long TradeCollectorPerTradeMaxBytes = 1024;
+    private const long DepthCollectorSnapshot10LevelsMaxBytes = 2048;
 
     public AllocationBudgetIntegrationTests()
     {
@@ -201,6 +207,103 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
     }
 
     // -----------------------------------------------------------------------
+    // TradeDataCollector — per-trade combined lock (P1 fix)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void TradeCollector_PerTrade_AllocatesWithinBudget()
+    {
+        // Arrange — pre-warm the collector with one trade so that SymbolTradeState
+        // is already allocated for "SPY" before the measurement window opens.
+        var publisher = new CountingPublisher();
+        var collector = new TradeDataCollector(publisher);
+        var warmUpdate = BuildTradeUpdate("SPY", sequence: 1);
+        collector.OnTrade(warmUpdate);
+        ForceGc();
+
+        // Hot-path update (cache-warm: SymbolTradeState already exists)
+        var hotUpdate = BuildTradeUpdate("SPY", sequence: 2);
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        collector.OnTrade(hotUpdate);
+        var after = GC.GetAllocatedBytesForCurrentThread();
+
+        // Assert — only essential domain objects (Trade + 2 × MarketEvent);
+        // no extra allocations from the combined RegisterTradeAndBuildStats lock.
+        var allocated = after - before;
+        Assert.True(
+            allocated <= TradeCollectorPerTradeMaxBytes,
+            $"TradeCollector per-trade hot path allocated {allocated} bytes; budget is {TradeCollectorPerTradeMaxBytes} bytes. " +
+            $"The combined RegisterTradeAndBuildStats lock should not add allocations beyond the Trade and MarketEvent domain objects.");
+
+        // Verify functional correctness: each OnTrade call emits Trade + OrderFlow = 2 events each.
+        Assert.Equal(4, publisher.Count);
+    }
+
+    // -----------------------------------------------------------------------
+    // MarketDepthCollector — snapshot creation with ArrayPool (P1 fix)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void DepthCollector_Snapshot_AllocatesWithinBudget()
+    {
+        // Arrange — build a 10-level book so that the snapshot allocates 2 × OrderBookLevel[10]
+        var publisher = new CountingPublisher();
+        var collector = new MarketDepthCollector(publisher, requireExplicitSubscription: false);
+
+        // Use a single monotonic sequence counter shared across both sides so the
+        // sequence-gap validator (which rejects jumps > 1) does not reject any update.
+        var seq = 0;
+        for (var i = 0; i < 10; i++)
+        {
+            collector.OnDepth(new MarketDepthUpdate(
+                Timestamp: DateTimeOffset.UtcNow,
+                Symbol: "SPY",
+                Position: (ushort)i,
+                Operation: DepthOperation.Insert,
+                Side: OrderBookSide.Bid,
+                Price: 450m - i * 0.01m,
+                Size: 1000,
+                SequenceNumber: ++seq,
+                StreamId: "BENCH",
+                Venue: "TEST"));
+
+            collector.OnDepth(new MarketDepthUpdate(
+                Timestamp: DateTimeOffset.UtcNow,
+                Symbol: "SPY",
+                Position: (ushort)i,
+                Operation: DepthOperation.Insert,
+                Side: OrderBookSide.Ask,
+                Price: 450.01m + i * 0.01m,
+                Size: 1000,
+                SequenceNumber: ++seq,
+                StreamId: "BENCH",
+                Venue: "TEST"));
+        }
+
+        ForceGc();
+
+        // Act — measure a single snapshot retrieval; ArrayPool.Rent/Return should
+        // not appear as managed allocations.
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var snapshot = collector.GetCurrentSnapshot("SPY");
+        var after = GC.GetAllocatedBytesForCurrentThread();
+
+        // Assert
+        Assert.NotNull(snapshot);
+        Assert.Equal(10, snapshot.Bids.Count);
+        Assert.Equal(10, snapshot.Asks.Count);
+        var allocated = after - before;
+        Assert.True(
+            allocated <= DepthCollectorSnapshot10LevelsMaxBytes,
+            $"DepthCollector 10-level snapshot allocated {allocated} bytes; budget is {DepthCollectorSnapshot10LevelsMaxBytes} bytes. " +
+            $"Only the LOBSnapshot record and its two OrderBookLevel[] arrays should be present (no ArrayPool overhead).");
+    }
+
+    // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 
@@ -224,4 +327,31 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
                 SequenceNumber: 1234567,
                 StreamId: "ALPACA",
                 Venue: "XNAS"));
+
+    private static MarketTradeUpdate BuildTradeUpdate(string symbol, long sequence) =>
+        new MarketTradeUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: symbol,
+            Price: 450m,
+            Size: 100,
+            Aggressor: AggressorSide.Buy,
+            SequenceNumber: sequence,
+            StreamId: "BENCH",
+            Venue: "TEST");
+
+    /// <summary>
+    /// Minimal <see cref="IMarketEventPublisher"/> that only increments a counter.
+    /// Used in allocation tests to isolate the collector's own allocations from
+    /// any publisher-side overhead.
+    /// </summary>
+    private sealed class CountingPublisher : IMarketEventPublisher
+    {
+        public int Count { get; private set; }
+
+        public bool TryPublish(in MarketEvent evt)
+        {
+            Count++;
+            return true;
+        }
+    }
 }

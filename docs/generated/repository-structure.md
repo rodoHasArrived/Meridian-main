@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-07 06:50:28 UTC. Do not edit manually.
+> Auto-generated on 2026-04-07 22:13:19 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -78,29 +78,31 @@ Meridian-main
 │   │   ├── meridian-archive-organizer
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   └── evals.json
 │   │   │   ├── references
-│   │   │   │   └── archive-placement-guide.md
+│   │   │   │   ├── archive-placement-guide.md
+│   │   │   │   └── evaluation-harness.md
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── trace_archive_candidates.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
-│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
-│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
-│   │   │   ├── agents
 │   │   │   ├── scripts
 │   │   │   │   └── repo-updater.ps1
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
-│   │   │   ├── agents
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
-│   │   │   ├── agents
 │   │   │   ├── evals
 │   │   │   │   ├── benchmark_baseline.json
 │   │   │   │   ├── evals.json
@@ -115,7 +117,6 @@ Meridian-main
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
-│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
@@ -124,12 +125,10 @@ Meridian-main
 │   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-roadmap-strategist
-│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
-│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
 │   │   │   └── SKILL.md
@@ -237,9 +236,6 @@ Meridian-main
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
-├── .playwright-cli
-│   └── page-2026-04-07T06-39-33-624Z.yml
-├── .vscode
 ├── benchmarks
 │   ├── Meridian.Benchmarks
 │   │   ├── Budget
@@ -352,7 +348,6 @@ Meridian-main
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
 ├── config
-│   ├── appsettings.json
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
 │   ├── condition-codes.json
@@ -457,7 +452,6 @@ Meridian-main
 │   │   ├── audit-results-full.json
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
-│   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── prompt-generation-results.json
 │   │   └── README.md
@@ -702,6 +696,7 @@ Meridian-main
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
 │   │   ├── quant-script-page-implementation-guide.md
 │   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
@@ -826,7 +821,6 @@ Meridian-main
 │   │   ├── ROADMAP_COMBINED.md
 │   │   ├── rules-report.md
 │   │   ├── TARGET_END_PRODUCT.md
-│   │   ├── todo-scan-results.json
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -850,8 +844,31 @@ Meridian-main
 │       │   └── main.cpp
 │       ├── CMakeLists.txt
 │       └── README.md
-├── output
-│   └── playwright
+├── plugins
+│   └── csharp-dotnet-development
+│       ├── .github
+│       │   └── plugin
+│       │       └── plugin.json
+│       ├── agents
+│       │   └── expert-dotnet-software-engineer.md
+│       ├── skills
+│       │   ├── aspnet-minimal-api-openapi
+│       │   │   └── SKILL.md
+│       │   ├── csharp-async
+│       │   │   └── SKILL.md
+│       │   ├── csharp-mstest
+│       │   │   └── SKILL.md
+│       │   ├── csharp-nunit
+│       │   │   └── SKILL.md
+│       │   ├── csharp-tunit
+│       │   │   └── SKILL.md
+│       │   ├── csharp-xunit
+│       │   │   └── SKILL.md
+│       │   ├── dotnet-best-practices
+│       │   │   └── SKILL.md
+│       │   └── dotnet-upgrade
+│       │       └── SKILL.md
+│       └── README.md
 ├── PROJECTS
 │   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── scripts
@@ -999,11 +1016,13 @@ Meridian-main
 │   │   │   ├── ConfigValidationHelper.cs
 │   │   │   ├── ConfigValidatorCli.cs
 │   │   │   ├── ConfigWatcher.cs
+│   │   │   ├── CredentialPlaceholderDetector.cs
 │   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DeploymentContext.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── SensitiveValueMasker.cs
-│   │   │   └── StorageConfigExtensions.cs
+│   │   │   ├── StorageConfigExtensions.cs
+│   │   │   └── StorageConfigRules.cs
 │   │   ├── Coordination
 │   │   │   ├── ClusterCoordinatorService.cs
 │   │   │   ├── CoordinationSnapshot.cs
@@ -1432,6 +1451,7 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── ISecurityMasterAmender.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
+│   │   │   ├── ISecurityMasterRuntimeStatus.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
@@ -1918,7 +1938,8 @@ Meridian-main
 │   │   ├── LedgerValidationException.cs
 │   │   ├── LedgerViewKind.cs
 │   │   ├── Meridian.Ledger.csproj
-│   │   └── ProjectLedgerBook.cs
+│   │   ├── ProjectLedgerBook.cs
+│   │   └── ReadOnlyCollectionHelpers.cs
 │   ├── Meridian.Mcp
 │   │   ├── Prompts
 │   │   │   ├── CodeReviewPrompts.cs
@@ -2240,8 +2261,8 @@ Meridian-main
 │   │   │   │   └── dashboard.css
 │   │   │   └── workstation
 │   │   │       ├── assets
-│   │   │       │   ├── index-BykwJCPj.js
-│   │   │       │   └── index-Daqy6egl.css
+│   │   │       │   ├── index-DqrOY4_3.css
+│   │   │       │   └── index-RWNTLiOV.js
 │   │   │       └── index.html
 │   │   ├── app.manifest
 │   │   ├── Meridian.Ui.csproj
@@ -2985,7 +3006,8 @@ Meridian-main
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   ├── ConfigValidationPipelineTests.cs
-│   │   │   │   └── ConfigValidatorTests.cs
+│   │   │   │   ├── ConfigValidatorTests.cs
+│   │   │   │   └── ProviderCredentialResolverTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   ├── ClusterCoordinatorServiceTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
@@ -3216,7 +3238,8 @@ Meridian-main
 │   │   │   │   ├── RoleAuthorizationTests.cs
 │   │   │   │   ├── StatusEndpointTests.cs
 │   │   │   │   ├── StorageEndpointTests.cs
-│   │   │   │   └── SymbolEndpointTests.cs
+│   │   │   │   ├── SymbolEndpointTests.cs
+│   │   │   │   └── UiEndpointsJsonOptionsTests.cs
 │   │   │   ├── ConfigurableTickerDataCollectionTests.cs
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
@@ -3249,7 +3272,9 @@ Meridian-main
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
+│   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
+│   │   │   ├── SecurityMasterQueryServiceEquityTermsTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
@@ -3320,6 +3345,7 @@ Meridian-main
 │   │   │   ├── DirectLendingEndpointsTests.cs
 │   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
+│   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── StaticAssetPathResolverTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
@@ -3464,6 +3490,5 @@ Meridian-main
 ├── Meridian.sln
 ├── package-lock.json
 ├── package.json
-├── README.md
-└── test-build.ps1
+└── README.md
 ```
