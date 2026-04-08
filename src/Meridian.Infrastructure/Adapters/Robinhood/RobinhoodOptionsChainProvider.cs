@@ -185,14 +185,19 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         if (instruments.Count == 0)
             return Array.Empty<decimal>();
 
-        var strikes = instruments
-            .Select(i => ParseDecimal(i.StrikePrice))
-            .Where(s => s > 0)
-            .Distinct()
-            .OrderBy(s => s)
-            .ToList();
+        // Single-pass into a SortedSet<decimal>: eliminates the Select -> Where -> Distinct -> OrderBy
+        // LINQ pipeline (4 intermediate IEnumerable allocations).  SortedSet handles dedup + sort.
+        var strikeSet = new SortedSet<decimal>();
+        foreach (var i in instruments)
+        {
+            var s = ParseDecimal(i.StrikePrice);
+            if (s > 0)
+                strikeSet.Add(s);
+        }
 
-        return strikes.AsReadOnly();
+        return strikeSet.Count == 0
+            ? Array.Empty<decimal>()
+            : Array.AsReadOnly(strikeSet.ToArray());
     }
 
     /// <inheritdoc />
@@ -225,26 +230,32 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         IEnumerable<RobinhoodOptionInstrument> filtered = instruments;
         if (strikeRange.HasValue)
         {
-            var atm = instruments
-                .Select(i => ParseDecimal(i.StrikePrice))
-                .Where(s => s > 0)
-                .OrderBy(s => Math.Abs(s - underlyingPrice))
-                .FirstOrDefault();
-
-            if (atm > 0)
+            // Build sorted strike list in one pass (avoids two separate LINQ chains and the
+            // double ParseDecimal calls in the original Select -> Where -> Distinct -> OrderBy).
+            var allStrikesSorted = new SortedSet<decimal>();
+            foreach (var i in instruments)
             {
-                var allStrikes = instruments
-                    .Select(i => ParseDecimal(i.StrikePrice))
-                    .Where(s => s > 0)
-                    .Distinct()
-                    .OrderBy(s => s)
-                    .ToList();
+                var s = ParseDecimal(i.StrikePrice);
+                if (s > 0)
+                    allStrikesSorted.Add(s);
+            }
 
-                var atmIndex = allStrikes.IndexOf(atm);
-                var lo = Math.Max(0, atmIndex - strikeRange.Value);
-                var hi = Math.Min(allStrikes.Count - 1, atmIndex + strikeRange.Value);
-                var allowedStrikes = allStrikes.GetRange(lo, hi - lo + 1).ToHashSet();
-                filtered = instruments.Where(i => allowedStrikes.Contains(ParseDecimal(i.StrikePrice)));
+            if (allStrikesSorted.Count > 0)
+            {
+                // Find ATM strike (closest to underlying price).
+                // Enumerable.MinBy iterates every element and picks the one whose
+                // Math.Abs(s - underlyingPrice) is smallest — independent of the set's
+                // natural sort order, so this is correct ATM selection.
+                var atm = allStrikesSorted.MinBy(s => Math.Abs(s - underlyingPrice));
+                if (atm > 0)
+                {
+                    var strikeList = allStrikesSorted.ToList();
+                    var atmIndex  = strikeList.IndexOf(atm);
+                    var lo = Math.Max(0, atmIndex - strikeRange.Value);
+                    var hi = Math.Min(strikeList.Count - 1, atmIndex + strikeRange.Value);
+                    var allowedStrikes = new HashSet<decimal>(strikeList.GetRange(lo, hi - lo + 1));
+                    filtered = instruments.Where(i => allowedStrikes.Contains(ParseDecimal(i.StrikePrice)));
+                }
             }
         }
 
@@ -491,12 +502,23 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         for (var i = 0; i < instruments.Count; i += batchSize)
         {
             ct.ThrowIfCancellationRequested();
-            var batch = instruments.Skip(i).Take(batchSize).ToList();
-            var urls = string.Join(",", batch.Select(b => b.Url ?? string.Empty).Where(u => !string.IsNullOrEmpty(u)));
-            if (string.IsNullOrEmpty(urls))
+
+            // Direct indexed access over the slice — avoids Skip/Take/ToList allocations and the
+            // extra Select + Where IEnumerable chain.  Pre-size to at most batchSize entries.
+            var end = Math.Min(i + batchSize, instruments.Count);
+            var batchUrls = new List<string>(end - i);
+            for (var j = i; j < end; j++)
+            {
+                var url = instruments[j].Url;
+                if (!string.IsNullOrEmpty(url))
+                    batchUrls.Add(url);
+            }
+
+            if (batchUrls.Count == 0)
                 continue;
 
-            var encoded = Uri.EscapeDataString(urls);
+            var joinedUrls = string.Join(',', batchUrls);
+            var encoded    = Uri.EscapeDataString(joinedUrls);
             var response = await client.GetAsync(
                 $"{BaseUrl}/marketdata/options/?instruments={encoded}", ct).ConfigureAwait(false);
 

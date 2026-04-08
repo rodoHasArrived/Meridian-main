@@ -49,6 +49,13 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     private const string BaseUrl = "https://api.robinhood.com";
     private const string EnvAccessToken = "ROBINHOOD_ACCESS_TOKEN";
 
+    // Pre-built URL constants — avoids a string allocation on every call to GetPositionsAsync /
+    // GetOpenOrdersAsync and in the structured-logging warning paths.
+    private const string EquityPositionsUrl  = BaseUrl + "/positions/?nonzero=true";
+    private const string OptionsPositionsUrl = BaseUrl + "/options/positions/?nonzero=true";
+    private const string EquityOrdersUrl     = BaseUrl + "/orders/?state=queued,unconfirmed,confirmed,partially_filled";
+    private const string OptionsOrdersUrl    = BaseUrl + "/options/orders/?state=queued,unconfirmed,confirmed,partially_filled";
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<RobinhoodBrokerageGateway> _logger;
     private readonly string? _accessToken;
@@ -348,13 +355,22 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     public async Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/positions/?nonzero=true", ct).ConfigureAwait(false);
+
+        // Fire equity and options requests concurrently — they are fully independent HTTP calls.
+        // The equity task is the required one; options is best-effort and handled in a try/catch.
+        var equityFetch  = client.GetAsync(EquityPositionsUrl, ct);
+        var optionsFetch = client.GetAsync(OptionsPositionsUrl, ct);
+
+        // Await the mandatory equity response first.
+        var response = await equityFetch.ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync(
             RobinhoodBrokerageSerializerContext.Default.RobinhoodPositionListResponse, ct).ConfigureAwait(false);
 
-        var positions = new List<BrokerPosition>();
+        // Pre-size to avoid List<T> resizing; options positions will grow past this if present.
+        var equityCount = result?.Results?.Length ?? 0;
+        var positions   = new List<BrokerPosition>(equityCount);
 
         if (result?.Results is not null)
         {
@@ -364,22 +380,21 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
                 var symbol = await ResolveSymbolFromInstrumentAsync(p.Instrument, client, ct).ConfigureAwait(false);
                 positions.Add(new BrokerPosition
                 {
-                    Symbol = symbol ?? p.Instrument ?? string.Empty,
-                    Quantity = ParseDecimal(p.Quantity),
+                    Symbol            = symbol ?? p.Instrument ?? string.Empty,
+                    Quantity          = ParseDecimal(p.Quantity),
                     AverageEntryPrice = ParseDecimal(p.AveragePrice),
-                    MarketPrice = 0m, // Robinhood positions endpoint does not include current price
-                    MarketValue = 0m,
-                    UnrealizedPnl = 0m,
-                    AssetClass = "equity",
+                    MarketPrice       = 0m, // Robinhood positions endpoint does not include current price
+                    MarketValue       = 0m,
+                    UnrealizedPnl     = 0m,
+                    AssetClass        = "equity",
                 });
             }
         }
 
-        // Also fetch options positions.
+        // Harvest the options response — already in-flight from the concurrent fetch above.
         try
         {
-            var optResponse = await client.GetAsync(
-                $"{BaseUrl}/options/positions/?nonzero=true", ct).ConfigureAwait(false);
+            var optResponse = await optionsFetch.ConfigureAwait(false);
             if (optResponse.IsSuccessStatusCode)
             {
                 var optResult = await optResponse.Content.ReadFromJsonAsync(
@@ -395,13 +410,13 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
                             continue;
                         positions.Add(new BrokerPosition
                         {
-                            Symbol = p.ChainSymbol ?? p.Option ?? string.Empty,
-                            Quantity = qty,
+                            Symbol            = p.ChainSymbol ?? p.Option ?? string.Empty,
+                            Quantity          = qty,
                             AverageEntryPrice = ParseDecimal(p.AveragePrice),
-                            MarketPrice = 0m,
-                            MarketValue = 0m,
-                            UnrealizedPnl = 0m,
-                            AssetClass = "option",
+                            MarketPrice       = 0m,
+                            MarketValue       = 0m,
+                            UnrealizedPnl     = 0m,
+                            AssetClass        = "option",
                         });
                     }
                 }
@@ -414,9 +429,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex,
-                "Failed to fetch Robinhood options positions from {Url}",
-                $"{BaseUrl}/options/positions/?nonzero=true");
+            // Use the URL constant — avoids allocating a new interpolated string on the exception path.
+            _logger.LogWarning(ex, "Failed to fetch Robinhood options positions from {Url}", OptionsPositionsUrl);
         }
 
         return positions.AsReadOnly();
@@ -426,39 +440,48 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     public async Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync(
-            $"{BaseUrl}/orders/?state=queued,unconfirmed,confirmed,partially_filled", ct).ConfigureAwait(false);
+
+        // Fire equity and options order requests concurrently — fully independent calls.
+        var equityFetch  = client.GetAsync(EquityOrdersUrl, ct);
+        var optionsFetch = client.GetAsync(OptionsOrdersUrl, ct);
+
+        // Equity is the required path; throw on failure.
+        var response = await equityFetch.ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync(
             RobinhoodBrokerageSerializerContext.Default.RobinhoodOrderListResponse, ct).ConfigureAwait(false);
 
-        var orders = new List<BrokerOrder>();
+        // Pre-size so the equity pass never re-allocates.
+        var equityCount = result?.Results?.Length ?? 0;
+        var orders = new List<BrokerOrder>(equityCount);
 
         if (result?.Results is not null)
         {
-            orders.AddRange(result.Results.Select(o => new BrokerOrder
+            // Explicit foreach avoids the hidden IEnumerable from AddRange(Select(...)).
+            foreach (var o in result.Results)
             {
-                OrderId = o.Id ?? string.Empty,
-                ClientOrderId = o.RefId,
-                Symbol = o.Symbol ?? string.Empty,
-                Side = o.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-                Type = ParseOrderType(o.Type),
-                Quantity = ParseDecimal(o.Quantity),
-                FilledQuantity = 0m, // Robinhood executed_notional is a currency value, not filled shares/contracts.
-                LimitPrice = string.IsNullOrEmpty(o.Price) ? null : ParseDecimal(o.Price),
-                StopPrice = string.IsNullOrEmpty(o.StopPrice) ? null : ParseDecimal(o.StopPrice),
-                Status = MapRobinhoodStatus(o.State),
-                CreatedAt = o.CreatedAt ?? DateTimeOffset.UtcNow,
-            }));
+                orders.Add(new BrokerOrder
+                {
+                    OrderId        = o.Id ?? string.Empty,
+                    ClientOrderId  = o.RefId,
+                    Symbol         = o.Symbol ?? string.Empty,
+                    Side           = o.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
+                    Type           = ParseOrderType(o.Type),
+                    Quantity       = ParseDecimal(o.Quantity),
+                    FilledQuantity = 0m, // Robinhood executed_notional is a currency value, not filled shares/contracts.
+                    LimitPrice     = string.IsNullOrEmpty(o.Price)     ? null : ParseDecimal(o.Price),
+                    StopPrice      = string.IsNullOrEmpty(o.StopPrice) ? null : ParseDecimal(o.StopPrice),
+                    Status         = MapRobinhoodStatus(o.State),
+                    CreatedAt      = o.CreatedAt ?? DateTimeOffset.UtcNow,
+                });
+            }
         }
 
-        // Also fetch open options orders.
+        // Harvest the already-in-flight options orders response.
         try
         {
-            var optResponse = await client.GetAsync(
-                $"{BaseUrl}/options/orders/?state=queued,unconfirmed,confirmed,partially_filled", ct)
-                .ConfigureAwait(false);
+            var optResponse = await optionsFetch.ConfigureAwait(false);
             if (optResponse.IsSuccessStatusCode)
             {
                 var optResult = await optResponse.Content.ReadFromJsonAsync(
@@ -467,19 +490,22 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 
                 if (optResult?.Results is not null)
                 {
-                    orders.AddRange(optResult.Results.Select(o => new BrokerOrder
+                    foreach (var o in optResult.Results)
                     {
-                        OrderId = o.Id ?? string.Empty,
-                        ClientOrderId = o.RefId,
-                        Symbol = o.ChainSymbol ?? string.Empty,
-                        Side = o.Direction == "credit" ? OrderSide.Sell : OrderSide.Buy,
-                        Type = ParseOrderType(o.Type),
-                        Quantity = ParseDecimal(o.Quantity),
-                        FilledQuantity = 0m,
-                        LimitPrice = string.IsNullOrEmpty(o.Price) ? null : ParseDecimal(o.Price),
-                        Status = MapRobinhoodStatus(o.State),
-                        CreatedAt = o.CreatedAt ?? DateTimeOffset.UtcNow,
-                    }));
+                        orders.Add(new BrokerOrder
+                        {
+                            OrderId        = o.Id ?? string.Empty,
+                            ClientOrderId  = o.RefId,
+                            Symbol         = o.ChainSymbol ?? string.Empty,
+                            Side           = o.Direction == "credit" ? OrderSide.Sell : OrderSide.Buy,
+                            Type           = ParseOrderType(o.Type),
+                            Quantity       = ParseDecimal(o.Quantity),
+                            FilledQuantity = 0m,
+                            LimitPrice     = string.IsNullOrEmpty(o.Price) ? null : ParseDecimal(o.Price),
+                            Status         = MapRobinhoodStatus(o.State),
+                            CreatedAt      = o.CreatedAt ?? DateTimeOffset.UtcNow,
+                        });
+                    }
                 }
             }
             else
@@ -490,9 +516,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex,
-                "Failed to fetch Robinhood open options orders from {Url}",
-                $"{BaseUrl}/options/orders/?state=queued,...");
+            _logger.LogWarning(ex, "Failed to fetch Robinhood open options orders from {Url}", OptionsOrdersUrl);
         }
 
         return orders.AsReadOnly();
@@ -596,7 +620,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     /// </summary>
     private async Task<ExecutionReport> SubmitOptionOrderAsync(OrderRequest request, CancellationToken ct)
     {
-        // option_instrument_url must be provided by the caller — there is no generic symbol→option
+        // option_instrument_url must be provided by the caller — there is no generic symbol->option
         // instrument resolution possible without knowing expiry, strike, and right.
         if (request.Metadata?.TryGetValue("option_instrument_url", out var optionInstrumentUrl) != true
             || string.IsNullOrWhiteSpace(optionInstrumentUrl))
