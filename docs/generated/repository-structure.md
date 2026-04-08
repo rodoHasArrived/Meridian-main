@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-08 02:43:00 UTC. Do not edit manually.
+> Auto-generated on 2026-04-08 02:50:49 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1824,6 +1824,7 @@ Meridian-main
 │   │   │   │   ├── RobinhoodBrokerageGateway.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
 │   │   │   │   ├── RobinhoodMarketDataClient.cs
+│   │   │   │   ├── RobinhoodOptionsChainProvider.cs
 │   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
