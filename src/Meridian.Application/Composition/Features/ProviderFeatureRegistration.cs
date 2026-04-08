@@ -229,15 +229,12 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
     /// <summary>
     /// Registers <see cref="IOptionsChainProvider"/> implementations in priority order.
     /// <list type="number">
-    ///   <item>If Alpaca or Polygon credentials are present, those providers are registered first.</item>
-    ///   <item>The <see cref="SyntheticOptionsChainProvider"/> is always registered as the fallback.</item>
+    ///   <item>If Alpaca credentials are present, Alpaca is selected as the single active provider.</item>
+    ///   <item>Else if Polygon credentials are present, Polygon is selected.</item>
+    ///   <item>Otherwise, the <see cref="SyntheticOptionsChainProvider"/> is used as the fallback.</item>
     /// </list>
-    /// The <see cref="CollectorFeatureRegistration"/> resolves
-    /// <c>IOptionsChainProvider</c> via <c>GetService&lt;IOptionsChainProvider&gt;()</c>;
-    /// it receives the first (highest-priority) registration.
     /// All providers are also exposed via <c>IEnumerable&lt;IOptionsChainProvider&gt;</c>
-    /// so the <see cref="Meridian.Application.ProviderRouting.ProviderRoutingEngine"/> can
-    /// enumerate every registered provider for health monitoring.
+    /// for consumers that enumerate every registered provider for health monitoring.
     /// </summary>
     private static void RegisterOptionsChainProviders(IServiceCollection services)
     {
@@ -250,11 +247,25 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         // 3. Synthetic — always available, deterministic offline fallback
         services.AddSingleton<SyntheticOptionsChainProvider>();
 
-        // Register via the interface:
-        //   • GetService<IOptionsChainProvider>() → Alpaca (first registration wins for concrete resolution)
-        //   • GetServices<IOptionsChainProvider>() → all three (for enumeration)
+        // Register all three via the interface for IEnumerable<IOptionsChainProvider> consumers.
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<AlpacaOptionsChainProvider>());
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<PolygonOptionsChainProvider>());
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<SyntheticOptionsChainProvider>());
+
+        // Register the "best available" single provider so GetService<IOptionsChainProvider>() returns
+        // the highest-priority configured provider rather than always resolving to a fixed registration.
+        // Resolution order: Alpaca (if credentials present) → Polygon (if credentials present) → Synthetic.
+        services.AddSingleton<IOptionsChainProvider>(sp =>
+        {
+            var alpaca = sp.GetRequiredService<AlpacaOptionsChainProvider>();
+            if (alpaca.IsCredentialsConfigured)
+                return alpaca;
+
+            var polygon = sp.GetRequiredService<PolygonOptionsChainProvider>();
+            if (polygon.IsCredentialsConfigured)
+                return polygon;
+
+            return sp.GetRequiredService<SyntheticOptionsChainProvider>();
+        });
     }
 }

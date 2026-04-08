@@ -7,6 +7,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Http;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Polygon;
@@ -72,15 +73,23 @@ public sealed class PolygonOptionsChainProvider : IOptionsChainProvider
     /// Creates a new Polygon options chain provider.
     /// </summary>
     /// <param name="apiKey">Polygon API key (falls back to POLYGON_API_KEY env var).</param>
-    /// <param name="httpClient">Optional HTTP client (for testing).</param>
+    /// <param name="httpClientFactory">
+    /// Optional <see cref="IHttpClientFactory"/> to create the underlying HTTP client (ADR-010).
+    /// When provided, a named client "<c>polygon-options</c>" is created so shared resilience
+    /// policies and handler lifetimes are centrally managed.
+    /// </param>
+    /// <param name="httpClient">Optional pre-built HTTP client (test-only override).</param>
     /// <param name="log">Optional logger.</param>
     public PolygonOptionsChainProvider(
         string? apiKey = null,
+        IHttpClientFactory? httpClientFactory = null,
         HttpClient? httpClient = null,
         ILogger? log = null)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("POLYGON_API_KEY");
-        _http = httpClient ?? new HttpClient();
+        _http = httpClient
+            ?? httpClientFactory?.CreateClient(HttpClientNames.PolygonOptions)
+            ?? new HttpClient();
         _log = log ?? Log.ForContext<PolygonOptionsChainProvider>();
 
         _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -298,8 +307,14 @@ public sealed class PolygonOptionsChainProvider : IOptionsChainProvider
     //  Mapping helpers                                                        //
     // --------------------------------------------------------------------- //
 
-    private bool IsConfigured =>
+    /// <summary>
+    /// Returns <see langword="true"/> when Polygon API credentials are available and this provider can make live requests.
+    /// Exposed internally so the DI registration can select the first configured provider.
+    /// </summary>
+    public bool IsCredentialsConfigured =>
         !string.IsNullOrWhiteSpace(_apiKey) && _apiKey.Length >= MinApiKeyLength;
+
+    private bool IsConfigured => IsCredentialsConfigured;
 
     private static OptionChainSnapshot? MapToChainSnapshot(
         string underlyingSymbol,

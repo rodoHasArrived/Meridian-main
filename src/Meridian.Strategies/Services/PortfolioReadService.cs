@@ -74,30 +74,12 @@ public sealed class PortfolioReadService
 
         var openLots = (latestSnapshot.OpenLots ?? [])
             .Where(l => symbol is null || string.Equals(l.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
-            .Select(l => new OpenLotSummary(
-                LotId: l.LotId,
-                Symbol: l.Symbol,
-                Quantity: l.Quantity,
-                EntryPrice: l.EntryPrice,
-                OpenedAt: l.OpenedAt,
-                CurrentUnrealizedPnl: 0m,  // price not available in summary context
-                IsLongTerm: l.IsLongTerm(asOf ?? latestSnapshot.Timestamp),
-                AccountId: l.AccountId))
+            .Select(l => MapOpenLot(l, asOf ?? latestSnapshot.Timestamp))
             .ToArray();
 
         var closedLots = (latestSnapshot.ClosedLots ?? [])
             .Where(l => symbol is null || string.Equals(l.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
-            .Select(static l => new ClosedLotSummary(
-                LotId: l.LotId,
-                Symbol: l.Symbol,
-                Quantity: l.Quantity,
-                EntryPrice: l.EntryPrice,
-                ClosePrice: l.ClosePrice,
-                OpenedAt: l.OpenedAt,
-                ClosedAt: l.ClosedAt,
-                RealizedPnl: l.RealizedPnl,
-                IsLongTerm: l.IsLongTerm,
-                AccountId: l.AccountId))
+            .Select(static l => MapClosedLot(l))
             .ToArray();
 
         return new RunLotSummary(
@@ -146,32 +128,14 @@ public sealed class PortfolioReadService
         if (latestSnapshot.OpenLots is { Count: > 0 } openLots)
         {
             openLotSummaries = openLots
-                .Select(l => new OpenLotSummary(
-                    LotId: l.LotId,
-                    Symbol: l.Symbol,
-                    Quantity: l.Quantity,
-                    EntryPrice: l.EntryPrice,
-                    OpenedAt: l.OpenedAt,
-                    CurrentUnrealizedPnl: 0m,
-                    IsLongTerm: l.IsLongTerm(latestSnapshot.Timestamp),
-                    AccountId: l.AccountId))
+                .Select(l => MapOpenLot(l, latestSnapshot.Timestamp))
                 .ToArray();
         }
 
         if (latestSnapshot.ClosedLots is { Count: > 0 } closedLots)
         {
             closedLotSummaries = closedLots
-                .Select(static l => new ClosedLotSummary(
-                    LotId: l.LotId,
-                    Symbol: l.Symbol,
-                    Quantity: l.Quantity,
-                    EntryPrice: l.EntryPrice,
-                    ClosePrice: l.ClosePrice,
-                    OpenedAt: l.OpenedAt,
-                    ClosedAt: l.ClosedAt,
-                    RealizedPnl: l.RealizedPnl,
-                    IsLongTerm: l.IsLongTerm,
-                    AccountId: l.AccountId))
+                .Select(static l => MapClosedLot(l))
                 .ToArray();
         }
 
@@ -214,4 +178,43 @@ public sealed class PortfolioReadService
 
         return lookup;
     }
+
+    // --------------------------------------------------------------------- //
+    //  Shared lot → read-model mapping helpers                               //
+    // --------------------------------------------------------------------- //
+
+    /// <summary>
+    /// Maps an <see cref="OpenLot"/> to its workstation read model.
+    /// </summary>
+    /// <param name="lot">The open lot to map.</param>
+    /// <param name="asOf">
+    /// The reference date used for long-term holding determination.
+    /// Pass the snapshot timestamp when no explicit caller-supplied date is available.
+    /// </param>
+    private static OpenLotSummary MapOpenLot(OpenLot lot, DateTimeOffset asOf)
+        => new(
+            LotId: lot.LotId,
+            Symbol: lot.Symbol,
+            Quantity: lot.Quantity,
+            EntryPrice: lot.EntryPrice,
+            OpenedAt: lot.OpenedAt,
+            CurrentUnrealizedPnl: 0m,   // spot price not available in summary context
+            IsLongTerm: lot.IsLongTerm(asOf),
+            AccountId: lot.AccountId);
+
+    /// <summary>
+    /// Maps a <see cref="ClosedLot"/> to its workstation read model.
+    /// </summary>
+    private static ClosedLotSummary MapClosedLot(ClosedLot lot)
+        => new(
+            LotId: lot.LotId,
+            Symbol: lot.Symbol,
+            Quantity: lot.Quantity,
+            EntryPrice: lot.EntryPrice,
+            ClosePrice: lot.ClosePrice,
+            OpenedAt: lot.OpenedAt,
+            ClosedAt: lot.ClosedAt,
+            RealizedPnl: lot.RealizedPnl,
+            IsLongTerm: lot.IsLongTerm,
+            AccountId: lot.AccountId);
 }

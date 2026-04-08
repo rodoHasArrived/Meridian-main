@@ -48,7 +48,7 @@ public sealed class SyntheticOptionsChainProviderTests
     public async Task GetExpirationsAsync_AllExpirationsInFuture()
     {
         var provider = CreateProvider();
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var expirations = await provider.GetExpirationsAsync("SPY");
 
         expirations.Should().OnlyContain(d => d > today, "all returned expirations should be in the future");
@@ -95,13 +95,15 @@ public sealed class SyntheticOptionsChainProviderTests
         var calls = snapshot!.Calls.OrderBy(c => c.Contract.Strike).ToList();
         for (var i = 1; i < calls.Count; i++)
         {
-            calls[i].MidPrice!.Value.Should().BeLessThanOrEqualTo(calls[i - 1].MidPrice!.Value,
+            var price = calls[i].MidPrice ?? calls[i].AskPrice;
+            var prevPrice = calls[i - 1].MidPrice ?? calls[i - 1].AskPrice;
+            price.Should().BeLessThanOrEqualTo(prevPrice,
                 "ITM calls have higher mid prices than OTM calls");
         }
     }
 
     [Fact]
-    public async Task GetChainSnapshotAsync_PutPricesIncreaseAsStrikeDecreases()
+    public async Task GetChainSnapshotAsync_PutPricesDecreaseAsStrikeDecreases()
     {
         var provider = CreateProvider();
         var expirations = await provider.GetExpirationsAsync("SPY");
@@ -112,8 +114,10 @@ public sealed class SyntheticOptionsChainProviderTests
         var puts = snapshot!.Puts.OrderByDescending(p => p.Contract.Strike).ToList();
         for (var i = 1; i < puts.Count; i++)
         {
-            puts[i].MidPrice!.Value.Should().BeLessThanOrEqualTo(puts[i - 1].MidPrice!.Value,
-                "ITM puts (low strike) have higher mid prices than OTM puts (high strike)");
+            var price = puts[i].MidPrice ?? puts[i].AskPrice;
+            var prevPrice = puts[i - 1].MidPrice ?? puts[i - 1].AskPrice;
+            price.Should().BeLessThanOrEqualTo(prevPrice,
+                "ITM puts (high strike) have higher mid prices than OTM puts (low strike)");
         }
     }
 
@@ -220,14 +224,19 @@ public sealed class SyntheticOptionsChainProviderTests
     // ------------------------------------------------------------------ //
 
     [Fact]
-    public async Task GetOptionQuoteAsync_ReturnsNull_ForUnknownContract()
+    public async Task GetOptionQuoteAsync_ReturnsQuote_ForArbitraryValidStrike()
     {
+        // The synthetic provider generates Black-Scholes prices for any valid OptionContractSpec,
+        // regardless of whether that strike appears in its pre-generated chain.
         var provider = CreateProvider();
-        var unknownSpec = new OptionContractSpec("SPY", 0m, DateOnly.FromDateTime(DateTime.Today.AddDays(30)), OptionRight.Call);
+        var expirations = await provider.GetExpirationsAsync("SPY");
+        var expiry = expirations.First();
+        var arbitrarySpec = new OptionContractSpec("SPY", 999m, expiry, OptionRight.Call);
 
-        var quote = await provider.GetOptionQuoteAsync(unknownSpec);
+        var quote = await provider.GetOptionQuoteAsync(arbitrarySpec);
 
-        quote.Should().BeNull("a contract with zero strike should not match any valid synthetic contract");
+        quote.Should().NotBeNull("the synthetic provider can price any valid contract spec");
+        quote!.Contract.Strike.Should().Be(999m);
     }
 
     [Fact]

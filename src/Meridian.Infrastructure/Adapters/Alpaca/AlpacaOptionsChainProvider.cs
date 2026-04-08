@@ -7,6 +7,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Http;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
@@ -74,17 +75,25 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
     /// </summary>
     /// <param name="keyId">Alpaca API key ID (falls back to ALPACA_KEY_ID env var).</param>
     /// <param name="secretKey">Alpaca API secret key (falls back to ALPACA_SECRET_KEY env var).</param>
-    /// <param name="httpClient">Optional HTTP client (for testing).</param>
+    /// <param name="httpClientFactory">
+    /// Optional <see cref="IHttpClientFactory"/> to create the underlying HTTP client (ADR-010).
+    /// When provided, a named client "<c>alpaca-options</c>" is created so shared resilience
+    /// policies and handler lifetimes are centrally managed.
+    /// </param>
+    /// <param name="httpClient">Optional pre-built HTTP client (test-only override).</param>
     /// <param name="log">Optional logger.</param>
     public AlpacaOptionsChainProvider(
         string? keyId = null,
         string? secretKey = null,
+        IHttpClientFactory? httpClientFactory = null,
         HttpClient? httpClient = null,
         ILogger? log = null)
     {
         _keyId = keyId ?? Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
         _secretKey = secretKey ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
-        _http = httpClient ?? new HttpClient();
+        _http = httpClient
+            ?? httpClientFactory?.CreateClient(HttpClientNames.AlpacaOptions)
+            ?? new HttpClient();
         _log = log ?? Log.ForContext<AlpacaOptionsChainProvider>();
 
         if (IsConfigured)
@@ -306,8 +315,14 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
     //  Mapping helpers                                                        //
     // --------------------------------------------------------------------- //
 
-    private bool IsConfigured =>
+    /// <summary>
+    /// Returns <see langword="true"/> when Alpaca API credentials are available and this provider can make live requests.
+    /// Exposed internally so the DI registration can select the first configured provider.
+    /// </summary>
+    public bool IsCredentialsConfigured =>
         !string.IsNullOrWhiteSpace(_keyId) && !string.IsNullOrWhiteSpace(_secretKey);
+
+    private bool IsConfigured => IsCredentialsConfigured;
 
     private static OptionChainSnapshot? MapToChainSnapshot(
         string underlyingSymbol,
@@ -320,10 +335,10 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
         var puts = new List<OptionQuote>();
         var strikeSet = new SortedSet<decimal>();
 
-        // Alpaca returns underlying price in the greeks of the ATM contract; approximated as 0 if not available
-        decimal underlyingPrice = snapshots.Values
-            .Select(s => s.LatestQuote?.AskPrice)
-            .FirstOrDefault(p => p.HasValue) ?? 0m;
+        // Alpaca's snapshot endpoint does not provide a separate underlying spot price field.
+        // UnderlyingPrice is left as 0 to signal "not available" rather than using an option
+        // contract quote (AskPrice of an option is not the underlying price).
+        const decimal underlyingPrice = 0m;
 
         foreach (var (ticker, snap) in snapshots)
         {
@@ -372,7 +387,7 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
         return new OptionChainSnapshot(
             Timestamp: now,
             UnderlyingSymbol: underlyingSymbol,
-            UnderlyingPrice: underlyingPrice > 0m ? underlyingPrice : 1m,
+            UnderlyingPrice: underlyingPrice,
             Expiration: expiration,
             Strikes: strikes,
             Calls: calls,
@@ -395,9 +410,10 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
         if (bid <= 0m && ask <= 0m && last <= 0m)
             return null;
 
-        decimal underlyingPrice = snap.Greeks?.Delta.HasValue == true
-            ? 1m  // placeholder when no underlying price available
-            : 1m;
+        // Alpaca's option snapshot endpoint does not expose the underlying spot price directly.
+        // UnderlyingPrice is set to 0 to signal "not available" to callers rather than using
+        // a meaningless placeholder that could mislead downstream moneyness checks.
+        const decimal underlyingPrice = 0m;
 
         return new OptionQuote(
             Timestamp: now,
