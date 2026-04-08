@@ -50,6 +50,10 @@ public sealed record OptionQuote : MarketEventPayload
 
     /// <summary>
     /// Gets the underlying asset price at the time of this quote.
+    /// A value of <c>0</c> means the underlying price was not available from the data source
+    /// (e.g., Alpaca's option snapshot endpoint does not include a spot price field).
+    /// Computed properties such as <see cref="IsInTheMoney"/> and <see cref="Moneyness"/>
+    /// return neutral values when this is <c>0</c>.
     /// </summary>
     public decimal UnderlyingPrice { get; }
 
@@ -130,8 +134,8 @@ public sealed record OptionQuote : MarketEventPayload
         if (AskPrice < 0)
             throw new ArgumentOutOfRangeException(nameof(AskPrice), AskPrice, "Ask price cannot be negative");
 
-        if (UnderlyingPrice <= 0)
-            throw new ArgumentOutOfRangeException(nameof(UnderlyingPrice), UnderlyingPrice, "Underlying price must be greater than 0");
+        if (UnderlyingPrice < 0)
+            throw new ArgumentOutOfRangeException(nameof(UnderlyingPrice), UnderlyingPrice, "Underlying price must be non-negative (use 0 when not available)");
 
         this.Timestamp = Timestamp;
         this.Symbol = Symbol;
@@ -175,8 +179,9 @@ public sealed record OptionQuote : MarketEventPayload
 
     /// <summary>
     /// Returns true if the option is in-the-money based on the underlying price.
+    /// Returns false when <see cref="UnderlyingPrice"/> is 0 (underlying price not available).
     /// </summary>
-    public bool IsInTheMoney => Contract.Right switch
+    public bool IsInTheMoney => UnderlyingPrice > 0 && Contract.Right switch
     {
         OptionRight.Call => UnderlyingPrice > Contract.Strike,
         OptionRight.Put => UnderlyingPrice < Contract.Strike,
@@ -186,6 +191,7 @@ public sealed record OptionQuote : MarketEventPayload
     /// <summary>
     /// Gets the moneyness ratio (underlying / strike).
     /// Values &gt; 1 indicate in-the-money for calls; &lt; 1 for puts.
+    /// Returns 0 when <see cref="UnderlyingPrice"/> is 0 (underlying price not available).
     /// </summary>
-    public decimal Moneyness => Contract.Strike > 0 ? UnderlyingPrice / Contract.Strike : 0m;
+    public decimal Moneyness => Contract.Strike > 0 && UnderlyingPrice > 0 ? UnderlyingPrice / Contract.Strike : 0m;
 }

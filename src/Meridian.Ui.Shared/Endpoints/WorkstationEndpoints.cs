@@ -266,6 +266,48 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
+        group.MapGet("/runs/{runId}/lots/open", async (string runId, string? symbol, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await readService.GetLotSummaryAsync(runId, symbol, context.RequestAborted).ConfigureAwait(false);
+            if (summary is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(summary.OpenLots, jsonOptions);
+        })
+        .WithName("GetRunOpenLots")
+        .Produces<IReadOnlyList<OpenLotSummary>>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/runs/{runId}/lots/closed", async (string runId, string? symbol, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await readService.GetLotSummaryAsync(runId, symbol, context.RequestAborted).ConfigureAwait(false);
+            if (summary is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(summary.ClosedLots, jsonOptions);
+        })
+        .WithName("GetRunClosedLots")
+        .Produces<IReadOnlyList<ClosedLotSummary>>(200)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet("/runs/{runId}/ledger/trial-balance", async (string runId, string? accountType, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -988,7 +1030,7 @@ public static class WorkstationEndpoints
                     averagePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
                     markPrice: "—",
                     dayPnl: "—",
-                    unrealizedPnl: FormatCurrency(pos.UnrealisedPnl),
+                    unrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
                     exposure: "—",
                     security: securityLookup.GetValueOrDefault(pos.Symbol)))
                 .ToArray();

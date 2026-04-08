@@ -41,7 +41,7 @@ Code-defined provider skills may also exist, such as AI documentation maintenanc
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../navigation/README.md`](../navigation/README.md) | Repo navigation workflow |
 | [`../agents/README.md`](../agents/README.md) | Agent catalog |
-| [`../../../.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex repo-local skills, including `meridian-repo-navigation` |
+| [`../../.codex/skills/README.md`](../../.codex/skills/README.md) | Codex repo-local skills, including `meridian-repo-navigation` |
 
 ---
 

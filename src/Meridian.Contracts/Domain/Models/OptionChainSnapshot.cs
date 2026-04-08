@@ -21,6 +21,8 @@ public sealed record OptionChainSnapshot : MarketEventPayload
 
     /// <summary>
     /// Gets the underlying price at the time of this snapshot.
+    /// A value of <c>0</c> means the underlying price was not available from the data source.
+    /// <see cref="AtTheMoneyStrike"/> returns <c>null</c> when this is <c>0</c>.
     /// </summary>
     public decimal UnderlyingPrice { get; }
 
@@ -77,8 +79,8 @@ public sealed record OptionChainSnapshot : MarketEventPayload
         if (string.IsNullOrWhiteSpace(UnderlyingSymbol))
             throw new ArgumentException("Underlying symbol is required", nameof(UnderlyingSymbol));
 
-        if (UnderlyingPrice <= 0)
-            throw new ArgumentOutOfRangeException(nameof(UnderlyingPrice), UnderlyingPrice, "Underlying price must be greater than 0");
+        if (UnderlyingPrice < 0)
+            throw new ArgumentOutOfRangeException(nameof(UnderlyingPrice), UnderlyingPrice, "Underlying price must be non-negative (use 0 when not available)");
 
         if (InstrumentType is not (InstrumentType.EquityOption or InstrumentType.IndexOption))
             throw new ArgumentException("InstrumentType must be EquityOption or IndexOption", nameof(InstrumentType));
@@ -107,8 +109,9 @@ public sealed record OptionChainSnapshot : MarketEventPayload
 
     /// <summary>
     /// Gets the at-the-money strike (strike closest to the underlying price).
+    /// Returns null when <see cref="UnderlyingPrice"/> is 0 (underlying price not available).
     /// </summary>
-    public decimal? AtTheMoneyStrike => Strikes.Count > 0
+    public decimal? AtTheMoneyStrike => Strikes.Count > 0 && UnderlyingPrice > 0
         ? Strikes.OrderBy(s => Math.Abs(s - UnderlyingPrice)).First()
         : null;
 

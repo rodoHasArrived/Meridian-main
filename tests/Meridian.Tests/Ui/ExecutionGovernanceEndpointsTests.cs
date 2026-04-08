@@ -339,7 +339,7 @@ public sealed class ExecutionGovernanceEndpointsTests
         public decimal PortfolioValue => 100_000m;
         public decimal UnrealisedPnl => 0m;
         public decimal RealisedPnl => 0m;
-        public IReadOnlyDictionary<string, ExecutionPosition> Positions { get; } =
-            new Dictionary<string, ExecutionPosition>(StringComparer.OrdinalIgnoreCase);
+        public IReadOnlyDictionary<string, IPosition> Positions { get; } =
+            new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase);
     }
 }
