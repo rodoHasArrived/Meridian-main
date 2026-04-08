@@ -16,8 +16,8 @@ This guide covers the fastest verified ways to get Meridian running locally. For
 If you have `make` available:
 
 ```bash
-git clone https://github.com/rodoHasArrived/Meridian.git
-cd Meridian
+git clone https://github.com/rodoHasArrived/Meridian-main.git
+cd Meridian-main
 make setup-dev
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
@@ -25,8 +25,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 If you prefer the plain .NET path:
 
 ```bash
-git clone https://github.com/rodoHasArrived/Meridian.git
-cd Meridian
+git clone https://github.com/rodoHasArrived/Meridian-main.git
+cd Meridian-main
 dotnet restore
 dotnet build Meridian.sln
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart

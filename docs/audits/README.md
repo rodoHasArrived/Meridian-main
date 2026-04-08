@@ -34,12 +34,12 @@ Historical point-in-time audit documents live in `archive/docs/assessments/`.
 
 | Document | Reason Archived |
 |----------|-----------------|
-| [AUDIT_REPORT_2026_03_20.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/AUDIT_REPORT_2026_03_20.md) | Dated snapshot retained after `AUDIT_REPORT.md` became the active audit surface |
-| [CODE_REVIEW_2026-03-16.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CODE_REVIEW_2026-03-16.md) | Repo-wide March 2026 code review superseded by focused audit follow-ups and newer governance summaries |
-| [CLEANUP_SUMMARY.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_SUMMARY.md) | Hygiene phases complete |
-| [H3_DEBUG_CODE_ANALYSIS.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md) | Historical debug analysis retained for reference |
-| [CLEANUP_OPPORTUNITIES.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md) | Superseded by later cleanup and simplification planning |
-| [UWP_COMPREHENSIVE_AUDIT.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md) | Historical UWP audit preserved after the platform removal |
+| [AUDIT_REPORT_2026_03_20.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/AUDIT_REPORT_2026_03_20.md) | Dated snapshot retained after `AUDIT_REPORT.md` became the active audit surface |
+| [CODE_REVIEW_2026-03-16.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CODE_REVIEW_2026-03-16.md) | Repo-wide March 2026 code review superseded by focused audit follow-ups and newer governance summaries |
+| [CLEANUP_SUMMARY.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CLEANUP_SUMMARY.md) | Hygiene phases complete |
+| [H3_DEBUG_CODE_ANALYSIS.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md) | Historical debug analysis retained for reference |
+| [CLEANUP_OPPORTUNITIES.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md) | Superseded by later cleanup and simplification planning |
+| [UWP_COMPREHENSIVE_AUDIT.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md) | Historical UWP audit preserved after the platform removal |
 
 ## Audit Standards
 

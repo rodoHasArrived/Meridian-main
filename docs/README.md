@@ -126,8 +126,8 @@ These commands are currently reflected in the repo's code and build scripts:
 
 Historical and superseded material now lives outside the active docs tree under `archive/docs/`.
 
-- [Archive index](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md)
-- [Archive overview](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/README.md)
+- [Archive index](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/INDEX.md)
+- [Archive overview](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/README.md)
 
 ## Maintenance Checklist
 
