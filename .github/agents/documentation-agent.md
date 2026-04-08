@@ -769,6 +769,7 @@ Meridian-main
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── options-roadmap.md
 │   │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
 │   │   ├── quant-script-page-implementation-guide.md
@@ -1810,6 +1811,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
+│   │   │   │   ├── AlpacaOptionsChainProvider.cs
 │   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
@@ -1889,6 +1891,7 @@ Meridian-main
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
+│   │   │   │   ├── PolygonOptionsChainProvider.cs
 │   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
@@ -1914,6 +1917,7 @@ Meridian-main
 │   │   │   ├── Synthetic
 │   │   │   │   ├── SyntheticHistoricalDataProvider.cs
 │   │   │   │   ├── SyntheticMarketDataClient.cs
+│   │   │   │   ├── SyntheticOptionsChainProvider.cs
 │   │   │   │   └── SyntheticReferenceDataCatalog.cs
 │   │   │   ├── Templates
 │   │   │   │   └── TemplateBrokerageGateway.cs
@@ -2651,6 +2655,7 @@ Meridian-main
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
+│       │   ├── FloatingPageService.cs
 │       │   ├── FormValidationService.cs
 │       │   ├── FundAccountReadService.cs
 │       │   ├── FundContextService.cs
@@ -2846,6 +2851,8 @@ Meridian-main
 │       │   ├── EventReplayPage.xaml.cs
 │       │   ├── ExportPresetsPage.xaml
 │       │   ├── ExportPresetsPage.xaml.cs
+│       │   ├── FloatingPageWindow.xaml
+│       │   ├── FloatingPageWindow.xaml.cs
 │       │   ├── FundAccountsPage.xaml
 │       │   ├── FundAccountsPage.xaml.cs
 │       │   ├── FundLedgerPage.xaml
@@ -3287,6 +3294,7 @@ Meridian-main
 │   │   │   │   ├── StockSharpSubscriptionTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
+│   │   │   │   ├── SyntheticOptionsChainProviderTests.cs
 │   │   │   │   └── WebSocketProviderBaseTests.cs
 │   │   │   ├── Resilience
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
