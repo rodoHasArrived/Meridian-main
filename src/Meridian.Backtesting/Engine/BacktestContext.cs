@@ -164,7 +164,10 @@ internal sealed class BacktestContext(
 
         var expirations = await optionsProvider.GetExpirationsAsync(underlyingSymbol, ct).ConfigureAwait(false);
         var minDate = CurrentDate.AddDays(minDte);
-        return expirations.FirstOrDefault(e => e >= minDate) is { } found ? found : null;
+        return expirations
+            .Where(e => e >= minDate)
+            .Select(static e => (DateOnly?)e)
+            .FirstOrDefault();
     }
 
     internal IReadOnlyList<Order> DrainPendingOrders()
