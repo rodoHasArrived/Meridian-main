@@ -414,7 +414,9 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to fetch Robinhood options positions");
+            _logger.LogWarning(ex,
+                "Failed to fetch Robinhood options positions from {Url}",
+                $"{BaseUrl}/options/positions/?nonzero=true");
         }
 
         return positions.AsReadOnly();
@@ -488,7 +490,9 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to fetch Robinhood open options orders");
+            _logger.LogWarning(ex,
+                "Failed to fetch Robinhood open options orders from {Url}",
+                $"{BaseUrl}/options/orders/?state=queued,...");
         }
 
         return orders.AsReadOnly();

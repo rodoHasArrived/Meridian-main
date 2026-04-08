@@ -559,21 +559,28 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
     /// <summary>Routes each request to a pre-canned response keyed by the full request URL.</summary>
     private sealed class UrlRoutingStubHandler : HttpMessageHandler
     {
-        private readonly Dictionary<string, HttpResponseMessage> _routes;
+        // Pre-read all body strings at construction time to avoid blocking async calls at dispatch time.
+        private readonly Dictionary<string, (HttpStatusCode Status, string Body)> _routes;
 
-        public UrlRoutingStubHandler(Dictionary<string, HttpResponseMessage> routes) => _routes = routes;
+        public UrlRoutingStubHandler(Dictionary<string, HttpResponseMessage> routes)
+        {
+            _routes = new Dictionary<string, (HttpStatusCode, string)>(routes.Count);
+            foreach (var (url, msg) in routes)
+            {
+                var body = msg.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                _routes[url] = (msg.StatusCode, body);
+            }
+        }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             var url = request.RequestUri?.ToString() ?? string.Empty;
-            if (_routes.TryGetValue(url, out var response))
+            if (_routes.TryGetValue(url, out var cached))
             {
-                // Re-read body so the same response can be returned multiple times.
-                var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                return Task.FromResult(new HttpResponseMessage(response.StatusCode)
+                return Task.FromResult(new HttpResponseMessage(cached.Status)
                 {
-                    Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent(cached.Body, System.Text.Encoding.UTF8, "application/json")
                 });
             }
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
@@ -590,8 +597,8 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
     private sealed class RecordingStubHandler : HttpMessageHandler
     {
         private readonly List<string> _postedUrls;
-        private readonly StringContent _connectResponse;
-        private readonly StringContent _submitResponse;
+        private readonly string _connectBody;
+        private readonly string _submitBody;
 
         public RecordingStubHandler(
             List<string> postedUrls,
@@ -600,8 +607,9 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             StringContent submitResponse)
         {
             _postedUrls = postedUrls;
-            _connectResponse = connectResponse;
-            _submitResponse = submitResponse;
+            // Pre-read bodies synchronously at construction — no blocking at dispatch time.
+            _connectBody = connectResponse.ReadAsStringAsync().GetAwaiter().GetResult();
+            _submitBody  = submitResponse.ReadAsStringAsync().GetAwaiter().GetResult();
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
@@ -612,18 +620,16 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             if (request.Method == HttpMethod.Post)
             {
                 _postedUrls.Add(url);
-                var body = _submitResponse.ReadAsStringAsync().GetAwaiter().GetResult();
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent(_submitBody, System.Text.Encoding.UTF8, "application/json")
                 });
             }
 
             // All GETs return the account response (handles ConnectAsync + GetAccountUrlAsync).
-            var acctBody = _connectResponse.ReadAsStringAsync().GetAwaiter().GetResult();
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(acctBody, System.Text.Encoding.UTF8, "application/json")
+                Content = new StringContent(_connectBody, System.Text.Encoding.UTF8, "application/json")
             });
         }
     }

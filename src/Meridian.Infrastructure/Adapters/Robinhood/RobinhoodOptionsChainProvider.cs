@@ -153,7 +153,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         }
 
         var chain = await response.Content.ReadFromJsonAsync(
-            RobinhoodOptionsSerializerContext.Default.RobinhoodOptionChainResponse, ct).ConfigureAwait(false);
+            RobinhoodOptionsSerializerContext.Default.RobinhoodOptionChain, ct).ConfigureAwait(false);
 
         if (chain?.ExpirationDates is null or { Length: 0 })
             return Array.Empty<DateOnly>();
@@ -616,18 +616,6 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         [JsonPropertyName("cutoff_price")] public string? CutoffPrice { get; init; }
     }
 
-    /// <summary>Typed alias used when deserialising a single-chain API response (same shape as <see cref="RobinhoodOptionChain"/>).</summary>
-    internal sealed class RobinhoodOptionChainResponse
-    {
-        [JsonPropertyName("id")] public string? Id { get; init; }
-        [JsonPropertyName("symbol")] public string? Symbol { get; init; }
-        [JsonPropertyName("expiration_dates")] public string[]? ExpirationDates { get; init; }
-        [JsonPropertyName("trade_value_multiplier")] public string? TradeValueMultiplier { get; init; }
-        [JsonPropertyName("can_open_position")] public bool? CanOpenPosition { get; init; }
-        [JsonPropertyName("cash_component")] public string? CashComponent { get; init; }
-        [JsonPropertyName("min_ticks")] public RobinhoodOptionMinTicks? MinTicks { get; init; }
-    }
-
     internal sealed class RobinhoodOptionChainListResponse
     {
         [JsonPropertyName("results")] public RobinhoodOptionChain[]? Results { get; init; }
@@ -695,7 +683,6 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
 [JsonSerializable(typeof(RobinhoodOptionsChainProvider.RobinhoodEquityInstrument))]
 [JsonSerializable(typeof(RobinhoodOptionsChainProvider.RobinhoodEquityInstrumentListResponse))]
 [JsonSerializable(typeof(RobinhoodOptionsChainProvider.RobinhoodOptionChain))]
-[JsonSerializable(typeof(RobinhoodOptionsChainProvider.RobinhoodOptionChainResponse))]
 [JsonSerializable(typeof(RobinhoodOptionsChainProvider.RobinhoodOptionChainListResponse))]
 [JsonSerializable(typeof(RobinhoodOptionsChainProvider.RobinhoodOptionInstrument))]
 [JsonSerializable(typeof(RobinhoodOptionsChainProvider.RobinhoodOptionInstrumentListResponse))]
