@@ -11,7 +11,29 @@ public sealed class FixtureDataService
     private static readonly Lazy<FixtureDataService> _instance = new(() => new());
     public static FixtureDataService Instance => _instance.Value;
 
+    private volatile FixtureScenario _activeScenario = FixtureScenario.Connected;
+
     private FixtureDataService() { }
+
+    /// <summary>Gets the currently active fixture scenario.</summary>
+    public FixtureScenario ActiveScenario => _activeScenario;
+
+    /// <summary>Sets the active fixture scenario.</summary>
+    public void SetScenario(FixtureScenario scenario)
+    {
+        _activeScenario = scenario;
+    }
+
+    /// <summary>Returns a human-readable label for the given scenario.</summary>
+    public static string GetScenarioLabel(FixtureScenario scenario) => scenario switch
+    {
+        FixtureScenario.Connected    => "Connected",
+        FixtureScenario.Disconnected => "Disconnected",
+        FixtureScenario.Degraded     => "Degraded",
+        FixtureScenario.Error        => "Error",
+        FixtureScenario.Loading      => "Loading",
+        _                            => scenario.ToString()
+    };
 
     /// <summary>
     /// Gets a mock status response showing a running system.

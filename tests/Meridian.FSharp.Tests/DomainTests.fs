@@ -282,7 +282,7 @@ let ``CorpActEvent.eventType returns correct string for each case`` () =
 // ---------------------------------------------------------------------------
 
 [<Fact>]
-let ``BondSubclass MortgageBacked round-trips through BondTerms`` () =
+let ``BondSubclass MortgageBacked sets correct subclass on BondTerms`` () =
     let terms = BondTerms.fixedRate (DateOnly(2050, 1, 1)) 4.5m (Some "Act/360") (Some "Freddie Mac")
     let mbs = { terms with Subclass = BondSubclass.MortgageBacked }
     mbs.Subclass |> should equal BondSubclass.MortgageBacked
@@ -304,7 +304,7 @@ let ``BondSubclass Clo is distinct from Cmo and AssetBacked`` () =
     BondSubclass.Clo |> should not' (equal BondSubclass.AssetBacked)
 
 [<Fact>]
-let ``StructuredProductTerms round-trips pool analytics fields`` () =
+let ``StructuredProductTerms constructs and reads pool analytics fields`` () =
     let sp = {
         Factor = Some 0.85m
         FactorDate = Some (DateOnly(2025, 3, 1))

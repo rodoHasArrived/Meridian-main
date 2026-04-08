@@ -82,16 +82,23 @@ module SecurityIdentifier =
         if v.Length <> 12 then false
         else
             // Expand letters to digits (A=10 … Z=35) then validate Luhn mod-10
-            let digits =
+            // Fail fast on any character that is not A-Z or 0-9
+            let charValues =
                 v
-                |> Seq.collect (fun c ->
+                |> Seq.map (fun c ->
                     if c >= 'A' && c <= 'Z' then
                         let n = int c - int 'A' + 10
-                        [ n / 10; n % 10 ]
+                        Some [ n / 10; n % 10 ]
                     elif c >= '0' && c <= '9' then
-                        [ int c - int '0' ]
-                    else [])
+                        Some [ int c - int '0' ]
+                    else None)
                 |> Seq.toArray
+            if charValues |> Array.exists Option.isNone then false
+            else
+            let digits =
+                charValues
+                |> Array.choose id
+                |> Array.collect Array.ofList
             let len = digits.Length
             let mutable sum = 0
             let mutable doubleIt = false          // check digit (rightmost) is never doubled in Luhn

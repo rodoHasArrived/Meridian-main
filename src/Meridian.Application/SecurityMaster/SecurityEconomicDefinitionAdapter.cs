@@ -131,7 +131,7 @@ internal static class SecurityEconomicDefinitionAdapter
                 firstCallDate = definition.Terms.Call.Value.FirstCallDate,
                 callPrice = definition.Terms.Call.Value.CallPrice,
                 callSchedule = definition.Terms.Call.Value.CallSchedule
-                    .Select(e => new { callDt = e.CallDt, callPx = e.CallPx })
+                    .Select(e => new { callDt = e.CallDt, callPx = e.CallPx, isParCall = e.IsParCall, callType = e.CallType is null ? null : e.CallType.Value })
                     .ToArray(),
                 makeWholeSpreadBps = definition.Terms.Call.Value.MakeWholeSpreadBps,
                 isPuttable = definition.Terms.Call.Value.IsPuttable,
@@ -194,6 +194,6 @@ internal static class SecurityEconomicDefinitionAdapter
         if (cat.IsRestricted) return "Restricted";
         if (cat.IsNonVoting) return "NonVoting";
         if (cat.IsSuperVoting) return "SuperVoting";
-        return cat.ToString();
+        throw new InvalidOperationException($"Unsupported {nameof(VotingRightsCat)} case encountered during serialization.");
     }
 }

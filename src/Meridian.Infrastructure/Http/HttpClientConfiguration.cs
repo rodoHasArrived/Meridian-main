@@ -40,6 +40,12 @@ public static class HttpClientNames
     public const string PolygonSymbolSearch = "polygon-symbol-search";
     public const string FinnhubSymbolSearch = "finnhub-symbol-search";
     public const string OpenFigi = "openfigi";
+    public const string EdgarSymbolSearch = "edgar-symbol-search";
+    public const string EdgarSecurityMaster = "edgar-security-master";
+
+    // Options chain providers
+    public const string AlpacaOptions = "alpaca-options";
+    public const string PolygonOptions = "polygon-options";
 
     // Application services
     public const string CredentialValidation = "credential-validation";
