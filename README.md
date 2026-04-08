@@ -648,7 +648,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
-│   │   └── wpf-shell-mvvm.md
+│   │   ├── wpf-shell-mvvm.md
+│   │   └── wpf-workstation-shell-ux.md
 │   ├── audits
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
@@ -1095,11 +1096,13 @@ Use these documents together when planning or implementing new work:
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
-│   └── report_canonicalization_drift.py
+│   ├── report_canonicalization_drift.py
+│   └── wpf_finance_ux_checks.py
 ├── src
 │   ├── Meridian
 │   │   ├── DashboardServerBridge.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── HostedBrokerageGatewayServiceCollectionExtensions.cs
 │   │   ├── Integrations
 │   │   │   └── Lean
 │   │   │       ├── MeridianDataProvider.cs
@@ -2764,6 +2767,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
+│       │   ├── WorkspaceShellChromeModels.cs
 │       │   └── WorkspaceShellModels.cs
 │       ├── README.md
 │       ├── Services
@@ -2821,6 +2825,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
 │       │   ├── WorkspaceService.cs
+│       │   ├── WorkspaceShellContextService.cs
 │       │   └── WorkstationReconciliationApiClient.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
@@ -3091,8 +3096,12 @@ Use these documents together when planning or implementing new work:
 │           ├── WatchlistPage.xaml.cs
 │           ├── WelcomePage.xaml
 │           ├── WelcomePage.xaml.cs
+│           ├── WorkspaceCommandBarControl.xaml
+│           ├── WorkspaceCommandBarControl.xaml.cs
 │           ├── WorkspacePage.xaml
-│           └── WorkspacePage.xaml.cs
+│           ├── WorkspacePage.xaml.cs
+│           ├── WorkspaceShellContextStripControl.xaml
+│           └── WorkspaceShellContextStripControl.xaml.cs
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
@@ -3341,6 +3350,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── CredentialConfigTests.cs
 │   │   │   ├── Etl
 │   │   │   │   └── CsvPartnerFileParserTests.cs
+│   │   │   ├── Http
+│   │   │   │   └── HttpClientConfigurationTests.cs
 │   │   │   ├── Providers
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -3640,7 +3651,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunWorkspaceServiceTests.cs
 │   │   │   ├── TooltipServiceTests.cs
 │   │   │   ├── WatchlistServiceTests.cs
-│   │   │   └── WorkspaceServiceTests.cs
+│   │   │   ├── WorkspaceServiceTests.cs
+│   │   │   └── WorkspaceShellContextServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -3674,6 +3686,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-490 directories, 3054 files
+491 directories, 3065 files
 ```
 <!-- readme-tree end -->
