@@ -948,7 +948,7 @@ Meridian-main
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
 │   │   ├── rules-report.md
-│   │   ├── todo-scan-results.json
+│   │   ├── TARGET_END_PRODUCT.md
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -1780,9 +1780,11 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
+│   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── PositionExtensions.cs
 │   │   └── TaxLot.cs
 │   ├── Meridian.FSharp
 │   │   ├── Calculations

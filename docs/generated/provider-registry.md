@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-06 19:49:14 UTC. Do not edit manually.
+> Auto-generated on 2026-04-08 03:35:15 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -34,6 +34,7 @@
 | `src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
@@ -59,14 +60,17 @@
 | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` |

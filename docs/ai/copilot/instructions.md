@@ -1765,9 +1765,11 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
+│   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── PositionExtensions.cs
 │   │   └── TaxLot.cs
 │   ├── Meridian.FSharp
 │   │   ├── Calculations

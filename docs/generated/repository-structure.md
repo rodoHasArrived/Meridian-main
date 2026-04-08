@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-06 19:49:14 UTC. Do not edit manually.
+> Auto-generated on 2026-04-08 03:35:15 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -822,7 +822,7 @@ Meridian-main
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
 │   │   ├── rules-report.md
-│   │   ├── todo-scan-results.json
+│   │   ├── TARGET_END_PRODUCT.md
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -1654,9 +1654,11 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
+│   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── PositionExtensions.cs
 │   │   └── TaxLot.cs
 │   ├── Meridian.FSharp
 │   │   ├── Calculations
