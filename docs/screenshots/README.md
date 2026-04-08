@@ -1,8 +1,9 @@
 # Meridian UI Screenshots
 
-Screenshots of the Meridian Terminal web dashboard running in default (no-provider) mode.
+Screenshots of the Meridian Terminal web dashboard and WPF desktop application.
+Web screenshots run on `ubuntu-latest`; desktop screenshots run on `windows-latest` in fixture mode.
 
-## How to run
+## How to run (web dashboard)
 
 ```bash
 dotnet build src/Meridian/Meridian.csproj -c Release /p:EnableWindowsTargeting=true
@@ -10,6 +11,49 @@ cd src/Meridian/bin/Release/net9.0
 MDC_AUTH_MODE=optional ./Meridian --ui --http-port 8200
 # open http://localhost:8200
 ```
+
+## How to run (WPF desktop)
+
+```powershell
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net9.0-windows
+$env:MDC_FIXTURE_MODE = '1'
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
+```
+
+Desktop screenshots are stored under [`desktop/`](desktop/) and are automatically
+refreshed by the `Refresh UI Screenshots` workflow on the same schedule as the web
+screenshots. They are captured using Windows UI Automation and the built-in Command
+Palette to navigate between pages.
+
+### Local automation script (Windows)
+
+For local/runner use on Windows, run:
+
+```powershell
+pwsh -File scripts/dev/capture-desktop-screenshots.ps1
+```
+
+Optional flags:
+
+```powershell
+# Reuse an existing build
+pwsh -File scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild
+
+# Keep the app open after capture for manual inspection
+pwsh -File scripts/dev/capture-desktop-screenshots.ps1 -KeepAppOpen
+```
+
+The script builds `src/Meridian.Wpf`, launches fixture mode (`MDC_FIXTURE_MODE=1`),
+navigates each page via the shared desktop workflow runner, and writes PNGs to `docs/screenshots/desktop/`.
+
+For other scripted desktop walkthroughs, use:
+
+```powershell
+pwsh -File scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
+pwsh -File scripts/dev/generate-desktop-user-manual.ps1
+```
+
+`Symbols` is currently excluded from the automated screenshot refresh flow because the page exits the desktop shell in fixture-mode automation; the committed `desktop/wpf-symbols.png` remains as the last known-good capture until that crash is fixed.
 
 ---
 
@@ -87,7 +131,7 @@ The **Subscribed Symbols** table showing the active symbol list with data-type c
 
 ## 10 – Status & Activity Log
 
-Focused clip of the **Status** section at the top of the main dashboard, showing the four key metrics (Published Events, Dropped Events, Integrity Events, Historical Bars) and the terminal-style Activity Log.
+The **Status & Activity Log** section at the top of the dashboard showing the live metrics grid (published events, dropped events, integrity events, historical bars) and the scrolling activity log terminal.
 
 ![Status & Activity Log](10-status-section.png)
 
@@ -95,7 +139,7 @@ Focused clip of the **Status** section at the top of the main dashboard, showing
 
 ## 11 – Login Page
 
-The **Sign In** page served at `/login` when session-based authentication is enabled. Shows the Meridian Terminal login card with username and password fields.
+The **Sign In** page served at `/login`, used when Meridian Terminal is running in authenticated mode (`MDC_AUTH_MODE=required`). Shows the username/password form with the same dark terminal theme as the main dashboard.
 
 ![Login Page](11-login.png)
 
@@ -122,3 +166,100 @@ The **Data Operations** workspace of the React workstation shell, covering provi
 The **Governance** workspace of the React workstation shell, showing the fund ledger overview, risk audit history, reconciliation breaks, diagnostics, and operational settings.
 
 ![Workstation – Governance](14-workstation-governance.png)
+
+---
+
+## 15 – Workstation: Trading – Orders
+
+The **Orders blotter** deep-link within the Trading workspace, showing working and partially filled trading orders with status, fill quantity, and execution detail.
+
+![Workstation – Trading: Orders](15-workstation-trading-orders.png)
+
+---
+
+## 16 – Workstation: Trading – Positions
+
+The **Positions** deep-link within the Trading workspace, showing live positions, exposure, marks, and unrealized P&L.
+
+![Workstation – Trading: Positions](16-workstation-trading-positions.png)
+
+---
+
+## 17 – Workstation: Trading – Risk
+
+The **Risk guardrails** deep-link within the Trading workspace, showing the trading risk cockpit, position limits, drawdown stops, and order-rate throttle state.
+
+![Workstation – Trading: Risk](17-workstation-trading-risk.png)
+
+---
+
+## 18 – Workstation: Data Operations – Providers
+
+The **Provider health** deep-link within the Data Operations workspace, showing feed status, latency metrics, and operational notes for each registered provider.
+
+![Workstation – Data Operations: Providers](18-workstation-data-operations-providers.png)
+
+---
+
+## 19 – Workstation: Data Operations – Backfills
+
+The **Backfill queue** deep-link within the Data Operations workspace, showing active backfill jobs, progress, and review items.
+
+![Workstation – Data Operations: Backfills](19-workstation-data-operations-backfills.png)
+
+---
+
+## 20 – Workstation: Data Operations – Exports
+
+The **Storage exports** deep-link within the Data Operations workspace, showing export profiles and recent delivery targets.
+
+![Workstation – Data Operations: Exports](20-workstation-data-operations-exports.png)
+
+---
+
+## 21 – Workstation: Governance – Ledger
+
+The **Ledger overview** deep-link within the Governance workspace, showing cash flow summaries and audit-facing ledger details.
+
+![Workstation – Governance: Ledger](21-workstation-governance-ledger.png)
+
+---
+
+## 22 – Workstation: Governance – Reconciliation
+
+The **Reconciliation history** deep-link within the Governance workspace, showing open breaks, balanced runs, and reconciliation detail.
+
+![Workstation – Governance: Reconciliation](22-workstation-governance-reconciliation.png)
+
+---
+
+## 23 – Workstation: Governance – Security Master
+
+The **Security master coverage** deep-link within the Governance workspace, showing unresolved references and coverage risk across the instrument universe.
+
+![Workstation – Governance: Security Master](23-workstation-governance-security-master.png)
+
+---
+
+## WPF Desktop Application
+
+The following screenshots are captured from the WPF desktop application running in
+fixture mode (`MDC_FIXTURE_MODE=1`). They live under the [`desktop/`](desktop/) subdirectory.
+
+| # | Page | File |
+|---|------|------|
+| D01 | Dashboard | [`desktop/wpf-dashboard.png`](desktop/wpf-dashboard.png) |
+| D02 | Providers | [`desktop/wpf-providers.png`](desktop/wpf-providers.png) |
+| D03 | Provider Health | [`desktop/wpf-provider-health.png`](desktop/wpf-provider-health.png) |
+| D04 | Backfill | [`desktop/wpf-backfill.png`](desktop/wpf-backfill.png) |
+| D05 | Symbols | [`desktop/wpf-symbols.png`](desktop/wpf-symbols.png) |
+| D06 | Live Data | [`desktop/wpf-live-data.png`](desktop/wpf-live-data.png) |
+| D07 | Storage | [`desktop/wpf-storage.png`](desktop/wpf-storage.png) |
+| D08 | Data Quality | [`desktop/wpf-data-quality.png`](desktop/wpf-data-quality.png) |
+| D09 | Data Browser | [`desktop/wpf-data-browser.png`](desktop/wpf-data-browser.png) |
+| D10 | Strategy Runs | [`desktop/wpf-strategy-runs.png`](desktop/wpf-strategy-runs.png) |
+| D11 | Backtest | [`desktop/wpf-backtest.png`](desktop/wpf-backtest.png) |
+| D12 | Quant Script | [`desktop/wpf-quant-script.png`](desktop/wpf-quant-script.png) |
+| D13 | Security Master | [`desktop/wpf-security-master.png`](desktop/wpf-security-master.png) |
+| D14 | Diagnostics | [`desktop/wpf-diagnostics.png`](desktop/wpf-diagnostics.png) |
+| D15 | Settings | [`desktop/wpf-settings.png`](desktop/wpf-settings.png) |
