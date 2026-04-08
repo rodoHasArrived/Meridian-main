@@ -37,7 +37,9 @@ public static class HttpClientNames
 
     // Symbol search providers
     public const string AlpacaSymbolSearch = "alpaca-symbol-search";
+    public const string AlpacaOptions = "alpaca-options";
     public const string PolygonSymbolSearch = "polygon-symbol-search";
+    public const string PolygonOptions = "polygon-options";
     public const string FinnhubSymbolSearch = "finnhub-symbol-search";
     public const string OpenFigi = "openfigi";
     public const string EdgarSymbolSearch = "edgar-symbol-search";
@@ -124,6 +126,16 @@ public static class HttpClientConfiguration
             .ConfigureHttpClient(client =>
             {
                 client.BaseAddress = new Uri("https://api.alpaca.markets/v2/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        // Alpaca Options chain client
+        services.AddHttpClient(HttpClientNames.AlpacaOptions)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://data.alpaca.markets/");
                 client.Timeout = SharedResiliencePolicies.DefaultTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
@@ -268,6 +280,16 @@ public static class HttpClientConfiguration
 
         // Robinhood brokerage client
         services.AddHttpClient(HttpClientNames.RobinhoodBrokerage)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        // Robinhood symbol search client
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
             .ConfigureHttpClient(client =>
             {
                 client.BaseAddress = new Uri("https://api.robinhood.com/");
@@ -487,6 +509,16 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.PolygonSymbolSearch, onStateChanged);
 
+        // Polygon Options chain client
+        services.AddHttpClient(HttpClientNames.PolygonOptions)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.polygon.io/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.PolygonOptions, onStateChanged);
+
         // Tiingo Historical client
         services.AddHttpClient(HttpClientNames.TiingoHistorical)
             .ConfigureHttpClient(client =>
@@ -605,6 +637,15 @@ public static class HttpClientConfiguration
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodBrokerage, onStateChanged);
+
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodSymbolSearch, onStateChanged);
 
         // OpenFIGI client
         services.AddHttpClient(HttpClientNames.OpenFigi)

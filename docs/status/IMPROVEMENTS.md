@@ -33,8 +33,8 @@ This document consolidates **functional improvements** (features, reliability, U
 
 | Status | Count | Items |
 |--------|-------|-------|
-| ✅ **Completed** | 36 | A1, A2, A3, A4, A5, A6, A7, B1, B2, B3, B4, B5, C1, C2, C3, C4, C5, C6, C7, D1, D2, D3, D4, D5, D6, D7, E1, E2, E3, F1, F2, F3, G1, G2, G3, K0 |
-| 🔄 **Partially Complete** | 4 | K1, K2, K2A, K3 |
+| ✅ **Completed** | 37 | A1, A2, A3, A4, A5, A6, A7, B1, B2, B3, B4, B5, C1, C2, C3, C4, C5, C6, C7, D1, D2, D3, D4, D5, D6, D7, E1, E2, E3, F1, F2, F3, G1, G2, G3, K0, K2A |
+| 🔄 **Partially Complete** | 3 | K1, K2, K3 |
 | 📝 **Open** | 0 | None |
 | **Total** | 40 | Core improvements (35) + Theme K (5) |
 
@@ -50,15 +50,15 @@ This document consolidates **functional improvements** (features, reliability, U
 | F: User Experience | 3 | 0 | 0 | 3 |
 | G: Operations & Monitoring | 3 | 0 | 0 | 3 |
 | J: Data Canonicalization | 8 | 0 | 0 | 8 |
-| K: Trading Workstation Migration | 1 | 4 | 0 | 5 |
+| K: Trading Workstation Migration | 2 | 3 | 0 | 5 |
 
 ### Portfolio Health Snapshot
 
 - **Completion ratio:** 100% complete (35/35 core), 0% partial (0/35 core), 0% open (0/35 core).
 - **Core improvement themes A-G are closed** for the current platform baseline.
 - **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
-- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) is complete — Fluent theme, SVG icons, LiveCharts2 candlestick charting, Synthetic provider default, workflow guide, CI screenshot refresh, and route reliability fixes have all landed. K1–K3 are in active or planned delivery.
-- **Recommended focus:** provider-confidence hardening, paper-trading cockpit (Wave 2), WPF page-level MVVM extraction (K1 continuation), Security Master productization (K2A), and governance/fund-operations foundations (K2).
+- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization) are complete — Security Master now flows through WPF plus Research, Trading, Portfolio, Ledger, Reconciliation, and Governance surfaces as one authoritative instrument seam. K1, K2, and K3 remain active.
+- **Recommended focus:** provider-confidence hardening, paper-trading cockpit (Wave 2), WPF page-level MVVM extraction (K1 continuation), and governance/fund-operations foundations (K2).
 
 ### Backlog Inputs
 
@@ -88,7 +88,7 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 | 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection/reporting land | ✅ Done |
 | 9 | K0, route/health reliability | WPF Fluent theme, SVG icons, LiveCharts2 charting, Synthetic provider default, workflow guide, CI screenshots, duplicate route/registration fixes | ✅ Done |
 | 10 | K1 page-level redesign, Wave 1 provider confidence | High-traffic WPF page redesign (Live Data, Provider, Backfill, Data Quality); Polygon/IB/NYSE/StockSharp replay and runtime validation | 🔄 Active |
-| 11 | Wave 2 paper cockpit, K2A Security Master dashboard | Web trading cockpit (positions, orders, fills, P&L, risk); Security Master search panel and classification browser | 📝 Planned |
+| 11 | Wave 2 paper cockpit, governance/reporting follow-ons | Web trading cockpit (positions, orders, fills, P&L, risk); governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 📝 Planned |
 
 ---
 
@@ -1458,17 +1458,22 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-### K2A. 🔄 Security Master Productization
+### K2A. ✅ Security Master Productization
 
-**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** ✅ COMPLETE
 
-**Problem:** Security Master implementation now exists in contracts, services, storage, migrations, and F# domain models, but it is still underrepresented in the active product roadmap and not yet treated as a first-class platform capability for workstation workflows.
+**Problem solved:** Security Master no longer stops at contracts/services/storage. It is now treated as a first-class platform capability for workstation workflows.
 
-**Planned Solution:**
-- elevate Security Master into an explicit product/platform track
-- use Security Master as the authoritative instrument-definition layer for research, portfolio, ledger, and governance experiences
-- connect security identifiers, classifications, and economic definitions to downstream cash-flow and multi-ledger workflows
-- use Security Master metadata to improve reconciliation matching quality and reporting classification
+**Delivered:**
+- elevated Security Master into an explicit product/platform track in the active roadmap and status documents
+- hardened WPF activation so `SecurityMasterPage` resolves with real-or-null import/backfill services and degraded capability messaging when infrastructure is unavailable
+- expanded `WorkstationSecurityReference` into the canonical cross-workspace coverage/provenance contract
+- propagated Security Master identity, classification, subtype, currency, coverage state, and provenance into portfolio, ledger, reconciliation, Research, Trading, and Governance payloads
+- added governance drill-ins and deep links for detail/history/economic-definition review without duplicating CRUD surfaces in React
+
+**Follow-on scope:**
+- connect the delivered Security Master seam to broader cash-flow, report-pack, and multi-ledger governance workflows
+- add richer remediation/task-routing around unresolved mappings as operator workflow ownership matures
 
 **ROADMAP:** Phase 12A
 

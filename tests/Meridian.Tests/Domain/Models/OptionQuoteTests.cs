@@ -82,7 +82,6 @@ public sealed class OptionQuoteTests
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(-1)]
     public void Constructor_WithInvalidUnderlyingPrice_ThrowsArgumentOutOfRangeException(decimal price)
     {

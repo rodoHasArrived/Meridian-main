@@ -19,6 +19,7 @@ public partial class SplitPaneHostControl : UserControl
 
     public event EventHandler<PaneDropEventArgs>? PaneDropRequested;
     public event EventHandler<int>? PaneActivated;
+    public event EventHandler<string>? PaneCloseRequested;
 
     public PaneLayout Layout
     {
@@ -122,6 +123,45 @@ public partial class SplitPaneHostControl : UserControl
                 Background = Brushes.Transparent
             };
 
+            // When multiple panes are present, overlay a close button in the top-right corner
+            // of each pane so the user can close it without navigating away first.
+            UIElement paneChild;
+            if (layout.PaneCount > 1)
+            {
+                var overlay = new Grid();
+                overlay.Children.Add(frame);
+
+                var closeButton = new Button
+                {
+                    Content = "✕",
+                    Width = 22,
+                    Height = 22,
+                    FontSize = 11,
+                    Padding = new Thickness(0),
+                    Background = new SolidColorBrush(Color.FromArgb(200, 10, 10, 18)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(136, 136, 136)),
+                    BorderThickness = new Thickness(0),
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(0, 6, 6, 0),
+                    Cursor = Cursors.Arrow,
+                    ToolTip = "Close pane",
+                    Tag = slot.PaneId
+                };
+                Panel.SetZIndex(closeButton, 20);
+
+                // Capture slot.PaneId in a local so the lambda doesn't close over the loop variable
+                var paneId = slot.PaneId;
+                closeButton.Click += (_, _) => PaneCloseRequested?.Invoke(this, paneId);
+
+                overlay.Children.Add(closeButton);
+                paneChild = overlay;
+            }
+            else
+            {
+                paneChild = frame;
+            }
+
             var host = new Border
             {
                 Margin = new Thickness(8),
@@ -133,7 +173,7 @@ public partial class SplitPaneHostControl : UserControl
                     ? (TryFindResource("ConsoleAccentBlueBrush") as Brush ?? Brushes.DodgerBlue)
                     : (TryFindResource("ConsoleBorderBrush") as Brush ?? Brushes.Gray),
                 BorderThickness = new Thickness(index == ActivePaneIndex ? 2 : 1),
-                Child = frame
+                Child = paneChild
             };
             host.MouseLeftButtonDown += (_, _) => ActivatePane(index);
 

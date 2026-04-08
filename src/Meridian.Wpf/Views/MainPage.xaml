@@ -73,17 +73,6 @@
             <Setter Property="Margin" Value="10,0,0,0" />
         </Style>
 
-        <!-- Marquee: uppercase muted section labels — light text on dark sidebar -->
-        <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
-            <Setter Property="FontSize" Value="10" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource NavSectionLabelBrush}" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
-        </Style>
-
         <!-- Marquee-style workspace tiles on dark sidebar background -->
         <Style x:Key="WorkspaceTileStyle" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource SidebarTileBrush}" />
@@ -131,6 +120,11 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
+        </Style>
+        <Style x:Key="WorkspaceNavGroupListStyle" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource ShellNavItemStyle}" />
         </Style>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
@@ -222,12 +216,39 @@
                 <DockPanel Margin="16,0" LastChildFill="False">
                     <!-- Brand -->
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{StaticResource IconChart}"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="16"
-                                   Foreground="{StaticResource TopBarIconAccentBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,8,0" />
+                        <Viewbox Width="18"
+                                 Height="18"
+                                 Margin="0,0,10,0"
+                                 Stretch="Uniform">
+                            <Grid Width="24" Height="24">
+                                <Ellipse Width="18"
+                                         Height="18"
+                                         Stroke="{StaticResource MeridianBrandHaloBrush}"
+                                         StrokeThickness="1.1"
+                                         Opacity="0.55" />
+                                <Path Data="{StaticResource MeridianBrandMeridianGeometry}"
+                                      Stroke="{StaticResource MeridianBrandBeamBrush}"
+                                      StrokeThickness="1.2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round" />
+                                <Path Data="{StaticResource MeridianBrandChartGeometry}"
+                                      Stroke="{StaticResource MeridianBrandGradientBrush}"
+                                      StrokeThickness="2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round" />
+                                <Path Data="{StaticResource MeridianBrandHorizonGeometry}"
+                                      Stroke="{StaticResource MeridianBrandHorizonBrush}"
+                                      StrokeThickness="1.15"
+                                      StrokeStartLineCap="Round"
+                                      Opacity="0.8" />
+                                <Ellipse Width="2.8"
+                                         Height="2.8"
+                                         Fill="{StaticResource MeridianBrandStarBrush}"
+                                         VerticalAlignment="Top"
+                                         Margin="0,1.1,0,0" />
+                            </Grid>
+                        </Viewbox>
                         <TextBlock Text="Meridian"
                                    FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                    FontSize="14"
@@ -458,16 +479,15 @@
                                   Padding="0,6,0,12">
                         <StackPanel>
                             <StackPanel Visibility="{Binding IsResearchWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
-                                <ListBox x:Name="ResearchNavList"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
-                                        PreviewMouseMove="OnNavigationListMouseMove"
-                                        SelectedValuePath="Tag"
-                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         AutomationProperties.AutomationId="ResearchNavList"
-                                         AutomationProperties.Name="Research Navigation">
+                                <TextBlock Text="Home"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,8,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         AutomationProperties.Name="Research Home Navigation">
                                     <ListBoxItem Tag="ResearchShell"
                                                  AutomationProperties.AutomationId="ResearchNavWorkspaceHome"
                                                  AutomationProperties.Name="Research Workspace Navigation">
@@ -476,6 +496,19 @@
                                             <TextBlock Text="Workspace Home" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Active Work"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox x:Name="ResearchNavList"
+                                         Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         AutomationProperties.AutomationId="ResearchNavList"
+                                         AutomationProperties.Name="Research Navigation">
                                     <ListBoxItem Tag="Backtest"
                                                  AutomationProperties.AutomationId="ResearchNavBacktest"
                                                  AutomationProperties.Name="Backtest Navigation">
@@ -484,12 +517,12 @@
                                             <TextBlock Text="Backtest" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
-                                    <ListBoxItem Tag="Charts"
-                                                 AutomationProperties.AutomationId="ResearchNavCharts"
-                                                 AutomationProperties.Name="Charts Navigation">
+                                    <ListBoxItem Tag="StrategyRuns"
+                                                 AutomationProperties.AutomationId="ResearchNavStrategyRuns"
+                                                 AutomationProperties.Name="Strategy Runs Navigation">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconChartLine}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Charts" Style="{StaticResource ShellNavLabelStyle}" />
+                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Strategy Runs" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="QuantScript"
@@ -508,20 +541,22 @@
                                             <TextBlock Text="RunMat Lab" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
-                                    <ListBoxItem Tag="EventReplay"
-                                                 AutomationProperties.AutomationId="ResearchNavEventReplay"
-                                                 AutomationProperties.Name="Event Replay Navigation">
+                                </ListBox>
+
+                                <TextBlock Text="Review / Alerts"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="Charts"
+                                                 AutomationProperties.AutomationId="ResearchNavCharts"
+                                                 AutomationProperties.Name="Charts Navigation">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconClock}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Event Replay" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="StrategyRuns"
-                                                 AutomationProperties.AutomationId="ResearchNavStrategyRuns"
-                                                 AutomationProperties.Name="Strategy Runs Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Strategy Runs" Style="{StaticResource ShellNavLabelStyle}" />
+                                            <TextBlock Text="{StaticResource IconChartLine}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Charts" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="Watchlist"
@@ -532,46 +567,65 @@
                                             <TextBlock Text="Watchlist" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="EventReplay"
+                                                 AutomationProperties.AutomationId="ResearchNavEventReplay"
+                                                 AutomationProperties.Name="Event Replay Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconClock}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Event Replay" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Admin / Support"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="LeanIntegration"
+                                                 AutomationProperties.AutomationId="ResearchNavLeanIntegration"
+                                                 AutomationProperties.Name="Lean Integration Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE943;" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Lean Integration" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                 </ListBox>
                             </StackPanel>
 
                             <StackPanel Visibility="{Binding IsTradingWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="Home"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,8,0,4" />
                                 <ListBox x:Name="TradingNavList"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
-                                        PreviewMouseMove="OnNavigationListMouseMove"
-                                        SelectedValuePath="Tag"
-                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                         Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="TradingShell">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
                                             <TextBlock Text="Workspace Home" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Active Work"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="LiveData">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconChart}" Style="{StaticResource ShellNavIconStyle}" />
                                             <TextBlock Text="Live Data" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="StrategyRuns">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Active Runs" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="RunPortfolio">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Portfolio" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="TradingHours">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconClock}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Trading Hours" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="PositionBlotter"
@@ -582,6 +636,32 @@
                                             <TextBlock Text="Position Blotter" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="OrderBook"
+                                                 AutomationProperties.AutomationId="TradingNavOrderBook"
+                                                 AutomationProperties.Name="Order Book Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Order Book" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Review / Alerts"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="RunRisk"
+                                                 AutomationProperties.AutomationId="TradingNavRisk"
+                                                 AutomationProperties.Name="Risk Rail Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE7BA;" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Risk Rail" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                     <ListBoxItem Tag="NotificationCenter"
                                                  AutomationProperties.AutomationId="TradingNavNotifications">
                                         <StackPanel Orientation="Horizontal">
@@ -590,33 +670,56 @@
                                         </StackPanel>
                                     </ListBoxItem>
                                 </ListBox>
+
+                                <TextBlock Text="Admin / Support"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="TradingHours"
+                                                 AutomationProperties.AutomationId="TradingNavTradingHours"
+                                                 AutomationProperties.Name="Trading Hours Navigation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconClock}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Trading Hours" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
                             </StackPanel>
 
                             <StackPanel Visibility="{Binding IsDataOperationsWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="Home"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,8,0,4" />
                                 <ListBox x:Name="DataOpsNavList"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
-                                        PreviewMouseMove="OnNavigationListMouseMove"
-                                        SelectedValuePath="Tag"
-                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                         Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="DataOperationsShell">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
                                             <TextBlock Text="Workspace Home" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Active Work"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="Provider">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconNetwork}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Provider" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Symbols">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Symbols" Style="{StaticResource ShellNavLabelStyle}" />
+                                            <TextBlock Text="Providers" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="Backfill">
@@ -625,6 +728,22 @@
                                             <TextBlock Text="Backfill" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="Symbols">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Symbols" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Review / Alerts"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="Storage">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDatabase}" Style="{StaticResource ShellNavIconStyle}" />
@@ -634,49 +753,98 @@
                                     <ListBoxItem Tag="CollectionSessions">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconClock}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Sessions" Style="{StaticResource ShellNavLabelStyle}" />
+                                            <TextBlock Text="Collection Sessions" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="PackageManager">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconFolder}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Packages" Style="{StaticResource ShellNavLabelStyle}" />
+                                            <TextBlock Text="Package Manager" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Admin / Support"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="DataExport">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE8FE;" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Data Export" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                    <ListBoxItem Tag="Schedules">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconClock}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Schedules" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                 </ListBox>
                             </StackPanel>
 
                             <StackPanel Visibility="{Binding IsGovernanceWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="Home"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,8,0,4" />
                                 <ListBox x:Name="GovernanceNavList"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                        PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
-                                        PreviewMouseMove="OnNavigationListMouseMove"
-                                        SelectedValuePath="Tag"
-                                        SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                         Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="GovernanceShell">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
                                             <TextBlock Text="Workspace Home" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Active Work"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="FundLedger">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconDatabase}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Fund Overview" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                    <ListBoxItem Tag="FundAccounts">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE8D4;" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Accounts" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                    <ListBoxItem Tag="FundReconciliation">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE895;" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Reconciliation" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Review / Alerts"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                     <ListBoxItem Tag="DataQuality">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconCheckmark}" Style="{StaticResource ShellNavIconStyle}" />
                                             <TextBlock Text="Data Quality" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="ProviderHealth">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconNetwork}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Provider Health" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="SystemHealth">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconConnected}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="System Health" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="Diagnostics">
@@ -691,16 +859,38 @@
                                             <TextBlock Text="Notifications" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
+                                    <ListBoxItem Tag="FundTrialBalance">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE9D9;" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Trial Balance" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                </ListBox>
+
+                                <TextBlock Text="Admin / Support"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,12,0,4" />
+                                <ListBox Style="{StaticResource WorkspaceNavGroupListStyle}"
+                                         PreviewMouseLeftButtonDown="OnNavigationListPreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="OnNavigationListMouseMove"
+                                         SelectedValuePath="Tag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    <ListBoxItem Tag="ProviderHealth">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconNetwork}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="Provider Health" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
+                                    <ListBoxItem Tag="SystemHealth">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconConnected}" Style="{StaticResource ShellNavIconStyle}" />
+                                            <TextBlock Text="System Health" Style="{StaticResource ShellNavLabelStyle}" />
+                                        </StackPanel>
+                                    </ListBoxItem>
                                     <ListBoxItem Tag="Settings">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{StaticResource IconSettings}" Style="{StaticResource ShellNavIconStyle}" />
                                             <TextBlock Text="Settings" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="FundLedger">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconDatabase}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Fund Ledger" Style="{StaticResource ShellNavLabelStyle}" />
                                         </StackPanel>
                                     </ListBoxItem>
                                     <ListBoxItem Tag="Help">

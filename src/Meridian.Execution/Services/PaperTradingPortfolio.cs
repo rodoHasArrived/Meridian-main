@@ -126,7 +126,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
     /// <inheritdoc />
     /// <remarks>Aggregates positions across all accounts; same-symbol positions are netted.</remarks>
-    public IReadOnlyDictionary<string, ExecutionPosition> Positions
+    public IReadOnlyDictionary<string, IPosition> Positions
     {
         get
         {
@@ -160,7 +160,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
                 return netted.ToDictionary(
                     static kv => kv.Key,
-                    static kv => new ExecutionPosition(kv.Key, kv.Value.qty, kv.Value.costBasis, kv.Value.unrealised, kv.Value.realised),
+                    static kv => (IPosition)new ExecutionPosition(kv.Key, kv.Value.qty, kv.Value.costBasis, kv.Value.unrealised, kv.Value.realised),
                     StringComparer.OrdinalIgnoreCase);
             }
         }
@@ -586,10 +586,10 @@ internal sealed class AccountState : IAccountPortfolio
     }
 
     // IAccountPortfolio explicit implementation (read-only projection)
-    IReadOnlyDictionary<string, ExecutionPosition> IAccountPortfolio.Positions =>
+    IReadOnlyDictionary<string, IPosition> IAccountPortfolio.Positions =>
         Positions.ToDictionary(
             static kv => kv.Key,
-            static kv => kv.Value.ToExecutionPosition(),
+            static kv => (IPosition)kv.Value.ToExecutionPosition(),
             StringComparer.OrdinalIgnoreCase);
 
     public decimal UnrealisedPnl => Positions.Values.Sum(static p => p.UnrealisedPnl);

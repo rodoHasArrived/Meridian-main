@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-06
 **Status:** Active productization — workstation workflows are now materially in code, with provider trust, cockpit hardening, and governance integration on the critical path
-**Repository Snapshot (2026-04-04):** solution projects: 39 | `src/` project files: 28 | test projects: 8 | workflow files: 40
+**Repository Snapshot (2026-04-06):** solution projects: 40 | `src/` project files: 28 | test projects: 8 | workflow files: 42
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains a strong market-data, storage, backtesting, execution, ledger, and workstation baseline. The main delivery problem is now narrower and more product-shaped: closing the trust gaps, workflow gaps, and governance gaps that still separate a feature-rich platform from a genuinely operator-ready trading workstation and fund-operations product.
 
@@ -46,7 +46,7 @@ That changes the roadmap emphasis. Meridian does not need another broad foundati
 
 ### Complete
 
-These are conservative "in code and materially usable" claims as of 2026-04-04:
+These are conservative "in code and materially usable" claims as of 2026-04-06:
 
 - Core ingestion pipeline: bounded channels, backpressure handling, WAL durability, composite sinks, graceful shutdown, and structured metrics
 - Storage foundation: JSONL and Parquet sinks, tiered storage, replay, packaging, export, lineage, catalog, quota enforcement, and lifecycle policy support
@@ -61,6 +61,7 @@ These are conservative "in code and materially usable" claims as of 2026-04-04:
 - Governance workspace depth: reconciliation queue, break review and resolution, trial-balance drill-ins, reporting profile visibility, Security Master search, and identifier-conflict workflows in `governance-screen.tsx`
 - Shared run, portfolio, and ledger read-model baseline: `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` now normalize cross-workspace read paths
 - WPF workstation shell modernization: native Fluent theme, SVG icon set, candlestick charting, zero-API-key startup, workflow guide, and screenshot-refresh CI
+- Desktop delivery momentum: a `ScatterAnalysis` quickstart panel and standalone WPF export workflow now reinforce onboarding and packaging without changing the core wave ordering
 - Improvement portfolio A-G and J: the active improvement tracker marks the core platform-improvement set as complete, with Theme K active
 - Governance baseline: Security Master services and endpoints, run-scoped reconciliation, direct-lending APIs, export infrastructure, and blueprint-backed fund-ops planning are all present in the repo
 
@@ -68,7 +69,7 @@ These are conservative "in code and materially usable" claims as of 2026-04-04:
 
 These areas are real in code but not yet complete enough to treat as fully closed operator workflows:
 
-- Provider confidence remains uneven. Polygon, Interactive Brokers, StockSharp, and NYSE each have stronger evidence than earlier snapshots, but the validation matrix still includes partial or missing runtime proof.
+- Provider confidence remains uneven. Polygon, Interactive Brokers, StockSharp, and NYSE each have stronger replay, contract, and pipeline evidence than earlier snapshots, including the April 6 IB facade contract, NYSE pipeline, and StockSharp edge-case additions, but the validation matrix still includes partial or missing runtime proof.
 - Backfill reliability is broadly implemented but still needs longer-run checkpoint evidence and clearer operator confidence signals across providers and date ranges.
 - The React workstation is no longer just a shell, but it still needs hardening around real-vendor validation, richer audit depth, and stronger acceptance criteria for daily operator use.
 - Shared run coverage now spans backtest, paper, and live-aware models in contracts and UI, but portfolio, ledger, cash-flow, and reconciliation continuity are not yet equally deep in every mode.
@@ -79,7 +80,13 @@ These areas are real in code but not yet complete enough to treat as fully close
 
 ### Planned
 
-These are active productization tracks rather than greenfield invention:
+- Full paper-trading cockpit via the web dashboard (wiring brokerage gateways into cockpit panels)
+- `Backtest → Paper → Live` promotion workflow with audit trail
+- Unified Backtest Studio across native and Lean engines
+- Strategy comparison and run-diff tooling
+- Live broker integration validation (brokerage gateway framework is in place; live-validated runtime paths remain)
+- QuantScript Research Environment: polish the editor surface in the WPF workstation and wire it to live platform data and the native backtest engine
+- Operator Observability Platform: unified health dashboard, SLA enforcement reporting, alert management UI, and cross-provider data quality surface
 
 - close provider-confidence gaps with replay, runtime, and checkpoint evidence that aligns to the validation matrix
 - harden the web paper-trading cockpit that is already in code into a validated daily-use operator surface
@@ -89,16 +96,11 @@ These are active productization tracks rather than greenfield invention:
 - unify Backtest Studio workflows once the shared run model and workstation flows are stable enough to support it cleanly
 - validate at least one brokerage path against a real vendor surface with operator controls and explicit audit trail
 
-### Optional
-
-These remain valuable, but they are not on the shortest path to Meridian's core operator-ready product:
-
-- deeper QuantScript workflow integration and larger sample libraries
 - L3 inference and queue-aware execution simulation
 - multi-instance coordination as a supported scale-out topology
 - Phase 16 assembly-level performance optimization
 - broader advanced research tooling after the core workstation workflows are operator-ready
-- Phase 1.5 preferred and convertible equity domain extension in `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- broader Phase 1.5 preferred and convertible equity productization beyond the new domain, event-model, and preferred-term read/write foundation
 
 ---
 
@@ -267,6 +269,63 @@ First-class capabilities in the finished product are:
 
 Optional capabilities remain optional:
 
+---
+
+### Wave 6: Security Master productization
+
+Security Master has contracts, Postgres storage, F# domain models, and REST endpoints. Wave 6 turns it into an operator-visible platform layer that serves as the authoritative instrument-definition source across research, portfolio, governance, and ledger workflows.
+
+**Focus:**
+- Bond term richness: coupon, maturity, day-count, seniority fields in `SecurityEconomicDefinition`
+- Trading parameters: lot size, tick size, contract multiplier, margin requirement per instrument
+- Corporate action events: dividend, split, spin-off, merger events with backtest adjustment integration
+- Exchange bulk ingest: CSV and provider (Polygon) bulk-ingest path with idempotent dedup
+- Golden record conflict resolution: detect, store, and resolve field-level conflicts from multiple providers
+- WPF Security Master browser: `SecurityMasterPage` + `SecurityMasterViewModel` in the desktop app
+
+Full design: [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md)
+
+**Exit signal:** Security Master is searchable in the web dashboard and WPF app, corporate actions adjust backtest prices, and multi-provider conflicts surface with a resolution workflow.
+
+---
+
+### Wave 7: QuantScript Research Environment
+
+The QuantScript backend is complete: `RoslynScriptCompiler`, `ScriptRunner`, `QuantDataContext`, `BacktestProxy`, `DataProxy`, `StatisticsEngine`, `PortfolioBuilder`, `PriceSeries`, `TechnicalSeriesExtensions`, `EfficientFrontierConstraints`, `PlotQueue`, and `ScriptParamAttribute` are all in place. The `QuantScriptPage` and `QuantScriptViewModel` exist in the WPF workstation. The gap is an integrated, operator-ready research surface connected to the live platform.
+
+**Focus:**
+- Polish the QuantScript editor surface (`QuantScriptPage`) in the WPF workstation: code editing, parameter binding, plot output rendering via `PlotRenderBehavior`
+- Wire `QuantDataContext` to live historical and streaming data so scripts consume real platform data
+- Expose `BacktestProxy` from within scripts so iterative strategy exploration uses the native backtest engine
+- Script result export (JSONL/CSV/chart image) via the analysis export pipeline
+- Script library management: save, load, and version user scripts
+- Introductory example scripts demonstrating common research patterns (momentum, pairs, mean-reversion)
+
+**Exit signal:** An operator can write a research script in the QuantScript editor, run it against real platform data, and export or compare results — without leaving the workstation.
+
+---
+
+### Wave 8: Operator Observability Platform
+
+The monitoring backend is rich but fragmented. `DataQualityMonitoringService`, `DataFreshnessSlaMonitor`, `AnomalyDetector`, `CompletenessScoreCalculator`, `CrossProviderComparisonService`, `GapAnalyzer`, `PrometheusMetrics`, `ProviderDegradationScorer`, `ProviderLatencyService`, `SpreadMonitor`, `SequenceErrorTracker`, and `AlertDispatcher` are all implemented. The gap is a unified, navigable operator surface that makes this monitoring data actionable in real time.
+
+**Focus:**
+- Unified health dashboard in the web dashboard: provider status, SLA compliance, data quality scores, and alert state — all on one screen
+- SLA enforcement reporting: configurable thresholds, breach timelines, and provider-level accountability summaries
+- Alert management UI: view active alerts, acknowledge, configure suppression windows, and review alert history
+- Cross-provider comparison surface: symbol-level data completeness side-by-side across providers
+- Historical data quality trend charts: completeness scores, gap frequency, and latency histograms over time
+- Prometheus metrics integration guide: documented scrape endpoint and a reference Grafana dashboard JSON
+
+**Exit signal:** An operator can open the observability dashboard, see the current health state of all providers and data streams, drill into an SLA breach, and configure alert thresholds — without inspecting logs or writing queries.
+
+---
+
+### Optional Wave: Advanced research and scale
+
+Depth multipliers that require a stable platform foundation to deliver value.
+
+**Focus:**
 - L3 inference and queue-aware simulation
 - multi-instance scale-out
 - deeper QuantScript libraries and advanced research extensions
@@ -276,19 +335,23 @@ Optional capabilities remain optional:
 
 ## Recommended Next Waves
 
-### Wave 1: Provider trust and backfill evidence closure
+### Wave 1: Provider Reliability and Data Confidence (active)
 
 **Why now:** This is still the main dependency for every downstream readiness claim Meridian wants to make.
 
+**Blueprint:** [`../plans/provider-reliability-data-confidence-wave-1-blueprint.md`](../plans/provider-reliability-data-confidence-wave-1-blueprint.md)
+
 **Focus:**
 
-- expand Polygon replay and live-path evidence
-- keep Interactive Brokers runtime guidance aligned with current vendor surfaces
-- harden NYSE lifecycle and auth/rate-limit evidence
-- expand validated StockSharp adapter coverage
-- validate backfill checkpoints and gap handling across longer representative windows
+- expand Polygon replay coverage across feeds and edge cases
+- validate Interactive Brokers runtime and bootstrap behavior against real vendor surfaces without conflating simulation, smoke-build, and vendor-runtime modes
+- deepen NYSE shared-lifecycle and Level 2 depth coverage while hardening transport behavior around `IHttpClientFactory`, cancellation-safe websocket send, and resubscribe flows
+- keep StockSharp connector examples aligned with the adapters Meridian is prepared to validate
+- validate backfill checkpoint reliability and gap detection across representative providers and date ranges
+- harden the Parquet sink flush path and close remaining ADR-014 cleanup around L2 snapshot persistence
+- keep provider-confidence docs and the validation matrix synchronized with executable evidence rather than summary language
 
-**Exit signal:** Every major provider has documented replay or runtime evidence and backfill reliability is validated across representative ranges.
+**Exit signal:** Every major provider has documented replay or runtime evidence, each supported validation suite passes, and remaining entitlement-bound runtime gaps are explicitly bounded instead of implied away.
 
 ### Wave 2: Paper-trading cockpit hardening
 
@@ -359,7 +422,7 @@ Optional capabilities remain optional:
 - L3 inference and queue-aware simulation
 - multi-instance coordination
 - Phase 16 performance work
-- Phase 1.5 preferred and convertible equity domain extension
+- broader Phase 1.5 preferred and convertible equity productization beyond the new domain, event-model, and read-query foundation
 
 **Exit signal:** These deepen Meridian's ceiling after the core workstation product is trustworthy and coherent.
 
@@ -368,6 +431,7 @@ Optional capabilities remain optional:
 ## Risks and Dependencies
 
 - **Provider trust is still the first dependency.** Without replay and runtime evidence, downstream workflow polish risks overstating readiness.
+- **Evidence-strengthening tests are not the same as live-vendor proof.** The April 6 provider additions materially improve confidence, but they do not close IB, StockSharp, Polygon live-runtime, or NYSE auth/rate-limit gaps by themselves.
 - **Cockpit hardening should precede live-readiness claims.** Meridian now has meaningful trading surfaces, but operator trust still matters more than feature count.
 - **The shared run model must remain the center of gravity.** If research, trading, portfolio, ledger, and governance drift apart again, the workstation migration loses its product logic.
 - **Security Master must integrate through shared read models.** It should enrich portfolio, ledger, reconciliation, and reporting flows rather than becoming a parallel subsystem.

@@ -44,7 +44,7 @@ HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']
 
 # Patterns to extract endpoints from C# code
 ENDPOINT_PATTERNS = [
-    # MapGet, MapPost, etc.
+    # MapGet, MapPost, etc. with string literal
     re.compile(
         r'\.Map(Get|Post|Put|Delete|Patch)\s*\(\s*"([^"]+)"',
         re.IGNORECASE
@@ -61,9 +61,22 @@ ENDPOINT_PATTERNS = [
     ),
 ]
 
-# Pattern to find API endpoint documentation in markdown
+# Pattern for Map*(UiApiRoutes.SomeConst, ...) — constant-based route registration
+CONST_ROUTE_PATTERN = re.compile(
+    r'\.Map(Get|Post|Put|Delete|Patch)\s*\(\s*\w+Routes?\.\w+',
+    re.IGNORECASE
+)
+
+# Resolved from UiApiRoutes.cs const string declarations
+ROUTE_CONST_PATTERN = re.compile(
+    r'public\s+const\s+string\s+(\w+)\s*=\s*"([^"]+)"'
+)
+
+# Pattern to find API endpoint documentation in markdown tables.
+# Matches rows in the format: | METHOD | `/api/path` | Description |
+# Captures group(1) = HTTP method, group(2) = API path.
 DOC_ENDPOINT_PATTERN = re.compile(
-    r'[`"]*(/?api/[^`"\s|]+)[`"]*\s*\|\s*([A-Z]+)',
+    r'\|\s*(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s*\|\s*[`"]*(/?api/[^`"\s|]+)[`"]*',
     re.IGNORECASE
 )
 
@@ -127,7 +140,24 @@ def _should_skip(path: Path) -> bool:
     return any(part in EXCLUDE_DIRS for part in path.parts)
 
 
-def _extract_endpoints_from_file(file_path: Path, root: Path) -> list[Endpoint]:  # noqa: C901
+def _load_route_constants(root: Path) -> dict[str, str]:
+    """Load route path constants from *Routes.cs / *Routes*.cs files across the solution."""
+    constants: dict[str, str] = {}
+    for cs_file in root.rglob("*Routes*.cs"):
+        if _should_skip(cs_file):
+            continue
+        try:
+            content = cs_file.read_text(encoding='utf-8', errors='replace')
+        except Exception:
+            continue
+        for match in ROUTE_CONST_PATTERN.finditer(content):
+            name, path = match.group(1), match.group(2)
+            if path.startswith('/') or path.startswith('api'):
+                constants[name] = path
+    return constants
+
+
+def _extract_endpoints_from_file(file_path: Path, root: Path, route_constants: Optional[dict[str, str]] = None) -> list[Endpoint]:  # noqa: C901
     """Extract API endpoints from a C# source file."""
     endpoints = []
 
@@ -177,6 +207,24 @@ def _extract_endpoints_from_file(file_path: Path, root: Path) -> list[Endpoint]:
                     line=line_num
                 ))
 
+        # Resolve constant-based routes: .MapGet(SomeRoutes.Foo, ...)
+        if route_constants:
+            const_match = re.match(
+                r'\s*\w+\.Map(Get|Post|Put|Delete|Patch)\s*\(\s*\w+Routes?\.(\w+)',
+                line, re.IGNORECASE
+            )
+            if const_match:
+                http_method = const_match.group(1).upper()
+                const_name = const_match.group(2)
+                resolved = route_constants.get(const_name)
+                if resolved and (resolved.startswith('/api') or resolved.startswith('api')):
+                    endpoints.append(Endpoint(
+                        path=resolved,
+                        method=http_method,
+                        file=rel_path,
+                        line=line_num
+                    ))
+
     return endpoints
 
 
@@ -186,11 +234,14 @@ def scan_endpoints(root: Path) -> list[Endpoint]:
     if not src_dir.exists():
         return []
 
+    route_constants = _load_route_constants(root)
+    print(f"Loaded {len(route_constants)} route constants", file=sys.stderr)
+
     all_endpoints = []
     for cs_file in src_dir.rglob("*.cs"):
         if _should_skip(cs_file):
             continue
-        endpoints = _extract_endpoints_from_file(cs_file, root)
+        endpoints = _extract_endpoints_from_file(cs_file, root, route_constants)
         all_endpoints.extend(endpoints)
 
     # Deduplicate by path + method
@@ -226,8 +277,8 @@ def scan_documented_endpoints(api_doc_path: Path, root: Path) -> list[Documented
     for line_num, line in enumerate(lines, 1):
         matches = DOC_ENDPOINT_PATTERN.finditer(line)
         for match in matches:
-            path = match.group(1)
-            method = match.group(2).upper()
+            method = match.group(1).upper()
+            path = match.group(2)
 
             documented.append(DocumentedEndpoint(
                 path=path,

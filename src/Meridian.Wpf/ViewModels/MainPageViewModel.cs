@@ -51,6 +51,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ["ScatterAnalysis"] = new("Scatter Analysis", "Plot the bivariate relationship between two data series with regression and statistics."),
             ["Backtest"] = new("Backtest", "Configure strategy runs and launch new simulations."),
             ["TradingHours"] = new("Trading Hours", "Check venue schedules, sessions, and trading-calendar coverage."),
+            ["OrderBook"] = new("Order Book", "Inspect market depth, liquidity posture, and order-book changes."),
+            ["PositionBlotter"] = new("Position Blotter", "Review active positions, staged actions, and execution posture."),
+            ["RunRisk"] = new("Risk Rail", "Review live or paper risk posture for the selected trading run."),
             ["Provider"] = new("Providers", "Manage provider integrations, health, and operational posture."),
             ["ProviderHealth"] = new("Provider Health", "Inspect provider reachability, degraded states, and recovery guidance."),
             ["DataSources"] = new("Data Sources", "Audit source connectivity, feed coverage, and ingestion readiness."),
@@ -442,18 +445,19 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         "Backtest" or "BatchBacktest" or "RunMat" or "Charts" or "QuantScript"
             or "LeanIntegration" or "AdvancedAnalytics" or "ResearchShell"
-            or "Watchlist" or "OrderBook" or "StrategyRuns" or "RunDetail"
-            or "RunCashFlow" or "RunPortfolio"
+            or "Watchlist" or "StrategyRuns" or "RunDetail"
+            or "RunCashFlow" or "RunPortfolio" or "EventReplay"
             => "research",
 
-        "LiveData" or "TradingShell" or "TradingHours"
+        "LiveData" or "TradingShell" or "TradingHours" or "OrderBook"
+            or "PositionBlotter" or "RunRisk"
             => "trading",
 
         "DataOperationsShell" or "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage"
             or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser"
             or "DataCalendar" or "DataSampling" or "TimeSeriesAlignment"
             or "ExportPresets" or "IndexSubscription" or "SymbolMapping" or "SymbolStorage"
-            or "Options" or "EventReplay" or "AnalysisExport" or "AnalysisExportWizard"
+            or "Options" or "AnalysisExport" or "AnalysisExportWizard"
             or "PortfolioImport"
             => "data-operations",
 

@@ -58,7 +58,7 @@ def validate_scores(raw: dict[str, object]) -> dict[str, int]:
             raise ValueError(f"Missing score for '{k}'")
         try:
             val = int(raw[k])
-        except (ValueError, TypeError) as exc:
+        except (ValueError, TypeError) as exc:  # noqa: BLE001
             raise ValueError(f"Score for '{k}' is not an integer: {raw[k]!r}") from exc
         if val < 0 or val > 2:
             raise ValueError(f"Score for '{k}' must be between 0 and 2. Got {val}.")
@@ -75,7 +75,7 @@ def to_markdown(result: EvalResult) -> str:
         "traceable_summary": "Traceable Summary",
     }
     rows = "\n".join(
-        f"| {pretty[k]} | {v} |" for k, v in result.scores.items()
+        f"| {pretty[k]} | {v} |  |" for k, v in result.scores.items()
     )
 
     failed_lines = "\n".join(f"  - {x}" for x in (result.failed_checks or ["none"]))
@@ -86,8 +86,8 @@ def to_markdown(result: EvalResult) -> str:
         f"- Scenario: {result.scenario}\n"
         f"- Total Score: {result.total}/10\n"
         f"- Outcome: {result.outcome}\n\n"
-        "| Category | Score (0-2) |\n"
-        "|---|---:|\n"
+        "| Category | Score (0-2) | Evidence |\n"
+        "|---|---:|---|\n"
         f"{rows}\n\n"
         "- Failed checks:\n"
         f"{failed_lines}\n"

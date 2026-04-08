@@ -2,12 +2,14 @@
 module Meridian.FSharp.Tests.DomainTests
 
 open System
+open System.Text.Json
 open Xunit
 open FsUnit.Xunit
 open Meridian.FSharp.Domain.Sides
 open Meridian.FSharp.Domain.Integrity
 open Meridian.FSharp.Domain.MarketEvents
 open Meridian.FSharp.Domain
+open Meridian.FSharp.SecurityMasterInterop
 
 [<Fact>]
 let ``Side.ToInt converts Buy to 0`` () =
@@ -149,6 +151,106 @@ let ``QuoteEvent with CLIMutable can be created`` () =
     quote.AskPrice |> should equal 140.05m
 
 open Meridian.FSharp.Domain
+
+let private createEquityCreateCommand classification =
+    let effectiveFrom = DateTimeOffset(2026, 4, 6, 0, 0, 0, TimeSpan.Zero)
+
+    {
+        SecurityId = SecurityId(Guid.NewGuid())
+        Common = {
+            DisplayName = "Convertible Preferred Test Security"
+            Currency = "USD"
+            CountryOfRisk = None
+            IssuerName = Some "Meridian Test Issuer"
+            Exchange = Some "NYSE"
+            LotSize = Some 100m
+            TickSize = Some 0.01m
+        }
+        Identifiers = [
+            {
+                Kind = IdentifierKind.Ticker
+                Value = "MTEST"
+                IsPrimary = true
+                ValidFrom = effectiveFrom
+                ValidTo = None
+            }
+        ]
+        Kind =
+            SecurityKind.Equity {
+                ShareClass = Some "A"
+                VotingRightsCat = Some VotingRightsCat.LimitedVoting
+                Classification = classification
+            }
+        EffectiveFrom = effectiveFrom
+        Provenance = {
+            SourceSystem = "domain-tests"
+            SourceRecordId = None
+            AsOf = effectiveFrom
+            UpdatedBy = "domain-tests"
+            Reason = Some "phase-1-5"
+        }
+    }
+
+let private createSecurityRecord classification =
+    match SecurityMaster.create (createEquityCreateCommand classification) with
+    | Ok [ SecurityMasterEvent.SecurityCreated record ] -> record
+    | Ok _ -> failwith "Expected a single SecurityCreated event"
+    | Error errors -> failwithf "Expected SecurityCreated record, got: %A" errors
+
+let private getDateOnlyProperty (element: JsonElement) (propertyName: string) =
+    element.GetProperty(propertyName).GetString() |> DateOnly.Parse
+
+let private createConvertiblePreferredClassification () =
+    let preferredTerms = {
+        DividendRate = Some 6.25m
+        DividendType = DividendType.Fixed
+        RedemptionPrice = Some 25.00m
+        RedemptionDate = Some (DateOnly(2032, 1, 15))
+        CallableDate = Some (DateOnly(2030, 1, 15))
+        ParticipationTerms = Some {
+            ParticipatesInCommonDividends = true
+            AdditionalDividendThreshold = Some 1.50m
+        }
+        LiquidationPreference = LiquidationPreference.Senior 1.0m
+    }
+    let convertibleTerms = {
+        UnderlyingSecurityId = SecurityId(Guid.NewGuid())
+        ConversionRatio = 2.50m
+        ConversionPrice = Some 48.00m
+        ConversionStartDate = Some (DateOnly(2027, 1, 15))
+        ConversionEndDate = Some (DateOnly(2031, 12, 31))
+    }
+
+    preferredTerms, convertibleTerms, EquityClassification.ConvertiblePreferred(preferredTerms, convertibleTerms)
+
+let private createEquityAmendCommand
+    (currentRecord: SecurityMasterRecord)
+    (nextClassification: EquityClassification)
+    (commonOverride: CommonTerms option)
+    : AmendTerms =
+    let nextKind =
+        match currentRecord.Kind with
+        | SecurityKind.Equity terms ->
+            SecurityKind.Equity { terms with Classification = Some nextClassification }
+        | _ ->
+            failwith "Expected SecurityKind.Equity"
+
+    {
+        SecurityId = currentRecord.SecurityId
+        ExpectedVersion = currentRecord.Version
+        Common = commonOverride
+        Kind = Some nextKind
+        IdentifiersToAdd = []
+        IdentifiersToExpire = []
+        EffectiveFrom = currentRecord.EffectiveFrom
+        Provenance = {
+            SourceSystem = "domain-tests"
+            SourceRecordId = None
+            AsOf = currentRecord.EffectiveFrom.AddMinutes(5.0)
+            UpdatedBy = "domain-tests"
+            Reason = Some "phase-1-5-amend"
+        }
+    }
 
 [<Fact>]
 let ``BondTerms fixedRate factory sets coupon correctly`` () =
@@ -293,16 +395,237 @@ let ``EquityTerms carries VotingRightsCat correctly`` () =
         VotingRightsCat.SuperVoting,   "SuperVoting"
     ]
     for (cat, expected) in allCases do
-        let terms = { ShareClass = None; VotingRightsCat = Some cat }
+        let terms = { ShareClass = None; VotingRightsCat = Some cat; Classification = None }
         terms.VotingRightsCat |> should equal (Some cat)
         VotingRightsCat.asString cat |> should equal expected
 
 [<Fact>]
 let ``EquityTerms VotingRightsCat OtherVotingRights carries string payload`` () =
-    let terms = { ShareClass = None; VotingRightsCat = Some (VotingRightsCat.OtherVotingRights "Restricted") }
+    let terms = {
+        ShareClass = None
+        VotingRightsCat = Some (VotingRightsCat.OtherVotingRights "Restricted")
+        Classification = None
+    }
     match terms.VotingRightsCat with
     | Some (VotingRightsCat.OtherVotingRights label) -> label |> should equal "Restricted"
     | _ -> failwith "Expected OtherVotingRights"
+
+[<Fact>]
+let ``SecurityMaster.create keeps common equity flows valid when classification is omitted`` () =
+    let command = createEquityCreateCommand None
+
+    match SecurityMaster.create command with
+    | Ok [ SecurityMasterEvent.SecurityCreated record ] ->
+        match record.Kind with
+        | SecurityKind.Equity terms ->
+            terms.Classification |> should equal None
+            terms.ShareClass |> should equal (Some "A")
+        | _ -> failwith "Expected SecurityKind.Equity"
+    | Ok _ -> failwith "Expected a single SecurityCreated event"
+    | Error errors -> failwithf "Expected common equity flow to remain valid, got: %A" errors
+
+[<Fact>]
+let ``SecurityMaster.create accepts convertible preferred equity terms`` () =
+    let _, _, classification = createConvertiblePreferredClassification ()
+    let command = createEquityCreateCommand (Some classification)
+
+    match SecurityMaster.create command with
+    | Ok [ SecurityMasterEvent.SecurityCreated record ] ->
+        match record.Kind with
+        | SecurityKind.Equity terms ->
+            terms.Classification |> should equal (Some classification)
+        | _ -> failwith "Expected SecurityKind.Equity"
+    | Ok _ -> failwith "Expected a single SecurityCreated event"
+    | Error errors -> failwithf "Expected convertible preferred equity terms to validate, got: %A" errors
+
+[<Fact>]
+let ``SecurityMaster.create rejects invalid preferred and convertible term constraints`` () =
+    let preferredTerms = {
+        DividendRate = Some -0.50m
+        DividendType = DividendType.Cumulative
+        RedemptionPrice = Some 0m
+        RedemptionDate = Some (DateOnly(2030, 6, 1))
+        CallableDate = Some (DateOnly(2031, 6, 1))
+        ParticipationTerms = Some {
+            ParticipatesInCommonDividends = true
+            AdditionalDividendThreshold = Some -1.0m
+        }
+        LiquidationPreference = LiquidationPreference.Senior 0m
+    }
+    let convertibleTerms = {
+        UnderlyingSecurityId = SecurityId(Guid.Empty)
+        ConversionRatio = 0m
+        ConversionPrice = Some 0m
+        ConversionStartDate = Some (DateOnly(2032, 1, 1))
+        ConversionEndDate = Some (DateOnly(2031, 1, 1))
+    }
+    let command =
+        createEquityCreateCommand
+            (Some (EquityClassification.ConvertiblePreferred(preferredTerms, convertibleTerms)))
+
+    match SecurityMaster.create command with
+    | Error errors ->
+        let codes = errors |> List.map (fun error -> error.Code)
+        codes |> List.contains "equity_dividend_rate_invalid" |> should equal true
+        codes |> List.contains "equity_redemption_price_invalid" |> should equal true
+        codes |> List.contains "equity_callable_date_invalid" |> should equal true
+        codes |> List.contains "equity_participation_threshold_invalid" |> should equal true
+        codes |> List.contains "equity_liquidation_preference_invalid" |> should equal true
+        codes |> List.contains "equity_underlying_security_required" |> should equal true
+        codes |> List.contains "equity_conversion_ratio_invalid" |> should equal true
+        codes |> List.contains "equity_conversion_price_invalid" |> should equal true
+        codes |> List.contains "equity_conversion_window_invalid" |> should equal true
+    | Ok _ -> failwith "Expected invalid preferred and convertible terms to be rejected"
+
+[<Fact>]
+let ``SecurityMaster.amend emits PreferredTermsAmended when only preferred terms change`` () =
+    let preferredTerms, convertibleTerms, classification = createConvertiblePreferredClassification ()
+    let currentRecord = createSecurityRecord (Some classification)
+    let nextClassification =
+        EquityClassification.ConvertiblePreferred(
+            { preferredTerms with DividendRate = Some 7.00m },
+            convertibleTerms)
+    let command = createEquityAmendCommand currentRecord nextClassification None
+
+    match SecurityMaster.amend currentRecord command with
+    | Ok [ SecurityMasterEvent.PreferredTermsAmended(beforeVersion, record) ] ->
+        beforeVersion |> should equal currentRecord.Version
+        record.Version |> should equal (currentRecord.Version + 1L)
+
+        match record.Kind with
+        | SecurityKind.Equity terms ->
+            terms.Classification |> should equal (Some nextClassification)
+        | _ ->
+            failwith "Expected SecurityKind.Equity"
+    | Ok events ->
+        failwithf "Expected PreferredTermsAmended event, got: %A" events
+    | Error errors ->
+        failwithf "Expected preferred amend to succeed, got: %A" errors
+
+[<Fact>]
+let ``SecurityMaster.amend emits ConversionTermsAmended when only conversion terms change`` () =
+    let preferredTerms, convertibleTerms, classification = createConvertiblePreferredClassification ()
+    let currentRecord = createSecurityRecord (Some classification)
+    let nextClassification =
+        EquityClassification.ConvertiblePreferred(
+            preferredTerms,
+            { convertibleTerms with ConversionRatio = 3.00m })
+    let command = createEquityAmendCommand currentRecord nextClassification None
+
+    match SecurityMaster.amend currentRecord command with
+    | Ok [ SecurityMasterEvent.ConversionTermsAmended(beforeVersion, record) ] ->
+        beforeVersion |> should equal currentRecord.Version
+        record.Version |> should equal (currentRecord.Version + 1L)
+
+        match record.Kind with
+        | SecurityKind.Equity terms ->
+            terms.Classification |> should equal (Some nextClassification)
+        | _ ->
+            failwith "Expected SecurityKind.Equity"
+    | Ok events ->
+        failwithf "Expected ConversionTermsAmended event, got: %A" events
+    | Error errors ->
+        failwithf "Expected conversion amend to succeed, got: %A" errors
+
+[<Fact>]
+let ``SecurityMaster.amend keeps generic TermsAmended when common and preferred terms change together`` () =
+    let preferredTerms, convertibleTerms, classification = createConvertiblePreferredClassification ()
+    let currentRecord = createSecurityRecord (Some classification)
+    let nextCommon = {
+        currentRecord.Common with
+            DisplayName = "Convertible Preferred Test Security Updated"
+    }
+    let nextClassification =
+        EquityClassification.ConvertiblePreferred(
+            { preferredTerms with RedemptionPrice = Some 26.50m },
+            convertibleTerms)
+    let command = createEquityAmendCommand currentRecord nextClassification (Some nextCommon)
+
+    match SecurityMaster.amend currentRecord command with
+    | Ok [ SecurityMasterEvent.TermsAmended(beforeVersion, record) ] ->
+        beforeVersion |> should equal currentRecord.Version
+        record.Common.DisplayName |> should equal nextCommon.DisplayName
+    | Ok events ->
+        failwithf "Expected generic TermsAmended event, got: %A" events
+    | Error errors ->
+        failwithf "Expected mixed amend to succeed, got: %A" errors
+
+[<Fact>]
+let ``SecurityMasterCommandFacade surfaces specialized event types and clears them on validation failure`` () =
+    let preferredTerms, convertibleTerms, classification = createConvertiblePreferredClassification ()
+    let currentRecord = createSecurityRecord (Some classification)
+    let validClassification =
+        EquityClassification.ConvertiblePreferred(
+            { preferredTerms with CallableDate = Some (DateOnly(2030, 6, 15)) },
+            convertibleTerms)
+    let validCommand = createEquityAmendCommand currentRecord validClassification None
+    let validResult = SecurityMasterCommandFacade.Amend(currentRecord, validCommand)
+    validResult.IsSuccess |> should equal true
+    validResult.PrimaryEventType |> should equal "PreferredTermsAmended"
+    validResult.EventTypes |> should equal [| "PreferredTermsAmended" |]
+
+    let invalidClassification =
+        EquityClassification.ConvertiblePreferred(
+            { preferredTerms with DividendRate = Some -1.00m },
+            convertibleTerms)
+    let invalidCommand = createEquityAmendCommand currentRecord invalidClassification None
+    let invalidResult = SecurityMasterCommandFacade.Amend(currentRecord, invalidCommand)
+    invalidResult.IsSuccess |> should equal false
+    invalidResult.PrimaryEventType |> should equal String.Empty
+    invalidResult.EventTypes |> should equal [||]
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes convertible preferred nested term payloads`` () =
+    let preferredTerms, convertibleTerms, classification = createConvertiblePreferredClassification ()
+    let record = createSecurityRecord (Some classification)
+    let wrapper = SecurityMasterSnapshotWrapper(record)
+    use document = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = document.RootElement
+
+    payload.GetProperty("classification").GetString() |> should equal "ConvertiblePreferred"
+    payload.GetProperty("shareClass").GetString() |> should equal "A"
+    payload.GetProperty("votingRightsCat").GetString() |> should equal "LimitedVoting"
+
+    let preferredPayload = payload.GetProperty("preferredTerms")
+    preferredPayload.GetProperty("dividendType").GetString() |> should equal "Fixed"
+    preferredPayload.GetProperty("redemptionPrice").GetDecimal() |> should equal preferredTerms.RedemptionPrice.Value
+    getDateOnlyProperty preferredPayload "callableDate" |> should equal preferredTerms.CallableDate.Value
+    let liquidationPreference = preferredPayload.GetProperty("liquidationPreference")
+    liquidationPreference.GetProperty("kind").GetString() |> should equal "Senior"
+    liquidationPreference.GetProperty("multiple").GetDecimal() |> should equal 1.0m
+    let participationTerms = preferredPayload.GetProperty("participationTerms")
+    participationTerms.GetProperty("participatesInCommonDividends").GetBoolean() |> should equal true
+    participationTerms.GetProperty("additionalDividendThreshold").GetDecimal() |> should equal preferredTerms.ParticipationTerms.Value.AdditionalDividendThreshold.Value
+
+    let convertiblePayload = payload.GetProperty("convertibleTerms")
+    let (SecurityId underlyingSecurityId) = convertibleTerms.UnderlyingSecurityId
+    convertiblePayload.GetProperty("underlyingSecurityId").GetGuid() |> should equal underlyingSecurityId
+    convertiblePayload.GetProperty("conversionRatio").GetDecimal() |> should equal convertibleTerms.ConversionRatio
+    convertiblePayload.GetProperty("conversionPrice").GetDecimal() |> should equal convertibleTerms.ConversionPrice.Value
+    getDateOnlyProperty convertiblePayload "conversionStartDate" |> should equal convertibleTerms.ConversionStartDate.Value
+    getDateOnlyProperty convertiblePayload "conversionEndDate" |> should equal convertibleTerms.ConversionEndDate.Value
+
+[<Fact>]
+let ``SecurityMasterLegacyUpgrade preserves convertible preferred classification in economic definition`` () =
+    let preferredTerms, _, classification = createConvertiblePreferredClassification ()
+    let record = createSecurityRecord (Some classification)
+    let definition = SecurityMasterLegacyUpgrade.toEconomicDefinition record
+
+    definition.Classification.AssetClass |> should equal AssetClass.Equity
+    definition.Classification.Family |> should equal (Some AssetFamily.PreferredEquity)
+    definition.Classification.SubType |> should equal SecuritySubType.PreferredShare
+    definition.Classification.TypeName |> should equal "ConvertiblePreferredEquity"
+
+    let equityBehavior = definition.Terms.EquityBehavior |> Option.defaultWith (fun () -> failwith "Expected equity behavior terms")
+    equityBehavior.ShareClass |> should equal (Some "A")
+    equityBehavior.DistributionType |> should equal (Some (DividendType.asString preferredTerms.DividendType))
+
+    let redemption = definition.Terms.Redemption |> Option.defaultWith (fun () -> failwith "Expected redemption terms")
+    redemption.RedemptionPrice |> should equal preferredTerms.RedemptionPrice
+
+    let call = definition.Terms.Call |> Option.defaultWith (fun () -> failwith "Expected call terms")
+    call.IsCallable |> should equal true
+    call.FirstCallDate |> should equal preferredTerms.CallableDate
 
 [<Fact>]
 let ``BondTerms factory carries BondSubclass correctly`` () =

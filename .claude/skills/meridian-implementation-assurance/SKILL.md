@@ -3,24 +3,26 @@ name: meridian-implementation-assurance
 description: >
   Implementation assurance and evidence collection skill for Meridian. Use when a change needs
   to prove it matches the approved blueprint/requirements, with explicit test evidence, doc
-  routing, and a traceable summary. Triggers on requests to certify completeness, confirm scope
-  alignment, gather rollout evidence, or update AI/agent catalogs after new capabilities land.
+  routing, a traceable summary, or validated skill-package maintenance. Triggers on requests to
+  certify completeness, confirm scope alignment, gather rollout evidence, create or refine
+  skills, or update AI/agent catalogs after new capabilities land.
 license: See repository LICENSE
-last_updated: 2026-03-31
+last_updated: 2026-04-07
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files plus the
   bundled scripts for doc routing and lightweight evaluation scoring. No external network access
   required.
 metadata:
   owner: meridian-ai
-  version: "1.1"
+  version: "1.2"
   spec: open-agent-skills-v1
 ---
 # Meridian — Implementation Assurance Skill
 
 Assure that a change is correctly implemented, documented, and verifiable. This skill drives
 end-to-end evidence collection: requirement mapping, workflow adherence, test/documentation
-proof, and routing updates to the right AI catalogs.
+proof, routing updates to the right AI catalogs, and lean skill-package maintenance when AI
+artifacts change.
 
 > **GitHub Copilot equivalent:** [`.github/agents/implementation-assurance-agent.md`](../../../.github/agents/implementation-assurance-agent.md)
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
@@ -38,6 +40,7 @@ A task delivered by this skill is complete when **all** of the following are tru
 - **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
 - **Rubric score ≥ 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
 - **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
+- **Skill packages stay lean and valid:** when agents/skills change, only necessary package files are kept, metadata stays synchronized, and package validation is recorded.
 - **Summary is traceable:** the closing summary links requirement → files changed → validation artifact → doc update.
 
 ---
@@ -50,17 +53,20 @@ Follow this 4-step loop for every implementation-assurance task:
 - Identify the source of truth: blueprint / roadmap item / issue requirements.
 - Capture acceptance criteria, success metrics, and any mandated evidence.
 - Determine the scenario: **A** (code + existing docs), **B** (code + missing docs), or **C** (performance-sensitive).
+- Determine whether the **skill-authoring lane** also applies.
 - Run `doc_route.py` to confirm which AI/agent catalog pages must be updated for discoverability.
 
 ### 2 — PLAN & TRACE
 - Map each requirement to its implementing file(s) and validation artifact(s) (tests, CLI runs).
 - Decide the validation lane (fast sanity vs. full regression) and required doc touchpoints.
+- For skill work, decide which package files actually belong in `references/`, `scripts/`, `assets/`, and metadata.
 - If scoring is needed, choose a scenario (`A`, `B`, or `C`) and scoring weights for evaluation.
 
 ### 3 — EXECUTE & VERIFY
 - Perform the minimal changes to satisfy the mapped criteria.
 - Run the relevant tests/builds; collect logs, command lines, and outcomes.
 - For **Scenario C**: explicitly discuss allocation before/after, confirm no `.Result`/`.Wait()` introduced.
+- For skill work: keep instructions concise and imperative, preserve host-specific metadata rules, and validate package shape after editing.
 - Use `score_eval.py` to summarize evaluation scores with JSON-ready output for audit trails.
 
 ### 4 — REPORT & ROUTE
@@ -84,11 +90,26 @@ What are you assuring?
 │   → Lane: doc routing matrix + cross-reference validation
 ├── Capability discovery / AI catalog update
 │   → Lane: agent/skill symmetry check (docs/ai/agents/ + docs/ai/skills/)
+├── Skill creation/update
+│   → Lane: concise package design + metadata synchronization + validation
 └── Rollout readiness
     → Lane: build gate + test gate + deployment gates (all CRITICAL)
 ```
 
 Each lane produces different required artifacts — match the lane to the task before collecting evidence.
+
+---
+
+## Skill-Authoring Lane
+
+Use this lane whenever the task creates or updates a skill or agent package.
+
+- Inspect only the relevant Meridian instinct files when local learned behavior would help, and verify each instinct against the repository before turning it into instructions.
+- Keep the main skill file concise and imperative. Put detailed material in `references/`, deterministic helpers in `scripts/`, and output resources in `assets/`.
+- Preserve host-specific metadata rules. For Codex repo-local skills, keep frontmatter to `name` and `description`. For portable/Claude packages, preserve the package metadata already required by that host.
+- Avoid auxiliary docs in skill folders unless they directly support execution or the host format requires them.
+- When `agents/openai.yaml` exists, regenerate or update it so the UI metadata still matches the skill text.
+- Validate package shape after editing and run representative checks for any added or changed scripts.
 
 ---
 
@@ -108,6 +129,7 @@ When the change touches any execution or data-pipeline path:
 - **Traceability:** Every requirement must reference the files changed and the validation artifact.
 - **Validation:** Prefer existing tests; if none exist, state the gap and suggest coverage.
 - **Documentation:** Update the appropriate AI/agent catalogs when capabilities change.
+- **Skill packaging:** Record validator output and metadata synchronization when skill files change.
 - **Safety:** No scope creep; defer unrelated refactors. Avoid destructive commands.
 - **Output:** Provide a concise checklist with pass/fail status and command transcripts for validation.
 

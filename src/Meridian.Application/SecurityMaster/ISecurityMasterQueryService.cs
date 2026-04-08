@@ -27,4 +27,18 @@ public interface ISecurityMasterQueryService
     /// Returns an empty list when no corporate actions are recorded.
     /// </summary>
     Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the current preferred-equity term set when the security classification includes preferred terms.
+    /// Returns <c>null</c> for non-equity or non-preferred securities.
+    /// </summary>
+    Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult<PreferredEquityTermsDto?>(null);
+
+    /// <summary>
+    /// Returns the current convertible-equity term set when the security classification includes conversion terms.
+    /// Returns <c>null</c> for non-equity or non-convertible securities.
+    /// </summary>
+    Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult<ConvertibleEquityTermsDto?>(null);
 }

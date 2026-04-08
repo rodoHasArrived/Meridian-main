@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;
@@ -47,7 +48,11 @@ public sealed class SecurityMasterReferenceLookupTests
 
         var result = await lookup.GetBySymbolAsync("UNKNOWN");
 
-        result.Should().BeNull();
+        result.Should().NotBeNull();
+        result!.CoverageStatus.Should().Be(WorkstationSecurityCoverageStatus.Missing);
+        result.SecurityId.Should().Be(Guid.Empty);
+        result.DisplayName.Should().Be("UNKNOWN");
+        result.ResolutionReason.Should().Be("No Security Master match was found for 'UNKNOWN'.");
     }
 
     // -----------------------------------------------------------------------

@@ -114,6 +114,38 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void NavigateToEventReplay_KeepsResearchWorkspaceActive()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("EventReplay");
+
+            vm.CurrentWorkspace.Should().Be("research");
+            vm.CurrentPageTag.Should().Be("EventReplay");
+        });
+    }
+
+    [Fact]
+    public void NavigateToTradingRoutes_InfersTradingWorkspace()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("OrderBook");
+            vm.CurrentWorkspace.Should().Be("trading");
+
+            vm.NavigateToPageCommand.Execute("PositionBlotter");
+            vm.CurrentWorkspace.Should().Be("trading");
+
+            vm.NavigateToPageCommand.Execute("RunRisk");
+            vm.CurrentWorkspace.Should().Be("trading");
+        });
+    }
+
+    [Fact]
     public void FixtureModeChange_UpdatesBannerVisibilityAndText()
     {
         WpfTestThread.Run(() =>

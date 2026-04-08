@@ -77,6 +77,67 @@ public sealed class SecurityEnrichmentTests
     }
 
     [Fact]
+    public async Task PortfolioReadService_BuildSummaryAsync_PreservesMissingCoverageStatus()
+    {
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("GHOST", MakeReference(
+            "GHOST",
+            assetClass: string.Empty,
+            coverageStatus: WorkstationSecurityCoverageStatus.Missing,
+            resolutionReason: "No Security Master match was found for 'GHOST'."));
+        var service = new PortfolioReadService(lookup);
+
+        var summary = await service.BuildSummaryAsync(BuildRunWithPosition("GHOST"));
+
+        summary.Should().NotBeNull();
+        summary!.SecurityResolvedCount.Should().Be(0);
+        summary.SecurityMissingCount.Should().Be(1);
+        summary.Positions[0].Security!.CoverageStatus.Should().Be(WorkstationSecurityCoverageStatus.Missing);
+        summary.Positions[0].Security!.ResolutionReason.Should().Contain("No Security Master match");
+    }
+
+    [Fact]
+    public async Task PortfolioReadService_BuildSummaryAsync_TreatsPartialCoverageAsResolvedCount()
+    {
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL Equity", MakeReference(
+            "AAPL",
+            "Equity",
+            coverageStatus: WorkstationSecurityCoverageStatus.Partial,
+            matchedIdentifierKind: "Ticker",
+            matchedIdentifierValue: "AAPL",
+            resolutionReason: "Matched using normalized identifier 'AAPL'."));
+        var service = new PortfolioReadService(lookup);
+
+        var summary = await service.BuildSummaryAsync(BuildRunWithPosition("AAPL Equity"));
+
+        summary.Should().NotBeNull();
+        summary!.SecurityResolvedCount.Should().Be(1);
+        summary.SecurityMissingCount.Should().Be(0);
+        summary.Positions[0].Security!.CoverageStatus.Should().Be(WorkstationSecurityCoverageStatus.Partial);
+        summary.Positions[0].Security!.MatchedIdentifierKind.Should().Be("Ticker");
+    }
+
+    [Fact]
+    public async Task PortfolioReadService_BuildSummaryAsync_PreservesUnavailableCoverageStatus()
+    {
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", MakeReference(
+            "AAPL",
+            assetClass: string.Empty,
+            coverageStatus: WorkstationSecurityCoverageStatus.Unavailable,
+            resolutionReason: "Security Master is unavailable because MERIDIAN_SECURITY_MASTER_CONNECTION_STRING is not configured."));
+        var service = new PortfolioReadService(lookup);
+
+        var summary = await service.BuildSummaryAsync(BuildRunWithPosition("AAPL"));
+
+        summary.Should().NotBeNull();
+        summary!.SecurityResolvedCount.Should().Be(0);
+        summary.SecurityMissingCount.Should().Be(1);
+        summary.Positions[0].Security!.CoverageStatus.Should().Be(WorkstationSecurityCoverageStatus.Unavailable);
+    }
+
+    [Fact]
     public async Task PortfolioReadService_BuildSummaryAsync_CountsPartialResolution_WhenOnlySubsetResolved()
     {
         var lookup = new StubSecurityReferenceLookup();
@@ -151,6 +212,26 @@ public sealed class SecurityEnrichmentTests
     }
 
     [Fact]
+    public async Task LedgerReadService_BuildSummaryAsync_PreservesMissingCoverageStatus()
+    {
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("GHOST", MakeReference(
+            "GHOST",
+            assetClass: string.Empty,
+            coverageStatus: WorkstationSecurityCoverageStatus.Missing,
+            resolutionReason: "No Security Master match was found for 'GHOST'."));
+        var service = new LedgerReadService(lookup);
+
+        var summary = await service.BuildSummaryAsync(BuildRunWithLedger("GHOST"));
+
+        summary.Should().NotBeNull();
+        summary!.SecurityResolvedCount.Should().Be(0);
+        summary.SecurityMissingCount.Should().Be(1);
+        summary.TrialBalance.Single(static line => line.Symbol == "GHOST").Security!.CoverageStatus
+            .Should().Be(WorkstationSecurityCoverageStatus.Missing);
+    }
+
+    [Fact]
     public async Task LedgerReadService_BuildSummaryAsync_ReturnsBaseSummary_WhenNoLookupProvided()
     {
         var service = new LedgerReadService(); // no lookup
@@ -192,6 +273,30 @@ public sealed class SecurityEnrichmentTests
             SubType: "TreasuryBill");
 
         reference.SubType.Should().Be("TreasuryBill");
+    }
+
+    [Fact]
+    public void WorkstationSecurityReference_AcceptsCoverageAndProvenanceMetadata()
+    {
+        var reference = new WorkstationSecurityReference(
+            SecurityId: Guid.NewGuid(),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL",
+            SubType: null,
+            CoverageStatus: WorkstationSecurityCoverageStatus.Partial,
+            MatchedIdentifierKind: "Ticker",
+            MatchedIdentifierValue: "AAPL",
+            MatchedProvider: "polygon",
+            ResolutionReason: "Matched using normalized identifier 'AAPL'.");
+
+        reference.CoverageStatus.Should().Be(WorkstationSecurityCoverageStatus.Partial);
+        reference.MatchedIdentifierKind.Should().Be("Ticker");
+        reference.MatchedIdentifierValue.Should().Be("AAPL");
+        reference.MatchedProvider.Should().Be("polygon");
+        reference.ResolutionReason.Should().NotBeNullOrWhiteSpace();
     }
 
     // -----------------------------------------------------------------------
@@ -237,7 +342,15 @@ public sealed class SecurityEnrichmentTests
     // Helpers
     // -----------------------------------------------------------------------
 
-    private static WorkstationSecurityReference MakeReference(string symbol, string assetClass, string? subType = null)
+    private static WorkstationSecurityReference MakeReference(
+        string symbol,
+        string assetClass,
+        string? subType = null,
+        WorkstationSecurityCoverageStatus coverageStatus = WorkstationSecurityCoverageStatus.Resolved,
+        string? matchedIdentifierKind = null,
+        string? matchedIdentifierValue = null,
+        string? matchedProvider = null,
+        string? resolutionReason = null)
         => new(
             SecurityId: Guid.NewGuid(),
             DisplayName: symbol == "AAPL" ? "Apple Inc." : symbol,
@@ -245,7 +358,12 @@ public sealed class SecurityEnrichmentTests
             Currency: "USD",
             Status: SecurityStatusDto.Active,
             PrimaryIdentifier: symbol,
-            SubType: subType);
+            SubType: subType,
+            CoverageStatus: coverageStatus,
+            MatchedIdentifierKind: matchedIdentifierKind,
+            MatchedIdentifierValue: matchedIdentifierValue,
+            MatchedProvider: matchedProvider,
+            ResolutionReason: resolutionReason);
 
     private static StrategyRunEntry BuildRunWithPosition(string symbol)
     {

@@ -45,13 +45,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         _ledger = ledger;
         _logger = logger;
 
-        var options = new BoundedChannelOptions(channelCapacity)
-        {
-            FullMode = BoundedChannelFullMode.DropOldest,
-            SingleWriter = false,
-            SingleReader = true
-        };
-        _channel = Channel.CreateBounded<TradeExecutedEvent>(options);
+        _channel = new EventPipelinePolicy(channelCapacity, BoundedChannelFullMode.DropOldest, EnableMetrics: false)
+            .CreateChannel<TradeExecutedEvent>(singleReader: true, singleWriter: false);
         _processingTask = Task.Run(() => ProcessAsync(_cts.Token));
     }
 

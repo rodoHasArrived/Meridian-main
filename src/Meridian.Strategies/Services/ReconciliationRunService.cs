@@ -165,12 +165,23 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 detail.Portfolio.Positions
                     .Where(static position =>
                         !string.IsNullOrWhiteSpace(position.Symbol) &&
-                        position.Security is null)
+                        NeedsCoverageReview(position.Security))
                     .Select(static position => new ReconciliationSecurityCoverageIssueDto(
                         Source: "portfolio",
                         Symbol: position.Symbol,
                         AccountName: null,
-                        Reason: $"Portfolio position '{position.Symbol}' is missing a Security Master match.")));
+                        Reason: BuildCoverageReason("portfolio", position.Symbol, null, position.Security),
+                        SecurityId: FormatSecurityId(position.Security),
+                        DisplayName: position.Security?.DisplayName,
+                        AssetClass: position.Security?.AssetClass,
+                        SubType: position.Security?.SubType,
+                        CoverageStatus: position.Security?.CoverageStatus ?? WorkstationSecurityCoverageStatus.Missing,
+                        CoverageReason: position.Security?.ResolutionReason
+                            ?? BuildCoverageReason("portfolio", position.Symbol, null, position.Security),
+                        Currency: position.Security?.Currency,
+                        MatchedIdentifierKind: position.Security?.MatchedIdentifierKind,
+                        MatchedIdentifierValue: position.Security?.MatchedIdentifierValue,
+                        MatchedProvider: position.Security?.MatchedProvider)));
         }
 
         if (detail.Ledger is not null)
@@ -179,12 +190,23 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 detail.Ledger.TrialBalance
                     .Where(static line =>
                         !string.IsNullOrWhiteSpace(line.Symbol) &&
-                        line.Security is null)
+                        NeedsCoverageReview(line.Security))
                     .Select(static line => new ReconciliationSecurityCoverageIssueDto(
                         Source: "ledger",
                         Symbol: line.Symbol!,
                         AccountName: line.AccountName,
-                        Reason: $"Ledger coverage for '{line.Symbol}' in '{line.AccountName}' is missing a Security Master match.")));
+                        Reason: BuildCoverageReason("ledger", line.Symbol!, line.AccountName, line.Security),
+                        SecurityId: FormatSecurityId(line.Security),
+                        DisplayName: line.Security?.DisplayName,
+                        AssetClass: line.Security?.AssetClass,
+                        SubType: line.Security?.SubType,
+                        CoverageStatus: line.Security?.CoverageStatus ?? WorkstationSecurityCoverageStatus.Missing,
+                        CoverageReason: line.Security?.ResolutionReason
+                            ?? BuildCoverageReason("ledger", line.Symbol!, line.AccountName, line.Security),
+                        Currency: line.Security?.Currency,
+                        MatchedIdentifierKind: line.Security?.MatchedIdentifierKind,
+                        MatchedIdentifierValue: line.Security?.MatchedIdentifierValue,
+                        MatchedProvider: line.Security?.MatchedProvider)));
         }
 
         return issues
@@ -192,11 +214,6 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             .ToArray();
     }
 
-    /// <summary>
-    /// Builds a symbol-keyed Security Master classification map from security references that
-    /// were already resolved by <see cref="PortfolioReadService"/> and <see cref="LedgerReadService"/>.
-    /// Only symbols with a non-null <c>Security</c> property are included.
-    /// </summary>
     private static IReadOnlyDictionary<string, SecurityClassificationSummaryDto> BuildSecurityClassifications(
         StrategyRunDetail detail)
     {
@@ -206,15 +223,15 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         {
             foreach (var position in detail.Portfolio.Positions)
             {
-                if (position.Security is not null &&
+                if (HasAuthoritativeSecurity(position.Security) &&
                     !string.IsNullOrWhiteSpace(position.Symbol) &&
                     !map.ContainsKey(position.Symbol))
                 {
                     map[position.Symbol] = new SecurityClassificationSummaryDto(
                         AssetClass: position.Security.AssetClass,
                         SubType: position.Security.SubType,
-                        PrimaryIdentifierKind: "Ticker",
-                        PrimaryIdentifierValue: position.Security.PrimaryIdentifier ?? position.Symbol);
+                        PrimaryIdentifierKind: position.Security.MatchedIdentifierKind ?? "Ticker",
+                        PrimaryIdentifierValue: position.Security.MatchedIdentifierValue ?? position.Security.PrimaryIdentifier ?? position.Symbol);
                 }
             }
         }
@@ -223,19 +240,58 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         {
             foreach (var line in detail.Ledger.TrialBalance)
             {
-                if (line.Security is not null &&
+                if (HasAuthoritativeSecurity(line.Security) &&
                     !string.IsNullOrWhiteSpace(line.Symbol) &&
                     !map.ContainsKey(line.Symbol))
                 {
                     map[line.Symbol] = new SecurityClassificationSummaryDto(
                         AssetClass: line.Security.AssetClass,
                         SubType: line.Security.SubType,
-                        PrimaryIdentifierKind: "Ticker",
-                        PrimaryIdentifierValue: line.Security.PrimaryIdentifier ?? line.Symbol);
+                        PrimaryIdentifierKind: line.Security.MatchedIdentifierKind ?? "Ticker",
+                        PrimaryIdentifierValue: line.Security.MatchedIdentifierValue ?? line.Security.PrimaryIdentifier ?? line.Symbol);
                 }
             }
         }
 
         return map;
     }
+
+    private static bool HasAuthoritativeSecurity(WorkstationSecurityReference? reference)
+        => reference is not null &&
+           reference.SecurityId != Guid.Empty &&
+           reference.CoverageStatus is WorkstationSecurityCoverageStatus.Resolved
+               or WorkstationSecurityCoverageStatus.Partial;
+
+    private static bool NeedsCoverageReview(WorkstationSecurityReference? reference)
+        => reference is null ||
+           reference.CoverageStatus is WorkstationSecurityCoverageStatus.Partial
+               or WorkstationSecurityCoverageStatus.Missing
+               or WorkstationSecurityCoverageStatus.Unavailable;
+
+    private static string BuildCoverageReason(
+        string source,
+        string symbol,
+        string? accountName,
+        WorkstationSecurityReference? reference)
+    {
+        var referenceReason = reference?.ResolutionReason;
+        if (!string.IsNullOrWhiteSpace(referenceReason))
+        {
+            return referenceReason!;
+        }
+
+        return source switch
+        {
+            "ledger" when !string.IsNullOrWhiteSpace(accountName)
+                => $"Ledger coverage for '{symbol}' in '{accountName}' requires Security Master review.",
+            "portfolio"
+                => $"Portfolio position '{symbol}' requires Security Master review.",
+            _ => $"Security Master coverage for '{symbol}' requires review."
+        };
+    }
+
+    private static string? FormatSecurityId(WorkstationSecurityReference? reference)
+        => reference is null || reference.SecurityId == Guid.Empty
+            ? null
+            : reference.SecurityId.ToString("N");
 }

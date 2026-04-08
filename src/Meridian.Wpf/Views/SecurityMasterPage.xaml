@@ -85,6 +85,7 @@
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
                         <Button Content="+ New Security"
                                 Command="{Binding CreateNewCommand}"
+                                IsEnabled="{Binding CanMaintainSecurityMaster}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Margin="0,0,8,0"/>
 
@@ -99,7 +100,7 @@
 
                         <Button Content="⬇ Import..."
                                 Command="{Binding ImportFromFileCommand}"
-                                IsEnabled="{Binding IsImporting, Converter={StaticResource InvertBoolConverter}}"
+                                IsEnabled="{Binding CanImportSecurityMaster}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Margin="8,0,0,0"/>
                     </StackPanel>
@@ -107,7 +108,7 @@
                     <Button Grid.Column="3"
                             Content="Backfill Parameters"
                             Command="{Binding BackfillTradingParamsCommand}"
-                            IsEnabled="{Binding IsBackfillingTradingParams, Converter={StaticResource InvertBoolConverter}}"
+                            IsEnabled="{Binding CanBackfillTradingParameters}"
                             Style="{StaticResource SecondaryButtonStyle}"
                             HorizontalAlignment="Right"
                             Margin="0,0,8,0"/>
@@ -119,6 +120,16 @@
                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                FontSize="12"/>
                 </Grid>
+            </Border>
+
+            <Border Style="{StaticResource SectionCardStyle}"
+                    Margin="0,0,0,24"
+                    Background="{StaticResource WarningColorBrush}"
+                    Visibility="{Binding IsSecurityMasterDegraded, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="{Binding CapabilityStatusText}"
+                           Foreground="#333"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"/>
             </Border>
 
             <!-- Import Progress Panel -->
@@ -139,8 +150,8 @@
                                    VerticalAlignment="Center"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"/>
                         <ProgressBar Grid.Column="1"
-                                     Value="{Binding ImportProcessed}"
-                                     Maximum="{Binding ImportTotal}"
+                                     Value="{Binding ImportProcessed, Mode=OneWay}"
+                                     Maximum="{Binding ImportTotal, Mode=OneWay}"
                                      Height="16"
                                      Margin="12,0,0,0"/>
                     </Grid>
@@ -180,12 +191,14 @@
                              Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource FormTextBoxStyle}"
                              Margin="0,0,12,0"
+                             IsEnabled="{Binding CanSearchSecurityMaster}"
                              KeyDown="SearchBox_KeyDown"
                              VerticalAlignment="Center"/>
 
                     <CheckBox Grid.Column="1"
                               Content="Active only"
                               IsChecked="{Binding ActiveOnly}"
+                              IsEnabled="{Binding CanSearchSecurityMaster}"
                               VerticalAlignment="Center"
                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                               Margin="0,0,12,0"/>
@@ -193,6 +206,7 @@
                     <Button Grid.Column="2"
                             Content="Search"
                             Click="Search_Click"
+                            IsEnabled="{Binding CanSearchSecurityMaster}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Margin="0,0,8,0"/>
                 </Grid>

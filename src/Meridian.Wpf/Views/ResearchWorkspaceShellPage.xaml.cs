@@ -18,22 +18,28 @@ public partial class ResearchWorkspaceShellPage : Page
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
+    private readonly WorkspaceShellContextService _shellContextService;
+    private bool _canPromoteActiveRun;
+    private bool _canOpenTradingCockpit;
 
     public ResearchWorkspaceShellPage(
         NavigationService navigationService,
         StrategyRunWorkspaceService runService,
-        FundContextService fundContextService)
+        FundContextService fundContextService,
+        WorkspaceShellContextService shellContextService)
     {
         InitializeComponent();
         _navigationService = navigationService;
         _runService = runService;
         _fundContextService = fundContextService;
+        _shellContextService = shellContextService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged += OnActiveRunContextChanged;
+        _shellContextService.SignalsChanged += OnSignalsChanged;
 
         await RefreshAsync();
         await RestoreDockLayoutAsync();
@@ -43,6 +49,7 @@ public partial class ResearchWorkspaceShellPage : Page
     {
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged -= OnActiveRunContextChanged;
+        _shellContextService.SignalsChanged -= OnSignalsChanged;
         _ = SaveDockLayoutAsync();
     }
 
@@ -81,6 +88,34 @@ public partial class ResearchWorkspaceShellPage : Page
                 PromotionCandidatesList.ItemsSource = null;
                 NoPromotionsText.Visibility = Visibility.Visible;
             }
+
+            ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
+            {
+                WorkspaceTitle = "Research Workspace",
+                WorkspaceSubtitle = "Comparison-first research shell for strategy runs, promotion review, and docked inspectors.",
+                PrimaryScopeLabel = "Run",
+                PrimaryScopeValue = activeContext?.StrategyName ?? "No selected run",
+                AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
+                FreshnessValue = activeContext is null ? "Awaiting selected run" : $"{activeContext.ModeLabel} · {activeContext.StatusLabel}",
+                ReviewStateLabel = "Promotion",
+                ReviewStateValue = summary.PendingReviewCount > 0 ? $"{summary.PendingReviewCount} pending review" : "No promotion blockers",
+                ReviewStateTone = summary.PendingReviewCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Success,
+                CriticalLabel = "Critical",
+                CriticalValue = summary.PendingReviewCount > 0 ? $"{summary.PendingReviewCount} run(s) need review" : "Research queue stable",
+                CriticalTone = summary.PendingReviewCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info,
+                AdditionalBadges =
+                [
+                    new WorkspaceShellBadge
+                    {
+                        Label = "Fund Scope",
+                        Value = activeContext?.FundScopeLabel ?? "Global",
+                        Glyph = "\uE8B7",
+                        Tone = activeContext is null ? WorkspaceTone.Neutral : WorkspaceTone.Info
+                    }
+                ]
+            });
+
+            CommandBar.CommandGroup = BuildCommandGroup();
         }
         catch (Exception ex)
         {
@@ -102,8 +137,8 @@ public partial class ResearchWorkspaceShellPage : Page
             PortfolioPreviewText.Text = "Portfolio inspector opens here once a run is selected.";
             LedgerPreviewText.Text = "Ledger inspector opens here once a run is selected.";
             RiskPreviewText.Text = "Risk preview becomes available after a completed run is selected.";
-            PromoteActiveRunButton.IsEnabled = false;
-            OpenTradingCockpitButton.IsEnabled = false;
+            _canPromoteActiveRun = false;
+            _canOpenTradingCockpit = false;
             return;
         }
 
@@ -117,8 +152,8 @@ public partial class ResearchWorkspaceShellPage : Page
         PortfolioPreviewText.Text = activeContext.PortfolioPreview;
         LedgerPreviewText.Text = activeContext.LedgerPreview;
         RiskPreviewText.Text = activeContext.RiskSummary;
-        PromoteActiveRunButton.IsEnabled = activeContext.CanPromoteToPaper;
-        OpenTradingCockpitButton.IsEnabled = true;
+        _canPromoteActiveRun = activeContext.CanPromoteToPaper;
+        _canOpenTradingCockpit = true;
     }
 
     private async Task RestoreDockLayoutAsync()
@@ -203,6 +238,43 @@ public partial class ResearchWorkspaceShellPage : Page
         OpenWorkspacePage(pageTag, action, activeRun?.RunId);
     }
 
+    private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
+    {
+        switch (e.Command.Id)
+        {
+            case "ResetStudio":
+                _ = LoadDefaultDockingAsync();
+                break;
+            case "PromoteToPaper":
+                if (_canPromoteActiveRun)
+                {
+                    PromoteActiveRun_Click(sender, new RoutedEventArgs());
+                }
+                break;
+            case "OpenTradingCockpit":
+                if (_canOpenTradingCockpit)
+                {
+                    OpenTradingCockpit_Click(sender, new RoutedEventArgs());
+                }
+                break;
+            case "StrategyRuns":
+                OpenStrategyRuns_Click(sender, new RoutedEventArgs());
+                break;
+            case "RunDetail":
+                OpenRunDetailDocked_Click(sender, new RoutedEventArgs());
+                break;
+            case "RunPortfolio":
+                OpenPortfolioInspector_Click(sender, new RoutedEventArgs());
+                break;
+            case "RunLedger":
+                OpenLedgerInspector_Click(sender, new RoutedEventArgs());
+                break;
+            case "LeanIntegration":
+                OpenLean_Click(sender, new RoutedEventArgs());
+                break;
+        }
+    }
+
     private async void NewBacktest_Click(object sender, RoutedEventArgs e)
         => await LoadDefaultDockingAsync();
 
@@ -278,6 +350,17 @@ public partial class ResearchWorkspaceShellPage : Page
         _ = RefreshAsync();
     }
 
+    private void OnSignalsChanged(object? sender, EventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.InvokeAsync(async () => await RefreshAsync());
+            return;
+        }
+
+        _ = RefreshAsync();
+    }
+
     private void OnActiveRunContextChanged(object? sender, ActiveRunContext? e)
     {
         if (!Dispatcher.CheckAccess())
@@ -286,11 +369,54 @@ public partial class ResearchWorkspaceShellPage : Page
             return;
         }
 
-        UpdateActiveRunContext(e);
+        _ = RefreshAsync();
     }
 
     private static string BuildPageKey(string pageTag, object? parameter)
         => parameter is null ? pageTag : $"{pageTag}:{parameter}";
+
+    private WorkspaceCommandGroup BuildCommandGroup() =>
+        new()
+        {
+            PrimaryCommands =
+            [
+                new WorkspaceCommandItem
+                {
+                    Id = "ResetStudio",
+                    Label = "Reset Studio",
+                    Description = "Reset the research studio layout",
+                    ShortcutHint = "Ctrl+R",
+                    Glyph = "\uE9D9",
+                    Tone = WorkspaceTone.Primary
+                },
+                new WorkspaceCommandItem
+                {
+                    Id = "PromoteToPaper",
+                    Label = "Promote to Paper",
+                    Description = "Promote the selected run",
+                    ShortcutHint = "Review",
+                    Glyph = "\uE8FB",
+                    IsEnabled = _canPromoteActiveRun
+                },
+                new WorkspaceCommandItem
+                {
+                    Id = "OpenTradingCockpit",
+                    Label = "Open Trading Cockpit",
+                    Description = "Open the selected run in trading",
+                    ShortcutHint = "Handoff",
+                    Glyph = "\uE9F5",
+                    IsEnabled = _canOpenTradingCockpit
+                }
+            ],
+            SecondaryCommands =
+            [
+                new WorkspaceCommandItem { Id = "StrategyRuns", Label = "Run Browser", Description = "Open run browser", Glyph = "\uE8FD" },
+                new WorkspaceCommandItem { Id = "RunDetail", Label = "Run Detail", Description = "Open run detail", Glyph = "\uE7C3" },
+                new WorkspaceCommandItem { Id = "RunPortfolio", Label = "Portfolio Inspector", Description = "Open portfolio inspector", Glyph = "\uE8B5" },
+                new WorkspaceCommandItem { Id = "RunLedger", Label = "Ledger Inspector", Description = "Open ledger inspector", Glyph = "\uEE94" },
+                new WorkspaceCommandItem { Id = "LeanIntegration", Label = "Lean Integration", Description = "Open Lean integration", Glyph = "\uE943" }
+            ]
+        };
 
     private static string GetPageTitle(string pageTag) => pageTag switch
     {

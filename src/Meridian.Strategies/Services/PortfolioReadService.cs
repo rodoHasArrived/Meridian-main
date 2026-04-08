@@ -1,3 +1,4 @@
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 
@@ -44,8 +45,8 @@ public sealed class PortfolioReadService
             })
             .ToArray();
 
-        var resolvedCount = lookup.Values.Count(static value => value is not null);
-        var missingCount = lookup.Count - resolvedCount;
+        var resolvedCount = lookup.Values.Count(IsResolvedCoverage);
+        var missingCount = lookup.Values.Count(IsMissingCoverage);
 
         return summary with
         {
@@ -53,6 +54,41 @@ public sealed class PortfolioReadService
             SecurityResolvedCount = resolvedCount,
             SecurityMissingCount = missingCount
         };
+    }
+
+    /// <summary>
+    /// Builds a <see cref="RunLotSummary"/> from the most-recent snapshot's lot data,
+    /// optionally filtered to a single <paramref name="symbol"/>.
+    /// Returns <see langword="null"/> when the run has no recorded snapshots.
+    /// </summary>
+    public RunLotSummary? BuildLotSummary(StrategyRunEntry entry, string? symbol = null, DateTimeOffset? asOf = null)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        var result = entry.Metrics;
+        var latestSnapshot = result?.Snapshots.LastOrDefault();
+        if (latestSnapshot is null)
+        {
+            return null;
+        }
+
+        var openLots = (latestSnapshot.OpenLots ?? [])
+            .Where(l => symbol is null || string.Equals(l.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+            .Select(l => MapOpenLot(l, asOf ?? latestSnapshot.Timestamp))
+            .ToArray();
+
+        var closedLots = (latestSnapshot.ClosedLots ?? [])
+            .Where(l => symbol is null || string.Equals(l.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+            .Select(static l => MapClosedLot(l))
+            .ToArray();
+
+        return new RunLotSummary(
+            RunId: entry.RunId,
+            TotalOpenLots: openLots.Length,
+            TotalClosedLots: closedLots.Length,
+            TotalRealizedPnl: closedLots.Sum(static cl => cl.RealizedPnl),
+            OpenLots: openLots,
+            ClosedLots: closedLots);
     }
 
     private static PortfolioSummary? BuildBaseSummary(StrategyRunEntry entry)
@@ -85,6 +121,24 @@ public sealed class PortfolioReadService
         var unrealizedPnl = positions.Sum(static position => position.UnrealizedPnl);
         var financing = result!.Metrics.TotalMarginInterest - result.Metrics.TotalShortRebates;
 
+        // Include lot summaries when available in the snapshot.
+        OpenLotSummary[]? openLotSummaries = null;
+        ClosedLotSummary[]? closedLotSummaries = null;
+
+        if (latestSnapshot.OpenLots is { Count: > 0 } openLots)
+        {
+            openLotSummaries = openLots
+                .Select(l => MapOpenLot(l, latestSnapshot.Timestamp))
+                .ToArray();
+        }
+
+        if (latestSnapshot.ClosedLots is { Count: > 0 } closedLots)
+        {
+            closedLotSummaries = closedLots
+                .Select(static l => MapClosedLot(l))
+                .ToArray();
+        }
+
         return new PortfolioSummary(
             PortfolioId: entry.PortfolioId ?? entry.RunId,
             RunId: entry.RunId,
@@ -100,7 +154,9 @@ public sealed class PortfolioReadService
             Commissions: result.Metrics.TotalCommissions,
             Financing: financing,
             Positions: positions,
-            FundProfileId: entry.FundProfileId);
+            FundProfileId: entry.FundProfileId,
+            OpenLots: openLotSummaries,
+            ClosedLots: closedLotSummaries);
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(
@@ -122,4 +178,51 @@ public sealed class PortfolioReadService
 
         return lookup;
     }
+
+    // --------------------------------------------------------------------- //
+    //  Shared lot → read-model mapping helpers                               //
+    // --------------------------------------------------------------------- //
+
+    /// <summary>
+    /// Maps an <see cref="OpenLot"/> to its workstation read model.
+    /// </summary>
+    /// <param name="lot">The open lot to map.</param>
+    /// <param name="asOf">
+    /// The reference date used for long-term holding determination.
+    /// Pass the snapshot timestamp when no explicit caller-supplied date is available.
+    /// </param>
+    private static OpenLotSummary MapOpenLot(OpenLot lot, DateTimeOffset asOf)
+        => new(
+            LotId: lot.LotId,
+            Symbol: lot.Symbol,
+            Quantity: lot.Quantity,
+            EntryPrice: lot.EntryPrice,
+            OpenedAt: lot.OpenedAt,
+            CurrentUnrealizedPnl: 0m,   // spot price not available in summary context
+            IsLongTerm: lot.IsLongTerm(asOf),
+            AccountId: lot.AccountId);
+
+    /// <summary>
+    /// Maps a <see cref="ClosedLot"/> to its workstation read model.
+    /// </summary>
+    private static ClosedLotSummary MapClosedLot(ClosedLot lot)
+        => new(
+            LotId: lot.LotId,
+            Symbol: lot.Symbol,
+            Quantity: lot.Quantity,
+            EntryPrice: lot.EntryPrice,
+            ClosePrice: lot.ClosePrice,
+            OpenedAt: lot.OpenedAt,
+            ClosedAt: lot.ClosedAt,
+            RealizedPnl: lot.RealizedPnl,
+            IsLongTerm: lot.IsLongTerm,
+            AccountId: lot.AccountId);
+    private static bool IsResolvedCoverage(WorkstationSecurityReference? reference)
+        => reference?.CoverageStatus is WorkstationSecurityCoverageStatus.Resolved
+            or WorkstationSecurityCoverageStatus.Partial;
+
+    private static bool IsMissingCoverage(WorkstationSecurityReference? reference)
+        => reference is null ||
+           reference.CoverageStatus is WorkstationSecurityCoverageStatus.Missing
+            or WorkstationSecurityCoverageStatus.Unavailable;
 }

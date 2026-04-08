@@ -7,6 +7,7 @@ using Meridian.Execution.Models;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -135,6 +136,85 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.Symbol == "AAPL");
     }
 
+    [Fact]
+    public async Task RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam()
+    {
+        var tempRoot = CreateTempRoot();
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildRobinhoodAccountListResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildRobinhoodInstrumentListResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildRobinhoodAccountListResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildRobinhoodOrderResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildRobinhoodAccountListResponse() }
+        });
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddLogging();
+            services.AddSingleton<IHttpClientFactory>(new StubHttpClientFactory(new SequentialStubHandler(responses)));
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
+            services.AddSingleton(sp => new BrokerageConfiguration
+            {
+                Gateway = "robinhood",
+                LiveExecutionEnabled = true,
+                MaxPositionSize = 100m
+            });
+            services.AddSingleton(sp => new RobinhoodBrokerageGateway(
+                sp.GetRequiredService<IHttpClientFactory>(),
+                NullLogger<RobinhoodBrokerageGateway>.Instance,
+                accessToken: "test-token"));
+            services.AddHostedBrokerageGateways();
+            services.AddBrokerageExecution(config =>
+            {
+                config.Gateway = "robinhood";
+                config.LiveExecutionEnabled = true;
+                config.MaxPositionSize = 100m;
+            });
+        });
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var submitResponse = await client.PostAsync(
+            "/api/execution/orders/submit",
+            JsonContent(new
+            {
+                symbol = "AAPL",
+                side = 0,
+                type = 0,
+                timeInForce = 0,
+                quantity = 1,
+                strategyId = "strategy-live"
+            }));
+
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        using var submitJson = JsonDocument.Parse(await submitResponse.Content.ReadAsStringAsync());
+        submitJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+
+        var healthResponse = await client.GetAsync("/api/execution/health");
+        healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var healthJson = JsonDocument.Parse(await healthResponse.Content.ReadAsStringAsync());
+        healthJson.RootElement.GetProperty("brokerName").GetString().Should().Be("Robinhood (unofficial)");
+        healthJson.RootElement.GetProperty("selectedGatewayId").GetString().Should().Be("robinhood");
+
+        var auditResponse = await client.GetAsync("/api/execution/audit?take=10");
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditEntries = JsonSerializer.Deserialize<ExecutionAuditEntry[]>(
+            await auditResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+
+        auditEntries.Should().NotBeNull();
+        auditEntries!.Should().Contain(entry =>
+            entry.Action == "OrderSubmitted" &&
+            entry.BrokerName == "robinhood" &&
+            entry.Symbol == "AAPL");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -184,6 +264,50 @@ public sealed class ExecutionGovernanceEndpointsTests
             created_at = "2026-04-05T14:30:00Z"
         });
 
+    private static StringContent BuildRobinhoodAccountListResponse() =>
+        JsonContent(new
+        {
+            results = new[]
+            {
+                new
+                {
+                    url = "https://api.robinhood.com/accounts/ACC-123/",
+                    account_number = "ACC-123",
+                    equity = "100000.00",
+                    cash = "80000.00",
+                    buying_power = "160000.00",
+                    deactivated = false
+                }
+            }
+        });
+
+    private static StringContent BuildRobinhoodInstrumentListResponse() =>
+        JsonContent(new
+        {
+            results = new[]
+            {
+                new
+                {
+                    url = "https://api.robinhood.com/instruments/AAPL/",
+                    symbol = "AAPL"
+                }
+            }
+        });
+
+    private static StringContent BuildRobinhoodOrderResponse() =>
+        JsonContent(new
+        {
+            id = "robinhood-order-1",
+            ref_id = "client-order-1",
+            symbol = "AAPL",
+            side = "buy",
+            type = "market",
+            time_in_force = "gfd",
+            quantity = "1",
+            state = "confirmed",
+            created_at = "2026-04-05T14:30:00Z"
+        });
+
     private static string CreateTempRoot()
     {
         var path = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
@@ -215,7 +339,7 @@ public sealed class ExecutionGovernanceEndpointsTests
         public decimal PortfolioValue => 100_000m;
         public decimal UnrealisedPnl => 0m;
         public decimal RealisedPnl => 0m;
-        public IReadOnlyDictionary<string, ExecutionPosition> Positions { get; } =
-            new Dictionary<string, ExecutionPosition>(StringComparer.OrdinalIgnoreCase);
+        public IReadOnlyDictionary<string, IPosition> Positions { get; } =
+            new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase);
     }
 }

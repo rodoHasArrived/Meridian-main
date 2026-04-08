@@ -157,21 +157,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<ExecutionAuditTrailService>();
         builder.Services.AddSingleton<ExecutionOperatorControlService>();
         builder.Services.AddSingleton<IPortfolioState>(_ => new PaperTradingPortfolio(100_000m));
-        builder.Services.TryAddSingleton<Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway>(sp =>
-        {
-            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            var options = sp.GetService<Meridian.Application.Config.AlpacaOptions>()
-                ?? new Meridian.Application.Config.AlpacaOptions(
-                    KeyId: Environment.GetEnvironmentVariable("ALPACA_KEY_ID")
-                        ?? Environment.GetEnvironmentVariable("ALPACA__KEYID") ?? string.Empty,
-                    SecretKey: Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
-                        ?? Environment.GetEnvironmentVariable("ALPACA__SECRETKEY") ?? string.Empty);
-            var logger = sp.GetRequiredService<ILogger<Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway>>();
-            return new Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway(httpClientFactory, options, logger);
-        });
-        builder.Services.AddBrokerageGateway(
-            "alpaca",
-            sp => sp.GetRequiredService<Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway>());
+        builder.Services.AddHostedBrokerageGateways();
         builder.Services.AddBrokerageExecution(ApplyExecutionConfiguration);
 
         // Register OpenAPI/Swagger services

@@ -1,6 +1,6 @@
 ---
 name: meridian-implementation-assurance
-description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists.
+description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, structured self-evaluation, and validated skill-package maintenance. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, add new docs in the correct repository section when none exists, or create/update Meridian AI skills without breaking package quality.
 ---
 
 # Meridian Implementation Assurance
@@ -13,6 +13,8 @@ Deliver production-ready code changes and leave documentation in a consistent, c
 
 Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md` before writing docs. Read `references/evaluation-harness.md` before finalizing output.
 
+When the task creates or updates a skill package, apply the skill/agent authoring lane below in addition to the normal implementation-assurance workflow.
+
 ## Definition of Done
 
 A task delivered by this skill is complete when **all** of the following are true:
@@ -23,15 +25,16 @@ A task delivered by this skill is complete when **all** of the following are tru
 - [ ] **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
 - [ ] **Rubric score ≥ 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
 - [ ] **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
+- [ ] **Skill packages stay lean and valid:** when agents/skills change, the package uses only the resources it needs, metadata stays synchronized, and validation passes.
 - [ ] **Summary is traceable:** the closing summary links requirement → files changed → validation artifact → doc update.
 
 ## Workflow
 
 1. Define requested behavior, risks, and acceptance checks.
-2. Identify impacted layers and likely performance-sensitive paths before editing.
+2. Identify impacted layers, likely performance-sensitive paths, and whether the skill/agent authoring lane applies before editing.
 3. Implement the smallest safe change set that satisfies the request.
 4. Run targeted validation (tests/build/lint) and capture concrete command results.
-5. Update related documentation; if missing, add docs in the correct doc area.
+5. Update related documentation; if missing, add docs in the correct doc area. For skill work, keep instructions concise, use only the resource folders that add value, and preserve host-specific metadata rules.
 6. Run the evaluation harness and report pass/fail with evidence.
 7. Summarize code + docs updates and call out residual risk.
 
@@ -49,11 +52,25 @@ What are you assuring?
 │   → Lane: doc routing matrix + cross-reference validation
 ├── Capability discovery / AI catalog update
 │   → Lane: agent/skill symmetry check (docs/ai/agents/ + docs/ai/skills/)
+├── Skill creation/update
+│   → Lane: concise package design + metadata synchronization + validation
 └── Rollout readiness
     → Lane: build gate + test gate + deployment gates (all CRITICAL)
 ```
 
 Each lane produces different required artifacts — match the lane to the task before collecting evidence.
+
+## Skill/Agent Authoring Lane
+
+Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI package.
+
+- Use `$skill-creator` when it is available, especially for scaffolding, `agents/openai.yaml` regeneration, and quick package validation.
+- Inspect only the relevant Meridian project instincts when local learned behavior would help. Treat each instinct as a hint to verify against the current repo state before turning it into instructions.
+- Keep the main skill file concise and written in imperative form. Move detailed material into `references/`, deterministic helpers into `scripts/`, and output resources into `assets/`.
+- Preserve host-specific metadata rules. For repo-local Codex skills, keep frontmatter to `name` and `description`. For portable/Claude packages, keep the metadata required by that host intact.
+- Avoid auxiliary docs inside skill folders unless they directly support execution or are required by the host format.
+- If `agents/openai.yaml` exists, regenerate or update it so the UI-facing metadata still matches the skill instructions.
+- Run package validation after editing, and run representative tests for any added or changed scripts.
 
 ## Correctness Guardrails
 
@@ -89,6 +106,9 @@ Use bundled scripts to keep execution fast and consistent:
   - Dry-run (validate setup): `python3 scripts/run_evals.py --all --dry-run`
   - Single case: `python3 scripts/run_evals.py --eval-id 1`
   - All cases with regression check: `python3 scripts/run_evals.py --all --summary`
+- `$skill-creator` `scripts/init_skill.py` — scaffold a new skill folder when the task introduces a new skill package instead of updating an existing one.
+- `$skill-creator` `scripts/generate_openai_yaml.py` — regenerate `agents/openai.yaml` after a skill prompt or description changes.
+- `$skill-creator` `scripts/quick_validate.py` — validate naming/frontmatter rules for Codex skill packages after editing.
 
 Run these scripts from the skill directory or with full paths.
 
@@ -108,5 +128,6 @@ Before finishing, confirm:
 - [ ] Code compiles or tests pass for the touched surface.
 - [ ] Performance-sensitive changes were reviewed with explicit notes.
 - [ ] Docs were updated (or newly added in the correct location).
+- [ ] Skill packages were validated and any metadata/interface files were kept in sync when agents/skills changed.
 - [ ] Evaluation harness was completed with a rubric score summary (≥ 8/10, no category at 0).
 - [ ] Summary includes validation commands and any residual risk.

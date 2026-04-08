@@ -464,7 +464,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
         var writer = _currentWriter;
         writer.Write(record.Sequence);
         writer.Write('|');
-        writer.Write(record.Timestamp.ToString("O"));
+        // Use TryFormat on a stack-allocated buffer to avoid allocating a string per WAL write.
+        Span<char> tsBuffer = stackalloc char[32]; // "O" round-trip format is at most 28 chars
+        if (!record.Timestamp.TryFormat(tsBuffer, out var tsWritten, "O"))
+            throw new InvalidOperationException("Failed to format WAL timestamp via TryFormat.");
+        writer.Write(tsBuffer[..tsWritten]);
         writer.Write('|');
         writer.Write(record.RecordType);
         writer.Write('|');
@@ -474,7 +478,12 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         // Approximate size tracking — avoids expensive UTF-8 measurement on every write.
         // Payload dominates; the fixed-format prefix is typically ~80 ASCII bytes.
-        _currentFileSize += 80 + Encoding.UTF8.GetByteCount(record.Payload) + Environment.NewLine.Length;
+        // string.Length counts UTF-16 code units; for ASCII (U+0000–U+007F) each char is
+        // exactly 1 UTF-8 byte, so Length equals the byte count. For non-ASCII chars (e.g.
+        // accented letters in European ticker symbols) each char may encode to 2–4 bytes,
+        // so Length slightly underestimates the true byte count. This is acceptable for the
+        // file-rotation size threshold: the error is bounded and does not affect data integrity.
+        _currentFileSize += 80 + record.Payload.Length + Environment.NewLine.Length;
     }
 
     private async Task<long> RecoverWalFileAsync(string walFile, CancellationToken ct)
@@ -544,7 +553,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
         using var reader = new StreamReader(stream);
 
         // Skip header
-        var header = await reader.ReadLineAsync();
+        var header = await reader.ReadLineAsync(ct);
         if (header == null || !header.StartsWith(WalMagic))
         {
             _log.Warning("Invalid WAL header in {File}", walFile);
@@ -553,7 +562,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         while (!reader.EndOfStream && !ct.IsCancellationRequested)
         {
-            var line = await reader.ReadLineAsync();
+            var line = await reader.ReadLineAsync(ct);
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
@@ -738,7 +747,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 using var reader = new StreamReader(stream);
 
                 // Read and validate header
-                var header = await reader.ReadLineAsync();
+                var header = await reader.ReadLineAsync(ct);
                 if (header == null || !header.StartsWith(WalMagic))
                 {
                     _log.Warning("Skipping WAL file with invalid header during repair: {File}", walFile);
@@ -747,7 +756,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                 while (!reader.EndOfStream && !ct.IsCancellationRequested)
                 {
-                    var line = await reader.ReadLineAsync();
+                    var line = await reader.ReadLineAsync(ct);
                     if (string.IsNullOrWhiteSpace(line))
                         continue;
 
@@ -815,9 +824,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     await writer.FlushAsync();
                 }
 
-                // Replace original with repaired file
-                File.Delete(walFile);
-                File.Move(tempPath, walFile);
+                // Replace original with repaired file — single atomic rename, no crash window
+                File.Move(tempPath, walFile, overwrite: true);
 
                 repairedFiles++;
 

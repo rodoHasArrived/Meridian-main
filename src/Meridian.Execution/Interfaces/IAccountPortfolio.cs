@@ -1,4 +1,5 @@
 using Meridian.Execution.Models;
+using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution.Interfaces;
 
@@ -25,8 +26,13 @@ public interface IAccountPortfolio
     /// <summary>Margin balance (positive = margin used; 0 for cash-only accounts).</summary>
     decimal MarginBalance { get; }
 
-    /// <summary>Open positions keyed by ticker symbol (upper-case).</summary>
-    IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
+    /// <summary>
+    /// Open positions keyed by ticker symbol (upper-case), typed against the cross-pillar
+    /// <see cref="IPosition"/> interface.
+    /// Callers that require the concrete <see cref="ExecutionPosition"/> type (e.g. serialisation
+    /// boundaries) should cast individual values: <c>account.Positions.Values.Cast&lt;ExecutionPosition&gt;()</c>.
+    /// </summary>
+    IReadOnlyDictionary<string, IPosition> Positions { get; }
 
     /// <summary>Aggregate unrealised P&amp;L across all open positions.</summary>
     decimal UnrealisedPnl { get; }

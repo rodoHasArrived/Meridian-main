@@ -3,7 +3,7 @@
     {
       "src": [
         {
-          "src": "../..",
+          "src": ".",
           "files": [
             "src/Meridian/Meridian.csproj",
             "src/Meridian.Application/Meridian.Application.csproj",
@@ -28,23 +28,23 @@
           ]
         }
       ],
-      "dest": "api",
+      "dest": "docs/docfx/api",
       "allowCompilationErrors": true,
       "properties": {
         "IsWindows": "true"
       },
-      "filter": "filterConfig.yml"
+      "filter": "docs/docfx/filterConfig.yml"
     }
   ],
   "build": {
     "content": [
-      { "files": [ "docs/**/*.md", "docs/**/toc.yml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." },
-      { "files": [ "api/**.yml", "api/index.md", "api/toc.yml" ] }
+      { "files": [ "docs/**/*.md", "docs/**/toc.yml" ], "exclude": [ "docs/docfx/**", "docs/_site/**" ], "src": "." },
+      { "files": [ "docs/docfx/api/**.yml", "docs/docfx/api/index.md" ], "src": "." }
     ],
     "resource": [
-      { "files": [ "docs/**/*.png", "docs/**/*.svg", "docs/**/*.puml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." }
+      { "files": [ "docs/**/*.png", "docs/**/*.svg", "docs/**/*.puml" ], "exclude": [ "docs/docfx/**", "docs/_site/**" ], "src": "." }
     ],
-    "output": "../_site",
+    "output": "docs/_site",
     "template": [ "default", "modern" ],
     "globalMetadata": {
       "_appTitle": "Meridian",

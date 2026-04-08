@@ -28,7 +28,6 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [IMPROVEMENTS.md](IMPROVEMENTS.md) | Tracked implementation themes and recommended focus areas |
 | [FULL_IMPLEMENTATION_TODO_2026_03_20.md](FULL_IMPLEMENTATION_TODO_2026_03_20.md) | Normalized broader implementation backlog |
 | [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
-| [DOCUMENTATION_TRIAGE_2026_03_21.md](DOCUMENTATION_TRIAGE_2026_03_21.md) | Documentation cleanup and archive-triage notes |
 
 ## Generated Status Reports
 
@@ -45,6 +44,18 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [link-repair-report.md](link-repair-report.md) | Internal link audit output |
 | [rules-report.md](rules-report.md) | Documentation rules-engine output |
 | [badge-sync-report.md](badge-sync-report.md) | README badge synchronization report |
+
+Machine-readable sidecars that remain active in this folder:
+
+- `docs-automation-summary.json` - automation run summary consumed by docs tooling
+- `todo-scan-results.json` - machine-readable TODO scan output used by issue automation and follow-up scripts
+
+## Archived Snapshots
+
+These dated snapshots remain useful for history, but they no longer act as active status guidance:
+
+- [Documentation triage (2026-03-21)](../../archive/docs/summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
+- [Now / Next / Later roadmap snapshot (2026-03-25)](../../archive/docs/summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
 
 ## Recommended Reading Order
 

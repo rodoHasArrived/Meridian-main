@@ -37,6 +37,7 @@ This directory contains documentation about the system's design, structural boun
 | [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, and accounting architecture notes |
 | [Desktop Layers](desktop-layers.md) | WPF desktop application layering |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
+| [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Shared workstation-shell UX pattern for WPF research, trading, data operations, and governance |
 | [UI Redesign](ui-redesign.md) | Product and information-architecture direction for workstation UX |
 | [Why This Architecture](why-this-architecture.md) | Rationale and tradeoffs behind the current shape |
 | [C4 Diagrams](c4-diagrams.md) | C4 documentation references and diagrams |

@@ -1,13 +1,13 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-06
 **Status:** Current end-state product summary aligned to the active roadmap
 
 ---
 
 ## Snapshot
 
-Meridian's target end state is a workflow-centric, self-hosted trading workstation and fund-operations platform. It is not just a collector, not just a backtester, and not just a governance add-on. It is one connected product where data trust, research, paper trading, portfolio visibility, ledger auditability, Security Master, reconciliation, and governed reporting all live inside the same operator workflow.
+Meridian's target end state is a workflow-centric, self-hosted trading workstation and fund-operations platform. It is not just a collector, not just a backtester, and not just a governance add-on. It is one connected product where evidence-backed data trust, research, paper trading, portfolio visibility, ledger auditability, Security Master, reconciliation, and governed reporting all live inside the same operator workflow.
 
 ---
 
@@ -50,6 +50,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 - Portfolio, fills, attribution, and ledger visibility from the same run-centered model
 - Security Master as the authoritative instrument-definition layer
 - Reconciliation, cash-flow, and reporting workflows built on shared contracts
+- Governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
 - Web and WPF surfaces that reinforce the same operator model instead of diverging from it
 
 ---
@@ -59,6 +60,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 - L3 inference and queue-aware simulation
 - multi-instance scale-out
 - deeper QuantScript libraries and advanced research tooling
+- Phase 1.5 preferred and convertible equity domain extension
 - assembly-level optimization beyond the core product need
 
 These improve Meridian's ceiling, but they are not required for the core end-state product to feel complete.

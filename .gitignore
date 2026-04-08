@@ -177,6 +177,7 @@ temp/
 *-scratch.*
 scratch-*
 test-*.ps1
+.playwright-cli/
 
 # Malformed path artifacts (Windows path corruption)
 # Why: Occasionally Windows path handling errors create odd directories.
